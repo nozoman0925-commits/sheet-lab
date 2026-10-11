@@ -1,26 +1,49 @@
 <h1>日本語データ整形ツール(無料・ブラウザ内で処理)</h1>
 <p>表記ゆれの整形と重複の確認を、貼り付けたデータだけで行います。<b>入力した内容はこのページの中だけで処理され、外部には送信されません。</b></p>
-<div class="box">できること: 全角英数→半角 / 半角カナ→全角カナ / 前後・連続スペースの整理 / 「株式会社」「(株)」の統一 / 重複行の検出。1行に1データで貼り付けてください。</div>
+<div class="box">できること: 全角英数→半角 / 半角カナ→全角カナ / 前後・連続スペースの整理 / 「株式会社」「(株)」の統一 / 重複行の検出 / 住所の分割(都道府県・市区町村・それ以降の3列)。1行に1データで貼り付けてください。</div>
 <p><textarea id="in" rows="8" style="width:100%" placeholder="例:&#10;(株)山田商事&#10;株式会社 山田商事&#10;ﾔﾏﾀﾞ  ｼｮｳｼﾞ"></textarea></p>
 <p>
 <label><input type="checkbox" id="o1" checked> 全角英数を半角に</label><br>
 <label><input type="checkbox" id="o2" checked> 半角カナを全角に</label><br>
 <label><input type="checkbox" id="o3" checked> スペースを整理</label><br>
 <label><input type="checkbox" id="o4" checked> 法人格を「株式会社」に統一((株)・㈱ など)</label><br>
-<label><input type="checkbox" id="o5"> 重複行を除く</label></p>
+<label><input type="checkbox" id="o5"> 重複行を除く</label><br>
+<label><input type="checkbox" id="o6"> 住所を分割(タブ区切りの3列で出力。そのままExcelに貼れます)</label></p>
 <p><button id="go">整形する</button> <button id="cp">結果をコピー</button></p>
 <p class="meta" id="st"></p>
 <p><textarea id="out" rows="8" style="width:100%" readonly></textarea></p>
-<p class="meta">注意: 住所の分割や名寄せなど、より高度な処理は今後の拡張を検討しています。ご要望は<a href="/waitlist/">先行登録ページ</a>から。結果は必ず目で確認してからご利用ください。</p>
+<p class="meta">注意: 住所の分割は、「都道府県+市区町村+それ以降」の形の住所が対象で、一部の地名(例: 郡・政令市の区が絡むもの)は誤る可能性があります。名寄せなど、より高度な処理は今後の拡張を検討しています。ご要望は<a href="/waitlist/">先行登録ページ</a>から。結果は必ず目で確認してからご利用ください。</p>
 <script>
 (function(){
 var $=function(i){return document.getElementById(i)};
+/*ADDR*/
+var PREF="北海道,青森県,岩手県,宮城県,秋田県,山形県,福島県,茨城県,栃木県,群馬県,埼玉県,千葉県,東京都,神奈川県,新潟県,富山県,石川県,福井県,山梨県,長野県,岐阜県,静岡県,愛知県,三重県,滋賀県,京都府,大阪府,兵庫県,奈良県,和歌山県,鳥取県,島根県,岡山県,広島県,山口県,徳島県,香川県,愛媛県,高知県,福岡県,佐賀県,長崎県,熊本県,大分県,宮崎県,鹿児島県,沖縄県".split(",");
+var DESIG=["札幌市","仙台市","さいたま市","千葉市","横浜市","川崎市","相模原市","新潟市","静岡市","浜松市","名古屋市","京都市","大阪市","堺市","神戸市","岡山市","広島市","北九州市","福岡市","熊本市"];
+function splitAddr(a){
+  var s=a.trim(), pref=null, i, m;
+  for(i=0;i<PREF.length;i++){if(s.indexOf(PREF[i])===0){pref=PREF[i];break;}}
+  if(!pref)return null;
+  var rest=s.slice(pref.length), city=null;
+  for(i=0;i<DESIG.length;i++){
+    if(rest.indexOf(DESIG[i])===0){
+      m=rest.slice(DESIG[i].length).match(/^.{1,5}?区/);
+      city=DESIG[i]+(m?m[0]:"");break;
+    }
+  }
+  if(!city&&pref==="東京都"&&(m=rest.match(/^.{1,5}?区/)))city=m[0];
+  if(!city&&(m=rest.match(/^.{1,5}?郡.{1,5}?[町村]/)))city=m[0];
+  if(!city&&(m=rest.match(/^.{1,6}?市(?!市)/)))city=m[0];
+  if(!city&&(m=rest.match(/^.{1,5}?[町村]/)))city=m[0];
+  if(!city)return null;
+  return [pref,city,rest.slice(city.length).trim()];
+}
+/*ENDADDR*/
 function kana(s){
   var m=s.normalize("NFKC"); // 半角カナ→全角、全角英数→半角を同時に行う
   return m;
 }
 function run(){
-  var lines=$("in").value.split(/\r?\n/), n=0;
+  var lines=$("in").value.split(/\r?\n/), n=0, ng=0;
   var out=lines.map(function(l){
     var o=l;
     if($("o1").checked||$("o2").checked){
@@ -32,12 +55,13 @@ function run(){
     if($("o3").checked){o=o.replace(/[　\s]+/g," ").trim();}
     if($("o4").checked){o=o.replace(/\(株\)|（株）|㈱/g,"株式会社").replace(/株式会社\s+/g,"株式会社").replace(/\s+株式会社/g,"株式会社");}
     if(o!==l)n++;
+    if($("o6").checked&&o!==""){var r=splitAddr(o);if(r)o=r.join("\t");else{o=o+"\t\t";ng++;}}
     return o;
   });
   var d=0;
   if($("o5").checked){var seen={},r=[];out.forEach(function(l){if(l===""||!seen[l]){seen[l]=1;r.push(l)}else d++});out=r;}
   $("out").value=out.join("\n");
-  $("st").textContent=lines.length+"行中 "+n+"行を変更"+($("o5").checked?"、重複 "+d+"行を除去":"")+"。";
+  $("st").textContent=lines.length+"行中 "+n+"行を変更"+($("o5").checked?"、重複 "+d+"行を除去":"")+($("o6").checked?"、住所を分割できなかった行 "+ng+"行(元の文字列のまま、空欄2列を付加)":"")+"。";
 }
 $("go").onclick=run;
 $("cp").onclick=function(){$("out").select();try{document.execCommand("copy");$("st").textContent="コピーしました。";}catch(e){}};
