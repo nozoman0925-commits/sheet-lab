@@ -135,11 +135,11 @@ def main():
     write("/tools/", layout(f'無料ツール一覧 | {CFG["site_name"]}', "ブラウザの中だけで動く無料ツールの一覧。入力内容は外部に送信されません。", "<h1>無料ツール一覧</h1><div class=\"list\">" + items_html + "</div>", "/tools/"))
     wl = CFG.get("waitlist_url", "").strip()
     if wl:
-        wl_body = (f'<h1>先行登録(有料版の需要調査)</h1><p>現在、有料版は<b>まだ提供していません</b>。住所分割や名寄せなどの高度なデータ整形ツールを作るかどうかを判断するための、アンケート形式の先行登録です。登録しても料金は発生せず、購入の義務もありません。</p>'
+        wl_body = (f'<h1>先行登録(有料版の需要調査)</h1><p>現在、有料の<b>ブラウザ版ツールはまだ提供していません</b>(Excel用の有料テンプレート商品は別にあり、<a href="https://nozoman.booth.pm/items/8973300" rel="noopener" target="_blank">BOOTHで販売中</a>です)。住所分割や名寄せなどの高度なデータ整形ツールを作るかどうかを判断するための、アンケート形式の先行登録です。登録しても料金は発生せず、購入の義務もありません。</p>'
                    f'<p><a href="{E(wl)}" rel="noopener" target="_blank">アンケートに回答する</a></p>')
     else:
-        wl_body = "<h1>先行登録</h1><p>準備中です。有料版は現在提供していません。</p>"
-    write("/waitlist/", layout(f'先行登録 | {CFG["site_name"]}', "データ整形ツールの有料版に関する需要調査(有料版は未提供)", wl_body, "/waitlist/"))
+        wl_body = "<h1>先行登録</h1><p>準備中です。ブラウザ版の有料ツールは現在提供していません。</p>"
+    write("/waitlist/", layout(f'先行登録 | {CFG["site_name"]}', "データ整形ツールの有料版に関する需要調査(ブラウザ版の有料ツールは未提供)", wl_body, "/waitlist/"))
     # 進捗ページ(非公開扱い: noindex・サイトマップ非掲載・リンクなし)。スマホで状況を見るため
     PD = ROOT.parent / "pdca"
     def _read(n):
