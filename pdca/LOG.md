@@ -53,3 +53,7 @@
 ## 2026-10-11 GitHub連携の完了
 - Do: GitHub(nozoman0925-commits/sheet-lab)に、site/(ソースと品質ゲート)・dist/(公開物)・pdca/(記録)を整理して配置。書き込み成功。
 - 次の一手: Cloudflare PagesをGitHubに接続(出力ディレクトリ dist)。接続後は、dist/ を更新して push するだけで自動公開される。
+
+## 2026-10-11 自動公開の接続完了
+- Do: Cloudflare PagesをGitHub(main, 出力ディレクトリ dist, ビルドコマンドなし)に接続。https://sheet-lab-site.pages.dev/ が新プロジェクトで公開されたことを確認(先行登録ページ・Search Consoleタグあり)。
+- 以後: dist/ をpushするだけで自動公開。人間のzipアップロードは不要。
