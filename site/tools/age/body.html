@@ -1,0 +1,50 @@
+<h1>年齢計算ツール(基準日を指定できます)</h1>
+<p>生年月日と基準日(初期値は今日)から、満年齢などを計算します。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p>生年月日:<input type="date" id="b"> 基準日:<input type="date" id="d"></p>
+<table id="r"></table>
+<h2>計算のルール</h2>
+<ul>
+<li><b>満年齢</b>は、誕生日の当日に1つ増えるものとして計算します(日本の「年齢計算ニ関スル法律」は、誕生日の前日の終了時に年齢が加わるとしており、結果として誕生日当日の午前0時から新しい年齢になります)。</li>
+<li><b>2月29日生まれ</b>は、うるう年でない年には、3月1日に年齢が加わるものとして計算します(民法143条の「応当日がない場合は月の末日で満了する」という考え方に基づく、一般的な解釈です)。法的な手続きの年齢確認には、必ず公的な基準・窓口を確認してください。</li>
+<li>「○歳○か月○日」は、誕生日からの月数を数え、残りを日数とします。月末をまたぐ場合は、数え方によって1日ずれることがあります。</li>
+<li>数え年(生まれた年を1歳とする数え方)は扱いません。</li>
+</ul>
+<script>
+function leap(y){return (y%4===0&&y%100!==0)||y%400===0;}
+function dim(y,m){return [31,leap(y)?29:28,31,30,31,30,31,31,30,31,30,31][m-1];}
+// n年後の応当日(2/29はうるう年でなければ3/1)。[y,m,d]
+function anniv(by,bm,bd,n){var y=by+n;if(bm===2&&bd===29&&!leap(y))return [y,3,1];return [y,bm,bd];}
+function cmp(a,b){return a[0]-b[0]||a[1]-b[1]||a[2]-b[2];}
+function dayNum(y,m,d){return Math.round(Date.UTC(y,m-1,d)/86400000);}
+function validDate(y,m,d){return Number.isInteger(y)&&Number.isInteger(m)&&Number.isInteger(d)&&m>=1&&m<=12&&d>=1&&y>=1&&d<=dim(y,m);}
+function calcAge(by,bm,bd,y,m,d){
+  if(!validDate(by,bm,bd)||!validDate(y,m,d))return null;
+  var B=[by,bm,bd],T=[y,m,d];
+  if(cmp(T,B)<0)return null;
+  var age=y-by;if(cmp(T,anniv(by,bm,bd,age))<0)age--;
+  var A=anniv(by,bm,bd,age);
+  // 直近の応当日からの月数・日数
+  var months=(y-A[0])*12+(m-A[1]);
+  var cm=function(k){var t=A[1]-1+k;var yy=A[0]+Math.floor(t/12),mm=((t%12)+12)%12+1;return [yy,mm,Math.min(A[2],dim(yy,mm))];};
+  if(months>11)months=11;
+  while(months>0&&cmp(T,cm(months))<0)months--;
+  var M=cm(months);
+  var days=dayNum(y,m,d)-dayNum(M[0],M[1],M[2]);
+  var N=anniv(by,bm,bd,age+1);
+  return {age:age,months:months,days:days,lived:dayNum(y,m,d)-dayNum(by,bm,bd),toNext:dayNum(N[0],N[1],N[2])-dayNum(y,m,d),next:N};}
+if(typeof document!=="undefined"){
+  var b=document.getElementById("b"),d=document.getElementById("d"),r=document.getElementById("r");
+  var now=new Date();d.value=now.getFullYear()+"-"+String(now.getMonth()+1).padStart(2,"0")+"-"+String(now.getDate()).padStart(2,"0");
+  function p(s){var a=s.split("-").map(Number);return a.length===3?a:[NaN,NaN,NaN];}
+  function upd(){
+    if(!b.value||!d.value){r.innerHTML="<tr><td>生年月日と基準日を入れてください。</td></tr>";return;}
+    var x=p(b.value),y=p(d.value),c=calcAge(x[0],x[1],x[2],y[0],y[1],y[2]);
+    if(!c){r.innerHTML="<tr><td>日付が正しくないか、基準日が生年月日より前です。</td></tr>";return;}
+    r.innerHTML="<tr><th>項目</th><th>値</th></tr>"
+    +"<tr><td>満年齢</td><td>"+c.age+"歳</td></tr>"
+    +"<tr><td>年月日</td><td>"+c.age+"歳"+c.months+"か月"+c.days+"日</td></tr>"
+    +"<tr><td>生まれてからの日数</td><td>"+c.lived+"日</td></tr>"
+    +"<tr><td>次の誕生日(年齢が加わる日)</td><td>"+c.next[0]+"年"+c.next[1]+"月"+c.next[2]+"日(あと"+c.toNext+"日)</td></tr>";}
+  b.oninput=upd;d.oninput=upd;upd();
+}
+</script>

@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -25,4 +25,16 @@ let r=cc.countText('あ い\nう\r\nえ');ok(r.all===8&&r.noNl===5&&r.noSp===4&&
 r=cc.countText('');ok(r.all===0&&r.lines===0&&r.sheets===0,'empty');
 r=cc.countText('a😀');ok(r.all===2&&r.bytes===5,'emoji '+JSON.stringify(r));
 r=cc.countText('あ'.repeat(401));ok(r.sheets===2,'sheets');
-console.log(`wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);
+// age vs 独立参照(n年後の応当日を総当たりで比較)
+const ag=load('tools/age/body.html');
+function refAge(by,bm,bd,y,m,d){const lp=Y=>new Date(Date.UTC(Y,1,29)).getUTCMonth()===1;const key=a=>a[0]*10000+a[1]*100+a[2];
+  let n=0;while(true){const Y=by+n+1;let a=[Y,bm,bd];if(bm===2&&bd===29&&!lp(Y))a=[Y,3,1];if(key(a)<=key([y,m,d]))n++;else break;}return n;}
+let ac=0;for(const [by,bm,bd] of [[2000,2,29],[1996,2,29],[1900,2,28],[2001,3,1],[1999,12,31],[2010,1,1]])for(let t=Date.UTC(by,bm-1,bd);t<=Date.UTC(2032,11,31);t+=86400000*(ac%5+1)){const D=new Date(t);const y=D.getUTCFullYear(),m=D.getUTCMonth()+1,d=D.getUTCDate();const r=ag.calcAge(by,bm,bd,y,m,d);ac++;
+  ok(r&&r.age===refAge(by,bm,bd,y,m,d),`age ${by}-${bm}-${bd} @${y}-${m}-${d} ${JSON.stringify(r)}`);
+  ok(r&&r.lived===Math.round((t-Date.UTC(by,bm-1,bd))/86400000),'lived');ok(r&&r.months>=0&&r.months<12&&r.days>=0&&r.days<=31&&r.toNext>=1,'range '+JSON.stringify(r)+` ${by}-${bm}-${bd}@${y}-${m}-${d}`);}
+ok(ag.calcAge(2000,1,15,2024,1,14).age===23,'day before bday');ok(ag.calcAge(2000,1,15,2024,1,15).age===24,'bday');
+ok(ag.calcAge(2000,2,29,2023,2,28).age===22,'leap 2/28');ok(ag.calcAge(2000,2,29,2023,3,1).age===23,'leap 3/1');ok(ag.calcAge(2000,2,29,2024,2,29).age===24,'leap 2/29');
+let q=ag.calcAge(2000,1,31,2000,3,1);ok(q.months===1&&q.days===1,'month end '+JSON.stringify(q));
+q=ag.calcAge(2000,1,15,2024,3,20);ok(q.age===24&&q.months===2&&q.days===5,'ymd '+JSON.stringify(q));
+ok(ag.calcAge(2000,1,15,1999,1,1)===null,'before birth');ok(ag.calcAge(2001,2,29,2024,1,1)===null,'invalid date');
+console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);
