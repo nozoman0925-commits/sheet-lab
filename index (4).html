@@ -1,8 +1,8 @@
 <!doctype html><html lang="ja"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>VLOOKUPが#N/Aになる5つの原因と直し方【計算して確認済み】 | シート実務ラボ</title><meta name="description" content="VLOOKUPで#N/Aが出る原因を、スペース・数値と文字列の違い・検索方法・列の位置・IFERRORの落とし穴の5つに整理し、実際に計算して確認した直し方を解説します。">
-<link rel="canonical" href="https://example.pages.dev/vlookup-na-causes/"><link rel="alternate" type="application/rss+xml" href="https://example.pages.dev/feed.xml">
-<meta property="og:title" content="VLOOKUPが#N/Aになる5つの原因と直し方【計算して確認済み】 | シート実務ラボ"><meta property="og:description" content="VLOOKUPで#N/Aが出る原因を、スペース・数値と文字列の違い・検索方法・列の位置・IFERRORの落とし穴の5つに整理し、実際に計算して確認した直し方を解説します。"><meta property="og:type" content="article">
+<title>シート実務ラボ|Excel・スプレッドシートの「動かして確かめた」実務ガイド</title><meta name="description" content="Excel・スプレッドシートの「動かして確かめた」実務ガイド">
+<link rel="canonical" href="https://example.pages.dev/"><link rel="alternate" type="application/rss+xml" href="https://example.pages.dev/feed.xml">
+<meta property="og:title" content="シート実務ラボ|Excel・スプレッドシートの「動かして確かめた」実務ガイド"><meta property="og:description" content="Excel・スプレッドシートの「動かして確かめた」実務ガイド"><meta property="og:type" content="article">
 <style>
 :root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
 @media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
@@ -19,123 +19,8 @@ code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{backgroun
 .meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
 .list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
 footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
-</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "VLOOKUPが#N/Aになる5つの原因と直し方【計算して確認済み】", "datePublished": "2026-10-11", "dateModified": "2026-10-11", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "VLOOKUPで#N/Aが出る原因を、スペース・数値と文字列の違い・検索方法・列の位置・IFERRORの落とし穴の5つに整理し、実際に計算して確認した直し方を解説します。", "mainEntityOfPage": "https://example.pages.dev/vlookup-na-causes/"}</script></head><body>
+</style></head><body>
 <header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
 <nav><a href="/">記事一覧</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
-<main><article><p class="meta">2026-10-11 ・ Excel関数</p><h1>VLOOKUPが#N/Aになる5つの原因と直し方【計算して確認済み】</h1><p>VLOOKUPを使っていて、見た目は合っているのに<code>#N/A</code>が出る場面は多いものです。原因はほとんどが、次の5つのどれかです。それぞれ、実際に小さな表で計算して、症状と直し方を確かめました。</p>
-<h2 id="_1">先に結論:確認する順番</h2>
-<ol>
-<li>検索値や表に、目に見えないスペースが入っていないか</li>
-<li>検索値と表の側で、数値と文字列が食い違っていないか</li>
-<li>第4引数を<code>FALSE</code>にしているか(完全一致)</li>
-<li>検索値が、範囲の「一番左の列」にあるか</li>
-<li><code>IFERROR</code>で、原因を隠してしまっていないか</li>
-</ol>
-<h2 id="1">原因1:末尾や先頭のスペース</h2>
-<p>商品コード<code>A002</code>を探したいのに、検索値が<code>A002</code>(末尾に半角スペース)になっていると、表の<code>A002</code>とは別の文字列として扱われます。</p>
-<pre><code>=VLOOKUP(G1, A1:B3, 2, FALSE)
-</code></pre>
-<p>この式は、<code>G1</code>が<code>A002</code>だと<code>#N/A</code>になりました。次のように<code>TRIM</code>で余分なスペースを取ると、正しく<code>ノート</code>が返りました。</p>
-<pre><code>=VLOOKUP(TRIM(G1), A1:B3, 2, FALSE)
-</code></pre>
-<p>表の側にスペースが混ざっている場合は、表のデータを<code>TRIM</code>で整えた列を別に作るのが確実です。コピーしたデータや、システムから出力したデータで特によく起こります。</p>
-<h2 id="2">原因2:数値と文字列の食い違い</h2>
-<p>見た目は同じ<code>1002</code>でも、片方が数値、もう片方が文字列だと一致しません。検索値が数値の<code>1002</code>で、表の側が文字列の<code>1002</code>だと、<code>#N/A</code>になりました。</p>
-<pre><code>=VLOOKUP(G2, D1:E2, 2, FALSE)
-</code></pre>
-<p>検索値の後ろに空文字を連結して文字列に揃えると、<code>みかん</code>が返りました。</p>
-<pre><code>=VLOOKUP(G2&amp;&quot;&quot;, D1:E2, 2, FALSE)
-</code></pre>
-<p>逆に、表の側が数値で検索値が文字列のときは、<code>VALUE</code>で数値に変換します。根本的には、表の列の形式をそろえるのが一番です。Microsoftの公式ページも、データ型の不一致を原因として挙げています。</p>
-<h2 id="34">原因3:第4引数を省略している(近似一致)</h2>
-<p>第4引数を省略すると、<code>TRUE</code>(近似一致)として動きます。近似一致は、検索列が昇順に並んでいる前提の探し方です。並んでいない表で使うと、<code>#N/A</code>や、間違った値が返る原因になります。</p>
-<pre><code>=VLOOKUP(G3, K1:L3, 2)
-</code></pre>
-<p>昇順に並べていない表で試すと、LibreOffice Calcでは<code>#N/A</code>になりました。Excelでも、並び順によっては<code>#N/A</code>か誤った値になります(この点はExcelでの結果を私は確認していません)。コードや名前を探す通常の用途では、必ず<code>FALSE</code>を指定します。</p>
-<pre><code>=VLOOKUP(G3, K1:L3, 2, FALSE)
-</code></pre>
-<p>この式では、正しく<code>B</code>が返りました。</p>
-<h2 id="4">原因4:検索値が範囲の一番左の列にない</h2>
-<p>VLOOKUPは、指定した範囲の「一番左の列」から検索値を探します。商品名が左、コードが右にある表で、コードから商品名を引こうとすると失敗します。</p>
-<pre><code>=VLOOKUP(G4, N1:O2, 1, FALSE)
-</code></pre>
-<p>この式は、<code>#N/A</code>になりました。左側の列を取り出したいときは、<code>INDEX</code>と<code>MATCH</code>の組み合わせにします。</p>
-<pre><code>=INDEX(N1:N2, MATCH(G4, O1:O2, 0))
-</code></pre>
-<p>これで<code>ノート</code>が返りました。この方法は、列の並びを変えても壊れにくいという利点もあります。</p>
-<h2 id="5iferror">原因5(落とし穴):IFERRORでエラーを隠す</h2>
-<p>エラー表示を消すために、<code>IFERROR</code>を使うことがあります。</p>
-<pre><code>=IFERROR(VLOOKUP(G1, A1:B3, 2, FALSE), &quot;該当なし&quot;)
-</code></pre>
-<p>実際に、原因1のスペース混入のケースで<code>該当なし</code>と表示されました。見た目はきれいですが、本当は「スペースのせいで見つからなかった」だけで、データの問題は直っていません。Microsoftの公式ページも、<code>IFERROR</code>はエラーを隠すだけで、不足しているデータを補うものではないと説明しています。</p>
-<p>エラーを隠す前に、まず原因1〜4を確認するのがおすすめです。本当に「該当なし」のときだけ表示したいなら、上のように原因を直したうえで、<code>IFERROR</code>を最後に使います。</p>
-<h2 id="_2">原因を見つける診断のしかた</h2>
-<p>直し方を試す前に、どの原因なのかを数式で確かめると、遠回りしません。次の確認用の数式を、空いているセルに入れてみてください。検索値が<code>A002</code>(末尾にスペース)、表の側が<code>A002</code>の場合の結果です。</p>
-<table>
-<thead>
-<tr>
-<th>確かめたいこと</th>
-<th>数式</th>
-<th>結果</th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td>検索値の文字数</td>
-<td><code>=LEN(A1)</code></td>
-<td>5</td>
-</tr>
-<tr>
-<td>表側の文字数</td>
-<td><code>=LEN(A2)</code></td>
-<td>4</td>
-</tr>
-<tr>
-<td>2つのセルは同じか</td>
-<td><code>=A1=A2</code></td>
-<td>FALSE</td>
-</tr>
-<tr>
-<td>大文字小文字も含め同じか</td>
-<td><code>=EXACT(A1,A2)</code></td>
-<td>FALSE</td>
-</tr>
-<tr>
-<td>スペースを除けば同じか</td>
-<td><code>=EXACT(TRIM(A1),A2)</code></td>
-<td>TRUE</td>
-</tr>
-<tr>
-<td>検索値は数値か</td>
-<td><code>=ISNUMBER(B1)</code>(B1が数値の1002)</td>
-<td>TRUE</td>
-</tr>
-<tr>
-<td>表側は数値か</td>
-<td><code>=ISNUMBER(B2)</code>(B2が文字列の1002)</td>
-<td>FALSE</td>
-</tr>
-<tr>
-<td>表側は文字列か</td>
-<td><code>=ISTEXT(B2)</code></td>
-<td>TRUE</td>
-</tr>
-</tbody>
-</table>
-<p>文字数が見た目と合わなければ、スペースの混入です。<code>ISNUMBER</code>が食い違っていれば、数値と文字列の違いです。このように、「見た目は同じなのに一致しない」ときは、文字数と型を確認するのが近道です。</p>
-<h3 id="_3">予防しておくとよいこと</h3>
-<ul>
-<li>検索に使う列は、最初から文字列か数値かを決めて、形式をそろえておきます。</li>
-<li>他のシステムから貼り付けたデータは、検索の前に<code>TRIM</code>をかけた列を作ります。</li>
-<li>検索の式は、第4引数を必ず書きます。「省略しても動く」状態を作らないことが、後から原因を探す手間を減らします。</li>
-<li>表が大きいときは、<code>COUNTIF</code>で「そのコードが表に何件あるか」を数えておくと、そもそも存在しないのか、形式の問題なのかを切り分けられます。</li>
-</ul>
-<h2 id="_4">まとめ</h2>
-<ul>
-<li><code>#N/A</code>の主な原因は、スペース、型の違い、近似一致、検索列の位置の4つです。</li>
-<li>検索の基本形は<code>=VLOOKUP(検索値, 範囲, 列番号, FALSE)</code>です。</li>
-<li>左側の列を取り出すときは、<code>INDEX</code>と<code>MATCH</code>を使います。</li>
-<li><code>IFERROR</code>は、原因を直してから、最後に使います。</li>
-</ul>
-<p>なお、この記事の数式は、LibreOffice Calcで実際に再計算して結果を確認しています。お使いの環境(Excelのバージョンなど)によって、結果が異なる場合があります。</p><div class="box"><b>確認方法:</b> 5つの症状と直し方の数式、および診断用の数式(LEN・EXACT・ISNUMBER・ISTEXT)を、LibreOffice Calcで実際に再計算して結果を確認しました(検証用の表は数行の小さな表)。近似一致のケースはExcelと挙動が異なる可能性があるため、結果の断定は避けています。Microsoftの公式説明と照合した項目は、原因1〜3とIFERRORの注意点です。</div><h2>参考にした情報</h2><ul><li><a href="https://support.microsoft.com/en-US/excel/how-to-correct-a-n-a-error" rel="noopener nofollow" target="_blank">https://support.microsoft.com/en-US/excel/how-to-correct-a-n-a-error</a></li></ul></article></main>
+<main><h1>シート実務ラボ</h1><div class="list"><a class="item" href="/vlookup-na-causes/"><div class="t">VLOOKUPが#N/Aになる5つの原因と直し方【計算して確認済み】</div><div class="d">VLOOKUPで#N/Aが出る原因を、スペース・数値と文字列の違い・検索方法・列の位置・IFERRORの落とし穴の5つに整理し、実際に計算して確認した直し方を解説します。</div><div class="meta">2026-10-11 ・ Excel関数</div></a></div></main>
 <footer><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
