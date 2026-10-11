@@ -1,0 +1,125 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>進捗 | シート実務ラボ</title><meta name="description" content="運営の進捗(非公開扱い)">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/status/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="robots" content="noindex"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="進捗 | シート実務ラボ"><meta property="og:description" content="運営の進捗(非公開扱い)"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tool/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><h1>運営の進捗</h1><p class="meta">AIの運用記録を自動で表示しています(最新の記録が上)。</p><h2>最近の記録</h2><h3>2026-10-11 スマホ用の進捗ページ</h3><ul>
+<li>Do: /status/ を追加(最近の記録8件・現在の状態・人間へのお願いを自動表示。noindex、サイトマップ非掲載、どこからもリンクしない)。build_site.py が実行のたびに再生成する。</li>
+<li>注意: URLを知っていれば誰でも見られる(完全な非公開ではない)ため、個人情報・認証情報は記録に書かない。</li>
+</ul><h3>2026-10-11 自動公開の接続完了</h3><ul>
+<li>Do: Cloudflare PagesをGitHub(main, 出力ディレクトリ dist, ビルドコマンドなし)に接続。https://sheet-lab-site.pages.dev/ が新プロジェクトで公開されたことを確認(先行登録ページ・Search Consoleタグあり)。</li>
+<li>以後: dist/ をpushするだけで自動公開。人間のzipアップロードは不要。</li>
+</ul><h3>2026-10-11 GitHub連携の完了</h3><ul>
+<li>Do: GitHub(nozoman0925-commits/sheet-lab)に、site/(ソースと品質ゲート)・dist/(公開物)・pdca/(記録)を整理して配置。書き込み成功。</li>
+<li>次の一手: Cloudflare PagesをGitHubに接続(出力ディレクトリ dist)。接続後は、dist/ を更新して push するだけで自動公開される。</li>
+</ul><h3>2026-10-11 自動実行のテスト</h3><ul>
+<li>Do: 日次の予約タスクを手動で1回起動(「CHARTER.mdが読めるか最初に報告する」指示つき)。</li>
+<li>Check: 起動から約4分、LOG.md・deliverables に変更なし。予約タスクはこの作業フォルダを共有していない可能性が高い(確定ではない: 実行が長引いている可能性もある)。</li>
+<li>Act: 状態が共有されると確認できるまで、予約タスクの頻度は上げない。状態の置き場(GitHub等)が必要。</li>
+</ul><h3>2026-10-11 運用権限と公開自動化の調査</h3><ul>
+<li>ユーザーが、承認なしのPDCA運用を許可(範囲は憲章に記録)。</li>
+<li>PCと連携。デスクトップの sheet-lab フォルダにzipを配置できることを確認。</li>
+<li>アプリ内ブラウザでCloudflareのデプロイ作成画面まで到達。ファイル選択の画面は開かず、zipの自動アップロードは不可。公開は週1回の人間のドラッグ(約1分)で継続。</li>
+</ul><h3>2026-10-11 公開確認(無料ツール・先行登録)</h3><ul>
+<li>Check: /waitlist/ にフォームリンクと「有料版は未提供」の記載、ナビに「無料ツール」を確認。/tool/ は「整形する」ボタンを確認(入力欄は取得ツールの要約に出ず、目視は人間の確認申告のみ)。</li>
+<li>次の一手: 記事を毎日1〜2本追加。住所分割の検証。2〜3日後にSearch Consoleの表示回数とフォーム回答数をINBOXへ。</li>
+</ul><h3>2026-10-11 先行登録フォーム設定</h3><ul>
+<li>Do: Googleフォーム(https://forms.gle/hc7ses3nygeb3JPy5)をconfigのwaitlist_urlに設定し、zipを再生成。フォームの質問2の種類(グリッド→チェックボックス)の修正は本人申告待ち。</li>
+</ul><h3>2026-10-11 Search Console登録完了・無料ツールv0</h3><ul>
+<li>Do: 人間がSearch Consoleの所有権確認、sitemap送信、インデックス登録リクエスト(トップ・記事1)を完了(本人申告)。</li>
+<li>Do: 無料ツールv0(/tool/: 全角半角・スペース・法人格統一・重複除去、ブラウザ内処理)と先行登録ページ(/waitlist/、有料版は未提供と明記、フォームURL未設定時は「準備中」)を追加。品質ゲート通過、sheet-lab-dist.zip を再生成。</li>
+<li>Check: 整形ロジックをnodeで検証(「(株)」「㈱」「半角カナ」「全角英数」)。ブラウザ上の実機確認は未実施。</li>
+<li>次の一手: 人間がGoogleフォーム作成→URLを共有→zip再アップロード。AIは記事追加と、住所分割の検証。</li>
+</ul><h2>現在の状態</h2><h1 id="stateai">STATE(AIが毎日更新する現在地)</h1>
+<p>最終更新: 2026-10-11(憲章v4)</p>
+<h2 id="_1">資金</h2>
+<ul>
+<li>自己資金: 0円 / 稼いだ利益: 0円 / 投資枠: 0円</li>
+</ul>
+<h2 id="p0">現在の段階: P0 需要検証(開始)</h2>
+<h2 id="1">第1仮説</h2>
+<p>日本語データ整形(表記ゆれ・名寄せ・住所分割)を、ブラウザ内完結で提供する。詳細: deliverables/2026-10-11/demand_research.md</p>
+<h2 id="_2">進捗</h2>
+<ul>
+<li>サイト「シート実務ラボ」: 記事1本・品質ゲート通過・公開待ち(初期設定待ち)</li>
+<li>ネタ帳: 34件(第1仮説向け4件を追加)</li>
+<li>無料ツールv0: 公開済み(/tool/)</li>
+<li>先行登録ページ: 公開済み(/waitlist/、フォーム設定済み)</li>
+<li>Search Console: 登録・サイトマップ送信済み(本人申告)</li>
+</ul>
+<h2 id="inboxmd">指標(INBOX.mdの実績で更新)</h2>
+<table>
+<thead>
+<tr>
+<th>指標</th>
+<th>目標</th>
+<th>現在</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>検索に表示される記事</td>
+<td>5本</td>
+<td>0(未公開)</td>
+</tr>
+<tr>
+<td>無料ツール利用</td>
+<td>週100回</td>
+<td>-</td>
+</tr>
+<tr>
+<td>先行登録</td>
+<td>30件</td>
+<td>-</td>
+</tr>
+<tr>
+<td>有料意向</td>
+<td>10%</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<h2 id="_3">未確認事項</h2>
+<ul>
+<li>各領域の検索ボリューム、現場担当者の支払い意欲と価格帯 → 先行登録とSearch Consoleで検証</li>
+<li>公開の自動反映: GitHub未連携のため不可。更新は週1回、あなたがzipをアップロード(約5分)。GitHub連携で自動化できる可能性あり(未確認)</li>
+<li>毎日の自動実行の登録(登録を試みる)</li>
+<li>独自ドメイン(SaaSでは必要)の費用と時期 → P2までに判断</li>
+</ul>
+<h2 id="_4">学び</h2>
+<ul>
+<li>数式生成AIは競合が強く、無料の代替もあるため、第1仮説にしない。</li>
+<li>「データを外部へ送らない」点は、差別化の軸になりうる(未検証)。</li>
+</ul><h2>あなたへのお願い</h2><h1 id="human_tasksai">HUMAN_TASKS(AIにできない作業だけ)</h1>
+<h2 id="_1">完了</h2>
+<ul>
+<li>Cloudflare公開、Search Console登録・サイトマップ送信、Googleフォーム作成、ツール・先行登録ページの公開</li>
+</ul>
+<h2 id="_2">次の依頼</h2>
+<ul>
+<li>なし(3日後に、Search Consoleの表示回数とフォームの回答数をINBOX.mdかチャットに貼る・約5分)</li>
+</ul>
+<h2 id="_3">後で</h2>
+<ul>
+<li>運営者の連絡先メール(公開してよい専用アドレス)を決める(AdSense申請前まで)</li>
+</ul></main>
+<footer><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
