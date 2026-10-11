@@ -101,22 +101,36 @@ def main():
                     for fm, _ in published) or "<p>記事を準備中です。</p>"
     write("/", layout(f'{CFG["site_name"]}|{CFG["tagline"]}', CFG["tagline"], f'<h1>{E(CFG["site_name"])}</h1><div class="list">{items}</div>', "/"))
 
-    write("/about/", layout(f'運営者情報 | {CFG["site_name"]}', "運営者とこのサイトの作り方について", f"""
-<h1>運営者情報</h1><p>運営者: {E(CFG['author_name'])}</p><p>{E(CFG['author_bio'])}</p>
+    write("/about/", layout(f'運営者情報 | {CFG["site_name"]}', "運営者とこのサイトの作り方、提供している商品について", f"""
+<h1>運営者情報</h1>
+<table><tr><th>サイト名</th><td>{E(CFG['site_name'])}</td></tr>
+<tr><th>運営者</th><td>{E(CFG['author_name'])}(個人運営)</td></tr>
+<tr><th>連絡先</th><td><a href="/contact/">お問い合わせ</a>のページをご覧ください</td></tr>
+<tr><th>運営開始</th><td>2026年10月</td></tr></table>
+<p>{E(CFG['author_bio'])}</p>
 <h2>記事の作り方</h2><p>{E(CFG['ai_disclosure'])}</p>
-<h2>広告について</h2><p>当サイトは、広告(Google AdSenseなど)やアフィリエイトを利用する場合があります。該当する記事には、冒頭などに『広告』『PR』と明記します。</p>""", "/about/"))
+<p>数式や手順は、LibreOfficeなどで実際に再計算して確かめたものだけを載せ、確認できていない点は「未確認」と書きます。出典は、中身を確認した公式ページなどに限ります。</p>
+<h2>運営者の商品について</h2><p>運営者は、Excel用テンプレート「<a href="https://nozoman.booth.pm/items/8973300" rel="noopener" target="_blank">名簿クレンジングシート</a>」をBOOTH(<a href="https://nozoman.booth.pm/" rel="noopener" target="_blank">nozoman.booth.pm</a>)で販売しています。関連する記事やツールのページには、運営者自身の商品であることを明記して案内を置くことがあります。</p>
+<h2>無料ツールについて</h2><p>/tool/ と /tools/ の無料ツールは、ブラウザの中だけで計算し、入力内容を外部に送信しません。計算結果は、ご自身の環境で必ずご確認のうえお使いください。</p>
+<h2>広告について</h2><p>現時点では、広告の掲載やアフィリエイトは行っていません。今後、広告(Google AdSenseなど)やアフィリエイトを導入する場合は、該当する記事に『広告』『PR』と明記し、このページとプライバシーポリシーを更新します。</p>""", "/about/"))
     email = CFG.get("contact_email", "").strip()
     if email:
         contact_html = (f"<h1>お問い合わせ</h1><p>記事の誤りのご指摘やご連絡は、次のメールアドレスにお送りください。</p>"
                         f'<p><a href="mailto:{E(email)}">{E(email)}</a></p>')
     else:
-        contact_html = "<h1>お問い合わせ</h1><p>お問い合わせ窓口は準備中です。</p>"
+        contact_html = ("<h1>お問い合わせ</h1><p>お問い合わせ用のメールアドレスは<b>準備中</b>です。準備ができ次第、このページに掲載します。</p>"
+                        "<p>記事の誤りや商品についてのご連絡は、BOOTHのショップ(<a href=\"https://nozoman.booth.pm/\" rel=\"noopener\" target=\"_blank\">nozoman.booth.pm</a>)のお問い合わせ機能からも受け付けています。</p>")
     write("/contact/", layout(f'お問い合わせ | {CFG["site_name"]}', "記事の誤りのご指摘、ご連絡はこちら", contact_html, "/contact/"))
-    write("/privacy/", layout(f'プライバシーポリシー | {CFG["site_name"]}', "個人情報・Cookie・広告の取り扱い", f"""
+    write("/privacy/", layout(f'プライバシーポリシー | {CFG["site_name"]}', "個人情報・Cookie・外部サービスの取り扱い", f"""
 <h1>プライバシーポリシー</h1>
-<h2>アクセス解析・広告</h2><p>当サイトは、アクセス状況の把握や広告配信のために、Cookie等を利用する第三者のサービス(Google AdSense、Google Search Console等)を利用する場合があります。広告配信事業者は、Cookieを使用して、ユーザーが当サイトや他のサイトに過去にアクセスした情報に基づいて広告を配信することがあります。Googleによる広告でのデータの利用方法は、Googleのポリシーをご確認ください。</p>
-<h2>個人情報</h2><p>お問い合わせでいただいたメールアドレス等は、返信の目的以外には利用しません。</p>
-<h2>免責</h2><p>記事の内容は正確さに努めていますが、環境(ソフトのバージョン等)により結果が異なる場合があります。ご利用は自己責任でお願いします。</p>""", "/privacy/"))
+<p class="meta">制定: 2026年10月</p>
+<h2>無料ツールに入力したデータ</h2><p>当サイトの無料ツールは、入力内容をブラウザの中だけで処理し、当サイトのサーバーを含む外部へ送信しません。入力内容は運営者には届きません。</p>
+<h2>アクセス状況の把握</h2><p>運営者は、検索結果での表示状況を把握するために、Google Search Consoleを利用しています。当サイトでは現在、閲覧者の行動を追跡するアクセス解析タグや広告タグは設置していません。公開しているホスティング(Cloudflare Pages)では、サービスの提供に必要な範囲でアクセスログが処理されることがあります。</p>
+<h2>先行登録アンケート</h2><p>/waitlist/ から回答できるアンケートはGoogleフォームで運営されています。回答内容(メールアドレスを任意でご記入いただく場合を含む)は、有料ツールの需要の把握と、ご希望された方へのご案内の目的にのみ使い、第三者へ提供しません。回答は任意で、料金は発生しません。回答の削除を希望される場合は、<a href="/contact/">お問い合わせ</a>のページに記載の方法でご連絡ください。</p>
+<h2>お問い合わせ</h2><p>お問い合わせでいただいたメールアドレス等は、返信の目的以外には利用しません。</p>
+<h2>外部サイトへのリンク</h2><p>BOOTHなど外部サイトへのリンクがあります。リンク先での情報の取り扱いは、各サイトのポリシーに従います。</p>
+<h2>今後の変更</h2><p>広告(Google AdSenseなど)を導入する場合は、Cookie等の利用と広告配信事業者による情報の取り扱い、オプトアウトの方法をこのページに追記したうえで開始します。内容を変更したときは、このページで告知します。</p>
+<h2>免責</h2><p>記事・ツールの内容は正確さに努めていますが、環境(ソフトのバージョン等)により結果が異なる場合があります。ご利用は自己責任でお願いします。</p>""", "/privacy/"))
     tool_body = (ROOT / "tool" / "body.html").read_text(encoding="utf-8")
     write("/tool/", layout(f'日本語データ整形ツール(無料・ブラウザ内処理) | {CFG["site_name"]}', "全角半角・スペース・法人格の表記ゆれを整える無料ツール。入力データは外部に送信されません。", tool_body, "/tool/"))
     # 単機能ツール群: tools/<slug>/{meta.json, body.html} → /tools/<slug>/ と一覧 /tools/
