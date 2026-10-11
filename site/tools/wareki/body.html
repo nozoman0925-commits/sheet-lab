@@ -1,0 +1,48 @@
+<h1>和暦・西暦 変換ツール</h1>
+<p>西暦の日付を和暦に、和暦を西暦に変換します。改元の日付をまたぐ年も、日付で判定します。対象は<b>1873年1月1日(明治6年)以降</b>です。それ以前は旧暦(太陰太陽暦)の日付で、西暦との1対1の変換ができないため、対象外にしています。</p>
+<h2>西暦 → 和暦</h2>
+<p><input type="date" id="g" value="2019-05-01" min="1873-01-01"> <button id="g2w">変換</button></p>
+<p id="gout"><b></b></p>
+<h2>和暦 → 西暦</h2>
+<p><select id="era"><option>令和</option><option>平成</option><option>昭和</option><option>大正</option><option>明治</option></select>
+<input type="number" id="ey" min="1" value="1" style="width:5em">年
+<input type="number" id="em" min="1" max="12" value="5" style="width:4em">月
+<input type="number" id="ed" min="1" max="31" value="1" style="width:4em">日 <button id="w2g">変換</button></p>
+<p id="wout"><b></b></p>
+<h2>改元の日付(この変換で使っているもの)</h2>
+<table><tr><th>元号</th><th>始まり</th><th>元年</th></tr>
+<tr><td>令和</td><td>2019年5月1日</td><td>2019年</td></tr>
+<tr><td>平成</td><td>1989年1月8日</td><td>1989年</td></tr>
+<tr><td>昭和</td><td>1926年12月25日</td><td>1926年</td></tr>
+<tr><td>大正</td><td>1912年7月30日</td><td>1912年</td></tr>
+<tr><td>明治</td><td>(1873年1月1日以降を対象)</td><td>1868年(明治元年)</td></tr></table>
+<p class="meta">月・日は、その元号の期間に存在する日付だけが変換できます(例: 平成31年5月1日は存在しないため、エラーになります)。</p>
+<script>
+var ERAS=[["令和",2019,5,1],["平成",1989,1,8],["昭和",1926,12,25],["大正",1912,7,30],["明治",1868,1,1]];
+function key(y,m,d){return y*10000+m*100+d;}
+function validDate(y,m,d){var t=new Date(Date.UTC(y,m-1,d));return t.getUTCFullYear()===y&&t.getUTCMonth()===m-1&&t.getUTCDate()===d;}
+function toWareki(y,m,d){
+  if(!validDate(y,m,d))return null;
+  if(key(y,m,d)<18730101)return null;
+  for(var i=0;i<ERAS.length;i++){var e=ERAS[i];
+    if(key(y,m,d)>=key(e[1],e[2],e[3])){var n=y-e[1]+1;return e[0]+(n===1?"元":n)+"年"+m+"月"+d+"日";}}
+  return null;}
+function toSeireki(era,n,m,d){
+  var idx=-1;for(var i=0;i<ERAS.length;i++){if(ERAS[i][0]===era)idx=i;}
+  if(idx<0||!(n>=1))return null;
+  var e=ERAS[idx],y=e[1]+n-1;
+  if(!validDate(y,m,d))return null;
+  if(key(y,m,d)<key(e[1],e[2],e[3])&&n===1)return null;
+  if(idx>0){var nx=ERAS[idx-1];if(key(y,m,d)>=key(nx[1],nx[2],nx[3]))return null;}
+  if(key(y,m,d)<18730101)return null;
+  return y+"年"+m+"月"+d+"日";}
+if(typeof document!=="undefined"){
+  document.getElementById("g2w").onclick=function(){
+    var v=document.getElementById("g").value.split("-").map(Number);
+    var r=v.length===3?toWareki(v[0],v[1],v[2]):null;
+    document.getElementById("gout").innerHTML="<b>"+(r||"変換できません(1873年1月1日以降の日付を入れてください)")+"</b>";};
+  document.getElementById("w2g").onclick=function(){
+    var r=toSeireki(document.getElementById("era").value,+document.getElementById("ey").value,+document.getElementById("em").value,+document.getElementById("ed").value);
+    document.getElementById("wout").innerHTML="<b>"+(r||"その元号に存在しない日付です")+"</b>";};
+}
+</script>

@@ -1,0 +1,36 @@
+<h1>消費税 計算ツール</h1>
+<p>金額から、税込・税抜・消費税額を計算します。税率は10%と8%(軽減税率の対象品目)から選べ、<b>端数の処理は自分で選べます</b>。請求書や見積書では、どの方法を使うかの取り決めに合わせてください。</p>
+<p>金額(円) <input type="number" id="amt" min="0" value="1000" style="width:10em"></p>
+<p>税率 <label><input type="radio" name="rate" value="10" checked>10%</label> <label><input type="radio" name="rate" value="8">8%</label></p>
+<p>端数 <label><input type="radio" name="rd" value="floor" checked>切り捨て</label> <label><input type="radio" name="rd" value="round">四捨五入</label> <label><input type="radio" name="rd" value="ceil">切り上げ</label></p>
+<p><button id="calc">計算する</button></p>
+<table id="res"></table>
+<p class="meta">整数の計算で処理しているため、小数の誤差は出ません。このツールは目安です。インボイス制度など、正式な書類の扱いは、国税庁等の公式の案内を確認してください。</p>
+<h2>Excelでの同じ計算</h2>
+<p>金額がA2、税率が10%のとき、税込(切り捨て)は <code>=ROUNDDOWN(A2*1.1,0)</code>、税抜(税込をA2とする、切り捨て)は <code>=ROUNDDOWN(A2/1.1,0)</code> です。四捨五入は <code>ROUND</code>、切り上げは <code>ROUNDUP</code> に置き換えます。</p>
+<script>
+function divRound(num,den,mode){
+  var q=Math.floor(num/den),r=num-q*den;
+  if(r===0)return q;
+  if(mode==="floor")return q;
+  if(mode==="ceil")return q+1;
+  return (r*2>=den)?q+1:q;}
+function calcTax(amount,rate,mode){
+  // 税抜→税込: 税額=amount*rate/100 を端数処理
+  var tax=divRound(amount*rate,100,mode);
+  var incl=amount+tax;
+  // 税込→税抜: 税抜=amount*100/(100+rate) を端数処理
+  var ex=divRound(amount*100,100+rate,mode);
+  return {taxOnExcl:tax,inclFromExcl:incl,exclFromIncl:ex,taxInIncl:amount-ex};}
+if(typeof document!=="undefined"){
+  document.getElementById("calc").onclick=function(){
+    var a=Math.floor(+document.getElementById("amt").value);
+    var rate=+document.querySelector('input[name=rate]:checked').value;
+    var md=document.querySelector('input[name=rd]:checked').value;
+    var el=document.getElementById("res");
+    if(!(a>=0)||a>1e12){el.innerHTML="<tr><td>0以上の整数の金額を入れてください</td></tr>";return;}
+    var r=calcTax(a,rate,md),f=function(n){return n.toLocaleString("ja-JP")+"円";};
+    el.innerHTML="<tr><th colspan=2>入力を税抜として計算</th></tr><tr><td>消費税額</td><td>"+f(r.taxOnExcl)+"</td></tr><tr><td>税込金額</td><td>"+f(r.inclFromExcl)+"</td></tr>"
+      +"<tr><th colspan=2>入力を税込として計算</th></tr><tr><td>税抜金額</td><td>"+f(r.exclFromIncl)+"</td></tr><tr><td>うち消費税額</td><td>"+f(r.taxInIncl)+"</td></tr>";};
+}
+</script>

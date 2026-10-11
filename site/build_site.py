@@ -49,7 +49,7 @@ def layout(title, desc, body, path, jsonld="", noindex=False):
 <meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(desc)}"><meta property="og:type" content="article">
 <style>{CSS}</style>{jsonld}{ads}</head><body>
 <header><a class="brand" href="/">{E(CFG['site_name'])}</a><p>{E(CFG['tagline'])}</p>
-<nav><a href="/">記事一覧</a><a href="/tool/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
 <main>{body}</main>
 <footer><p>{E(CFG['ai_disclosure'])}</p><p>© {date.today().year} {E(CFG['site_name'])}</p></footer></body></html>"""
 
@@ -119,6 +119,20 @@ def main():
 <h2>免責</h2><p>記事の内容は正確さに努めていますが、環境(ソフトのバージョン等)により結果が異なる場合があります。ご利用は自己責任でお願いします。</p>""", "/privacy/"))
     tool_body = (ROOT / "tool" / "body.html").read_text(encoding="utf-8")
     write("/tool/", layout(f'日本語データ整形ツール(無料・ブラウザ内処理) | {CFG["site_name"]}', "全角半角・スペース・法人格の表記ゆれを整える無料ツール。入力データは外部に送信されません。", tool_body, "/tool/"))
+    # 単機能ツール群: tools/<slug>/{meta.json, body.html} → /tools/<slug>/ と一覧 /tools/
+    tool_list = [("/tool/", "日本語データ整形ツール", "全角半角・スペース・法人格・重複・住所分割をまとめて整える")]
+    for d in sorted((ROOT / "tools").glob("*/")) if (ROOT / "tools").exists() else []:
+        if not (d / "meta.json").exists() or not (d / "body.html").exists():
+            continue
+        m = json.loads((d / "meta.json").read_text(encoding="utf-8"))
+        body = (d / "body.html").read_text(encoding="utf-8")
+        body += ('<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、'
+                 '要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div>')
+        write(f"/tools/{d.name}/", layout(f'{m["title"]} | {CFG["site_name"]}', m["description"], body, f"/tools/{d.name}/"))
+        tool_list.append((f"/tools/{d.name}/", m["title"], m["description"]))
+    extra_urls = [u for u, _, _ in tool_list if u != "/tool/"]
+    items_html = "".join(f'<a class="item" href="{u}"><div class="t">{E(t)}</div><div class="d">{E(dsc)}</div></a>' for u, t, dsc in tool_list)
+    write("/tools/", layout(f'無料ツール一覧 | {CFG["site_name"]}', "ブラウザの中だけで動く無料ツールの一覧。入力内容は外部に送信されません。", "<h1>無料ツール一覧</h1><div class=\"list\">" + items_html + "</div>", "/tools/"))
     wl = CFG.get("waitlist_url", "").strip()
     if wl:
         wl_body = (f'<h1>先行登録(有料版の需要調査)</h1><p>現在、有料版は<b>まだ提供していません</b>。住所分割や名寄せなどの高度なデータ整形ツールを作るかどうかを判断するための、アンケート形式の先行登録です。登録しても料金は発生せず、購入の義務もありません。</p>'
@@ -141,7 +155,7 @@ def main():
     write("/status/", layout(f'進捗 | {CFG["site_name"]}', "運営の進捗(非公開扱い)", status_body, "/status/", noindex=True))
     write("/404.html", layout(f'ページが見つかりません | {CFG["site_name"]}', "ページが見つかりません", '<h1>ページが見つかりません</h1><p><a href="/">記事一覧へ</a></p>', "/404.html", noindex=True))
 
-    urls = ["/", "/tool/", "/waitlist/", "/about/", "/contact/", "/privacy/"] + [f"/{fm['slug']}/" for fm, _ in published]
+    urls = ["/", "/tools/", "/tool/"] + extra_urls + ["/waitlist/", "/about/", "/contact/", "/privacy/"] + [f"/{fm['slug']}/" for fm, _ in published]
     write("/sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
           + "".join(f"<url><loc>{BASE}{u}</loc></url>" for u in urls) + "</urlset>")
     write("/robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")

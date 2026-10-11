@@ -21,7 +21,7 @@ code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{backgroun
 footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
 </style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】", "datePublished": "2026-10-11", "dateModified": "2026-10-11", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/hyouki-yure-kansu/"}</script></head><body>
 <header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
-<nav><a href="/">記事一覧</a><a href="/tool/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
 <main><article><p class="meta">2026-10-11 ・ データ整形</p><h1>表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】</h1><p>顧客名簿や取引先リストで、「(株)山田商事」と「株式会社山田商事」が別のデータとして扱われてしまい、集計や<code>VLOOKUP</code>が合わない。こうした表記ゆれは、実務でとても多い困りごとです。この記事では、関数だけでそろえられる範囲と、そうでない範囲を、実際に計算して確かめた結果で整理します。</p>
 <h2 id="_1">先に結論</h2>
 <ul>

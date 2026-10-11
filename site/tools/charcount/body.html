@@ -1,0 +1,26 @@
+<h1>文字数カウントツール</h1>
+<p>貼り付けた文章の文字数などを数えます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><textarea id="t" rows="10" style="width:100%" placeholder="ここに文章を貼り付けてください"></textarea></p>
+<table id="r"></table>
+<p class="meta">文字数は、見た目の1文字ではなく、Unicodeの1文字(コードポイント)を1として数えます。絵文字の一部(肌の色や家族の絵文字など、複数の文字を組み合わせたもの)は、見た目より多く数えられることがあります。投稿先のサービスの数え方(たとえば半角を0.5文字とする方式)とは異なる場合があるため、文字数制限がある場合は、投稿先の表示を確認してください。</p>
+<script>
+function countText(s){
+  var chars=Array.from(s);
+  var noNl=Array.from(s.replace(/\r\n|\r|\n/g,""));
+  var noSp=Array.from(s.replace(/[\s　]/g,""));
+  var lines=s===""?0:s.split(/\r\n|\r|\n/).length;
+  var bytes=(typeof TextEncoder!=="undefined")?new TextEncoder().encode(s).length:null;
+  return {all:chars.length,noNl:noNl.length,noSp:noSp.length,lines:lines,bytes:bytes,sheets:Math.ceil(noNl.length/400)};}
+if(typeof document!=="undefined"){
+  var t=document.getElementById("t"),r=document.getElementById("r");
+  function upd(){var c=countText(t.value);
+    r.innerHTML="<tr><th>項目</th><th>値</th></tr>"
+    +"<tr><td>文字数(改行を含む)</td><td>"+c.all+"</td></tr>"
+    +"<tr><td>文字数(改行を除く)</td><td>"+c.noNl+"</td></tr>"
+    +"<tr><td>文字数(空白・改行を除く)</td><td>"+c.noSp+"</td></tr>"
+    +"<tr><td>行数</td><td>"+c.lines+"</td></tr>"
+    +"<tr><td>バイト数(UTF-8)</td><td>"+(c.bytes===null?"-":c.bytes)+"</td></tr>"
+    +"<tr><td>400字詰め原稿用紙の枚数(改行を除く文字数で計算・切り上げ)</td><td>"+c.sheets+"枚</td></tr>";}
+  t.oninput=upd;upd();
+}
+</script>
