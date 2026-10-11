@@ -10,7 +10,7 @@ from quality_check import check_all, split_front_matter
 
 ROOT = Path(__file__).parent
 CFG = json.loads((ROOT / "config.json").read_text(encoding="utf-8"))
-CONTENT, DIST = ROOT / "content", ROOT / "dist"
+CONTENT, DIST = ROOT / "content", ROOT.parent / "dist"
 BASE = CFG["base_url"].rstrip("/")
 E = html.escape
 
@@ -39,6 +39,9 @@ def layout(title, desc, body, path, jsonld="", noindex=False):
     if CFG.get("adsense_publisher_id"):
         ads = f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={E(CFG["adsense_publisher_id"])}" crossorigin="anonymous"></script>'
     robots = '<meta name="robots" content="noindex">' if noindex else ""
+    sc_token = CFG.get("search_console_verification", "").strip()
+    if sc_token:
+        robots += f'<meta name="google-site-verification" content="{E(sc_token)}">'
     return f"""<!doctype html><html lang="{CFG['language']}"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">
@@ -46,7 +49,7 @@ def layout(title, desc, body, path, jsonld="", noindex=False):
 <meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(desc)}"><meta property="og:type" content="article">
 <style>{CSS}</style>{jsonld}{ads}</head><body>
 <header><a class="brand" href="/">{E(CFG['site_name'])}</a><p>{E(CFG['tagline'])}</p>
-<nav><a href="/">記事一覧</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<nav><a href="/">記事一覧</a><a href="/tool/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
 <main>{body}</main>
 <footer><p>{E(CFG['ai_disclosure'])}</p><p>© {date.today().year} {E(CFG['site_name'])}</p></footer></body></html>"""
 
@@ -114,9 +117,18 @@ def main():
 <h2>アクセス解析・広告</h2><p>当サイトは、アクセス状況の把握や広告配信のために、Cookie等を利用する第三者のサービス(Google AdSense、Google Search Console等)を利用する場合があります。広告配信事業者は、Cookieを使用して、ユーザーが当サイトや他のサイトに過去にアクセスした情報に基づいて広告を配信することがあります。Googleによる広告でのデータの利用方法は、Googleのポリシーをご確認ください。</p>
 <h2>個人情報</h2><p>お問い合わせでいただいたメールアドレス等は、返信の目的以外には利用しません。</p>
 <h2>免責</h2><p>記事の内容は正確さに努めていますが、環境(ソフトのバージョン等)により結果が異なる場合があります。ご利用は自己責任でお願いします。</p>""", "/privacy/"))
+    tool_body = (ROOT / "tool" / "body.html").read_text(encoding="utf-8")
+    write("/tool/", layout(f'日本語データ整形ツール(無料・ブラウザ内処理) | {CFG["site_name"]}', "全角半角・スペース・法人格の表記ゆれを整える無料ツール。入力データは外部に送信されません。", tool_body, "/tool/"))
+    wl = CFG.get("waitlist_url", "").strip()
+    if wl:
+        wl_body = (f'<h1>先行登録(有料版の需要調査)</h1><p>現在、有料版は<b>まだ提供していません</b>。住所分割や名寄せなどの高度なデータ整形ツールを作るかどうかを判断するための、アンケート形式の先行登録です。登録しても料金は発生せず、購入の義務もありません。</p>'
+                   f'<p><a href="{E(wl)}" rel="noopener" target="_blank">アンケートに回答する</a></p>')
+    else:
+        wl_body = "<h1>先行登録</h1><p>準備中です。有料版は現在提供していません。</p>"
+    write("/waitlist/", layout(f'先行登録 | {CFG["site_name"]}', "データ整形ツールの有料版に関する需要調査(有料版は未提供)", wl_body, "/waitlist/"))
     write("/404.html", layout(f'ページが見つかりません | {CFG["site_name"]}', "ページが見つかりません", '<h1>ページが見つかりません</h1><p><a href="/">記事一覧へ</a></p>', "/404.html", noindex=True))
 
-    urls = ["/", "/about/", "/contact/", "/privacy/"] + [f"/{fm['slug']}/" for fm, _ in published]
+    urls = ["/", "/tool/", "/waitlist/", "/about/", "/contact/", "/privacy/"] + [f"/{fm['slug']}/" for fm, _ in published]
     write("/sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
           + "".join(f"<url><loc>{BASE}{u}</loc></url>" for u in urls) + "</urlset>")
     write("/robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")

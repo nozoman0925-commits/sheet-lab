@@ -1,7 +1,7 @@
 {
   "site_name": "シート実務ラボ",
   "tagline": "Excel・スプレッドシートの「動かして確かめた」実務ガイド",
-  "base_url": "https://example.pages.dev",
+  "base_url": "https://sheet-lab-site.pages.dev",
   "language": "ja",
   "author_name": "シート実務ラボ編集部",
   "author_bio": "Excel・スプレッドシートの実務手順を、実際に計算を動かして検証したうえで解説しています。",
@@ -14,5 +14,7 @@
     "min_sources": 1,
     "max_similarity": 0.55,
     "require_verified": true
-  }
+  },
+  "search_console_verification": "LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8",
+  "waitlist_url": "https://forms.gle/hc7ses3nygeb3JPy5"
 }

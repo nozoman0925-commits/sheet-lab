@@ -1,0 +1,45 @@
+<h1>日本語データ整形ツール(無料・ブラウザ内で処理)</h1>
+<p>表記ゆれの整形と重複の確認を、貼り付けたデータだけで行います。<b>入力した内容はこのページの中だけで処理され、外部には送信されません。</b></p>
+<div class="box">できること: 全角英数→半角 / 半角カナ→全角カナ / 前後・連続スペースの整理 / 「株式会社」「(株)」の統一 / 重複行の検出。1行に1データで貼り付けてください。</div>
+<p><textarea id="in" rows="8" style="width:100%" placeholder="例:&#10;(株)山田商事&#10;株式会社 山田商事&#10;ﾔﾏﾀﾞ  ｼｮｳｼﾞ"></textarea></p>
+<p>
+<label><input type="checkbox" id="o1" checked> 全角英数を半角に</label><br>
+<label><input type="checkbox" id="o2" checked> 半角カナを全角に</label><br>
+<label><input type="checkbox" id="o3" checked> スペースを整理</label><br>
+<label><input type="checkbox" id="o4" checked> 法人格を「株式会社」に統一((株)・㈱ など)</label><br>
+<label><input type="checkbox" id="o5"> 重複行を除く</label></p>
+<p><button id="go">整形する</button> <button id="cp">結果をコピー</button></p>
+<p class="meta" id="st"></p>
+<p><textarea id="out" rows="8" style="width:100%" readonly></textarea></p>
+<p class="meta">注意: 住所の分割や名寄せなど、より高度な処理は今後の拡張を検討しています。ご要望は<a href="/waitlist/">先行登録ページ</a>から。結果は必ず目で確認してからご利用ください。</p>
+<script>
+(function(){
+var $=function(i){return document.getElementById(i)};
+function kana(s){
+  var m=s.normalize("NFKC"); // 半角カナ→全角、全角英数→半角を同時に行う
+  return m;
+}
+function run(){
+  var lines=$("in").value.split(/\r?\n/), n=0;
+  var out=lines.map(function(l){
+    var o=l;
+    if($("o1").checked||$("o2").checked){
+      // NFKCは両方を同時に変換する。片方のみの場合は個別処理
+      if($("o1").checked&&$("o2").checked){o=o.normalize("NFKC");}
+      else if($("o1").checked){o=o.replace(/[Ａ-Ｚａ-ｚ０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0)});}
+      else{o=o.replace(/[｡-ﾟ]+/g,function(c){return c.normalize("NFKC")});}
+    }
+    if($("o3").checked){o=o.replace(/[　\s]+/g," ").trim();}
+    if($("o4").checked){o=o.replace(/\(株\)|（株）|㈱/g,"株式会社").replace(/株式会社\s+/g,"株式会社").replace(/\s+株式会社/g,"株式会社");}
+    if(o!==l)n++;
+    return o;
+  });
+  var d=0;
+  if($("o5").checked){var seen={},r=[];out.forEach(function(l){if(l===""||!seen[l]){seen[l]=1;r.push(l)}else d++});out=r;}
+  $("out").value=out.join("\n");
+  $("st").textContent=lines.length+"行中 "+n+"行を変更"+($("o5").checked?"、重複 "+d+"行を除去":"")+"。";
+}
+$("go").onclick=run;
+$("cp").onclick=function(){$("out").select();try{document.execCommand("copy");$("st").textContent="コピーしました。";}catch(e){}};
+})();
+</script>
