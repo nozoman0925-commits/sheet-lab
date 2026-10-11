@@ -1,0 +1,101 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>ExcelのCOPILOT関数でできること・できないこと【公式ドキュメントで確認】 | シート実務ラボ</title><meta name="description" content="ExcelのCOPILOT関数について、書式、必要な条件、回数の上限、公式が示す注意点を整理。数値計算や検索には向かない理由と、使いどころを公式の記載に沿って解説します。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/excel-copilot-function/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="ExcelのCOPILOT関数でできること・できないこと【公式ドキュメントで確認】 | シート実務ラボ"><meta property="og:description" content="ExcelのCOPILOT関数について、書式、必要な条件、回数の上限、公式が示す注意点を整理。数値計算や検索には向かない理由と、使いどころを公式の記載に沿って解説します。"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "ExcelのCOPILOT関数でできること・できないこと【公式ドキュメントで確認】", "datePublished": "2026-10-11", "dateModified": "2026-10-11", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "ExcelのCOPILOT関数について、書式、必要な条件、回数の上限、公式が示す注意点を整理。数値計算や検索には向かない理由と、使いどころを公式の記載に沿って解説します。", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/excel-copilot-function/"}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tool/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><article><p class="meta">2026-10-11 ・ Excel新機能</p><h1>ExcelのCOPILOT関数でできること・できないこと【公式ドキュメントで確認】</h1><p>Excelに、AIに質問して結果をセルに返す「COPILOT関数」が加わりました。便利そうに見える一方、「どんなときに使い、何に使ってはいけないのか」は、あまり整理されていません。この記事では、Microsoftの公式の説明ページに書かれている内容を中心に、できること・できないことを整理します。</p>
+<p>なお、この記事のCOPILOT関数の内容は、公式ページの記載にもとづくもので、<strong>私たちが実際に動かして確かめたものではありません</strong>(有料の契約が必要なため)。確認できた範囲と、確認できていない範囲を、分けて書きます。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>COPILOT関数は、<strong>文章の要約、分類、サンプルの文章づくり</strong>に向いています。</li>
+<li>公式は、<strong>数値の計算と、検索(探して取り出す作業)には使わない</strong>よう、はっきり案内しています。</li>
+<li>結果は、同じ入力でも変わることがあり、<strong>間違った答えを返すこともある</strong>と、公式が明記しています。</li>
+<li>財務報告、法務、コンプライアンスなど、<strong>間違いの影響が大きい用途は避ける</strong>よう、案内されています。</li>
+</ul>
+<h2 id="_2">書式</h2>
+<p>公式の説明では、書式は次のとおりです。</p>
+<pre><code>=COPILOT(プロンプト1, [コンテキスト1], [プロンプト2], [コンテキスト2], ...)
+</code></pre>
+<ul>
+<li>「プロンプト」は、AIへの指示の文章です。</li>
+<li>「コンテキスト」は、AIに見せたいセルまたは範囲です。省略もできます。</li>
+<li>複数の指示とデータの組み合わせを、1つの指示にまとめて渡します。</li>
+<li>結果は、複数行に広がる配列として返ることがあります。</li>
+</ul>
+<p>公式が挙げている例は、次のようなものです。</p>
+<pre><code>=COPILOT(&quot;このフィードバックを要約して&quot;, A2:A20)
+=COPILOT(&quot;センチメントを分類して&quot;, B2:B100)
+</code></pre>
+<h2 id="_3">使うための条件</h2>
+<p>公式の説明によると、次の条件があります。</p>
+<ul>
+<li>Copilotの契約が必要です。</li>
+<li>インターネット接続が必要です。</li>
+<li>処理は、Azure上のモデルで行われます。公式の説明時点では、特定のモデル名が示されていました(モデルは、将来変わる可能性があります)。</li>
+<li>Microsoft 365版のExcel、Mac、Web、iPhoneで使えます。</li>
+</ul>
+<p>また、2026年5月の更新を報じた窓の杜の記事では、<strong>Web検索に対応した新しいCOPILOT関数</strong>が、Microsoft 365 InsiderとFrontierに参加しているテスター向けに、順次提供されると伝えています。従来の関数は、AIモデルの知識の範囲でしか答えられなかったのに対し、新版では、天気や最新の企業情報など、オンラインの情報を参照できるようになる、という説明です。一般への提供の時期やライセンスの条件は、この記事には書かれていません。</p>
+<h2 id="_4">回数などの制限</h2>
+<p>公式の説明では、次の制限があります。</p>
+<ul>
+<li><strong>10分あたり最大100回</strong>のCOPILOT計算ができます。</li>
+<li><strong>「秘密」または「極秘」のラベルが付いたブックでは、計算できません</strong>。</li>
+<li>COPILOT関数が見られるのは、指示の文章と、指定したコンテキストだけです。同じブックの他のデータや、他のファイルは見えません。</li>
+</ul>
+<h2 id="_5">公式が示す注意点</h2>
+<p>公式のページには、次の注意が書かれています。</p>
+<ul>
+<li>COPILOTはAIを使っており、<strong>間違った答えを返すことがある</strong>。</li>
+<li><strong>数値の計算には使わず</strong>、<code>SUM</code>や<code>AVERAGE</code>などの通常の関数を使う。</li>
+<li><strong>検索には使わず</strong>、<code>XLOOKUP</code>などを使う。</li>
+<li>財務報告や法務文書、コンプライアンスの用途のような、重大な場面は避ける。</li>
+<li>同じ引数でも、<strong>結果が時間とともに変わることがある</strong>。結果を固定したいときは、値として貼り付ける。</li>
+<li>公式ページは、指示とデータが、AIモデルの学習には使われないとも説明しています。</li>
+</ul>
+<h2 id="_6">通常の関数と、何が違うか</h2>
+<p>通常の関数(<code>SUM</code>や<code>TRIM</code>など)は、同じ入力なら、いつでも同じ結果を返します。たとえば<code>=SUM(10,20,30)</code>は、LibreOfficeで再計算すると、何度でも<code>60</code>になりました。</p>
+<p>一方でCOPILOT関数は、公式が「結果が変わることがある」と書いているとおり、同じ入力で同じ結果になる保証がありません。この違いが、数値の計算に向かない理由です。</p>
+<h2 id="_7">どんな場面で使う価値があるか</h2>
+<p>公式の説明が、推奨している用途は次のとおりです。</p>
+<ul>
+<li>文章の要約</li>
+<li>サンプルデータや文章の生成</li>
+<li>内容の分類やタグ付け(例:感想の肯定・否定の分類)</li>
+<li>Webの情報を調べる用途(新しい版で対応予定。出典の表示は「近日対応」と書かれています)</li>
+</ul>
+<p>たとえば、顧客のアンケートの自由記述を、「要望」「不満」「称賛」に分けたい場面は、通常の関数では難しく、COPILOT関数が力を発揮しやすい場面です。ただし、分類の結果は、AIの判断にもとづくので、重要な判断に使う場合は、人が確認することが前提です。</p>
+<h2 id="_8">使う前のチェックリスト</h2>
+<ol>
+<li>数値の計算や、データの検索になっていないか(なっていれば、通常の関数を使う)。</li>
+<li>会社の機密や、個人情報を含むデータを、コンテキストに渡していないか。</li>
+<li>結果を固定する必要があるか(あるなら、値として貼り付ける)。</li>
+<li>結果の誤りが、大きな損害につながらない用途か。</li>
+</ol>
+<h2 id="_9">まとめ</h2>
+<ul>
+<li>COPILOT関数は、文章の要約・分類・生成に向いた、新しい種類の関数です。</li>
+<li>数値の計算と検索は、公式が、通常の関数を使うよう案内しています。</li>
+<li>条件(契約、接続)と制限(回数、ラベル付きのブック)があります。</li>
+<li>結果は変わることがあり、誤ることもあるので、重要な用途では人の確認が必要です。</li>
+</ul>
+<p>この記事は、公式ドキュメントと報道の記述にもとづく整理です。ご自身の環境で使えるかどうか、また最新の仕様は、Microsoftの公式ページで確認してください。</p><div class="box"><b>確認方法:</b> この記事の内容は、Microsoft公式のCOPILOT関数の説明ページと、窓の杜の記事(2026年5月29日掲載)を取得して確認した内容に基づきます。COPILOT関数は、有料の契約とインターネット接続が必要なため、この環境では実際に動かして確認していません。記事内で実際に計算して確認したのは、COPILOT以外の関数(SUM)の例のみです。</div><h2>参考にした情報</h2><ul><li><a href="https://support.microsoft.com/en-us/excel/copilot-function" rel="noopener nofollow" target="_blank">https://support.microsoft.com/en-us/excel/copilot-function</a></li><li><a href="https://forest.watch.impress.co.jp/docs/news/2112612.html" rel="noopener nofollow" target="_blank">https://forest.watch.impress.co.jp/docs/news/2112612.html</a></li></ul></article></main>
+<footer><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>

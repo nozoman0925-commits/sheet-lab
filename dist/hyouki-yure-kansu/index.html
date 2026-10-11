@@ -1,0 +1,153 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】 | シート実務ラボ</title><meta name="description" content="ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/hyouki-yure-kansu/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】 | シート実務ラボ"><meta property="og:description" content="ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】", "datePublished": "2026-10-11", "dateModified": "2026-10-11", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/hyouki-yure-kansu/"}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tool/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><article><p class="meta">2026-10-11 ・ データ整形</p><h1>表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】</h1><p>顧客名簿や取引先リストで、「(株)山田商事」と「株式会社山田商事」が別のデータとして扱われてしまい、集計や<code>VLOOKUP</code>が合わない。こうした表記ゆれは、実務でとても多い困りごとです。この記事では、関数だけでそろえられる範囲と、そうでない範囲を、実際に計算して確かめた結果で整理します。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>全角英数を半角にするには<code>ASC</code>、半角カナを全角にするには<code>JIS</code>が使えます。ただし、<strong>どちらも、ほしくない文字まで変えてしまいます</strong>。</li>
+<li>スペースの整理は、<code>TRIM</code>と<code>SUBSTITUTE</code>の組み合わせで確実にできます。</li>
+<li>「(株)」「㈱」を「株式会社」にそろえるのは、<code>SUBSTITUTE</code>の入れ子で行えます。<strong>全角カッコと半角カッコは別の文字</strong>なので、両方を書く必要があります。</li>
+<li>「全角英数は半角、カナは全角」という、よく望まれるルールを1つの関数で実現することは、確認した範囲ではできませんでした。</li>
+</ul>
+<h2 id="_2">確認したデータ</h2>
+<p>次の8つのデータを、A列に入れて計算しました。</p>
+<table>
+<thead>
+<tr>
+<th>行</th>
+<th>元のデータ(A列)</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>(株)山田商事</td>
+<td>半角カッコの(株)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>（株）山田商事</td>
+<td>全角カッコの（株）</td>
+</tr>
+<tr>
+<td>3</td>
+<td>㈱山田商事</td>
+<td>1文字の㈱</td>
+</tr>
+<tr>
+<td>4</td>
+<td>株式会社 山田商事</td>
+<td>間に半角スペース</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Ａ１２３-ｂｃ</td>
+<td>全角の英数字</td>
+</tr>
+<tr>
+<td>6</td>
+<td>ﾔﾏﾀﾞ ﾀﾛｳ</td>
+<td>半角カナ</td>
+</tr>
+<tr>
+<td>7</td>
+<td>山田　太郎</td>
+<td>間に全角スペース</td>
+</tr>
+<tr>
+<td>8</td>
+<td>␣山田商事␣</td>
+<td>前後に半角スペース(␣で表示)</td>
+</tr>
+</tbody>
+</table>
+<h2 id="ascjis">ASCとJISの動き(確認した結果)</h2>
+<p><code>ASC</code>は全角を半角に、<code>JIS</code>は半角を全角にする関数です。Microsoftの公式ページにも、<code>ASC</code>が全角カナを半角カナに変える例が載っています(この関数は、2バイト文字を使う言語の環境向けのものとされています)。計算した結果は次のとおりでした。</p>
+<table>
+<thead>
+<tr>
+<th>元のデータ</th>
+<th><code>=ASC(A)</code>の結果</th>
+<th><code>=JIS(A)</code>の結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Ａ１２３-ｂｃ</td>
+<td>A123-bc(全角英数が半角に)</td>
+<td>Ａ１２３－ｂｃ(ハイフンも全角に)</td>
+</tr>
+<tr>
+<td>ﾔﾏﾀﾞ ﾀﾛｳ</td>
+<td>ﾔﾏﾀﾞ ﾀﾛｳ(変化なし)</td>
+<td>ヤマダ タロウ(全角カナに)</td>
+</tr>
+<tr>
+<td>ヤマダ タロウ</td>
+<td>ﾔﾏﾀﾞ ﾀﾛｳ(<strong>半角カナになる</strong>)</td>
+<td>ヤマダ タロウ(変化なし)</td>
+</tr>
+<tr>
+<td>ＡＢＣ123 ヤマダ</td>
+<td>ABC123 ﾔﾏﾀﾞ(<strong>カナまで半角に</strong>)</td>
+<td>ＡＢＣ１２３ ヤマダ(<strong>数字まで全角に</strong>)</td>
+</tr>
+</tbody>
+</table>
+<p>つまり、<code>ASC</code>で全角英数を半角にそろえると、全角カナまで半角カナになってしまいます。逆に<code>JIS</code>でカナを全角にすると、半角の英数字まで全角になります。「英数は半角、カナは全角」にしたい名簿では、どちらを使っても、ほしくない変換が起きます。</p>
+<p>なお、<code>㈱</code>のような1文字の記号は、<code>ASC</code>でも<code>JIS</code>でも変化しませんでした。</p>
+<h2 id="_3">スペースの整理</h2>
+<p><code>TRIM</code>は、前後のスペースと、連続したスペースを1つにします。ただし、<strong>全角スペースは、そのままでは消えません</strong>。次のように、先に全角スペースを半角に置き換えます。</p>
+<pre><code>=TRIM(SUBSTITUTE(A7,&quot;　&quot;,&quot; &quot;))
+</code></pre>
+<p>行7の「山田　太郎」(全角スペース)は、この式で「山田 太郎」(半角スペース1つ)になりました。行8の前後のスペースも、<code>TRIM</code>で取り除かれ「山田商事」になりました。</p>
+<p>姓名の間のスペースまで消したい場合は、さらに<code>SUBSTITUTE(…," ","")</code>を重ねます。「山田 太郎  様」は、<code>SUBSTITUTE</code>で「山田太郎様」になりました。</p>
+<h2 id="_4">「(株)」を「株式会社」にそろえる</h2>
+<p>次の式で、3種類の「株」の書き方が、すべて「株式会社」になりました。</p>
+<pre><code>=SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(A1,&quot;(株)&quot;,&quot;株式会社&quot;),&quot;（株）&quot;,&quot;株式会社&quot;),&quot;㈱&quot;,&quot;株式会社&quot;)
+</code></pre>
+<p>行1・行2・行3は、すべて「株式会社山田商事」になり、<code>EXACT</code>で比べて、行1と一致する(TRUE)ことを確認しました。ここで大事なのは、<strong>半角カッコ「(」と全角カッコ「（」を、別々に書くこと</strong>です。片方だけでは、もう片方の表記が残ります。</p>
+<p>行4の「株式会社 山田商事」は、間にスペースがあるため、このままでは、行1と一致しません。スペースの整理(上の節)を重ねて、初めてそろいます。</p>
+<h2 id="_5">数えて確認する</h2>
+<p>そろえたあとで、同じ会社が何件あるかを数えると、整形が効いたかを確認できます。次の式は、「株式会社山田商事」になったデータの数を返します。</p>
+<pre><code>=COUNTIF(E1:E4,&quot;株式会社山田商事&quot;)
+</code></pre>
+<p>行1〜行3の整形後の結果をまとめると、結果は<code>3</code>になりました。<code>SUMPRODUCT(--(E1:E4="株式会社山田商事"))</code>でも、同じ<code>3</code>になることを確認しました。</p>
+<h2 id="_6">関数だけでは難しいこと</h2>
+<ul>
+<li><strong>「英数は半角、カナは全角」を同時に実現すること。</strong> 上のとおり、<code>ASC</code>と<code>JIS</code>のどちらも、一方を直すと他方が崩れます。</li>
+<li><strong>社名の言い換え。</strong> 「山田商事」と「ヤマダ商事」を同じものと判定することは、関数では扱えません。</li>
+<li><strong>会社名の前後どちらに「株式会社」があるか(前株・後株)の統一。</strong></li>
+<li><strong>住所の表記ゆれ</strong>(丁目・番地の書き方など)。</li>
+</ul>
+<p>こうした場面では、置換の一覧表を作ってルールを増やす方法や、専用のツールを使う方法があります。当サイトでは、ブラウザの中だけで処理する、無料の整形ツールも用意しています(入力したデータは外部に送信されません)。結果は、必ず目で確認してからお使いください。</p>
+<h2 id="_7">まとめ</h2>
+<ul>
+<li>スペースと「(株)」の統一は、<code>TRIM</code>・<code>SUBSTITUTE</code>の組み合わせで、確実にできます。</li>
+<li><code>ASC</code>と<code>JIS</code>は、ほしくない文字まで変えるので、対象のデータを確認してから使います。</li>
+<li>全角と半角のカッコは別の文字なので、両方を置換の対象にします。</li>
+<li>整形したあとは、<code>COUNTIF</code>で件数を数えて、効果を確かめます。</li>
+</ul><div class="box"><b>確認方法:</b> 記事内の数式とその結果は、すべてLibreOffice Calcで再計算して確認しました(ASC・JIS・TRIM・SUBSTITUTE・COUNTIF)。Excelでの動作は、この環境では未確認です。出典(Microsoft公式のASC関数の説明)は、関数の存在と目的の確認に使っています。</div><h2>参考にした情報</h2><ul><li><a href="https://support.microsoft.com/en-US/Excel/functions/asc-function" rel="noopener nofollow" target="_blank">https://support.microsoft.com/en-US/Excel/functions/asc-function</a></li></ul></article></main>
+<footer><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
