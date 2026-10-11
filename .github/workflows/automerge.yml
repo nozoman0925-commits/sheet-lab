@@ -1,0 +1,22 @@
+name: automerge-claude-branches
+on:
+  push:
+    branches: ['claude/**']
+permissions:
+  contents: write
+jobs:
+  merge:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with: { fetch-depth: 0 }
+      - name: fast-forward main (only if main is an ancestor)
+        run: |
+          git fetch origin main
+          if git merge-base --is-ancestor origin/main HEAD; then
+            git push origin HEAD:main
+          else
+            git config user.name "automerge"; git config user.email "automerge@users.noreply.github.com"
+            git checkout -B tmp origin/main
+            git merge --no-edit "$GITHUB_SHA" && git push origin HEAD:main
+          fi
