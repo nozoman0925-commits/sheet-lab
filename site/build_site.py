@@ -6,6 +6,7 @@ import json, html, re, shutil, sys
 from datetime import date, datetime
 from pathlib import Path
 import markdown
+from status_page import build_status
 from quality_check import check_all, split_front_matter
 
 ROOT = Path(__file__).parent
@@ -155,17 +156,7 @@ def main():
         wl_body = "<h1>先行登録</h1><p>準備中です。ブラウザ版の有料ツールは現在提供していません。</p>"
     write("/waitlist/", layout(f'先行登録 | {CFG["site_name"]}', "データ整形ツールの有料版に関する需要調査(ブラウザ版の有料ツールは未提供)", wl_body, "/waitlist/"))
     # 進捗ページ(非公開扱い: noindex・サイトマップ非掲載・リンクなし)。スマホで状況を見るため
-    PD = ROOT.parent / "pdca"
-    def _read(n):
-        f = PD / n
-        return f.read_text(encoding="utf-8") if f.exists() else ""
-    log_txt = _read("LOG.md")
-    entries = re.split(r"(?m)^## ", log_txt)[1:]
-    recent = "".join("<h3>" + E(e.split("\n", 1)[0]) + "</h3>" + md_to_html(e.split("\n", 1)[1] if "\n" in e else "") for e in reversed(entries[-8:]))
-    status_body = ("<h1>運営の進捗</h1><p class=\"meta\">AIの運用記録を自動で表示しています(最新の記録が上)。</p>"
-                   "<h2>最近の記録</h2>" + recent +
-                   "<h2>現在の状態</h2>" + md_to_html(_read("STATE.md")) +
-                   "<h2>あなたへのお願い</h2>" + md_to_html(_read("HUMAN_TASKS.md")))
+    status_body = build_status(ROOT, md_to_html, len(published), len(tool_list))
     write("/status/", layout(f'進捗 | {CFG["site_name"]}', "運営の進捗(非公開扱い)", status_body, "/status/", noindex=True))
     write("/404.html", layout(f'ページが見つかりません | {CFG["site_name"]}', "ページが見つかりません", '<h1>ページが見つかりません</h1><p><a href="/">記事一覧へ</a></p>', "/404.html", noindex=True))
 

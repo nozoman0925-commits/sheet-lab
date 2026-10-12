@@ -1,0 +1,13 @@
+const {buildRequest} = require("../status_form.js");
+const assert = require("assert");
+const r = buildRequest("記事", "VLOOKUPとINDEX&MATCH", "1行目\n2行目 100%", true, new Date("2026-10-12T05:07:00Z"));
+assert.strictEqual(r.path, "pdca/requests/20261012-1407-article.md");
+const u = new URL(r.url);
+assert.strictEqual(u.origin + u.pathname, "https://github.com/nozoman0925-commits/sheet-lab/new/main");
+assert.strictEqual(u.searchParams.get("filename"), r.path);
+const v = u.searchParams.get("value");
+assert.strictEqual(v, r.content);
+assert(v.includes("- 種類: 記事") && v.includes("- 急ぎ: はい") && v.includes("1行目\n2行目 100%") && v.includes("## 対応結果(AIが記入)"));
+assert(v.includes("- 受付: 2026-10-12 14:07 JST"));
+assert(!r.url.includes("\n") && !r.url.includes("日"));
+console.log("status_form_test OK");
