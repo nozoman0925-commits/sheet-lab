@@ -28,14 +28,31 @@ h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;
 th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
 pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
 code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
-.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
 .list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
 footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
 """
 
 
-def layout(title, desc, body, path, jsonld="", noindex=False):
+def breadcrumb_ld(crumbs):
+    return ld({"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [
+        {"@type": "ListItem", "position": i + 1, "name": n, "item": f"{BASE}{u}"} for i, (n, u) in enumerate(crumbs)]})
+
+
+def ld(obj):
+    return '<script type="application/ld+json">' + json.dumps(obj, ensure_ascii=False).replace("</", "<\\/") + "</script>"
+
+
+def crumbs_html(crumbs):
+    parts = [f'<a href="{u}">{E(n)}</a>' for n, u in crumbs[:-1]] + [E(crumbs[-1][0])]
+    return '<p class="meta crumbs">' + " &gt; ".join(parts) + "</p>"
+
+
+def layout(title, desc, body, path, jsonld="", noindex=False, og_type="website", crumbs=None):
     url = f"{BASE}{path}"
+    if crumbs:
+        jsonld += breadcrumb_ld(crumbs)
+        body = crumbs_html(crumbs) + body
     ads = ""
     if CFG.get("adsense_publisher_id"):
         ads = f'<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client={E(CFG["adsense_publisher_id"])}" crossorigin="anonymous"></script>'
@@ -47,12 +64,12 @@ def layout(title, desc, body, path, jsonld="", noindex=False):
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>{E(title)}</title><meta name="description" content="{E(desc)}">
 <link rel="canonical" href="{E(url)}"><link rel="alternate" type="application/rss+xml" href="{BASE}/feed.xml">{robots}
-<meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(desc)}"><meta property="og:type" content="article">
+<meta property="og:title" content="{E(title)}"><meta property="og:description" content="{E(desc)}"><meta property="og:url" content="{E(url)}"><meta property="og:type" content="{og_type}">
 <style>{CSS}</style>{jsonld}{ads}</head><body>
 <header><a class="brand" href="/">{E(CFG['site_name'])}</a><p>{E(CFG['tagline'])}</p>
-<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
 <main>{body}</main>
-<footer><p>{E(CFG['ai_disclosure'])}</p><p>© {date.today().year} {E(CFG['site_name'])}</p></footer></body></html>"""
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>{E(CFG['ai_disclosure'])}</p><p>© {date.today().year} {E(CFG['site_name'])}</p></footer></body></html>"""
 
 
 def write(path, content):
@@ -65,6 +82,51 @@ def write(path, content):
 
 def md_to_html(body):
     return markdown.markdown(body, extensions=["tables", "fenced_code", "toc", "sane_lists"])
+
+
+def webapp_ld(name, desc, path):
+    return {"@context": "https://schema.org", "@type": "WebApplication", "name": name, "description": desc,
+            "url": f"{BASE}{path}", "applicationCategory": "BusinessApplication", "operatingSystem": "Web browser",
+            "inLanguage": "ja", "isAccessibleForFree": True,
+            "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}
+
+
+def load_products():
+    """PRODUCTS.md の selling 行 + products_meta.json(できること等)。商品が増えれば自動で並ぶ。"""
+    meta = json.loads((ROOT / "products_meta.json").read_text(encoding="utf-8")) if (ROOT / "products_meta.json").exists() else {}
+    out = []
+    pf = ROOT.parent / "pdca" / "PRODUCTS.md"
+    for line in pf.read_text(encoding="utf-8").splitlines():
+        cells = [c.strip() for c in line.strip().strip("|").split("|")]
+        if len(cells) < 4 or not cells[0].isdigit() or not cells[1].startswith("selling"):
+            continue
+        m = re.search(r"https://\S+?/items/(\d+)", cells[1])
+        if not m:
+            continue
+        info = meta.get(m.group(1), {})
+        name = info.get("name") or re.sub(r"【.*?】|\(.*?\)", "", cells[2]).strip()
+        pm = re.search(r"(\d[\d,]*)円", cells[1])
+        price = info.get("price") or (pm.group(1).replace(",", "") if pm else "")
+        out.append({"id": m.group(1), "url": m.group(0), "name": name, "price": price, "can": info.get("can", ""),
+                    "cannot": info.get("cannot", ""), "tags": info.get("tags", []), "summary": info.get("summary", "")})
+    return out
+
+
+def related_html(self_url, tags, pages, products):
+    """pages: [(url, title, tags)]。タグの共通数が多い順に最大3件 + 商品。"""
+    tags = set(tags or [])
+    scored = sorted(((len(tags & set(t)), -i, u, ti) for i, (u, ti, t) in enumerate(pages) if u != self_url), reverse=True)
+    picks = [(u, ti) for sc, _, u, ti in scored if sc > 0][:3]
+    prods = [p for p in products if tags & set(p["tags"])]
+    if not picks and not prods:
+        return ""
+    h = '<section class="related"><h2>関連</h2>'
+    if picks:
+        h += "<ul>" + "".join(f'<li><a href="{u}">{E(ti)}</a></li>' for u, ti in picks) + "</ul>"
+    if prods:
+        h += "<p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul>" + "".join(
+            f'<li><a href="/products/">{E(p["name"])}</a>' + (f'({E(p["price"])}円)' if p["price"] else "") + "</li>" for p in prods) + "</ul>"
+    return h + "</section>"
 
 
 def main():
@@ -82,20 +144,31 @@ def main():
         published.append((fm, body))
     published.sort(key=lambda x: x[0]["date"], reverse=True)
 
+    products = load_products()
+    tool_metas = []  # (url, title, desc, tags)
+    tool_metas.append(("/tool/", "日本語データ整形ツール", "全角半角・スペース・法人格・重複・住所分割をまとめて整える", ["名簿", "表記ゆれ", "住所"]))
+    for d in sorted((ROOT / "tools").glob("*/")) if (ROOT / "tools").exists() else []:
+        if (d / "meta.json").exists() and (d / "body.html").exists():
+            m = json.loads((d / "meta.json").read_text(encoding="utf-8"))
+            tool_metas.append((f"/tools/{d.name}/", m["title"], m["description"], m.get("tags", [])))
+    all_pages = [(f"/{fm['slug']}/", fm["title"], fm.get("tags") or []) for fm, _ in published] + [(u, t, tg) for u, t, _, tg in tool_metas]
+
     for fm, body in published:
         slug = fm["slug"]
         notes = ""
         if fm.get("verification_note"):
             notes = f'<div class="box"><b>確認方法:</b> {E(str(fm["verification_note"]))}</div>'
         src = "".join(f'<li><a href="{E(u)}" rel="noopener nofollow" target="_blank">{E(u)}</a></li>' for u in fm["sources"])
-        jsonld = '<script type="application/ld+json">' + json.dumps({
+        jsonld = ld({
             "@context": "https://schema.org", "@type": "Article", "headline": fm["title"],
             "datePublished": fm["date"], "dateModified": str(fm.get("updated", fm["date"])),
             "author": {"@type": "Person", "name": CFG["author_name"]}, "description": fm["description"],
-            "mainEntityOfPage": f"{BASE}/{slug}/"}, ensure_ascii=False) + "</script>"
+            "url": f"{BASE}/{slug}/", "mainEntityOfPage": f"{BASE}/{slug}/"})
         page = (f'<article><p class="meta">{E(fm["date"])} ・ {E(fm["category"])}</p><h1>{E(fm["title"])}</h1>'
-                f'{md_to_html(body)}{notes}<h2>参考にした情報</h2><ul>{src}</ul></article>')
-        write(f"/{slug}/", layout(f'{fm["title"]} | {CFG["site_name"]}', fm["description"], page, f"/{slug}/", jsonld))
+                f'{md_to_html(body)}{notes}<h2>参考にした情報</h2><ul>{src}</ul></article>'
+                + related_html(f"/{slug}/", fm.get("tags"), all_pages, products))
+        write(f"/{slug}/", layout(f'{fm["title"]} | {CFG["site_name"]}', fm["description"], page, f"/{slug}/", jsonld,
+                                  og_type="article", crumbs=[("ホーム", "/"), (fm["title"], f"/{slug}/")]))
 
     items = "".join(f'<a class="item" href="/{fm["slug"]}/"><div class="t">{E(fm["title"])}</div>'
                     f'<div class="d">{E(fm["description"])}</div><div class="meta">{E(fm["date"])} ・ {E(fm["category"])}</div></a>'
@@ -138,7 +211,9 @@ def main():
 <h2>今後の変更</h2><p>広告(Google AdSenseなど)を導入する場合は、Cookie等の利用と広告配信事業者による情報の取り扱い、オプトアウトの方法をこのページに追記したうえで開始します。内容を変更したときは、このページで告知します。</p>
 <h2>免責</h2><p>記事・ツールの内容は正確さに努めていますが、環境(ソフトのバージョン等)により結果が異なる場合があります。ご利用は自己責任でお願いします。</p>""", "/privacy/"))
     tool_body = (ROOT / "tool" / "body.html").read_text(encoding="utf-8")
-    write("/tool/", layout(f'日本語データ整形ツール(無料・ブラウザ内処理) | {CFG["site_name"]}', "全角半角・スペース・法人格の表記ゆれを整える無料ツール。入力データは外部に送信されません。", tool_body, "/tool/"))
+    write("/tool/", layout(f'日本語データ整形ツール(無料・ブラウザ内処理) | {CFG["site_name"]}', "全角半角・スペース・法人格の表記ゆれを整える無料ツール。入力データは外部に送信されません。", tool_body + related_html("/tool/", ["名簿", "表記ゆれ", "住所"], all_pages, products), "/tool/",
+                                jsonld=ld(webapp_ld("日本語データ整形ツール", "全角半角・スペース・法人格の表記ゆれを整える無料ツール。入力データは外部に送信されません。", "/tool/")),
+                                crumbs=[("ホーム", "/"), ("無料ツール", "/tools/"), ("日本語データ整形ツール", "/tool/")]))
     # 単機能ツール群: tools/<slug>/{meta.json, body.html} → /tools/<slug>/ と一覧 /tools/
     tool_list = [("/tool/", "日本語データ整形ツール", "全角半角・スペース・法人格・重複・住所分割をまとめて整える")]
     for d in sorted((ROOT / "tools").glob("*/")) if (ROOT / "tools").exists() else []:
@@ -148,11 +223,26 @@ def main():
         body = (d / "body.html").read_text(encoding="utf-8")
         body += ('<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、'
                  '要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div>')
-        write(f"/tools/{d.name}/", layout(f'{m["title"]} | {CFG["site_name"]}', m["description"], body, f"/tools/{d.name}/"))
+        body += related_html(f"/tools/{d.name}/", m.get("tags", []), all_pages, products)
+        write(f"/tools/{d.name}/", layout(f'{m["title"]} | {CFG["site_name"]}', m["description"], body, f"/tools/{d.name}/",
+                                          jsonld=ld(webapp_ld(m["title"], m["description"], f"/tools/{d.name}/")),
+                                          crumbs=[("ホーム", "/"), ("無料ツール", "/tools/"), (m["title"], f"/tools/{d.name}/")]))
         tool_list.append((f"/tools/{d.name}/", m["title"], m["description"]))
     extra_urls = [u for u, _, _ in tool_list if u != "/tool/"]
     items_html = "".join(f'<a class="item" href="{u}"><div class="t">{E(t)}</div><div class="d">{E(dsc)}</div></a>' for u, t, dsc in tool_list)
-    write("/tools/", layout(f'無料ツール一覧 | {CFG["site_name"]}', "ブラウザの中だけで動く無料ツールの一覧。入力内容は外部に送信されません。", "<h1>無料ツール一覧</h1><div class=\"list\">" + items_html + "</div>", "/tools/"))
+    write("/tools/", layout(f'無料ツール一覧 | {CFG["site_name"]}', "ブラウザの中だけで動く無料ツールの一覧。入力内容は外部に送信されません。", "<h1>無料ツール一覧</h1><div class=\"list\">" + items_html + "</div>", "/tools/",
+                                crumbs=[("ホーム", "/"), ("無料ツール", "/tools/")]))
+    # 商品一覧(PRODUCTS.md の selling から自動生成)
+    pitems = ""
+    for p in products:
+        pitems += (f'<div class="box"><h2 style="margin-top:0">{E(p["name"])}</h2>'
+                   + (f'<p><b>価格: {E(p["price"])}円</b>(BOOTH)</p>' if p["price"] else "")
+                   + (f'<p><b>できること:</b> {E(p["can"])}</p>' if p["can"] else "")
+                   + (f'<p><b>できないこと:</b> {E(p["cannot"])}</p>' if p["cannot"] else "")
+                   + f'<p><a href="{E(p["url"])}" rel="noopener" target="_blank">BOOTHで見る</a></p></div>')
+    write("/products/", layout(f'テンプレート(有料)一覧 | {CFG["site_name"]}', "運営者が販売しているExcelテンプレートの一覧。できること・できないことを明記しています。",
+          "<h1>テンプレート(有料)一覧</h1><p>運営者自身の商品です(BOOTHで販売)。購入前に、各商品の「できないこと」と確認済みの環境をご確認ください。</p>" + (pitems or "<p>準備中です。</p>"),
+          "/products/", crumbs=[("ホーム", "/"), ("テンプレート(有料)", "/products/")]))
     wl = CFG.get("waitlist_url", "").strip()
     if wl:
         wl_body = (f'<h1>先行登録(有料版の需要調査)</h1><p>現在、有料の<b>ブラウザ版ツールはまだ提供していません</b>(Excel用の有料テンプレート商品は別にあり、<a href="https://nozoman.booth.pm/items/8973300" rel="noopener" target="_blank">BOOTHで販売中</a>です)。住所分割や名寄せなどの高度なデータ整形ツールを作るかどうかを判断するための、アンケート形式の先行登録です。登録しても料金は発生せず、購入の義務もありません。</p>'
@@ -165,7 +255,7 @@ def main():
     write("/status/", layout(f'進捗 | {CFG["site_name"]}', "運営の進捗(非公開扱い)", status_body, "/status/", noindex=True))
     write("/404.html", layout(f'ページが見つかりません | {CFG["site_name"]}', "ページが見つかりません", '<h1>ページが見つかりません</h1><p><a href="/">記事一覧へ</a></p>', "/404.html", noindex=True))
 
-    urls = ["/", "/tools/", "/tool/"] + extra_urls + ["/waitlist/", "/about/", "/contact/", "/privacy/"] + [f"/{fm['slug']}/" for fm, _ in published]
+    urls = ["/", "/tools/", "/products/", "/tool/"] + extra_urls + ["/waitlist/", "/about/", "/contact/", "/privacy/"] + [f"/{fm['slug']}/" for fm, _ in published]
     write("/sitemap.xml", '<?xml version="1.0" encoding="UTF-8"?><urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">'
           + "".join(f"<url><loc>{BASE}{u}</loc></url>" for u in urls) + "</urlset>")
     write("/robots.txt", f"User-agent: *\nAllow: /\nSitemap: {BASE}/sitemap.xml\n")

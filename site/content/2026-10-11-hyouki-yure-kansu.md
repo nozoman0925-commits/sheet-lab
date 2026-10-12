@@ -4,6 +4,7 @@ description: "ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・�
 date: 2026-10-11
 category: データ整形
 slug: hyouki-yure-kansu
+tags: [名簿, 表記ゆれ]
 sources:
   - https://support.microsoft.com/en-US/Excel/functions/asc-function
 verified: true

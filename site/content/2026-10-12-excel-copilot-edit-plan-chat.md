@@ -4,6 +4,7 @@ description: "ExcelのCopilotにある編集・計画・チャットの3モー�
 date: 2026-10-12
 category: Excel新機能
 slug: excel-copilot-edit-plan-chat
+tags: [AI]
 sources:
   - https://support.microsoft.com/en-us/office/frequently-asked-questions-about-agent-mode-in-excel-frontier-1cfd906d-40b4-46be-8e2d-65b893e28a02
 verified: true

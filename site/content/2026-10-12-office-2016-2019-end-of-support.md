@@ -4,6 +4,7 @@ description: "Office 2016と2019は2025年10月14日にサポートが終了し�
 date: 2026-10-12
 category: Excel新機能
 slug: office-2016-2019-end-of-support
+tags: [Excel新機能]
 sources:
   - https://petri.com/microsoft-office-2016-2019-end-of-support/
 verified: true

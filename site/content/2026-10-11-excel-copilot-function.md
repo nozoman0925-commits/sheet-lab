@@ -4,6 +4,7 @@ description: "ExcelのCOPILOT関数について、書式、必要な条件、回
 date: 2026-10-11
 category: Excel新機能
 slug: excel-copilot-function
+tags: [AI]
 sources:
   - https://support.microsoft.com/en-us/excel/copilot-function
   - https://forest.watch.impress.co.jp/docs/news/2112612.html

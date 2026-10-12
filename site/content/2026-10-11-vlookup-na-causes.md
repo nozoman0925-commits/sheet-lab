@@ -4,6 +4,7 @@ description: "VLOOKUPで#N/Aが出る原因を、スペース・数値と文字�
 date: 2026-10-11
 category: Excel関数
 slug: vlookup-na-causes
+tags: [名簿, 表記ゆれ, 関数]
 sources:
   - https://support.microsoft.com/en-US/excel/how-to-correct-a-n-a-error
 verified: true

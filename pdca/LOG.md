@@ -179,3 +179,7 @@
 - 解釈: 24時間内に記事2本公開済みで(a)スキップ、spec_ready 2件で(e)スキップ、requests/に依頼なし、リポジトリは公開とみなしコードは置かない。日曜でないため週次レビューなし。
 - Do: pdca/deliverables/business-a/stage1-design.md を作成(未確認の性能値・機能は載せず、測定後に記載する旨を明記)。
 - Check: INBOXに新しい実績なし。人間への依頼は新規なし。サイト変更なし。
+
+## 2026-10-12 集客の仕組み化(オーナー依頼「集客もどうにかして」・1回限り)
+- Do: /products/(PRODUCTS.mdのselling行+site/products_meta.jsonから自動生成、ヘッダー・フッターにリンク、サイトマップ掲載)。記事・無料ツールにタグ(front matter/meta.jsonのtags)で「関連」欄(同タグのページ最大3件+関係する商品)を自動付与。全ページにcanonical・OGP(title/description/url/type)、記事にArticle・ツールにWebApplication・全ページ(トップ等除く)にBreadcrumbListのJSON-LDとパンくず(評価・レビューは書いていない)。topics.csvに product_link / user_goal / search_volume 列を追加し、名簿・家計簿につながる10件を優先度2〜11で追加(search_volumeは空欄)。CHARTERに「集客の方針」を追記。
+- Check: quality_check 5本OK、build成功。dist/products/ あり、各ページのJSON-LDをjson.loadsで確認、関連欄は記事4本中3本・ツール6本中5本に出力(タグが重ならないページは出さない)、sitemapに/products/。nodeテスト(tools/tables/status_form)は全件合格。実機ブラウザ表示は未確認。

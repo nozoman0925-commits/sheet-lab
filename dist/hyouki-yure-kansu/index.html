@@ -2,7 +2,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】 | シート実務ラボ</title><meta name="description" content="ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。">
 <link rel="canonical" href="https://sheet-lab-site.pages.dev/hyouki-yure-kansu/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
-<meta property="og:title" content="表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】 | シート実務ラボ"><meta property="og:description" content="ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。"><meta property="og:type" content="article">
+<meta property="og:title" content="表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】 | シート実務ラボ"><meta property="og:description" content="ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/hyouki-yure-kansu/"><meta property="og:type" content="article">
 <style>
 :root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
 @media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
@@ -16,13 +16,13 @@ h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;
 th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
 pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
 code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
-.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
 .list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
 footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
-</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】", "datePublished": "2026-10-11", "dateModified": "2026-10-11", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/hyouki-yure-kansu/"}</script></head><body>
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】", "datePublished": "2026-10-11", "dateModified": "2026-10-11", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "ASC・JIS・TRIM・SUBSTITUTEで、全角半角・スペース・「(株)」の表記ゆれをそろえる手順を、実際に計算して確認。ASCとJISの落とし穴と、関数だけでは難しい場面も整理します。", "url": "https://sheet-lab-site.pages.dev/hyouki-yure-kansu/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/hyouki-yure-kansu/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】", "item": "https://sheet-lab-site.pages.dev/hyouki-yure-kansu/"}]}</script></head><body>
 <header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
-<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
-<main><article><p class="meta">2026-10-11 ・ データ整形</p><h1>表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】</h1><p>顧客名簿や取引先リストで、「(株)山田商事」と「株式会社山田商事」が別のデータとして扱われてしまい、集計や<code>VLOOKUP</code>が合わない。こうした表記ゆれは、実務でとても多い困りごとです。この記事では、関数だけでそろえられる範囲と、そうでない範囲を、実際に計算して確かめた結果で整理します。</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】</p><article><p class="meta">2026-10-11 ・ データ整形</p><h1>表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】</h1><p>顧客名簿や取引先リストで、「(株)山田商事」と「株式会社山田商事」が別のデータとして扱われてしまい、集計や<code>VLOOKUP</code>が合わない。こうした表記ゆれは、実務でとても多い困りごとです。この記事では、関数だけでそろえられる範囲と、そうでない範囲を、実際に計算して確かめた結果で整理します。</p>
 <h2 id="_1">先に結論</h2>
 <ul>
 <li>全角英数を半角にするには<code>ASC</code>、半角カナを全角にするには<code>JIS</code>が使えます。ただし、<strong>どちらも、ほしくない文字まで変えてしまいます</strong>。</li>
@@ -151,5 +151,5 @@ footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;col
 <li><code>ASC</code>と<code>JIS</code>は、ほしくない文字まで変えるので、対象のデータを確認してから使います。</li>
 <li>全角と半角のカッコは別の文字なので、両方を置換の対象にします。</li>
 <li>整形したあとは、<code>COUNTIF</code>で件数を数えて、効果を確かめます。</li>
-</ul><div class="box"><b>確認方法:</b> 記事内の数式とその結果は、すべてLibreOffice Calcで再計算して確認しました(ASC・JIS・TRIM・SUBSTITUTE・COUNTIF)。Excelでの動作は、この環境では未確認です。出典(Microsoft公式のASC関数の説明)は、関数の存在と目的の確認に使っています。</div><h2>参考にした情報</h2><ul><li><a href="https://support.microsoft.com/en-US/Excel/functions/asc-function" rel="noopener nofollow" target="_blank">https://support.microsoft.com/en-US/Excel/functions/asc-function</a></li></ul></article></main>
-<footer><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
+</ul><div class="box"><b>確認方法:</b> 記事内の数式とその結果は、すべてLibreOffice Calcで再計算して確認しました(ASC・JIS・TRIM・SUBSTITUTE・COUNTIF)。Excelでの動作は、この環境では未確認です。出典(Microsoft公式のASC関数の説明)は、関数の存在と目的の確認に使っています。</div><h2>参考にした情報</h2><ul><li><a href="https://support.microsoft.com/en-US/Excel/functions/asc-function" rel="noopener nofollow" target="_blank">https://support.microsoft.com/en-US/Excel/functions/asc-function</a></li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/vlookup-na-causes/">VLOOKUPが#N/Aになる5つの原因と直し方【計算して確認済み】</a></li><li><a href="/tool/">日本語データ整形ツール</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">名簿クレンジングシート</a>(500円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
