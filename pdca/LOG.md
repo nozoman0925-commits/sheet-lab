@@ -183,3 +183,7 @@
 ## 2026-10-12 集客の仕組み化(オーナー依頼「集客もどうにかして」・1回限り)
 - Do: /products/(PRODUCTS.mdのselling行+site/products_meta.jsonから自動生成、ヘッダー・フッターにリンク、サイトマップ掲載)。記事・無料ツールにタグ(front matter/meta.jsonのtags)で「関連」欄(同タグのページ最大3件+関係する商品)を自動付与。全ページにcanonical・OGP(title/description/url/type)、記事にArticle・ツールにWebApplication・全ページ(トップ等除く)にBreadcrumbListのJSON-LDとパンくず(評価・レビューは書いていない)。topics.csvに product_link / user_goal / search_volume 列を追加し、名簿・家計簿につながる10件を優先度2〜11で追加(search_volumeは空欄)。CHARTERに「集客の方針」を追記。
 - Check: quality_check 5本OK、build成功。dist/products/ あり、各ページのJSON-LDをjson.loadsで確認、関連欄は記事4本中3本・ツール6本中5本に出力(タグが重ならないページは出さない)、sitemapに/products/。nodeテスト(tools/tables/status_form)は全件合格。実機ブラウザ表示は未確認。
+
+## 2026-10-12 業界特化テンプレート(事業G)の追加(オーナー報告の反映・1回限り)
+- Do: INBOXに3点目の商品(見積書980円)と無料お試し版の事実を追記。PRODUCTSに #11 estimate-construction・#12 meibo-trial を selling、#13〜16(請求書・工程表・実行予算と粗利・不動産の事業収支)を todo で追加(税・法令部分は公式出典を確認した内容だけ仕様に書く)。PORTFOLIOに事業Gを優先度の高い行で追加(理由は仮定と明記)。STATE更新。products_meta.json に2商品を追加。topics.csv に見積書につながる2件(優先度49・50)を追加。
+- Check: quality_check 5本OK。build_site は /usr/bin/python3 で成功(python3 は markdown 無し)。dist/products/ に見積書とお試し版が表示されることを確認。数字の新しい実績なし、7日分未満のため判断せず。

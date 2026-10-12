@@ -22,3 +22,8 @@
 - 問い合わせ用のメールアドレスは nozoman.0925@gmail.com に決めた(オーナーが公開を了承済み)。
 - 2つ目の商品「月間家計簿」(slug: budget-monthly)をBOOTHで400円で公開した: https://nozoman.booth.pm/items/8977893 。Excel(Windowsデスクトップ版16)で15ケース合格、エラー0件。PDFはA4縦1ページ、印刷時の明細1行は約4.4mm(仕様の6mmより狭いことを商品説明に明記)。
 - Claude in Chrome が接続済みになった。
+
+## 2026-10-12 オーナー報告(3つ目の商品・無料お試し版)
+- 3つ目の商品「工事・リフォーム用 見積書テンプレート」(slug: estimate-construction)をBOOTHで980円で公開: https://nozoman.booth.pm/items/8978610 。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計、明細20行、A4縦1枚印刷。Excel(Windowsデスクトップ版16)で10パターン31項目合格、エラー0件、PDF1ページ。できないこと: 軽減税率の混在、請求書への変換、インボイス要件の保証。
+- 無料のお試し版「【無料・お試し版】名簿クレンジングシート(50行まで)」(slug: meibo-trial)を0円で公開: https://nozoman.booth.pm/items/8978060 。製品版のページにもお試し版への案内を追加済み。
+- note, Pinterest, BASE, Stripe のアカウントはまだ無い(オーナーが作成予定)。
