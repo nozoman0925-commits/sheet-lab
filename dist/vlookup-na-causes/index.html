@@ -38,7 +38,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;col
 <p>この式は、<code>G1</code>が<code>A002</code>だと<code>#N/A</code>になりました。次のように<code>TRIM</code>で余分なスペースを取ると、正しく<code>ノート</code>が返りました。</p>
 <pre><code>=VLOOKUP(TRIM(G1), A1:B3, 2, FALSE)
 </code></pre>
-<p>表の側にスペースが混ざっている場合は、表のデータを<code>TRIM</code>で整えた列を別に作るのが確実です。コピーしたデータや、システムから出力したデータで特によく起こります。</p>
+<p>表の側にスペースが混ざっている場合は、表のデータを<code>TRIM</code>で整えた列を別に作るのが確実です。コピーしたデータや、システムから出力したデータで特によく起こります。全角スペースや「(株)」と「株式会社」のような表記ゆれは<code>TRIM</code>だけでは直らないため、その場合は<a href="/hyouki-yure-kansu/">表記ゆれを関数でそろえる方法</a>も参照してください。</p>
 <h2 id="2">原因2:数値と文字列の食い違い</h2>
 <p>見た目は同じ<code>1002</code>でも、片方が数値、もう片方が文字列だと一致しません。検索値が数値の<code>1002</code>で、表の側が文字列の<code>1002</code>だと、<code>#N/A</code>になりました。</p>
 <pre><code>=VLOOKUP(G2, D1:E2, 2, FALSE)
@@ -128,6 +128,7 @@ footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;col
 <li>検索に使う列は、最初から文字列か数値かを決めて、形式をそろえておきます。</li>
 <li>他のシステムから貼り付けたデータは、検索の前に<code>TRIM</code>をかけた列を作ります。</li>
 <li>検索の式は、第4引数を必ず書きます。「省略しても動く」状態を作らないことが、後から原因を探す手間を減らします。</li>
+<li>取引先名や顧客名で検索するときは、全角半角・スペース・法人格の表記ゆれも原因になります。そろえ方は<a href="/hyouki-yure-kansu/">表記ゆれを関数でそろえる方法</a>にまとめています。</li>
 <li>表が大きいときは、<code>COUNTIF</code>で「そのコードが表に何件あるか」を数えておくと、そもそも存在しないのか、形式の問題なのかを切り分けられます。</li>
 </ul>
 <h2 id="_4">まとめ</h2>
