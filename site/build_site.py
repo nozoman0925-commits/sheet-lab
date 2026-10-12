@@ -102,22 +102,27 @@ def main():
                     for fm, _ in published) or "<p>記事を準備中です。</p>"
     write("/", layout(f'{CFG["site_name"]}|{CFG["tagline"]}', CFG["tagline"], f'<h1>{E(CFG["site_name"])}</h1><div class="list">{items}</div>', "/"))
 
+    _em = CFG.get("contact_email", "").strip()
+    ABOUT_CONTACT = (f'<a href="mailto:{E(_em).replace("@", "&#64;")}">{E(_em).replace("@", "&#64;")}</a>(返信まで数日かかることがあります。<a href="/contact/">お問い合わせ</a>のページもご覧ください)'
+                     if _em else '<a href="/contact/">お問い合わせ</a>のページをご覧ください')
     write("/about/", layout(f'運営者情報 | {CFG["site_name"]}', "運営者とこのサイトの作り方、提供している商品について", f"""
 <h1>運営者情報</h1>
 <table><tr><th>サイト名</th><td>{E(CFG['site_name'])}</td></tr>
 <tr><th>運営者</th><td>{E(CFG['author_name'])}(個人運営)</td></tr>
-<tr><th>連絡先</th><td><a href="/contact/">お問い合わせ</a>のページをご覧ください</td></tr>
+<tr><th>連絡先</th><td>{ABOUT_CONTACT}</td></tr>
 <tr><th>運営開始</th><td>2026年10月</td></tr></table>
 <p>{E(CFG['author_bio'])}</p>
 <h2>記事の作り方</h2><p>{E(CFG['ai_disclosure'])}</p>
 <p>数式や手順は、LibreOfficeなどで実際に再計算して確かめたものだけを載せ、確認できていない点は「未確認」と書きます。出典は、中身を確認した公式ページなどに限ります。</p>
-<h2>運営者の商品について</h2><p>運営者は、Excel用テンプレート「<a href="https://nozoman.booth.pm/items/8973300" rel="noopener" target="_blank">名簿クレンジングシート</a>」をBOOTH(<a href="https://nozoman.booth.pm/" rel="noopener" target="_blank">nozoman.booth.pm</a>)で販売しています。関連する記事やツールのページには、運営者自身の商品であることを明記して案内を置くことがあります。</p>
+<h2>運営者の商品について</h2><p>運営者は、Excel用テンプレート「<a href="https://nozoman.booth.pm/items/8973300" rel="noopener" target="_blank">名簿クレンジングシート</a>」と「<a href="https://nozoman.booth.pm/items/8977893" rel="noopener" target="_blank">月間家計簿</a>」をBOOTH(<a href="https://nozoman.booth.pm/" rel="noopener" target="_blank">nozoman.booth.pm</a>)で販売しています。関連する記事やツールのページには、運営者自身の商品であることを明記して案内を置くことがあります。</p>
 <h2>無料ツールについて</h2><p>/tool/ と /tools/ の無料ツールは、ブラウザの中だけで計算し、入力内容を外部に送信しません。計算結果は、ご自身の環境で必ずご確認のうえお使いください。</p>
 <h2>広告について</h2><p>現時点では、広告の掲載やアフィリエイトは行っていません。今後、広告(Google AdSenseなど)やアフィリエイトを導入する場合は、該当する記事に『広告』『PR』と明記し、このページとプライバシーポリシーを更新します。</p>""", "/about/"))
     email = CFG.get("contact_email", "").strip()
     if email:
+        em = E(email).replace("@", "&#64;")
         contact_html = (f"<h1>お問い合わせ</h1><p>記事の誤りのご指摘やご連絡は、次のメールアドレスにお送りください。</p>"
-                        f'<p><a href="mailto:{E(email)}">{E(email)}</a></p>')
+                        f'<p><a href="mailto:{em}">{em}</a></p>'
+                        "<p>返信まで数日かかることがあります。商品についてのご連絡は、BOOTHのショップ(<a href=\"https://nozoman.booth.pm/\" rel=\"noopener\" target=\"_blank\">nozoman.booth.pm</a>)のお問い合わせ機能からも受け付けています。</p>")
     else:
         contact_html = ("<h1>お問い合わせ</h1><p>お問い合わせ用のメールアドレスは<b>準備中</b>です。準備ができ次第、このページに掲載します。</p>"
                         "<p>記事の誤りや商品についてのご連絡は、BOOTHのショップ(<a href=\"https://nozoman.booth.pm/\" rel=\"noopener\" target=\"_blank\">nozoman.booth.pm</a>)のお問い合わせ機能からも受け付けています。</p>")

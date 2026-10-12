@@ -168,3 +168,8 @@
 - 解釈: 直近24時間に記事2本公開済みのため(a)はスキップ。spec_readyが2件のため(e)も作らない。pdca/requests/ に未処理の依頼なし。INBOXに新しい実績なし。リポジトリは公開とみなす。
 - Do: VLOOKUP #N/A記事に、表記ゆれ記事への内部リンクを2か所(原因1の末尾、予防の項目)追加。記事の数式は変更なし。
 - Check: quality_check 5本OK、build_site成功、distにリンクを確認。
+
+## 2026-10-12 オーナー報告の反映(2点目の商品・連絡先)(1回限りの依頼)
+- INBOXに報告を追記。お問い合わせ・運営者情報に nozoman.0925@gmail.com を掲載(HTMLでは@を&#64;に、「返信まで数日かかることがあります」を併記。住所・電話・本名は載せていない)。運営者の商品の記述に月間家計簿を追加。
+- HUMAN_TASKS(メール決定・Claude in Chromeを完了へ、リポジトリ非公開化は「後で」へ)、PRODUCTS(#6 selling・400円)、STATEを更新。家計簿に関連する既存の記事・ツールは無く、案内の追加なし。
+- Check: quality_check 5本OK、build_site成功、dist/contact と dist/about にアドレスを確認。
