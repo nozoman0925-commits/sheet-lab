@@ -187,3 +187,7 @@
 ## 2026-10-12 業界特化テンプレート(事業G)の追加(オーナー報告の反映・1回限り)
 - Do: INBOXに3点目の商品(見積書980円)と無料お試し版の事実を追記。PRODUCTSに #11 estimate-construction・#12 meibo-trial を selling、#13〜16(請求書・工程表・実行予算と粗利・不動産の事業収支)を todo で追加(税・法令部分は公式出典を確認した内容だけ仕様に書く)。PORTFOLIOに事業Gを優先度の高い行で追加(理由は仮定と明記)。STATE更新。products_meta.json に2商品を追加。topics.csv に見積書につながる2件(優先度49・50)を追加。
 - Check: quality_check 5本OK。build_site は /usr/bin/python3 で成功(python3 は markdown 無し)。dist/products/ に見積書とお試し版が表示されることを確認。数字の新しい実績なし、7日分未満のため判断せず。
+
+## 2026-10-12 オーナーPC側の作業の反映(1回限り)
+- Do: INBOX/STATE にnote・Pinterest・BASE開設、原稿用意、商品づくりタスク、BOOTH出品の確認、BASE保留を追記。PORTFOLIO事業Eを更新。HUMAN_TASKS の次の依頼を3件(note投稿・Pinterest投稿・URL連絡)にし、後でにBASEの特商法表記を追加。PRODUCTS.md に「公開名」列を追加し、進捗ページの「販売中の商品」を公開名・価格・BOOTHリンクの箇条書きに変更。進捗ページに「今日のまとめ」(STATE.mdの最新日付エントリから最大6行)を追加(site/status_page.py)。
+- Check: quality_check 5本OK、build_site成功(markdown をpipで導入)。dist/status/index.html に今日のまとめ、公開名と価格、お願い3件を確認。

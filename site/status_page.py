@@ -76,13 +76,25 @@ def build_status(root, md_to_html, n_articles, n_tools):
     sell = [l for l in prod.splitlines() if re.match(r"\|\s*\d+\s*\|\s*selling", l)]
     links = []
     for l in sell:
+        cells = [c.strip() for c in l.split("|")]
         u = re.search(r"https?://[^\s)|]+", l)
-        name = [c.strip() for c in l.split("|")][3] if l.count("|") > 3 else "商品"
-        if u:
-            links.append(f'<a href="{E(u.group(0))}" rel="noopener" target="_blank">{E(name)}</a>')
+        name = cells[6] if len(cells) > 6 and cells[6] else ""  # 公開名の列(無い商品は表示しない)
+        if u and name:
+            pm = re.search(r"(\d[\d,]*)円", cells[2])
+            price = f"{pm.group(1)}円" if pm and pm.group(1) != "0" else "無料"
+            links.append(f'<li><a href="{E(u.group(0))}" rel="noopener" target="_blank">{E(name)}</a>({price})</li>')
     nums = (f'<div class="num"><div>売上<b>{E(sales)}</b></div><div>販売中の商品<b>{len(sell)}点</b></div>'
-            f'<div>公開中の記事<b>{n_articles}本</b></div><div>無料ツール<b>{n_tools}個</b></div></div>'
-            + ("<p>" + " / ".join(links) + "</p>" if links else ""))
+            f'<div>公開中の記事<b>{n_articles}本</b></div><div>無料ツール<b>{n_tools}個</b></div></div>')
+    # 今日のまとめ: STATE.md の最新の日付の最後のエントリから最大6行
+    secs = re.findall(r"(?ms)^## (\d{4}-\d{2}-\d{2})[^\n]*\n(.*?)(?=^## |\Z)", state)
+    summ = ""
+    if secs:
+        latest = max(d for d, _ in secs)
+        body = [d_b for d, d_b in secs if d == latest][-1]
+        lines = [x.strip()[2:] for x in body.splitlines() if x.strip().startswith("- ")][:6]
+        if lines:
+            summ = f"<h2>今日のまとめ({latest})</h2><ul>" + "".join(f"<li>{E(x)}</li>" for x in lines) + "</ul>"
+    prods = ("<h2>販売中の商品</h2><ul>" + "".join(links) + "</ul>") if links else ""
     nxt = re.search(r"(?ms)^## 次の依頼\s*\n(.*?)(?=^## |\Z)", human)
     nxt_html = md_to_html(nxt.group(1).strip()) if nxt and nxt.group(1).strip() else "<p>いまお願いしたいことはありません。</p>"
     pend = _requests(pd / "requests", False)
@@ -108,6 +120,6 @@ window.open(r.url,"_blank","noopener");}});
 </script>"""
     return (f"<style>{EXTRA_CSS}</style><div class=\"st\"><h1>運営の進捗</h1>"
             f"<p class=\"meta\">最終更新: {now:%Y-%m-%d %H:%M} JST</p>"
-            f"<h2>現在の数字</h2>{nums}<h2>あなたへのお願い</h2>{nxt_html}"
+            f"<h2>現在の数字</h2>{nums}{summ}{prods}<h2>あなたへのお願い</h2>{nxt_html}"
             f"<h2>依頼の状況</h2><h3>受付中</h3>{''.join(pend) or '<p>なし</p>'}<h3>完了</h3>{''.join(done) or '<p>なし</p>'}"
             f"<h2>作業の記録</h2>{_timeline()}</div>{form}")
