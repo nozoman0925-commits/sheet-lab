@@ -1,5 +1,5 @@
 """進捗ページ /status/ の本文を生成する(build_site.py から呼ぶ)。"""
-import html, re, subprocess
+import html, json, re, subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -75,13 +75,22 @@ def build_status(root, md_to_html, n_articles, n_tools):
     sales = (m.group(1) + "円") if m else "0円"
     sell = [l for l in prod.splitlines() if re.match(r"\|\s*\d+\s*\|\s*selling", l)]
     links = []
+    try:
+        meta = json.loads((root / "products_meta.json").read_text(encoding="utf-8"))
+    except Exception:
+        meta = {}
     for l in sell:
         cells = [c.strip() for c in l.split("|")]
-        u = re.search(r"https?://[^\s)|]+", l)
+        u = re.search(r"https?://[A-Za-z0-9._~:/?#@!$&*+=%-]+", l)
         name = cells[6] if len(cells) > 6 and cells[6] else ""  # 公開名の列(無い商品は表示しない)
         if u and name:
-            pm = re.search(r"(\d[\d,]*)円", cells[2])
-            price = f"{pm.group(1)}円" if pm and pm.group(1) != "0" else "無料"
+            # 価格は products_meta.json(商品ID別)を優先し、無ければ状態の列(cells[1])の「○円」を使う
+            mid = re.search(r"/items/(\d+)", u.group(0))
+            mp = str((meta.get(mid.group(1), {}) if mid else {}).get("price", "")).replace(",", "")
+            if not mp:
+                pm = re.search(r"(\d[\d,]*)円", cells[1])
+                mp = pm.group(1).replace(",", "") if pm else ""
+            price = f"{int(mp):,}円" if mp.isdigit() and mp != "0" else ("無料" if mp == "0" else "価格未設定")
             links.append(f'<li><a href="{E(u.group(0))}" rel="noopener" target="_blank">{E(name)}</a>({price})</li>')
     nums = (f'<div class="num"><div>売上<b>{E(sales)}</b></div><div>販売中の商品<b>{len(sell)}点</b></div>'
             f'<div>公開中の記事<b>{n_articles}本</b></div><div>無料ツール<b>{n_tools}個</b></div></div>')

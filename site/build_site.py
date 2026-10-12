@@ -125,7 +125,7 @@ def related_html(self_url, tags, pages, products):
         h += "<ul>" + "".join(f'<li><a href="{u}">{E(ti)}</a></li>' for u, ti in picks) + "</ul>"
     if prods:
         h += "<p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul>" + "".join(
-            f'<li><a href="/products/">{E(p["name"])}</a>' + (f'({E(p["price"])}円)' if p["price"] else "") + "</li>" for p in prods) + "</ul>"
+            f'<li><a href="/products/">{E(p["name"])}</a>' + (f'({"無料" if p["price"] == "0" else E(p["price"]) + "円"})' if p["price"] else "") + "</li>" for p in prods) + "</ul>"
     return h + "</section>"
 
 
@@ -236,7 +236,7 @@ def main():
     pitems = ""
     for p in products:
         pitems += (f'<div class="box"><h2 style="margin-top:0">{E(p["name"])}</h2>'
-                   + (f'<p><b>価格: {E(p["price"])}円</b>(BOOTH)</p>' if p["price"] else "")
+                   + (f'<p><b>価格: {"無料" if p["price"] == "0" else E(p["price"]) + "円"}</b>(BOOTH)</p>' if p["price"] else "")
                    + (f'<p><b>できること:</b> {E(p["can"])}</p>' if p["can"] else "")
                    + (f'<p><b>できないこと:</b> {E(p["cannot"])}</p>' if p["cannot"] else "")
                    + f'<p><a href="{E(p["url"])}" rel="noopener" target="_blank">BOOTHで見る</a></p></div>')

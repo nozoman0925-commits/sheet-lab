@@ -191,3 +191,4 @@
 ## 2026-10-12 オーナーPC側の作業の反映(1回限り)
 - Do: INBOX/STATE にnote・Pinterest・BASE開設、原稿用意、商品づくりタスク、BOOTH出品の確認、BASE保留を追記。PORTFOLIO事業Eを更新。HUMAN_TASKS の次の依頼を3件(note投稿・Pinterest投稿・URL連絡)にし、後でにBASEの特商法表記を追加。PRODUCTS.md に「公開名」列を追加し、進捗ページの「販売中の商品」を公開名・価格・BOOTHリンクの箇条書きに変更。進捗ページに「今日のまとめ」(STATE.mdの最新日付エントリから最大6行)を追加(site/status_page.py)。
 - Check: quality_check 5本OK、build_site成功(markdown をpipで導入)。dist/status/index.html に今日のまとめ、公開名と価格、お願い3件を確認。
+- 2026-10-12 進捗ページと商品一覧の価格表示を修正(名簿クレンジングシートは500円)。原因: status_page.py が価格を商品名の列から探していた。価格は products_meta.json から読み、お試し版は「無料」、リンクURLに価格が混入する不具合も修正。
