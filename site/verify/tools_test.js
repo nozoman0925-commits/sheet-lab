@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -37,4 +37,20 @@ ok(ag.calcAge(2000,2,29,2023,2,28).age===22,'leap 2/28');ok(ag.calcAge(2000,2,29
 let q=ag.calcAge(2000,1,31,2000,3,1);ok(q.months===1&&q.days===1,'month end '+JSON.stringify(q));
 q=ag.calcAge(2000,1,15,2024,3,20);ok(q.age===24&&q.months===2&&q.days===5,'ymd '+JSON.stringify(q));
 ok(ag.calcAge(2000,1,15,1999,1,1)===null,'before birth');ok(ag.calcAge(2001,2,29,2024,1,1)===null,'invalid date');
+// zenkaku: NFKC・独立計算と照合
+const zk=load('tools/zenkaku/body.html');const ALL={alnum:true,symbol:true,kana:true,space:true};
+for(let c=0x21;c<=0x7E;c++){const h=String.fromCharCode(c),f=String.fromCharCode(c+0xFEE0);ok(zk.toFull(h,ALL)===f,'full '+h);ok(zk.toHalf(f,ALL)===h&&f.normalize('NFKC')===h,'half '+h);}
+ok(zk.toFull(' ',ALL)==='\u3000'&&zk.toHalf('\u3000',ALL)===' ','space');
+ok(zk.toHalf('ＡＢＣ１２３！ ',{alnum:true})==='ABC123！ ','alnum only');
+ok(zk.toHalf('ＡＢＣ１２３！',{symbol:true})==='ＡＢＣ１２３!','symbol only');
+ok(zk.toFull('ABC 12!',{alnum:true})==='ＡＢＣ 12!'.replace('12','１２'),'full alnum only');
+ok(zk.toFull('ｶﾞｷﾞｸﾞｹﾞｺﾞﾊﾟﾋﾟｳﾞｱｲｳ｡｢｣､･ｰ',ALL)==='ガギグゲゴパピヴアイウ。「」、・ー','half kana '+zk.toFull('ｶﾞｷﾞｸﾞｹﾞｺﾞﾊﾟﾋﾟｳﾞｱｲｳ｡｢｣､･ｰ',ALL));
+ok(zk.toHalf('ガギグパピヴアイウ。「」、・ー',ALL)==='ｶﾞｷﾞｸﾞﾊﾟﾋﾟｳﾞｱｲｳ｡｢｣､･ｰ','full kana');
+ok(zk.toHalf('ひらがな',ALL)==='ひらがな','hiragana untouched');
+ok(zk.toFull('ｶﾞ',{kana:false})==='ｶﾞ'&&zk.toFull('ﾞ',ALL)==='ﾞ','lone/disabled dakuten');
+ok(zk.toFull('ｱﾞ',ALL)==='ｱﾞ'.replace('ｱ','ア').replace('ﾞ','ﾞ'),'invalid dakuten stays');
+let kn=0;for(const h of Object.keys(zk.H2F)){const f=zk.H2F[h];kn++;ok(f===h.normalize('NFKC'),'nfkc '+h);ok(zk.toHalf(f,ALL)===h&&zk.toFull(h,ALL)===f,'kana rt '+h);}
+ok(kn>=80,'kana count '+kn);
+ok(zk.toFull(zk.toHalf('日本語ＡＢＣ　ｶﾅ！',ALL),ALL)==='日本語ＡＢＣ　カナ！','mixed roundtrip');
+console.log(`zenkaku kana ${kn} `);
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

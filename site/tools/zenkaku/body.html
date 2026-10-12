@@ -1,0 +1,59 @@
+<h1>全角・半角変換ツール</h1>
+<p>全角と半角を相互に変換します。変換する文字の種類は個別に選べます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><textarea id="t" rows="8" style="width:100%" placeholder="ここに文字列を貼り付けてください(例: ＡＢＣ１２３ ｶﾞｷﾞｸﾞ)"></textarea></p>
+<p>
+<label><input type="checkbox" id="oa" checked> 英数字</label>
+<label><input type="checkbox" id="os" checked> 記号</label>
+<label><input type="checkbox" id="ok" checked> カタカナ(句読点・かぎ括弧・長音を含む)</label>
+<label><input type="checkbox" id="op" checked> スペース</label>
+</p>
+<p>
+<button type="button" id="bh">全角 → 半角</button>
+<button type="button" id="bf">半角 → 全角</button>
+<button type="button" id="bc">結果をコピー</button>
+</p>
+<p><textarea id="o" rows="8" style="width:100%" readonly placeholder="変換結果がここに表示されます"></textarea></p>
+<h2>変換する範囲</h2>
+<ul>
+<li>英数字: Ａ-Ｚ、ａ-ｚ、０-９ と A-Z、a-z、0-9</li>
+<li>記号: ！から～までの全角記号と、半角の ! から ~ までの記号(英数字を除く)。￥や「“”」などの引用符は対象外です。</li>
+<li>カタカナ: 半角カナ(ｱｲｳ…、｡｢｣､･ｰ、濁点・半濁点)と全角カタカナ。ガ→ｶﾞのように、濁点つきの文字は半角では2文字になります。ヷ・ヺなど一部の文字は変換せず、そのまま残します。</li>
+<li>スペース: 全角スペース(U+3000)と半角スペース</li>
+</ul>
+<p class="meta">Excelの関数 ASC・JIS とは、対象とする記号の範囲が異なる場合があります。Excelでそろえたいときは、同じ入力でExcel上の結果も確認してください。ひらがなは変換しません。</p>
+<script>
+var HALF_KANA=(function(){var a=[];for(var c=0xFF61;c<=0xFF9D;c++)a.push(String.fromCharCode(c));return a;})();
+var H2F={},F2H={};
+(function(){
+  var DAK="ﾞ",HAN="ﾟ";
+  HALF_KANA.forEach(function(h){var f=h.normalize("NFKC");if(f.length===1&&f!==h){H2F[h]=f;if(!F2H[f])F2H[f]=h;}});
+  HALF_KANA.forEach(function(h){[DAK,HAN].forEach(function(m){var f=(h+m).normalize("NFKC");if(f.length===1&&f!==h+m){H2F[h+m]=f;F2H[f]=h+m;}});});
+})();
+function isAlnumHalf(c){return (c>=48&&c<=57)||(c>=65&&c<=90)||(c>=97&&c<=122);}
+function toHalf(s,o){
+  var out="",arr=Array.from(s);
+  for(var i=0;i<arr.length;i++){var ch=arr[i],c=ch.codePointAt(0),r=ch;
+    if(c>=0xFF01&&c<=0xFF5E){var a=c-0xFEE0;if(isAlnumHalf(a)){if(o.alnum)r=String.fromCharCode(a);}else if(o.symbol)r=String.fromCharCode(a);}
+    else if(c===0x3000){if(o.space)r=" ";}
+    else if(o.kana&&F2H[ch])r=F2H[ch];
+    out+=r;}
+  return out;}
+function toFull(s,o){
+  var out="",arr=Array.from(s);
+  for(var i=0;i<arr.length;i++){var ch=arr[i],c=ch.codePointAt(0),r=ch;
+    if(c>=0x21&&c<=0x7E){if(isAlnumHalf(c)){if(o.alnum)r=String.fromCharCode(c+0xFEE0);}else if(o.symbol)r=String.fromCharCode(c+0xFEE0);}
+    else if(c===0x20){if(o.space)r="　";}
+    else if(o.kana&&c>=0xFF61&&c<=0xFF9F){
+      var nx=arr[i+1];
+      if(nx&&(nx==="ﾞ"||nx==="ﾟ")&&H2F[ch+nx]){r=H2F[ch+nx];i++;}
+      else if(H2F[ch])r=H2F[ch];}
+    out+=r;}
+  return out;}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  function opts(){return {alnum:g("oa").checked,symbol:g("os").checked,kana:g("ok").checked,space:g("op").checked};}
+  g("bh").onclick=function(){g("o").value=toHalf(g("t").value,opts());};
+  g("bf").onclick=function(){g("o").value=toFull(g("t").value,opts());};
+  g("bc").onclick=function(){var o=g("o");o.select();try{document.execCommand("copy");}catch(e){}};
+}
+</script>
