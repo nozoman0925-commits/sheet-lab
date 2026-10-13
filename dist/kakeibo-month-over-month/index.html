@@ -1,0 +1,169 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="費目ごとに先月より増えたか減ったかを見る式を、増減額・増減率・増減の印の3列で解説。先月が0円や空欄のときに割り算でエラーを出さない書き方まで、10行の入力例をLibreOfficeで実際に計算して確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/kakeibo-month-over-month/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="費目ごとに先月より増えたか減ったかを見る式を、増減額・増減率・増減の印の3列で解説。先月が0円や空欄のときに割り算でエラーを出さない書き方まで、10行の入力例をLibreOfficeで実際に計算して確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/kakeibo-month-over-month/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】", "datePublished": "2026-10-14", "dateModified": "2026-10-14", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "費目ごとに先月より増えたか減ったかを見る式を、増減額・増減率・増減の印の3列で解説。先月が0円や空欄のときに割り算でエラーを出さない書き方まで、10行の入力例をLibreOfficeで実際に計算して確認しました。", "url": "https://sheet-lab-site.pages.dev/kakeibo-month-over-month/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/kakeibo-month-over-month/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/kakeibo-month-over-month/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-14 ・ Excel関数</p><h1>エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】</h1><p>家計簿をつけていると、「食費、先月より増えた?」「光熱費は減った?」を費目ごとにすぐ見たくなります。この記事では、<strong>先月と今月の費目別の合計から、増減額・増減率・増減の印を出す式</strong>を、実際に計算して確かめた結果だけで紹介します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/mom_change.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIFとSUMだけですが、本番の表に使う前に、数行で結果を確かめてください。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>表は「費目 | 先月 | 今月 | 増減額 | 増減率 | 印」の6列にします。</li>
+<li>増減額は <code>=今月-先月</code> の引き算だけです。</li>
+<li>増減率は <code>=IF(先月=0,"",増減額/先月)</code>。<strong>先月が0円(または空欄)の費目は割り算できないので、空欄にします</strong>。</li>
+<li>印は増減額の正負で「増」「減」「同」を出します。</li>
+</ul>
+<h2 id="_2">表の作り方</h2>
+<p>A列に費目、B列に先月の合計、C列に今月の合計を入れます(2行目から)。それぞれの合計は、費目別の集計(SUMIFSやSUMPRODUCT)で出した値を貼るか参照してください。ここから右は、次の3つの式を2行目に入れて、下へコピーします。</p>
+<pre><code>D2: =C2-B2
+E2: =IF(B2=0,&quot;&quot;,D2/B2)
+F2: =IF(D2&gt;0,&quot;増&quot;,IF(D2&lt;0,&quot;減&quot;,&quot;同&quot;))
+</code></pre>
+<p>E列は、見やすくするため「パーセンテージ」の表示形式にします。表示形式を変えても、セルの中身(0.2など)は変わりません。</p>
+<p>最後の行に合計を置くときは、B・C列に<code>=SUM(B2:B11)</code>のように合計を入れ、D・E・F列には上と同じ式をそのまま入れます。<strong>合計行の増減率は、費目の増減率を足したものではなく、合計から出し直します</strong>(平均や足し算では合いません)。</p>
+<h2 id="_3">実際に計算した結果</h2>
+<table>
+<thead>
+<tr>
+<th>費目</th>
+<th>先月</th>
+<th>今月</th>
+<th>増減額</th>
+<th>増減率</th>
+<th>印</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>食費</td>
+<td>30,000</td>
+<td>36,000</td>
+<td>6,000</td>
+<td>20.0%</td>
+<td>増</td>
+</tr>
+<tr>
+<td>光熱費</td>
+<td>36,000</td>
+<td>30,000</td>
+<td>-6,000</td>
+<td>-16.7%</td>
+<td>減</td>
+</tr>
+<tr>
+<td>通信費</td>
+<td>8,000</td>
+<td>8,000</td>
+<td>0</td>
+<td>0.0%</td>
+<td>同</td>
+</tr>
+<tr>
+<td>教養娯楽</td>
+<td>0</td>
+<td>5,000</td>
+<td>5,000</td>
+<td>(空欄)</td>
+<td>増</td>
+</tr>
+<tr>
+<td>医療</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>(空欄)</td>
+<td>同</td>
+</tr>
+<tr>
+<td>衣服美容</td>
+<td>5,000</td>
+<td>0</td>
+<td>-5,000</td>
+<td>-100.0%</td>
+<td>減</td>
+</tr>
+<tr>
+<td>交通費</td>
+<td>(空欄)</td>
+<td>3,000</td>
+<td>3,000</td>
+<td>(空欄)</td>
+<td>増</td>
+</tr>
+<tr>
+<td>住居</td>
+<td>80,000</td>
+<td>80,000</td>
+<td>0</td>
+<td>0.0%</td>
+<td>同</td>
+</tr>
+<tr>
+<td>日用品</td>
+<td>1,234</td>
+<td>2,345</td>
+<td>1,111</td>
+<td>90.0%</td>
+<td>増</td>
+</tr>
+<tr>
+<td>その他</td>
+<td>(空欄)</td>
+<td>(空欄)</td>
+<td>0</td>
+<td>(空欄)</td>
+<td>同</td>
+</tr>
+<tr>
+<td>合計</td>
+<td>160,234</td>
+<td>164,345</td>
+<td>4,111</td>
+<td>2.6%</td>
+<td>増</td>
+</tr>
+</tbody>
+</table>
+<p>増減率は表示を小数1位にしたもので、実際の値は <code>0.9003241491…</code>(日用品)のように端数があります。<strong>検証では、端数も含めた値が一致することを確認しています</strong>。</p>
+<h2 id="0">先月0円・空欄のときの注意</h2>
+<ul>
+<li>先月が0円や空欄の費目(教養娯楽・医療・交通費・その他)は、増減率を計算できないため空欄にしています。「0%」と出すと、「変わらなかった」と読み違えるためです。</li>
+<li>空欄のセルは、<code>B2=0</code>の判定で0円と同じ扱いになりました(交通費の行で確認)。「入力し忘れ」と「本当に0円」は式では区別できません。</li>
+<li>先月だけ高い費目(衣服美容)は、今月0円で-100%になります。これは計算どおりで、「使わなくなった」という意味ではありません。</li>
+</ul>
+<h2 id="_4">注意点: この式ができないこと</h2>
+<ul>
+<li>増減の理由(特売、臨時の出費、物価の変化など)は分かりません。数字は変化の大きさを示すだけで、節約額や家計の良し悪しを判断するものではありません。</li>
+<li>先月と今月で費目の分け方が違うと、比べられません。費目名と、何を含めるかを毎月そろえてください。</li>
+<li>先月の値は手で貼るか、別シートから参照する形になります。月ごとのシートからの参照は、この記事では検証していません。</li>
+<li>通年のグラフや、年間の推移は扱いません。</li>
+</ul>
+<h2 id="_5">家計簿のひな形が必要なら</h2>
+<p>この記事の式は、自分で作った表にそのまま使えます。費目別の集計つきのひな形を探しているなら、運営者が作った<a href="/go/budget-monthly/?from=kakeibo-month-over-month">月間家計簿(Excelテンプレート・400円)</a>があります。1か月分の収支を費目別に集計し、A4で印刷できます。ただし、<strong>前月比の列や、複数月の通年集計は入っていません</strong>(この記事の式を自分で足す形になります)。Excelの確認はWindowsデスクトップ版16のみです。この記事の方法で足りる場合は、買う必要はありません。</p>
+<p>増減の割合を手早く計算したいときは、無料の<a href="/tools/percent/">割合・増減率の計算ツール</a>も使えます(入力は外部に送信されません)。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>増減額は <code>=今月-先月</code></li>
+<li>増減率は <code>=IF(先月=0,"",増減額/先月)</code>で、先月0円のときは空欄にして割り算のエラーを避ける</li>
+<li>合計行の増減率は、合計から出し直す</li>
+<li>式はいずれもLibreOfficeで計算した結果。Excelでは未確認のため、本番の表に使う前に数行で確かめる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、10費目分の入力(増加・減少・変化なし・先月0円・先月と今月が両方0円・先月が空欄・今月が0円・端数が出る増減など)と合計行について、増減額・増減率・増減の印の3列(計33件)が期待値と一致することを検証スクリプト(site/verify/mom_change.py)で確認しました。使った関数はIF・SUMで、Excelにもある関数ですが、Excelでは未確認です。外部サイトの記述は参照していません。家計の助言や節約額の保証はしていません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/mom_change.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/tools/percent/">割合・増減率の計算ツール(前月比・達成率・ポイント差)</a></li><li><a href="/kabu-position/">エクセルで株式会社の前株・後株をそろえる方法【LibreOfficeで計算して確認】</a></li><li><a href="/kaisha-remove/">エクセルで会社名から「株式会社」「(株)」を取り除いて社名だけにする方法【LibreOfficeで計算して確認】</a></li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>

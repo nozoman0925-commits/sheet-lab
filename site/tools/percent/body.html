@@ -1,0 +1,73 @@
+<h1>割合・増減率の計算ツール</h1>
+<p>3つの計算ができます。<b>入力した数字は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p>計算の種類:
+<label><input type="radio" name="m" value="ratio" checked> 割合(AはBの何%か)</label>
+<label><input type="radio" name="m" value="change"> 増減率(先月A→今月B)</label>
+<label><input type="radio" name="m" value="point"> ポイント差(A%→B%)</label>
+</p>
+<p><label><span id="la">A</span>: <input type="text" id="a" inputmode="decimal" size="14" placeholder="例: 36000"></label>
+<label><span id="lb">B</span>: <input type="text" id="b" inputmode="decimal" size="14" placeholder="例: 30000"></label>
+<label>小数点以下の桁数: <select id="d"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option></select></label></p>
+<p><button type="button" id="br">計算</button> <span id="st"></span></p>
+<p><textarea id="o" rows="4" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>割合</b>: A÷B×100(%)。Bが0のときは計算できません。</li>
+<li><b>増減率</b>: (B−A)÷A×100(%)。Aが0のときは割り算できないため、増減率は出さず「先月が0のため計算できません」と表示します(増減額は表示します)。</li>
+<li><b>ポイント差</b>: B−A(ポイント)。割合どうしの差で、「増減率」とは別のものです。</li>
+<li>カンマ区切り(1,234)と全角数字は、半角にして読み取ります。数字として読めない入力は計算せずに知らせます。</li>
+<li>結果は、指定した桁数で四捨五入(0.5は絶対値が大きい方向)します。内部では整数で計算するため、小数の誤差は出ません。</li>
+</ul>
+<p class="meta">このツールは計算するだけで、増減の理由や良し悪しは判断しません。Excelの式で同じことをする方法は、関連記事で計算して確認しています(Excelでは未確認)。</p>
+<p class="meta">関連: <a href="/kakeibo-month-over-month/">家計簿で前月比の増減を費目別に出す方法(記事)</a> / <a href="/tools/tax/">消費税計算ツール</a> / 費目別に集計できる Excel の家計簿:<a href="/go/budget-monthly/?from=tool-percent">月間家計簿(運営者の商品・400円)</a>(前月比の列は入っていません)</p>
+<script>
+function parseNum(s){
+  s=String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[．。]/g,".").replace(/[,，、\s　]/g,"").replace(/[－−ー]/g,"-");
+  var m=/^(-?)(\d+)(?:\.(\d+))?$/.exec(s);
+  if(!m)return null;
+  var frac=m[3]||"";
+  var n=BigInt(m[2]+frac);if(m[1])n=-n;
+  return {n:n,s:frac.length};
+}
+function pow10(k){return BigInt("1"+"0".repeat(k));}
+// 分数 num/den(den>0)を小数 d 桁に四捨五入(0.5は絶対値が大きい方)して文字列で返す
+function fmtRat(num,den,d){
+  if(den<0n){num=-num;den=-den;}
+  var neg=num<0n;if(neg)num=-num;
+  var scaled=num*pow10(d);
+  var q=scaled/den,r=scaled%den;
+  if(r*2n>=den)q+=1n;
+  var s=q.toString();
+  if(d>0){while(s.length<=d)s="0"+s;s=s.slice(0,s.length-d)+"."+s.slice(s.length-d);}
+  if(neg&&/[1-9]/.test(s))s="-"+s;
+  return s;
+}
+function calc(mode,as,bs,d){
+  var a=parseNum(as),b=parseNum(bs);
+  if(!a||!b)return {ok:false,text:"数字として読めない入力があります(例: 36000、1,234.5)"};
+  var sc=Math.max(a.s,b.s);
+  var A=a.n*pow10(sc-a.s),B=b.n*pow10(sc-b.s);
+  if(mode==="ratio"){
+    if(B===0n)return {ok:false,text:"Bが0のため、割合は計算できません"};
+    return {ok:true,value:fmtRat(A*100n,B,d),text:"AはBの "+fmtRat(A*100n,B,d)+"% です"};
+  }
+  if(mode==="change"){
+    var diff=fmtRat(B-A,pow10(sc),sc>d?sc:d);
+    if(A===0n)return {ok:false,diff:diff,text:"先月(A)が0のため、増減率は計算できません。増減額は "+diff+" です"};
+    return {ok:true,value:fmtRat((B-A)*100n,A,d),diff:diff,text:"増減率: "+fmtRat((B-A)*100n,A,d)+"%(増減額: "+diff+")"};
+  }
+  var p=fmtRat(B-A,pow10(sc),sc>d?sc:d);
+  return {ok:true,value:p,text:"差: "+p+" ポイント"};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  var labels={ratio:["A(部分)","B(全体)"],change:["A(先月)","B(今月)"],point:["A(前の%)","B(後の%)"]};
+  var upd=function(){var m=document.querySelector('input[name="m"]:checked').value;g("la").textContent=labels[m][0];g("lb").textContent=labels[m][1];};
+  Array.prototype.forEach.call(document.getElementsByName("m"),function(e){e.onchange=upd;});upd();
+  g("br").onclick=function(){
+    var m=document.querySelector('input[name="m"]:checked').value;
+    var r=calc(m,g("a").value,g("b").value,parseInt(g("d").value,10));
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>

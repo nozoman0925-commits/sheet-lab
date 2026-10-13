@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -167,5 +167,45 @@ const pc=load('tools/postal-format/body.html');
   eq(pc.cleanPostal('12-34567','hyphen').text,'123-4567','pc7 位置違いも7桁なら整形');
   eq(pc.cleanPostal('1\n\n123-4567','digits').text,'1\n\n1234567','pc8 空行保持');
   console.log('postal-format '+k+' cases');
+})();
+
+// percent: BigInt分数の実装を、Number(整数入力)の独立計算と許容誤差で照合 + 手計算ケース
+const pt=load('tools/percent/body.html');
+(function(){
+  let seed=777;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  let k=0;
+  for(let n=0;n<4000;n++){
+    const a=Math.floor(rnd()*100000),b=Math.floor(rnd()*100000),d=Math.floor(rnd()*3);
+    const tol=0.5*Math.pow(10,-d)+1e-9;
+    let r=pt.calc('ratio',String(a),String(b),d);k++;
+    if(b===0)ok(!r.ok,'pt ratio b=0');
+    else ok(r.ok&&Math.abs(parseFloat(r.value)-a/b*100)<=tol,`pt ratio ${a} ${b} ${d} got ${r.value}`);
+    r=pt.calc('change',String(a),String(b),d);k++;
+    if(a===0){ok(!r.ok&&r.diff===String(b),`pt change a=0 ${b} ${r.diff}`);}
+    else ok(r.ok&&Math.abs(parseFloat(r.value)-(b-a)/a*100)<=tol&&Number(r.diff)===b-a,`pt change ${a} ${b} ${d} got ${r.value}`);
+    r=pt.calc('point',String(a/100),String(b/100),d);k++;
+    ok(r.ok&&Math.abs(parseFloat(r.value)-(b-a)/100)<=tol,`pt point ${a} ${b} ${d} got ${r.value}`);
+  }
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  eq(pt.calc('change','30000','36000',1).value,'20.0','pt1');
+  eq(pt.calc('change','36000','30000',1).value,'-16.7','pt2');
+  eq(pt.calc('change','1234','2345',1).value,'90.0','pt3');
+  eq(pt.calc('change','1234','2345',2).value,'90.03','pt3b');
+  eq(pt.calc('change','5000','0',1).value,'-100.0','pt4');
+  eq(pt.calc('change','8000','8000',1).value,'0.0','pt5');
+  eq(pt.calc('change','0','5000',1).ok,false,'pt6');
+  eq(pt.calc('change','0','5000',1).diff,'5000.0','pt6 diff');
+  eq(pt.calc('ratio','1','8',1).value,'12.5','pt7');
+  eq(pt.calc('ratio','1','8',0).value,'13','pt8 0.5は切り上げ');
+  eq(pt.calc('change','8','7',0).value,'-13','pt9 -12.5は絶対値が大きい方');
+  eq(pt.calc('change','1000','999',1).value,'-0.1','pt10');
+  eq(pt.calc('change','100000','99999',2).value,'0.00','pt11 負のゼロにしない');
+  eq(pt.calc('ratio','1,234.5','１０００',2).value,'123.45','pt12 カンマ・全角');
+  eq(pt.calc('point','12.5','15.25',2).value,'2.75','pt13');
+  eq(pt.calc('ratio','abc','3',1).ok,false,'pt14 数字でない');
+  eq(pt.calc('ratio','','3',1).ok,false,'pt15 空');
+  eq(pt.calc('ratio','3','0',1).ok,false,'pt16 B=0');
+  eq(pt.calc('change','0.1','0.3',1).value,'200.0','pt17 小数誤差なし');
+  console.log('percent '+k+' cases');
 })();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

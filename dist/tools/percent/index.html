@@ -1,0 +1,99 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>割合・増減率の計算ツール(前月比・達成率・ポイント差) | シート実務ラボ</title><meta name="description" content="「AはBの何%か」「先月から今月で何%増減したか」「割合の差は何ポイントか」を計算する無料ツール。先月が0のときは増減率を出さず理由を表示します。ブラウザ内で処理し、入力は送信されません。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/tools/percent/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="割合・増減率の計算ツール(前月比・達成率・ポイント差) | シート実務ラボ"><meta property="og:description" content="「AはBの何%か」「先月から今月で何%増減したか」「割合の差は何ポイントか」を計算する無料ツール。先月が0のときは増減率を出さず理由を表示します。ブラウザ内で処理し、入力は送信されません。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/tools/percent/"><meta property="og:type" content="website">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "割合・増減率の計算ツール(前月比・達成率・ポイント差)", "description": "「AはBの何%か」「先月から今月で何%増減したか」「割合の差は何ポイントか」を計算する無料ツール。先月が0のときは増減率を出さず理由を表示します。ブラウザ内で処理し、入力は送信されません。", "url": "https://sheet-lab-site.pages.dev/tools/percent/", "applicationCategory": "BusinessApplication", "operatingSystem": "Web browser", "inLanguage": "ja", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "無料ツール", "item": "https://sheet-lab-site.pages.dev/tools/"}, {"@type": "ListItem", "position": 3, "name": "割合・増減率の計算ツール(前月比・達成率・ポイント差)", "item": "https://sheet-lab-site.pages.dev/tools/percent/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; <a href="/tools/">無料ツール</a> &gt; 割合・増減率の計算ツール(前月比・達成率・ポイント差)</p><h1>割合・増減率の計算ツール</h1>
+<p>3つの計算ができます。<b>入力した数字は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p>計算の種類:
+<label><input type="radio" name="m" value="ratio" checked> 割合(AはBの何%か)</label>
+<label><input type="radio" name="m" value="change"> 増減率(先月A→今月B)</label>
+<label><input type="radio" name="m" value="point"> ポイント差(A%→B%)</label>
+</p>
+<p><label><span id="la">A</span>: <input type="text" id="a" inputmode="decimal" size="14" placeholder="例: 36000"></label>
+<label><span id="lb">B</span>: <input type="text" id="b" inputmode="decimal" size="14" placeholder="例: 30000"></label>
+<label>小数点以下の桁数: <select id="d"><option value="0">0</option><option value="1" selected>1</option><option value="2">2</option></select></label></p>
+<p><button type="button" id="br">計算</button> <span id="st"></span></p>
+<p><textarea id="o" rows="4" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>割合</b>: A÷B×100(%)。Bが0のときは計算できません。</li>
+<li><b>増減率</b>: (B−A)÷A×100(%)。Aが0のときは割り算できないため、増減率は出さず「先月が0のため計算できません」と表示します(増減額は表示します)。</li>
+<li><b>ポイント差</b>: B−A(ポイント)。割合どうしの差で、「増減率」とは別のものです。</li>
+<li>カンマ区切り(1,234)と全角数字は、半角にして読み取ります。数字として読めない入力は計算せずに知らせます。</li>
+<li>結果は、指定した桁数で四捨五入(0.5は絶対値が大きい方向)します。内部では整数で計算するため、小数の誤差は出ません。</li>
+</ul>
+<p class="meta">このツールは計算するだけで、増減の理由や良し悪しは判断しません。Excelの式で同じことをする方法は、関連記事で計算して確認しています(Excelでは未確認)。</p>
+<p class="meta">関連: <a href="/kakeibo-month-over-month/">家計簿で前月比の増減を費目別に出す方法(記事)</a> / <a href="/tools/tax/">消費税計算ツール</a> / 費目別に集計できる Excel の家計簿:<a href="/go/budget-monthly/?from=tool-percent">月間家計簿(運営者の商品・400円)</a>(前月比の列は入っていません)</p>
+<script>
+function parseNum(s){
+  s=String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[．。]/g,".").replace(/[,，、\s　]/g,"").replace(/[－−ー]/g,"-");
+  var m=/^(-?)(\d+)(?:\.(\d+))?$/.exec(s);
+  if(!m)return null;
+  var frac=m[3]||"";
+  var n=BigInt(m[2]+frac);if(m[1])n=-n;
+  return {n:n,s:frac.length};
+}
+function pow10(k){return BigInt("1"+"0".repeat(k));}
+// 分数 num/den(den>0)を小数 d 桁に四捨五入(0.5は絶対値が大きい方)して文字列で返す
+function fmtRat(num,den,d){
+  if(den<0n){num=-num;den=-den;}
+  var neg=num<0n;if(neg)num=-num;
+  var scaled=num*pow10(d);
+  var q=scaled/den,r=scaled%den;
+  if(r*2n>=den)q+=1n;
+  var s=q.toString();
+  if(d>0){while(s.length<=d)s="0"+s;s=s.slice(0,s.length-d)+"."+s.slice(s.length-d);}
+  if(neg&&/[1-9]/.test(s))s="-"+s;
+  return s;
+}
+function calc(mode,as,bs,d){
+  var a=parseNum(as),b=parseNum(bs);
+  if(!a||!b)return {ok:false,text:"数字として読めない入力があります(例: 36000、1,234.5)"};
+  var sc=Math.max(a.s,b.s);
+  var A=a.n*pow10(sc-a.s),B=b.n*pow10(sc-b.s);
+  if(mode==="ratio"){
+    if(B===0n)return {ok:false,text:"Bが0のため、割合は計算できません"};
+    return {ok:true,value:fmtRat(A*100n,B,d),text:"AはBの "+fmtRat(A*100n,B,d)+"% です"};
+  }
+  if(mode==="change"){
+    var diff=fmtRat(B-A,pow10(sc),sc>d?sc:d);
+    if(A===0n)return {ok:false,diff:diff,text:"先月(A)が0のため、増減率は計算できません。増減額は "+diff+" です"};
+    return {ok:true,value:fmtRat((B-A)*100n,A,d),diff:diff,text:"増減率: "+fmtRat((B-A)*100n,A,d)+"%(増減額: "+diff+")"};
+  }
+  var p=fmtRat(B-A,pow10(sc),sc>d?sc:d);
+  return {ok:true,value:p,text:"差: "+p+" ポイント"};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  var labels={ratio:["A(部分)","B(全体)"],change:["A(先月)","B(今月)"],point:["A(前の%)","B(後の%)"]};
+  var upd=function(){var m=document.querySelector('input[name="m"]:checked').value;g("la").textContent=labels[m][0];g("lb").textContent=labels[m][1];};
+  Array.prototype.forEach.call(document.getElementsByName("m"),function(e){e.onchange=upd;});upd();
+  g("br").onclick=function(){
+    var m=document.querySelector('input[name="m"]:checked').value;
+    var r=calc(m,g("a").value,g("b").value,parseInt(g("d").value,10));
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
+<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div><section class="related"><h2>関連</h2><ul><li><a href="/kakeibo-month-over-month/">エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】</a></li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
