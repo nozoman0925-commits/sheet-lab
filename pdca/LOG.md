@@ -220,5 +220,5 @@
 ## 2026-10-13 記事見送り(定期実行・(a))
 - Plan: 仮説=販売中の名簿シートにつながる「電話番号ハイフン削除」記事(topics.csv #3)が入口になる(指標: Search Consoleの表示。7日分未満で判断しない)。
 - 解釈: 直近24時間の公開記事は0本で(a)可能。ただし出典URLを取得して確認するルールのため、取得を試みた。
-- Do/Check: support.microsoft.com はWebFetchが名前解決失敗、curlはプロキシ403。learn.microsoft.com / support.google.com / nta.go.jp も同様に接続不可。推測でURLを書かないため記事は作らず、サイト・商品の変更なし。quality_check 5本OK、build_site成功を確認。
+- Do/Check: support.microsoft.com はWebFetchが名前解決失敗、curlはプロキシ403。learn.microsoft.com / support.google.com / nta.go.jp も同様に接続不可。推測でURLを書かないため記事は作らず、サイト・商品の変更なし。quality_check 5本OK、build_site成功(pip で markdown を導入後。dist/status を再生成)。
 - 次回: 出典に接続できる環境なら #3 を執筆。できなければ(b)(f)など出典不要の作業を選ぶ。人間への依頼は新規なし。
