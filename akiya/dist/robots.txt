@@ -1,0 +1,3 @@
+User-agent: *
+Allow: /
+Sitemap: https://jikka-soudan.pages.dev/sitemap.xml

@@ -1,0 +1,21 @@
+{
+  "site_name": "実家じまい相談室",
+  "tagline": "相続した実家・空き家の片付け、管理、売却を、公的な情報をもとに解説",
+  "base_url": "https://jikka-soudan.pages.dev",
+  "language": "ja",
+  "author_name": "のぞむ(株式会社桜美建設 営業担当)",
+  "author_bio": "東京都町田市の建設会社・株式会社桜美建設で、リフォーム、外構、外壁・屋根、清掃・草刈り・残置物撤去などの営業を担当しています。現場で空き家や実家の相談を受けることが多いため、持ち主の方が最初に知っておくべきことを、国や自治体の公表資料をもとにまとめています。",
+  "company_name": "株式会社桜美建設",
+  "company_url": "https://oubikensetsu.com",
+  "service_area": "町田市・相模原市を中心に、一都三県",
+  "line_url": "",
+  "pr_notice": "【PR】このサイトは、株式会社桜美建設の営業担当(のぞむ)が運営しています。記事の中で、当社への相談窓口をご案内しています。",
+  "ai_disclosure": "記事は、国・自治体などの公表資料を確認したうえで、AIの補助を受けて作成しています。制度は変わることがあるため、各記事の「参考にした情報」で最新の内容をご確認ください。",
+  "search_console_verification": "",
+  "quality": {
+    "min_chars": 2200,
+    "min_sources": 2,
+    "max_similarity": 0.5,
+    "require_verified": true
+  }
+}
