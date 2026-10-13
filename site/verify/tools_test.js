@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -53,4 +53,36 @@ let kn=0;for(const h of Object.keys(zk.H2F)){const f=zk.H2F[h];kn++;ok(f===h.nor
 ok(kn>=80,'kana count '+kn);
 ok(zk.toFull(zk.toHalf('日本語ＡＢＣ　ｶﾅ！',ALL),ALL)==='日本語ＡＢＣ　カナ！','mixed roundtrip');
 console.log(`zenkaku kana ${kn} `);
+// space-remove: 正規表現による独立実装と、ランダム入力で総当たり照合
+const sr=load('tools/space-remove/body.html');
+(function(){
+  const POOL=['山','田',' ','\u3000','\t','\u00A0','a','1','株','\n','\r\n'];
+  let seed=12345;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  const refs={};
+  function cls(o){let c='';if(o.half)c+=' ';if(o.full)c+='\u3000';if(o.tab)c+='\t';if(o.nbsp)c+='\u00A0';return c;}
+  function ref(s,m,o){const c=cls(o);const lines=s.split(/\r\n|\n|\r/);
+    return lines.map(l=>{if(!c)return l;const cc='['+c+']';
+      if(m==='remove')return l.replace(new RegExp(cc,'g'),'');
+      if(m==='normalize')return l.replace(new RegExp(cc+'+','g'),'\uE000').replace(/^\uE000|\uE000$/g,'').replace(/\uE000/g,' ');
+      return l.replace(new RegExp('^'+cc+'+'),'').replace(new RegExp(cc+'+$'),'');}).join('\n');}
+  let k=0;
+  for(let n=0;n<4000;n++){
+    let s='';const len=Math.floor(rnd()*14);for(let i=0;i<len;i++)s+=POOL[Math.floor(rnd()*POOL.length)];
+    const o={half:rnd()<.7,full:rnd()<.7,tab:rnd()<.5,nbsp:rnd()<.3};
+    for(const m of ['remove','normalize','trim']){const r=sr.cleanSpaces(s,m,o);k++;
+      ok(r.text===ref(s,m,o),`sr ${m} ${JSON.stringify(s)} ${JSON.stringify(o)} got ${JSON.stringify(r.text)} ref ${JSON.stringify(ref(s,m,o))}`);
+      ok(r.removed===Array.from(s.replace(/\r\n|\r/g,'\n')).length-Array.from(r.text).length,'removed '+JSON.stringify(s));}
+  }
+  const A={half:true,full:true,tab:true,nbsp:false};
+  ok(sr.cleanSpaces('山田　太郎',  'remove',A).text==='山田太郎','sr1');
+  ok(sr.cleanSpaces('山田　太郎',  'normalize',A).text==='山田 太郎','sr2');
+  ok(sr.cleanSpaces('　山田　 太郎　','trim',A).text==='山田　 太郎','sr3');
+  ok(sr.cleanSpaces('株式会社 サンプル　商事','normalize',A).text==='株式会社 サンプル 商事','sr4');
+  ok(sr.cleanSpaces('山田　太郎','remove',{half:true}).text==='山田　太郎','half only keeps full-width');
+  ok(sr.cleanSpaces('a b\r\n c ','remove',A).text==='ab\nc','newlines kept as \\n');
+  ok(sr.cleanSpaces('','remove',A).text===''&&sr.cleanSpaces('','remove',A).removed===0,'empty');
+  ok(sr.cleanSpaces('山 田','remove',A).removed===1,'removed count');
+  ok(sr.cleanSpaces('  山　　田  ','normalize',A).removed===5,'removed normalize '+sr.cleanSpaces('  山　　田  ','normalize',A).removed);
+  console.log('space-remove '+k+' cases');
+})();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

@@ -251,3 +251,11 @@
 ## 2026-10-13 アイデア登録(定期実行)
 - アイデア登録: 記事32件・商品32件・ツール21件を追加(重複で除外27件)。
 - 解釈: 既存行と同じ趣旨(例: 全角半角、重複検出、郵便番号、ROUND系、プルダウン、営業日、DATEDIF、INDEX+MATCH、工程表、研修期限、原価表、棚卸、物販在庫、スタッフ別売上、既存ツール)は除外。商品は業界・想定価格つきで todo、PDF向けは種類=pdf。ツールはslug未定で todo。税・法令の判断が要るものは含めず、記事本文は書いていない。
+
+## 2026-10-13 オーナー方針で増量(定期実行・14時台)
+- 2026-10-13 オーナー方針で増量: CHARTER/PORTFOLIO/RUNBOOK の上限を、記事1日6本・無料ツール1日3本・spec_ready 未作成8件未満で補充に更新。品質ゲートは緩めていない。
+- 解釈: 実行時刻は14時台(JST)でその日の最初の回ではないため、毎日の分析(STATE詳細)は行わない。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。リポジトリは公開とみなし仕様のみ。python3 は markdown/openpyxl のある /usr/bin/python3 を使用。
+- (1) 仕様: PRODUCTS #17 工事台帳(1,980円・建設)の spec を construction-ledger/spec.md に作成。式はSUMPRODUCTで完全一致。LibreOffice試作でケース1〜10を確認(案件Noの大文字小文字は区別されないことを仕様に明記)。spec_ready は2件(工程表・工事台帳)。
+- (2) 記事: topics #5 を公開(space-remove-zenkaku-hankaku)。site/verify/space_remove.py で8入力×4式+UNICODE式を再計算し不一致0件。Excelでは未確認と明記。本日の記事 累計2本(phone-hyphen-remove、これ)。
+- (3) 無料ツール: /tools/space-remove/(全角・半角スペース・タブの削除/1つにそろえる/前後のみ削除、外部送信なし)。tools_test.js に独立の正規表現実装との12,000ケース照合を追加し fail=0。ブラウザでの実機操作(ボタン)は未確認。本日のツール 累計1本。
+- Check: quality_check 7本OK、build_site 成功。人間への依頼は新規なし。
