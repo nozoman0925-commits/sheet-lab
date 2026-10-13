@@ -106,6 +106,14 @@ def build_status(root, md_to_html, n_articles, n_tools):
     prods = ("<h2>販売中の商品</h2><ul>" + "".join(links) + "</ul>") if links else ""
     nxt = re.search(r"(?ms)^## 次の依頼\s*\n(.*?)(?=^## |\Z)", human)
     nxt_html = md_to_html(nxt.group(1).strip()) if nxt and nxt.group(1).strip() else "<p>いまお願いしたいことはありません。</p>"
+    sec = nxt.group(1) if nxt else ""
+    once = re.search(r"(?ms)^### 初回のみ[^\n]*\n(.*?)(?=^###? |\Z)", sec)
+    bl = [x.strip()[2:] for x in (once.group(1) if once else sec).splitlines() if x.strip().startswith("- ")][:3]
+    today = ('<h2>今日の10分(オーナーがやること)</h2><p class="meta">1日10分以内。内訳:</p><ul>'
+             "<li>朝のカレンダー通知を見る(1分)</li><li>noteに1本貼る(2分)</li>"
+             "<li>AIとの会話で「出品して」と送る(1分)</li><li>お客様への返信案を確認して送る(3分)</li>"
+             "<li>数字を1つ報告する(PVやnoteのビュー、3分)</li></ul>"
+             + ("<p class=\"meta\">初回のみの設定(次の依頼から最大3件):</p><ul>" + "".join(f"<li>{E(x)}</li>" for x in bl) + "</ul>" if bl else ""))
     pend = _requests(pd / "requests", False)
     done = _requests(pd / "requests" / "done", True)
     now = datetime.now(JST)
@@ -129,6 +137,6 @@ window.open(r.url,"_blank","noopener");}});
 </script>"""
     return (f"<style>{EXTRA_CSS}</style><div class=\"st\"><h1>運営の進捗</h1>"
             f"<p class=\"meta\">最終更新: {now:%Y-%m-%d %H:%M} JST</p>"
-            f"<h2>現在の数字</h2>{nums}{summ}{prods}<h2>あなたへのお願い</h2>{nxt_html}"
+            f"{today}<h2>現在の数字</h2>{nums}{summ}{prods}<h2>あなたへのお願い</h2>{nxt_html}"
             f"<h2>依頼の状況</h2><h3>受付中</h3>{''.join(pend) or '<p>なし</p>'}<h3>完了</h3>{''.join(done) or '<p>なし</p>'}"
             f"<h2>作業の記録</h2>{_timeline()}</div>{form}")

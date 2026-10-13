@@ -240,3 +240,10 @@
 - Do: INBOX/STATE/HUMAN_TASKS更新、/about/ に「発信している場所」を追加。見積書に関係するサイト記事は無く、記事側は変更なし。
 - Check: build_site 成功(公開6本)、dist/about/ にnoteへのリンクを確認。
 - Act: 次回はnote無料記事の流れ(10/14〜)を見て、サイト側の関連リンクを検討。
+
+## 2026-10-13 月100万円計画の作成(定期実行)
+- Plan: オーナー方針(1日10分・月100万円)を計画書と運用ルールに反映する。
+- Do: PLAN_1M.md 新規、PRODUCTS に30テーマ+業界セット6行、CHARTER/PORTFOLIO/HUMAN_TASKS 更新、status_page.py に「今日の10分」欄を追加。
+- Check: quality_check 6本OK、build_site 成功(公開6本)、dist/status に新欄を確認。
+- 解釈: 「次の依頼から最大3件」は、初回のみの設定の先頭3件を表示(毎日の作業は固定文の内訳と重複するため)。CHARTERに在庫ルールが無かったため追記。ビルドに必要な python の markdown が未導入だったので pip で導入。
+- Act: 次回は spec_ready の在庫を確認し、業界特化(G)から仕様を追加する。
