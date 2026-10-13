@@ -1,0 +1,135 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>エクセルで株式会社の前株・後株をそろえる方法【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="名簿の「山田株式会社」と「株式会社山田」が混在するとき、IF・LEFT・RIGHT・MIDで前株または後株にそろえる式を、10パターンで実際に計算して確認。スペースが混じる場合や、うまくそろえられないケースも正直に解説します。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/kabu-position/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="エクセルで株式会社の前株・後株をそろえる方法【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="名簿の「山田株式会社」と「株式会社山田」が混在するとき、IF・LEFT・RIGHT・MIDで前株または後株にそろえる式を、10パターンで実際に計算して確認。スペースが混じる場合や、うまくそろえられないケースも正直に解説します。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/kabu-position/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "エクセルで株式会社の前株・後株をそろえる方法【LibreOfficeで計算して確認】", "datePublished": "2026-10-13", "dateModified": "2026-10-13", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "名簿の「山田株式会社」と「株式会社山田」が混在するとき、IF・LEFT・RIGHT・MIDで前株または後株にそろえる式を、10パターンで実際に計算して確認。スペースが混じる場合や、うまくそろえられないケースも正直に解説します。", "url": "https://sheet-lab-site.pages.dev/kabu-position/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/kabu-position/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "エクセルで株式会社の前株・後株をそろえる方法【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/kabu-position/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; エクセルで株式会社の前株・後株をそろえる方法【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-13 ・ Excel関数</p><h1>エクセルで株式会社の前株・後株をそろえる方法【LibreOfficeで計算して確認】</h1><p>名簿に「山田株式会社」と「株式会社山田」が混ざっていると、並べ替えても同じ会社が離れてしまい、重複も探せません。この記事では、「株式会社」の位置を<strong>前株(株式会社山田)か後株(山田株式会社)のどちらかにそろえる</strong>式を、パターン別に実際に計算して確かめた結果だけを紹介します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/kabu_position.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使う関数はExcelにもありますが、本番のデータに使う前に、数行で結果を確かめてください。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>「株式会社」は4文字なので、<code>LEFT(A2,4)</code>と<code>RIGHT(A2,4)</code>で前株か後株かを判定できます。</li>
+<li>前株にそろえるなら、後株の行だけ「株式会社」を頭につけて、末尾の4文字を取り除きます。</li>
+<li>間や末尾にスペースが混じると判定が外れるので、先にスペースを整えます。</li>
+<li>「株式会社」が両端にある、社名の途中にある、といった行は、式で無理にそろえず、人が確認します。</li>
+</ul>
+<h2 id="1-b">手順1: まず位置を判定する(B列)</h2>
+<p>A2に会社名が入っているとして、B2に次の式を入れ、下へコピーします。</p>
+<pre><code>=IF(A2=&quot;&quot;,&quot;&quot;,IF(AND(LEFT(A2,4)=&quot;株式会社&quot;,RIGHT(A2,4)=&quot;株式会社&quot;,LEN(A2)&gt;4),&quot;要確認&quot;,IF(LEFT(A2,4)=&quot;株式会社&quot;,&quot;前株&quot;,IF(RIGHT(A2,4)=&quot;株式会社&quot;,&quot;後株&quot;,IF(ISNUMBER(FIND(&quot;株式会社&quot;,A2)),&quot;途中&quot;,&quot;なし&quot;)))))
+</code></pre>
+<p>実際に計算した結果は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>入力</th>
+<th>判定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>山田株式会社</td>
+<td>後株</td>
+</tr>
+<tr>
+<td>株式会社山田</td>
+<td>前株</td>
+</tr>
+<tr>
+<td>有限会社山田</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>山田商事</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>山田株式会社東京</td>
+<td>途中</td>
+</tr>
+<tr>
+<td>株式会社山田株式会社</td>
+<td>要確認</td>
+</tr>
+<tr>
+<td>(空欄)</td>
+<td>(空欄)</td>
+</tr>
+</tbody>
+</table>
+<p>「要確認」は、先頭と末尾の両方が「株式会社」の行です。どちらが本来の位置か式では決められないため、人が見るための印にしています。</p>
+<h2 id="2-c">手順2: 前株にそろえる(C列)</h2>
+<p>B列の判定を使い、後株の行だけ作り替えます。</p>
+<pre><code>=IF(B2=&quot;後株&quot;,&quot;株式会社&quot;&amp;LEFT(A2,LEN(A2)-4),A2)
+</code></pre>
+<p>「山田株式会社」は、末尾の4文字を除いた「山田」の前に「株式会社」をつけて「株式会社山田」になりました。前株・なし・途中・要確認の行は、元の文字のまま出ます。</p>
+<h2 id="3-d">手順3: 後株にそろえる(D列)</h2>
+<p>反対に後株にそろえるなら、前株の行だけ作り替えます。</p>
+<pre><code>=IF(B2=&quot;前株&quot;,MID(A2,5,LEN(A2))&amp;&quot;株式会社&quot;,A2)
+</code></pre>
+<p>「株式会社山田」は「山田株式会社」になりました。<code>MID(A2,5,LEN(A2))</code>は、5文字目から最後までを取り出します。</p>
+<h2 id="_2">注意点: スペースが混じると判定が外れる</h2>
+<p>実際に計算すると、スペースが混じる2つの入力は、次のように動きました。</p>
+<table>
+<thead>
+<tr>
+<th>入力</th>
+<th>判定</th>
+<th>前株にそろえた結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>山田 株式会社(間にスペース)</td>
+<td>後株</td>
+<td>「株式会社山田 」(末尾にスペースが残る)</td>
+</tr>
+<tr>
+<td>山田株式会社 (末尾にスペース)</td>
+<td>途中</td>
+<td>変わらない(末尾が「株式会社」ではないため)</td>
+</tr>
+</tbody>
+</table>
+<p>つまり、間のスペースは結果に残り、末尾のスペースは判定そのものを外します。先に、全角スペースを半角に直してからTRIMで前後と連続のスペースを整えておくと防げます。</p>
+<pre><code>=TRIM(SUBSTITUTE(A2,&quot;　&quot;,&quot; &quot;))
+</code></pre>
+<p>計算では、「山田株式会社 」(末尾スペース)は「山田株式会社」に、「　株式会社　山田」は「株式会社 山田」になりました。この式の結果の列を元に、手順1〜3を行うと安全です。間に残る半角スペースまで消したい場合は、<a href="/space-remove-zenkaku-hankaku/">全角・半角スペースの一括削除</a>の式を組み合わせてください。</p>
+<h2 id="_3">注意点: この式ができないこと</h2>
+<ul>
+<li>「(株)」「㈱」「（株）」など、略した書き方は判定しません。先に「株式会社」に置き換える必要があります。</li>
+<li>「有限会社」「合同会社」など、ほかの法人格は対象外です。同じ考え方で文字数(有限会社も4文字)を変えて作れますが、今回は「株式会社」だけを確認しました。</li>
+<li>社名の途中にある「株式会社」(例: 山田株式会社東京)は、式では動かしません。</li>
+<li>前株と後株で別の会社になる場合もあるため、そろえた結果は元の列を残して確認してください。</li>
+</ul>
+<h2 id="_4">元のデータに戻すとき</h2>
+<p>式の結果を残したいときは、結果の列をコピーして「値として貼り付け」をしてから、元の列を削除します。いきなり元の列を上書きすると、やり直せなくなるので、列を分けておくのが安全です。</p>
+<h2 id="_5">名簿全体を整えるなら</h2>
+<p>会社名の位置のほかに、電話番号のハイフン、全角・半角、スペースの混在など、名簿には直したい表記ゆれが重なりがちです。運営者が作った「名簿クレンジングシート」は、法人格の表記や電話番号などをまとめて整えるExcelのシートです。まず試したい方向けに、50行までの<a href="https://nozoman.booth.pm/items/8978060">無料お試し版</a>があります。この記事の方法で足りる場合は、使う必要はありません。</p>
+<p>ブラウザで手軽に整えたいときは、無料の<a href="/tools/space-remove/">スペース一括削除ツール</a>や<a href="/tools/phone-format/">電話番号の整形ツール</a>も使えます(どちらも入力は外部に送信されません)。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>「株式会社」は4文字。<code>LEFT</code>と<code>RIGHT</code>で位置を判定する</li>
+<li>前株にそろえるなら<code>"株式会社"&amp;LEFT(A2,LEN(A2)-4)</code>、後株なら<code>MID(A2,5,LEN(A2))&amp;"株式会社"</code></li>
+<li>スペースが混じると判定が外れるので、先に整える</li>
+<li>両端や途中にあるものは「要確認」にして人が見る</li>
+</ul>
+<p>式はいずれもLibreOfficeで計算した結果です。Excelでは未確認のため、本番のデータに使う前に、数行で結果を確かめてください。</p><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、10パターンの入力(前株・後株・法人格なし・途中・両端・スペース混じり・空欄など)について、位置の判定・前株化・後株化の結果が期待値と一致することを検証スクリプト(site/verify/kabu_position.py)で確認しました。最初に置いた想定のうち、スペース混じりの2パターンは実測と違っていたため、実測に合わせて記事を書いています。IF・LEFT・RIGHT・MID・LEN・FIND・TRIM・SUBSTITUTEはExcelにもある関数ですが、Excelでは未確認です。外部サイトの記述は参照していません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/kabu_position.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/phone-hyphen-remove/">電話番号のハイフンを一括で削除する方法【LibreOfficeで計算して確認】</a></li><li><a href="/space-remove-zenkaku-hankaku/">名簿の全角スペースと半角スペースが混在するときの一括削除【LibreOfficeで計算して確認】</a></li><li><a href="/vlookup-na-causes/">VLOOKUPが#N/Aになる5つの原因と直し方【計算して確認済み】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">名簿クレンジングシート</a>(500円)</li><li><a href="/products/">【無料・お試し版】名簿クレンジングシート(50行まで)</a>(無料)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>

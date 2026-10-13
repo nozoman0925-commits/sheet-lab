@@ -131,3 +131,7 @@
 
 ## 2026-10-13 追記(上限の増量と公開)
 - 記事 space-remove-zenkaku-hankaku と無料ツール /tools/space-remove/ を公開。工事台帳(PRODUCTS #17)の仕様を spec_ready に。上限は記事6本/ツール3本に更新。売上0円、閲覧データなし、INBOXに新しい実績なし。7日分未満のため判断せず。
+
+## 2026-10-13 追記(15時台の定期実行)
+- 公開: 記事 kabu-position、無料ツール /tools/phone-format/。仕様 rent-ledger(spec_ready 3件)。本日累計: 記事3本・ツール2本。
+- 事業の数字: 売上0円、閲覧データなし、INBOXに新しい実績なし。7日分未満のため判断せず(推測の数字は書かない)。

@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -84,5 +84,47 @@ const sr=load('tools/space-remove/body.html');
   ok(sr.cleanSpaces('山 田','remove',A).removed===1,'removed count');
   ok(sr.cleanSpaces('  山　　田  ','normalize',A).removed===5,'removed normalize '+sr.cleanSpaces('  山　　田  ','normalize',A).removed);
   console.log('space-remove '+k+' cases');
+})();
+// phone-format: 正規表現による独立実装と、ランダム入力で総当たり照合
+const pf=load('tools/phone-format/body.html');
+(function(){
+  const POOL=['0','3','9','1','5','7','８','０','９','-','－','ー','(',')','（','）',' ','\u3000','A','\n'];
+  let seed=777;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  const fw={'０':'0','１':'1','２':'2','３':'3','４':'4','５':'5','６':'6','７':'7','８':'8','９':'9'};
+  function ref(line,mode){ // 戻り値 [出力, 注意あり?]
+    if(/^[\s\u3000]*$/.test(line))return [line.trim?'':'',false];
+    let s=[...line].map(c=>fw[c]||c).join('');
+    s=s.split('').filter(c=>!'-\u2010\u2011\u2012\u2013\u2014\u2015\u2212\u30FC\uFF70\uFF0D\u30FB()\uFF08\uFF09 \u3000\t'.includes(c)).join('');
+    if(!/^\d+$/.test(s))return [line,true];
+    if(mode==='hyphen'){
+      if(s.length===11&&['050','070','080','090'].includes(s.slice(0,3)))return [s.slice(0,3)+'-'+s.slice(3,7)+'-'+s.slice(7),false];
+      if(s.length===10&&['03','06'].includes(s.slice(0,2)))return [s.slice(0,2)+'-'+s.slice(2,6)+'-'+s.slice(6),false];
+      return [s,true];
+    }
+    return [s,s[0]!=='0'];
+  }
+  let k=0;
+  for(let n=0;n<6000;n++){
+    let s='';const len=Math.floor(rnd()*16);for(let i=0;i<len;i++)s+=POOL[Math.floor(rnd()*POOL.length)];
+    for(const m of ['digits','hyphen']){
+      const r=pf.cleanPhones(s,m);const lines=s.split(/\r\n|\n|\r/).map(l=>ref(l,m));k++;
+      ok(r.text===lines.map(x=>x[0]).join('\n'),`pf text ${m} ${JSON.stringify(s)} got ${JSON.stringify(r.text)}`);
+      ok(r.notes.length===lines.filter(x=>x[1]).length,`pf notes ${m} ${JSON.stringify(s)} ${r.notes.length}`);
+    }
+  }
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  eq(pf.cleanPhones('03-1234-5678','digits').text,'0312345678','pf1');
+  eq(pf.cleanPhones('(03)1234-5678','digits').text,'0312345678','pf2');
+  eq(pf.cleanPhones('０９０－１２３４－５６７８','hyphen').text,'090-1234-5678','pf3');
+  eq(pf.cleanPhones('09012345678','hyphen').text,'090-1234-5678','pf4');
+  eq(pf.cleanPhones('0312345678','hyphen').text,'03-1234-5678','pf5');
+  eq(pf.cleanPhones('0612345678','hyphen').text,'06-1234-5678','pf6');
+  eq(pf.cleanPhones('0120123456','hyphen').text,'0120123456','pf7 0120は区切らない');
+  ok(pf.cleanPhones('0120123456','hyphen').notes.length===1,'pf7 note');
+  eq(pf.cleanPhones('03-1234-5678 内線12','digits').text,'03-1234-5678 内線12','pf8 数字以外は元のまま');
+  ok(pf.cleanPhones('312345678','hyphen').notes[0].includes('先頭が0'),'pf9 先頭0なし');
+  eq(pf.cleanPhones('03ー1234ー5678','digits').text,'0312345678','pf10 長音符');
+  eq(pf.cleanPhones('a\n\n03-1111-2222','digits').text,'a\n\n0311112222','pf11 空行保持');
+  console.log('phone-format '+k+' cases');
 })();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

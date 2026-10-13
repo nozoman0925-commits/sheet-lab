@@ -1,0 +1,56 @@
+<h1>電話番号の整形ツール</h1>
+<p>名簿の電話番号を1行1件で貼り付けると、全角の数字や記号をそろえ、ハイフン・括弧・スペースを取り除いた形(数字だけ)にします。必要なら、携帯電話(11桁)と03・06の固定電話(10桁)にだけハイフンを入れ直せます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><textarea id="t" rows="8" style="width:100%" placeholder="ここに貼り付けてください(例:&#10;03-1234-5678&#10;(03)1234-5678&#10;０９０－１２３４－５６７８)"></textarea></p>
+<p>出力の形:
+<label><input type="radio" name="m" value="digits" checked> 数字だけ(0312345678)</label>
+<label><input type="radio" name="m" value="hyphen"> ハイフンを入れる(03-1234-5678)</label>
+</p>
+<p>
+<button type="button" id="br">実行</button>
+<button type="button" id="bc">結果をコピー</button>
+<span id="st"></span>
+</p>
+<p><textarea id="o" rows="8" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<div id="nt"></div>
+<h2>このツールの扱い</h2>
+<ul>
+<li>全角の数字(０〜９)を半角にし、ハイフンに似た記号(-、－、‐、−、ー など)、括弧(半角・全角)、半角・全角のスペースを取り除きます。</li>
+<li>取り除いたあとに数字以外が残る行(内線番号の文字、「TEL」などの文字)は、元の行のまま出力し、行番号を下に表示します。</li>
+<li>「ハイフンを入れる」は、<b>0から始まる11桁(090・080・070・050などの携帯・IP電話)は3-4-4</b>、<b>03または06から始まる10桁は2-4-4</b>の形だけ対応します。それ以外(市外局番が3〜5桁の固定電話、0120など)は区切り位置を決められないため、数字だけのまま出力し、行番号を表示します。</li>
+<li>先頭の0が消えた9桁・10桁の数字(Excelで数値になったとき)は、自動で0を足しません。「先頭が0ではありません」と表示します。</li>
+</ul>
+<p class="meta">このツールは書式をそろえるだけで、電話番号が実在するか・つながるかは確認しません。市外局番ごとの桁数の全一覧は持っていないため、03・06以外の固定電話は自動で区切りません。Excelの関数で同じことをする方法は、関連記事で計算して確認しています。</p>
+<p class="meta">関連: <a href="/phone-hyphen-remove/">電話番号のハイフンを一括で削除する方法(記事)</a> / <a href="/tools/space-remove/">スペース一括削除ツール</a> / <a href="/tools/zenkaku/">全角・半角変換ツール</a> / 名簿の表記ゆれをまとめて整える Excel シート:<a href="/products/">名簿クレンジングシート(運営者の商品)</a>(50行までの<a href="https://nozoman.booth.pm/items/8978060">無料お試し版</a>あり)</p>
+<script>
+function cleanPhones(text,mode){
+  var lines=text.split(/\r\n|\n|\r/),out=[],notes=[];
+  var DASH=/[\-‐‑‒–—―−ーｰ－・]/g;
+  for(var i=0;i<lines.length;i++){
+    var orig=lines[i];
+    if(orig.replace(/[\s　]/g,"")===""){out.push(orig.trim?"":"");continue;}
+    var s=orig.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);});
+    s=s.replace(DASH,"").replace(/[()（）]/g,"").replace(/[ 　\t]/g,"");
+    if(!/^[0-9]+$/.test(s)){out.push(orig);notes.push((i+1)+"行目: 数字以外の文字が残るため、そのままにしました");continue;}
+    if(mode==="hyphen"){
+      if(s.length===11&&/^0[5789]0/.test(s)){s=s.slice(0,3)+"-"+s.slice(3,7)+"-"+s.slice(7);}
+      else if(s.length===10&&/^0[36]/.test(s)){s=s.slice(0,2)+"-"+s.slice(2,6)+"-"+s.slice(6);}
+      else if(s.charAt(0)!=="0"){notes.push((i+1)+"行目: 先頭が0ではありません(数字だけで出力)");}
+      else{notes.push((i+1)+"行目: 区切り位置を決められません(数字だけで出力)");}
+    }else if(s.charAt(0)!=="0"){notes.push((i+1)+"行目: 先頭が0ではありません");}
+    out.push(s);
+  }
+  return {text:out.join("\n"),notes:notes};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var m=document.querySelector('input[name="m"]:checked').value;
+    var r=cleanPhones(g("t").value,m);
+    g("o").value=r.text;
+    g("st").textContent="確認が必要な行: "+r.notes.length+"件";
+    var nt=g("nt");nt.textContent="";
+    if(r.notes.length){var ul=document.createElement("ul");r.notes.forEach(function(n){var li=document.createElement("li");li.textContent=n;ul.appendChild(li);});nt.appendChild(ul);}
+  };
+  g("bc").onclick=function(){var o=g("o");o.select();try{document.execCommand("copy");}catch(e){}};
+}
+</script>

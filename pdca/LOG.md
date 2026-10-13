@@ -259,3 +259,11 @@
 - (2) 記事: topics #5 を公開(space-remove-zenkaku-hankaku)。site/verify/space_remove.py で8入力×4式+UNICODE式を再計算し不一致0件。Excelでは未確認と明記。本日の記事 累計2本(phone-hyphen-remove、これ)。
 - (3) 無料ツール: /tools/space-remove/(全角・半角スペース・タブの削除/1つにそろえる/前後のみ削除、外部送信なし)。tools_test.js に独立の正規表現実装との12,000ケース照合を追加し fail=0。ブラウザでの実機操作(ボタン)は未確認。本日のツール 累計1本。
 - Check: quality_check 7本OK、build_site 成功。人間への依頼は新規なし。
+
+## 2026-10-13 定期実行(15時台JST)
+- 上限の更新は前回までに反映済み(CHARTER「上限の更新」)。今回は再記録のみ。品質ゲートは緩めていない。
+- 解釈: その日の最初の回ではない(JST 15時)ため毎日の分析は省略。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。リポジトリは公開とみなし、商品ファイルは置かない。python3は /usr/bin/python3(markdown/openpyxl あり)を使用。
+- (1) 仕様: PRODUCTS #23 家賃入金管理表(1,980円・不動産)を rent-ledger/spec.md に作成。式はSUMPRODUCTの完全一致。LibreOffice試作でケース1〜11(期限当日・翌日の境界、前月入金の除外、ワイルドカード部屋No、過入金、記録の部屋No点検)を確認。spec_ready は3件(工程表・工事台帳・家賃入金管理表)。
+- (2) 記事: topics #2 を公開(kabu-position)。site/verify/kabu_position.py で10パターン+補正式3を再計算し不一致0件(スペース混じり2件は想定違いを実測に直して記載)。Excelでは未確認と明記。本日の記事 累計3本。
+- (3) 無料ツール: /tools/phone-format/(電話番号の記号除去・全角→半角・携帯11桁/03・06の10桁のみハイフン付与。外部送信なし)。tools_test.js に独立実装との12,000ケース照合を追加し fail=0。ブラウザでの実機操作は未確認。本日のツール 累計2本。
+- Check: quality_check 8本OK、build_site 成功。人間への依頼は新規なし。
