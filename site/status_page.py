@@ -68,7 +68,7 @@ def _timeline():
     return "".join(f"<h3>{d}</h3><ul class=\"tl\">{''.join(v)}</ul>" for d, v in days.items())
 
 
-def build_status(root, md_to_html, n_articles, n_tools):
+def _legacy(root, md_to_html, n_articles, n_tools):
     pd = root.parent / "pdca"
     state, prod, human = _read(pd, "STATE.md"), _read(pd, "PRODUCTS.md"), _read(pd, "HUMAN_TASKS.md")
     m = re.search(r"売上\s*([\d,]+)\s*円", state)
@@ -136,8 +136,377 @@ var r=buildRequest(document.getElementById("rk").value,t,document.getElementById
 document.getElementById("rm").textContent="";
 window.open(r.url,"_blank","noopener");}});
 </script>"""
-    return (f"<style>{EXTRA_CSS}</style><div class=\"st\"><h1>運営の進捗</h1>"
-            f"<p class=\"meta\">最終更新: {now:%Y-%m-%d %H:%M} JST</p>"
+    return (f"<style>{EXTRA_CSS}</style><div class=\"st\">"
             f"{today}<h2>現在の数字</h2>{nums}{summ}{prods}<h2>あなたへのお願い</h2>{nxt_html}"
             f"<h2>依頼の状況</h2><h3>受付中</h3>{''.join(pend) or '<p>なし</p>'}<h3>完了</h3>{''.join(done) or '<p>なし</p>'}"
             f"<h2>作業の記録</h2>{_timeline()}</div>{form}")
+
+
+# ---------------------------------------------------------------- こども向けの表示
+CRON_HOURS = [0, 3, 6, 9, 12, 15, 18, 21]  # 毎日0:53から3時間おき(JST)
+KIND_ICON = {"記事": "📝", "ツール": "🛠️", "商品": "📦", "note": "✍️", "X": "🐦", "分析": "🔍", "ルール": "📋", "その他": "🤖"}
+KIND_LABEL = {"記事": "きじ", "ツール": "ツール", "商品": "しょうひん", "note": "note", "X": "X", "分析": "しらべもの", "ルール": "ルール", "その他": "そのほか"}
+EASY = [("開設し", "つくり"), ("開設", "つくる"), ("設定する", "せっていする"), ("出品", "お店にならべる"),
+        ("改善案", "よくした案"), ("貼り替える", "はりかえる"), ("貼る", "はる"), ("判断する", "きめる"),
+        ("プロフィール", "じこしょうかい"), ("固定ポスト", "いちばん上のポスト"), ("測定ID", "数える番号"),
+        ("サムネイル", "商品のかおの絵"), ("差し替える", "とりかえる"), ("予約投稿", "じかんを決めて投稿")]
+
+
+def _next_run(now):
+    for d in (0, 1):
+        for h in CRON_HOURS:
+            t = (now + timedelta(days=d)).replace(hour=h, minute=53, second=0, microsecond=0)
+            if t > now:
+                return t
+    return now
+
+
+def _git_added_today(root, today):
+    """今日(JST)に新しく追加されたファイルのパス一覧。取得できなければ None。"""
+    try:
+        r = subprocess.run(["git", "log", "--diff-filter=A", "--name-only", "--date=iso-strict", "--pretty=format:@@%cd"],
+                           capture_output=True, text=True, encoding="utf-8", timeout=30, cwd=root.parent)
+        if r.returncode != 0:
+            return None
+    except Exception:
+        return None
+    out, cur = set(), False
+    for line in r.stdout.splitlines():
+        if line.startswith("@@"):
+            try:
+                cur = datetime.fromisoformat(line[2:]).astimezone(JST).strftime("%Y-%m-%d") == today
+            except ValueError:
+                cur = False
+        elif cur and line.strip():
+            out.add(line.strip())
+    return out
+
+
+def _counts(root, pd, prod_txt, today):
+    arts = sorted((root / "content").glob("*.md"))
+    tools = [d for d in sorted((root / "tools").glob("*")) if d.is_dir()]
+    sell_slugs = set(re.findall(r"selling[^|]*\(slug:\s*([\w-]+)\)", prod_txt))
+    sell_n = len([l for l in prod_txt.splitlines() if re.match(r"\|\s*\d+\s*\|\s*selling", l)])
+    pdirs = [d.name for d in sorted((pd / "deliverables" / "products").glob("*")) if d.is_dir()] if (pd / "deliverables" / "products").exists() else []
+    waiting = [n for n in pdirs if n not in sell_slugs]
+    notes = sorted((pd / "deliverables" / "outreach" / "note").glob("*.md"))
+    xs = sorted((pd / "deliverables" / "outreach" / "x").glob("20*.md"))
+    added = _git_added_today(root, today)
+
+    def tdy(prefix, pred=lambda p: True):
+        if added is None:
+            return None
+        return len({p for p in added if p.startswith(prefix) and pred(p)})
+    return {
+        "art": (len(arts), tdy("site/content/", lambda p: p.endswith(".md"))),
+        "tool": (len(tools) + 1, (lambda v: v)(None if added is None else len({p.split("/")[2] for p in added if p.startswith("site/tools/")}))),
+        "sell": (sell_n, None),
+        "wait": (len(waiting), None if added is None else len({p.split("/")[3] for p in added if p.startswith("pdca/deliverables/products/") and p.split("/")[3] in waiting})),
+        "note": (len(notes), tdy("pdca/deliverables/outreach/note/")),
+        "x": (len(xs), tdy("pdca/deliverables/outreach/x/", lambda p: re.search(r"/20\d\d-", p) is not None)),
+    }
+
+
+def _metric_int(metrics, channel, col):
+    """METRICSの週次表から、チャネル名に channel を含む行の列(0始まり)の数字の合計。数字が1つも無ければ None。"""
+    tot, seen = 0, False
+    for l in metrics.splitlines():
+        c = [x.strip() for x in l.strip().strip("|").split("|")]
+        if len(c) >= 9 and channel in c[1]:
+            m = re.match(r"(\d[\d,]*)", c[col])
+            if m:
+                tot += int(m.group(1).replace(",", ""))
+                seen = True
+    return tot if seen else None
+
+
+def _kind_of(text, tag=""):
+    t = tag or ""
+    for k in KIND_ICON:
+        if t and t.lower() == k.lower():
+            return k
+    if re.search(r"note|ノート", text):
+        return "note"
+    if re.search(r"(^|[^A-Za-z])X(の|原稿|投稿)|ツイート|Xの", text):
+        return "X"
+    if re.search(r"ツール", text):
+        return "ツール"
+    if re.search(r"記事", text):
+        return "記事"
+    if re.search(r"商品|仕様|テンプレ|シート", text):
+        return "商品"
+    if re.search(r"分析|計測|数字|調査|実測", text):
+        return "分析"
+    if re.search(r"ルール|憲章|方針|CHARTER|整理", text):
+        return "ルール"
+    return "その他"
+
+
+def _parse_log(log):
+    """LOG.md を {日付: [(時刻, 種類, 文)]} にする。新形式 `- HH:MM [種類] 文` と従来の自由書式の両方を読む。"""
+    days = {}
+    for m in re.finditer(r"(?ms)^## (\d{4}-\d{2}-\d{2})([^\n]*)\n(.*?)(?=^## |\Z)", log):
+        date, title, body = m.group(1), m.group(2).strip(), m.group(3)
+        hint = re.search(r"(\d{1,2})時台", title)
+        tm_default = f"{int(hint.group(1)):02d}時ごろ" if hint else ""
+        for line in body.splitlines():
+            line = line.strip()
+            if not line.startswith("- "):
+                continue
+            line = line[2:].strip()
+            nf = re.match(r"(\d{1,2}):(\d{2})\s*\[([^\]]+)\]\s*(.+)", line)
+            if nf:
+                days.setdefault(date, []).append((f"{int(nf.group(1)):02d}:{nf.group(2)}", _kind_of(nf.group(4), nf.group(3).strip()), nf.group(4)))
+                continue
+            line = re.sub(r"^\(\d\)\s*", "", line)
+            line = re.sub(r"^(Do|Plan|Check|Act|学び|対応|次の一手)[::]\s*", "", line)
+            if not line or re.match(r"(次の一手|build_site)", line) or "実行結果は下記コミット" in line or re.match(r"外部(投稿|送信)", line):
+                continue
+            if line.startswith("解釈"):  # むずかしい判断メモは日記に出さない(上限の判定にだけ使う)
+                days.setdefault(date, []).append((tm_default, "メモ", line))
+                continue
+            days.setdefault(date, []).append((tm_default, _kind_of(line), line))
+    return days
+
+
+def _short(text, n=78):
+    text = re.sub(r"`|\*\*", "", text)
+    text = re.sub(r"[A-Za-z0-9_./-]+\.(md|py|js|json|html)", "ファイル", text)
+    first = re.split(r"(?<=。)", text)[0]
+    if len(first) > n:
+        first = first[:n].rstrip("、,") + "…"
+    return first
+
+
+def _easy(t):
+    for a, b in EASY:
+        t = t.replace(a, b)
+    return t
+
+
+def _svg_shop():
+    return """<svg viewBox="0 0 360 200" role="img" aria-label="お店の前でロボットの店員が手をふっているイラスト" class="hero-svg">
+<rect x="0" y="168" width="360" height="32" fill="#bfe3c4"/><circle cx="318" cy="38" r="20" fill="#ffe27a"/>
+<g fill="#fff"><ellipse cx="60" cy="40" rx="26" ry="11"/><ellipse cx="82" cy="34" rx="18" ry="10"/><ellipse cx="240" cy="28" rx="22" ry="9"/></g>
+<rect x="40" y="82" width="170" height="90" fill="#ffd9c9" stroke="#e8a58b" stroke-width="3"/>
+<path d="M28 84 L125 38 L222 84 Z" fill="#ff9fb2" stroke="#e0728a" stroke-width="3"/>
+<path d="M40 84 h170 v20 q-14 14 -28 0 q-14 14 -28 0 q-14 14 -28 0 q-14 14 -28 0 q-14 14 -28 0 q-14 14 -30 0z" fill="#fff" stroke="#e0728a" stroke-width="2"/>
+<rect x="104" y="118" width="42" height="54" rx="4" fill="#8fd3f4" stroke="#4aa3cf" stroke-width="3"/>
+<rect x="54" y="116" width="36" height="30" rx="4" fill="#fff6c9" stroke="#e5b93c" stroke-width="3"/>
+<rect x="160" y="116" width="36" height="30" rx="4" fill="#fff6c9" stroke="#e5b93c" stroke-width="3"/>
+<rect x="76" y="58" width="98" height="22" rx="6" fill="#fff" stroke="#e0728a" stroke-width="2"/>
+<text x="125" y="74" text-anchor="middle" font-size="13" font-weight="700" fill="#b8506a">シート実務ラボ</text>
+<g class="robot"><rect x="258" y="96" width="54" height="64" rx="12" fill="#a8d8ff" stroke="#5aa5dc" stroke-width="3"/>
+<rect x="266" y="62" width="38" height="34" rx="10" fill="#d3ecff" stroke="#5aa5dc" stroke-width="3"/>
+<line x1="285" y1="62" x2="285" y2="50" stroke="#5aa5dc" stroke-width="3"/><circle cx="285" cy="47" r="5" fill="#ff8aa1"/>
+<circle cx="276" cy="78" r="5" fill="#2a4a66"/><circle cx="294" cy="78" r="5" fill="#2a4a66"/>
+<path d="M277 88 q8 6 16 0" fill="none" stroke="#2a4a66" stroke-width="3" stroke-linecap="round"/>
+<rect x="274" y="112" width="22" height="16" rx="4" fill="#fff6c9" stroke="#e5b93c" stroke-width="2"/>
+<path d="M258 112 q-18 -14 -20 -34" fill="none" stroke="#5aa5dc" stroke-width="7" stroke-linecap="round"/>
+<path d="M312 118 q14 8 20 22" fill="none" stroke="#5aa5dc" stroke-width="7" stroke-linecap="round"/>
+<rect x="268" y="160" width="12" height="10" fill="#5aa5dc"/><rect x="290" y="160" width="12" height="10" fill="#5aa5dc"/></g></svg>"""
+
+
+def _svg_pig(pct):
+    return f"""<svg viewBox="0 0 160 120" role="img" aria-label="ぶたの貯金箱" class="pig-svg">
+<ellipse cx="80" cy="112" rx="58" ry="6" fill="#00000018"/>
+<ellipse cx="78" cy="68" rx="56" ry="40" fill="#ffb7c5" stroke="#e58aa0" stroke-width="3"/>
+<polygon points="40,36 52,14 66,34" fill="#ffb7c5" stroke="#e58aa0" stroke-width="3" stroke-linejoin="round"/>
+<ellipse cx="128" cy="70" rx="14" ry="16" fill="#ff9fb2" stroke="#e58aa0" stroke-width="3"/>
+<circle cx="124" cy="68" r="2.5" fill="#8a3a50"/><circle cx="132" cy="68" r="2.5" fill="#8a3a50"/>
+<circle cx="108" cy="54" r="4" fill="#4a2a36"/><rect x="62" y="38" width="30" height="6" rx="3" fill="#8a3a50"/>
+<rect x="44" y="96" width="14" height="16" rx="5" fill="#ffb7c5" stroke="#e58aa0" stroke-width="3"/><rect x="92" y="96" width="14" height="16" rx="5" fill="#ffb7c5" stroke="#e58aa0" stroke-width="3"/>
+<circle cx="77" cy="14" r="9" fill="#ffd84a" stroke="#d2a817" stroke-width="2"/><text x="77" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#8a6a00">円</text></svg>"""
+
+
+CSS = """
+body{background:#fff8e8;color:#3a3226}
+.kd{font-size:18px;line-height:1.8;max-width:100%;overflow-wrap:anywhere}
+.kd h1,.kd h2,.kd h3{border:0;padding:0;margin:0}
+.kd section{margin:28px 0}.kd h2{font-size:1.35rem;margin-bottom:12px}
+.kd .band{background:#d9f0ff;border-radius:24px;padding:14px;text-align:center;border:3px solid #a8d8ff}
+.kd .hero-svg{width:100%;max-width:420px;height:auto}.kd .band h1{font-size:1.6rem;margin:4px 0}
+.kd .pill{display:inline-block;background:#fff;border-radius:999px;padding:4px 14px;margin:4px 0;font-size:1rem}
+.kd .card{background:#fff;border:3px solid #ffe08a;border-radius:22px;padding:14px 16px}
+.kd .one{background:#fff3b8;border-color:#ffd84a;font-size:1.25rem;font-weight:700}
+.kd .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kd .stat{background:#fff;border-radius:20px;padding:10px 12px;text-align:center;border:3px solid var(--c,#cfe9ff)}
+.kd .stat .ic{font-size:2rem;line-height:1.2}.kd .stat b{display:block;font-size:2.1rem;line-height:1.2}
+.kd .stat .lb{font-size:1rem}.kd .stat .pl{font-size:.95rem;color:#7a6a50}
+.kd .meter{display:flex;gap:12px;align-items:center}.kd .pig-svg{width:110px;flex:none}
+.kd .yen{font-size:2.2rem;font-weight:800}.kd .bar{background:#f0e6d0;border-radius:999px;height:22px;overflow:hidden;margin:6px 0}
+.kd .bar i{display:block;height:100%;background:linear-gradient(90deg,#8fd3f4,#7be0a8);border-radius:999px;min-width:6px}
+.kd .stairs{list-style:none;padding:0;margin:14px 0 0;display:grid;gap:8px}
+.kd .stairs li{border-radius:16px;padding:8px 12px;background:#fff;border:3px solid #eadfc6;margin-left:calc(var(--i)*12px)}
+.kd .stairs li.now{border-color:#ff8aa1;background:#ffe6ec}.kd .stairs li.ok{border-color:#7be0a8;background:#e4f9ec}
+.kd .here{display:inline-block;background:#ff6f8e;color:#fff;border-radius:999px;padding:0 10px;font-size:.9rem;margin-left:6px}
+.kd .path{display:grid;gap:8px}.kd .step{display:flex;gap:12px;align-items:center;background:#fff;border-radius:20px;padding:10px 14px;border:3px solid #cfe9ff}
+.kd .step .big{font-size:2.2rem}.kd .light{width:22px;height:22px;border-radius:50%;flex:none;border:3px solid #0003}
+.kd .l-blue{background:#4aa3ff}.kd .l-yellow{background:#ffd23f}.kd .l-red{background:#ff5d5d}
+.kd .arrow{text-align:center;font-size:1.4rem;line-height:1}
+.kd .todo{display:flex;gap:12px;align-items:flex-start;background:#fff;border:3px solid #ffc9d6;border-radius:20px;padding:12px 14px;margin:10px 0}
+.kd .box3{width:30px;height:30px;border:4px solid #ff8aa1;border-radius:8px;flex:none;margin-top:4px;background:#fff}
+.kd .clock{display:inline-block;background:#fff3b8;border-radius:999px;padding:0 10px;font-size:.95rem;white-space:nowrap}
+.kd .tl{list-style:none;padding:0;margin:0;border-left:5px solid #cfe9ff;margin-left:10px}
+.kd .tl li{position:relative;margin:0 0 12px;padding:2px 0 2px 18px}
+.kd .tl li:before{content:"";position:absolute;left:-12px;top:12px;width:14px;height:14px;border-radius:50%;background:#8fd3f4;border:3px solid #fff8e8}
+.kd .tm{display:inline-block;background:#d9f0ff;border-radius:10px;padding:0 8px;font-size:.95rem;margin-right:6px}
+.kd .cal{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kd .day{background:#fff;border-radius:18px;border:3px solid #cfe9ff;overflow:hidden}
+.kd .day .hd{background:#8fd3f4;color:#10304a;font-weight:700;padding:4px 10px}.kd .day .bd{padding:8px 10px}
+.kd details.adult{background:#fff;border:3px solid #eadfc6;border-radius:20px;padding:10px 16px}
+.kd details.adult>summary{font-weight:700;cursor:pointer;font-size:1.1rem}
+.kd details.adult{font-size:16px}
+.kd .robot{transform-origin:285px 165px;animation:sway 4s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-2deg)}50%{transform:rotate(2deg)}}
+@media(prefers-reduced-motion:reduce){.kd .robot{animation:none}}
+@media(prefers-color-scheme:dark){
+body{background:#1b1710;color:#f2ead8}
+.kd .band{background:#1f3347;border-color:#3b5d7d}.kd .pill{background:#2a2418}
+.kd .card,.kd .stat,.kd .step,.kd .todo,.kd .day,.kd details.adult,.kd .stairs li{background:#2a2418;color:#f2ead8}
+.kd .one{background:#4a3f12;border-color:#a88a1a}.kd .stat .pl{color:#cbbd9f}
+.kd .stairs li.now{background:#4a2530}.kd .stairs li.ok{background:#1f4030}
+.kd .bar{background:#3a3220}.kd .box3{background:#2a2418}.kd .clock{background:#4a3f12}
+.kd .tm{background:#27455f}.kd .tl li:before{border-color:#1b1710}.kd .day .hd{background:#2f5f7f;color:#fff}
+}
+@media(max-width:420px){.kd .grid{gap:8px}.kd .stat b{font-size:1.8rem}.kd .meter{flex-direction:column;text-align:center}}
+"""
+
+
+def build_status(root, md_to_html, n_articles, n_tools):
+    pd = root.parent / "pdca"
+    state, prod, human = _read(pd, "STATE.md"), _read(pd, "PRODUCTS.md"), _read(pd, "HUMAN_TASKS.md")
+    metrics, log = _read(pd, "METRICS.md"), _read(pd, "LOG.md")
+    now = datetime.now(JST)
+    today = now.strftime("%Y-%m-%d")
+    nxt_run = _next_run(now)
+    cnt = _counts(root, pd, prod, today)
+    # 売上(実測): STATE.md の「売上○円」。無ければ0円
+    m = re.search(r"売上\s*([\d,]+)\s*円", state)
+    yen = int(m.group(1).replace(",", "")) if m else 0
+    sold = _metric_int(metrics, "BOOTH", 5)
+    sold_n = sold if sold is not None else 0
+    views = _metric_int(metrics, "サイト", 2)
+    clicks = _metric_int(metrics, "サイト", 3)
+
+    # 1 あいさつ
+    hero = (f'<section class="band"><div>{_svg_shop()}</div><h1>シート実務ラボのいま</h1>'
+            f'<div class="pill">🕒 さいごに更新: {now:%Y年%-m月%-d日 %H:%M}</div><br>'
+            f'<div class="pill">🤖 ロボット(AI)はいまもはたらいています。つぎは {nxt_run:%-d日 %-H時%M分}ごろ</div></section>')
+
+    # 2 ひとこと
+    made = cnt["sell"][0] + cnt["wait"][0]
+    if yen > 0 or sold_n > 0:
+        sale_s = f"{sold_n if sold_n else 1}こ売れて、売上は{yen:,}円になったよ。"
+    else:
+        sale_s = "まだ売れていないよ。"
+    one = (f'<section><h2>🏪 お店のいま、ひとことで</h2><div class="card one">商品は{made}こできたよ。{sale_s}'
+           f'いまはお客さんに見つけてもらう準備をしているよ。</div></section>')
+
+    # 3 できたもの
+    def stat(ic, label, key, c):
+        n, t = cnt[key]
+        pl = f"きょう +{t}" if t is not None else "きょうの数は不明"
+        return (f'<div class="stat" style="--c:{c}"><div class="ic">{ic}</div><div class="lb">{label}</div>'
+                f'<b>{n}</b><div class="pl">{pl}</div></div>')
+    made_html = ('<section><h2>🎁 できたもの</h2><div class="grid">'
+                 + stat("📝", "記事(本)", "art", "#cfe9ff") + stat("🛠️", "無料ツール(こ)", "tool", "#d6f5df")
+                 + stat("🛍️", "売っている商品(こ)", "sell", "#ffe08a") + stat("📦", "出品まちの商品(こ)", "wait", "#ffc9d6")
+                 + stat("✍️", "noteの原稿(本)", "note", "#e6dcff") + stat("🐦", "Xの原稿(本)", "x", "#cfe9ff")
+                 + '</div><p class="meta">「出品まち」は、できているけれど、まだお店にならんでいない商品です(ならべるのは人間のしごと)。</p></section>')
+
+    # 4 お金のメーター
+    goals = [("① はじめの1こが売れる", 1), ("② 月に1万円", 10000), ("③ 月に10万円", 100000), ("④ 月に100万円(大きな夢)", 1000000)]
+    cur = 0
+    for i, (_, g) in enumerate(goals):
+        if (i == 0 and (sold_n >= 1 or yen > 0)) or (i > 0 and yen >= g):
+            cur = i + 1
+    cur = min(cur, 3)
+    tgt = goals[cur][1]
+    pct = min(100, int((max(yen, 1 if cur == 0 and sold_n else 0)) * 100 / tgt)) if tgt else 0
+    steps = ""
+    for i, (nm, g) in enumerate(goals):
+        cls = "ok" if i < cur else ("now" if i == cur else "")
+        mark = "✅ " if i < cur else ""
+        here = '<span class="here">📍 いまここ</span>' if i == cur else ""
+        steps += f'<li class="{cls}" style="--i:{i}">{mark}{nm}{here}</li>'
+    money = (f'<section><h2>🐷 お金のメーター</h2><div class="card"><div class="meter">{_svg_pig(pct)}'
+             f'<div><div>いままでの売上</div><div class="yen">{yen:,}円</div><div>つぎの目標: {goals[cur][0]}</div></div></div>'
+             f'<div class="bar" role="img" aria-label="つぎの目標まで {pct}%"><i style="width:{pct}%"></i></div>'
+             f'<ul class="stairs">{steps}</ul>'
+             f'<p class="meta">売上は実際に確かめた数字だけです。階段の一番上は「大きな夢」で、いまの予定ではありません。</p></div></section>')
+
+    # 5 買うまでの道
+    def light(v, kind):
+        if v is None:
+            return "yellow", "まだ数えはじめたところ"
+        if v == 0:
+            return "red", "いまは0"
+        return "blue", f"{v:,}"
+    sv_l, sv_t = light(views, "v")
+    cl_l, cl_t = light(clicks, "c")
+    bu_l, bu_t = light(sold_n if (sold is not None or yen > 0 or True) else None, "b")
+    bu_t = f"{sold_n}こ" if sold_n else "まだ0こ"
+    if sold_n > 0:
+        bu_l = "blue"
+    pairs = [("🚪", "① 見つけてもらう", "お店(サイト)に来てくれた回数", sv_l, sv_t if views is None else f"{views:,}回"),
+             ("👀", "② 商品をのぞく", "商品のページを見に行ったクリック", cl_l, cl_t if clicks is None else f"{clicks:,}回"),
+             ("🛒", "③ 買う", "売れた数", bu_l, bu_t)]
+    stuck = next((p for p in pairs if p[3] != "blue"), None)
+    path = '<div class="arrow">⬇️</div>'.join(
+        f'<div class="step"><div class="big">{ic}</div><div style="flex:1"><b>{t}</b><br><span class="meta">{d}</span><br><b>{v}</b></div>'
+        f'<span class="light l-{lc}" role="img" aria-label="{ {"blue":"あおはうまくいっている","yellow":"きいろはまだ分からない","red":"あかはとまっている"}[lc] }"></span></div>'
+        for ic, t, d, lc, v in pairs)
+    why = (f'<p><b>いま気をつけたいところ:</b> {stuck[1]}(' + {"yellow": "まだ数が分からないので、数えるじゅんびをしているよ", "red": "まだ数字が出ていないよ"}[stuck[3]] + ')</p>') if stuck else "<p>どのステップも数字が出ています。</p>"
+    path_html = (f'<section><h2>🛤️ お客さんが買うまでの道</h2><div class="path">{path}</div>{why}'
+                 '<p class="meta">🔵あお=うまくいっている ・ 🟡きいろ=まだ分からない ・ 🔴あか=止まっている</p></section>')
+
+    # 6 おてつだい
+    secs = re.search(r"(?ms)^### 2週間チェックリスト[^\n]*\n(.*?)(?=^###? |\Z)", human)
+    items = [x.strip() for x in (secs.group(1) if secs else "").splitlines() if re.match(r"\s*- \[[ xX]\]", x)]
+    total = len(items)
+    donen = len([x for x in items if re.match(r"- \[[xX]\]", x)])
+    open_items = [x for x in items if x.startswith("- [ ]")][:3]
+    cards = ""
+    for x in open_items:
+        t = re.sub(r"\*\*", "", x[6:])
+        mm = re.match(r"(.*?)[::]\s*(.*)", t)
+        day, body = (mm.group(1), mm.group(2)) if mm else ("", t)
+        dm = re.search(r"[(（](\d+)分", body)
+        mins = dm.group(1) + "分" if dm else ""
+        title = re.split(r"[(（]", body)[0].strip()
+        title = _easy(title)
+        cards += (f'<div class="todo"><div class="box3" aria-hidden="true"></div><div><b>{E(title)}</b><br>'
+                  + (f'<span class="clock">🕒 {mins}</span> ' if mins else "") + (f'<span class="meta">{E(re.sub(r"[(（]", " ", day).rstrip(")）"))}</span>' if day else "") + '</div></div>')
+    pct_h = int(donen * 100 / total) if total else 0
+    help_html = (f'<section><h2>🙋 きょうのおてつだい(人間がやること)</h2>'
+                 + (cards or '<div class="card">いまお願いしたいことはありません。</div>')
+                 + f'<div class="card"><b>{total}こ中 {donen}こ できた</b><div class="bar" role="img" aria-label="{pct_h}%"><i style="width:{pct_h}%"></i></div></div></section>')
+
+    # 7 ロボットの日記
+    days = _parse_log(log)
+    shown_day = today if today in days else (max(days) if days else today)
+    allents = days.get(shown_day, [])
+    ents = [e for e in allents if e[1] != "メモ"]
+    lis = "".join(f'<li><span class="tm">{E(t) if t else "きょう"}</span>{KIND_ICON[k]} <b>{KIND_LABEL[k]}</b> {E(_short(x))}</li>' for t, k, x in ents[-12:])
+    note = ""
+    if re.search(r"上限", " ".join(x for _, _, x in allents)):
+        note = '<div class="card"><b>🌙 きょうの記事は、ぜんぶ書いたよ。つぎはあしたやるよ。</b><br><span class="meta">ひとつの日に出せる記事とツールの数は決めてあります(品質をたもつため)。そのあとは、noteやXの原稿や商品の仕様を作っています。</span></div>'
+    head7 = "きょうやったこと" if shown_day == today else f"さいごに記録されたひ({shown_day})のこと"
+    diary = (f'<section><h2>📓 ロボットの日記({head7})</h2>{note}'
+             + (f'<ul class="tl">{lis}</ul>' if lis else '<div class="card">まだきょうの記録はありません。つぎの実行でここに出ます。</div>')
+             + '<p class="meta">📝きじ 🛠️ツール 📦しょうひん ✍️note 🐦X 🔍しらべもの 📋ルール</p></section>')
+
+    # 8 予定
+    tom = now + timedelta(days=1)
+    wd = "月火水木金土日"
+    sun = now + timedelta(days=(6 - now.weekday()) % 7 or 7)
+    cal = (f'<section><h2>🗓️ これからの予定</h2><div class="cal">'
+           f'<div class="day"><div class="hd">{tom.month}/{tom.day}({wd[tom.weekday()]}) 0:53</div><div class="bd">🔍 きのうの数字をしらべる</div></div>'
+           f'<div class="day"><div class="hd">{tom.month}/{tom.day}({wd[tom.weekday()]}) 10時</div><div class="bd">📦 あたらしい商品をつくる</div></div>'
+           f'<div class="day"><div class="hd">{sun.month}/{sun.day}(日)</div><div class="bd">🔁 1しゅうかんのふりかえり</div></div>'
+           '</div><p class="meta">ロボットは3時間ごとに動いて、そのたびに日記を書きます。</p></section>')
+
+    legacy = _legacy(root, md_to_html, n_articles, n_tools)
+    adult = f'<section><details class="adult"><summary>🔧 くわしい記録(大人向け)</summary>{legacy}</details></section>'
+    return f'<style>{CSS}</style><div class="kd">{hero}{one}{made_html}{money}{path_html}{help_html}{diary}{cal}{adult}</div>'
