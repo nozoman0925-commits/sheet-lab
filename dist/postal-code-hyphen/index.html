@@ -1,0 +1,171 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>エクセルで郵便番号のハイフンあり・なしをそろえる方法(7桁)【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="名簿の郵便番号が「1234567」と「123-4567」で混在するとき、SUBSTITUTE・ASC・LEFT・MIDで7桁にそろえ、ハイフン付きにも戻す式を、16パターンで実際に計算して確認。先頭の0が消えた6桁や、7桁にならない行の扱いも正直に解説します。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/postal-code-hyphen/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="エクセルで郵便番号のハイフンあり・なしをそろえる方法(7桁)【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="名簿の郵便番号が「1234567」と「123-4567」で混在するとき、SUBSTITUTE・ASC・LEFT・MIDで7桁にそろえ、ハイフン付きにも戻す式を、16パターンで実際に計算して確認。先頭の0が消えた6桁や、7桁にならない行の扱いも正直に解説します。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/postal-code-hyphen/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "エクセルで郵便番号のハイフンあり・なしをそろえる方法(7桁)【LibreOfficeで計算して確認】", "datePublished": "2026-10-13", "dateModified": "2026-10-13", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "名簿の郵便番号が「1234567」と「123-4567」で混在するとき、SUBSTITUTE・ASC・LEFT・MIDで7桁にそろえ、ハイフン付きにも戻す式を、16パターンで実際に計算して確認。先頭の0が消えた6桁や、7桁にならない行の扱いも正直に解説します。", "url": "https://sheet-lab-site.pages.dev/postal-code-hyphen/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/postal-code-hyphen/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "エクセルで郵便番号のハイフンあり・なしをそろえる方法(7桁)【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/postal-code-hyphen/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; エクセルで郵便番号のハイフンあり・なしをそろえる方法(7桁)【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-13 ・ Excel関数</p><h1>エクセルで郵便番号のハイフンあり・なしをそろえる方法(7桁)【LibreOfficeで計算して確認】</h1><p>住所録に「1234567」と「123-4567」が混ざっていると、並べ替えや突き合わせがそろわず、宛名ラベルの差し込みでも見た目がばらつきます。この記事では、郵便番号を<strong>7桁の数字にそろえる式</strong>と、<strong>ハイフン付き(123-4567)に戻す式</strong>を、パターン別に実際に計算して確かめた結果だけを紹介します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/postal_code.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使う関数はExcelにもありますが、本番のデータに使う前に、数行で結果を確かめてください。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>まず「〒」・ハイフン類・スペースを取り除き、全角の数字を半角にして、7桁の数字に寄せます(B列)。</li>
+<li>7桁の数字になっている行だけ、ハイフン付き(D列)またはハイフンなし(E列)に整えます。</li>
+<li>7桁にならない行は、式で無理に直さず「要確認」にして人が見ます。</li>
+<li>Excelで数値になって先頭の0が消えた6桁(例: 0234567 → 234567)は、<strong>数値セルのときだけ</strong>0を足す列(C列)で直せます。文字列の6桁には0を足しません。</li>
+</ul>
+<h2 id="1-b">手順1: 記号を取り除いて数字に寄せる(B列)</h2>
+<p>A2に郵便番号が入っているとして、B2に次の式を入れ、下へコピーします。</p>
+<pre><code>=ASC(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(A2&amp;&quot;&quot;,&quot;〒&quot;,&quot;&quot;),&quot; &quot;,&quot;&quot;),&quot;　&quot;,&quot;&quot;),&quot;-&quot;,&quot;&quot;),&quot;－&quot;,&quot;&quot;),&quot;ー&quot;,&quot;&quot;),&quot;‐&quot;,&quot;&quot;),&quot;−&quot;,&quot;&quot;))
+</code></pre>
+<p>内側から順に、次の文字を<code>SUBSTITUTE(…,"その文字","")</code>で消し、全体を<code>ASC(…)</code>で包んでいます。</p>
+<ul>
+<li>「〒」、半角スペース、全角スペース</li>
+<li>ハイフン類: <code>-</code>(半角)、<code>－</code>(全角)、<code>ー</code>(長音)、<code>‐</code>、<code>−</code></li>
+</ul>
+<p><code>A2&amp;""</code>は、数値のセルも文字列として扱うための書き方です。<code>ASC</code>は全角の数字を半角にします。</p>
+<h2 id="2-60c">手順2: 数値セルの6桁に0を足す(C列)</h2>
+<p>CSVをExcelで開くと、「0234567」が数値の234567になり、先頭の0が消えることがあります。C2に次の式を入れます。</p>
+<pre><code>=IF(AND(ISNUMBER(A2),LEN(B2)=6),&quot;0&quot;&amp;B2,B2)
+</code></pre>
+<p>セルが数値で、記号除去後が6桁のときだけ、先頭に0を足します。<strong>文字列として入っている「234567」には足しません</strong>(元から6桁の誤入力かもしれず、式では区別できないため)。</p>
+<h2 id="3-7de">手順3: 7桁だけをハイフン付き・なしに整える(D列・E列)</h2>
+<p>D2(ハイフン付き)とE2(ハイフンなし)に、次の式を入れます。</p>
+<pre><code>D2: =IF(AND(LEN(C2)=7,SUMPRODUCT(--ISNUMBER(FIND(MID(C2,ROW($1:$7),1),&quot;0123456789&quot;)))=7),LEFT(C2,3)&amp;&quot;-&quot;&amp;MID(C2,4,4),&quot;要確認&quot;)
+E2: =IF(AND(LEN(C2)=7,SUMPRODUCT(--ISNUMBER(FIND(MID(C2,ROW($1:$7),1),&quot;0123456789&quot;)))=7),C2,&quot;要確認&quot;)
+</code></pre>
+<p>「7文字で、すべての文字が0〜9」のときだけ整形します。<code>ISNUMBER(VALUE(…))</code>のような簡易判定にしなかったのは、「1E34567」のように指数表記として数値扱いされてしまう文字列があるためです。</p>
+<h2 id="_2">実際に計算した結果</h2>
+<table>
+<thead>
+<tr>
+<th>入力</th>
+<th>B列(記号除去)</th>
+<th>D列(ハイフン付き)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1234567</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>123-4567</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>123ー4567(長音)</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>123－4567(全角ハイフン)</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>１２３－４５６７(全角)</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>〒123-4567</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>(前後にスペース)123-4567</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>123　4567(全角スペース)</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>1234567(数値セル)</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>234567(数値セル・6桁)</td>
+<td>234567</td>
+<td>023-4567(C列で0を補完)</td>
+</tr>
+<tr>
+<td>234567(文字列・6桁)</td>
+<td>234567</td>
+<td>要確認</td>
+</tr>
+<tr>
+<td>12-34567(ハイフン位置が違う)</td>
+<td>1234567</td>
+<td>123-4567</td>
+</tr>
+<tr>
+<td>123-45678(8桁)</td>
+<td>12345678</td>
+<td>要確認</td>
+</tr>
+<tr>
+<td>1E34567</td>
+<td>1E34567</td>
+<td>要確認</td>
+</tr>
+<tr>
+<td>123-456A</td>
+<td>123456A</td>
+<td>要確認</td>
+</tr>
+<tr>
+<td>(空欄)</td>
+<td>(空欄)</td>
+<td>要確認</td>
+</tr>
+</tbody>
+</table>
+<p>E列(ハイフンなし)も同じ行で「要確認」になり、7桁の行は<code>023-4567</code>の代わりに<code>0234567</code>の形で出ました。</p>
+<p>注意したいのは次の3点です。</p>
+<ul>
+<li>ハイフンの位置が違う「12-34567」も、7桁の数字になれば整形されます。<strong>位置が違うこと自体は検出しません</strong>。</li>
+<li>空欄の行は、この式のままだと「要確認」になります。空欄を空欄のまま残したいときは、D2を<code>=IF(A2="","",…)</code>で包んでください(この包み方は上の16パターンの検証には含めていません)。</li>
+<li><strong>郵便番号が実在するかどうかは確認していません</strong>。「000-0000」のような存在しない番号も、7桁の数字なら整形されます。</li>
+</ul>
+<h2 id="_3">注意点: この式ができないこと</h2>
+<ul>
+<li>住所と郵便番号の対応が合っているかは確認できません。</li>
+<li>外国の郵便番号や、5桁の旧郵便番号は対象外です(7桁以外は「要確認」になります)。</li>
+<li>上の式は元の列(A列)を書き換えません。結果を残すときは、列をコピーして「値として貼り付け」をしてから元の列を削除します。いきなり上書きすると、やり直せなくなります。</li>
+</ul>
+<h2 id="_4">名簿全体を整えるなら</h2>
+<p>郵便番号のほかに、電話番号のハイフン、全角・半角、スペース、前株・後株など、名簿には直したい表記ゆれが重なりがちです。運営者が作った「名簿クレンジングシート」は、これらをまとめて整えるExcelのシートです。まず試したい方向けに、50行までの<a href="https://nozoman.booth.pm/items/8978060">無料お試し版</a>があります。この記事の方法で足りる場合は、使う必要はありません。</p>
+<p>ブラウザで手軽に整えたいときは、無料の<a href="/tools/postal-format/">郵便番号の整形ツール</a>(7桁にそろえる・ハイフンを入れる)や、<a href="/tools/phone-format/">電話番号の整形ツール</a>も使えます(入力は外部に送信されません)。関連記事: <a href="/phone-hyphen-remove/">電話番号のハイフンを一括で削除する方法</a>、<a href="/space-remove-zenkaku-hankaku/">全角・半角スペースの一括削除</a>。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>記号とスペースを<code>SUBSTITUTE</code>で消し、<code>ASC</code>で半角にして7桁に寄せる</li>
+<li>7桁の数字だけ、<code>LEFT(…,3)&amp;"-"&amp;MID(…,4,4)</code>でハイフン付きにする</li>
+<li>数値セルで先頭の0が消えた6桁だけ、0を足せる。文字列の6桁は人が確認する</li>
+<li>7桁にならない行は「要確認」で残し、無理に直さない</li>
+</ul>
+<p>式はいずれもLibreOfficeで計算した結果です。Excelでは未確認のため、本番のデータに使う前に、数行で結果を確かめてください。</p><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、16パターンの入力(数字のみ・ハイフン・全角・長音・〒付き・前後スペース・数値セルの6桁・桁数違い・英字混じり・空欄など)について、記号除去・6桁の0補完・ハイフン付き7桁・ハイフンなし7桁の4列(計64件)が期待値と一致することを検証スクリプト(site/verify/postal_code.py)で確認しました。SUBSTITUTE・ASC・LEFT・MID・LEN・FIND・ROW・SUMPRODUCT・ISNUMBERはExcelにもある関数ですが、Excelでは未確認です。郵便番号が実在するかどうかは確認していません。外部サイトの記述は参照していません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/postal_code.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/kabu-position/">エクセルで株式会社の前株・後株をそろえる方法【LibreOfficeで計算して確認】</a></li><li><a href="/phone-hyphen-remove/">電話番号のハイフンを一括で削除する方法【LibreOfficeで計算して確認】</a></li><li><a href="/space-remove-zenkaku-hankaku/">名簿の全角スペースと半角スペースが混在するときの一括削除【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">名簿クレンジングシート</a>(500円)</li><li><a href="/products/">【無料・お試し版】名簿クレンジングシート(50行まで)</a>(無料)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
