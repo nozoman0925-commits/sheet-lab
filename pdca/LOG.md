@@ -323,3 +323,6 @@
 - 解釈: FAQの答えは spec.md・booth/listing.md・商品名案に書かれた範囲だけ。名簿クレンジングシート(製品版)の行数と、名簿シートの印刷は根拠が無いため「要確認/確認していない」と書いた。
 - 解釈: 更新履歴の公開日は実際の公開日が不明のため空欄(オーナーが記入)。REACTIONSの実ファイルは outreach/x/REACTIONS.md。
 - Check: build_site.py 実行結果は下記コミット時点。外部投稿・送信なし。
+
+## 2026-10-13 運営ルールを整理(無人実行)
+- CHARTER/PLAN_1M/HUMAN_TASKS を新方針に統一。status_page.py を新構成に対応。quality_check 10/10 OK、tools_test fail=0、build_site 成功。

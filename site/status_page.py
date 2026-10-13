@@ -109,13 +109,12 @@ def build_status(root, md_to_html, n_articles, n_tools):
     nxt = re.search(r"(?ms)^## 次の依頼\s*\n(.*?)(?=^## |\Z)", human)
     nxt_html = md_to_html(nxt.group(1).strip()) if nxt and nxt.group(1).strip() else "<p>いまお願いしたいことはありません。</p>"
     sec = nxt.group(1) if nxt else ""
-    once = re.search(r"(?ms)^### 初回のみ[^\n]*\n(.*?)(?=^###? |\Z)", sec)
-    bl = [x.strip()[2:] for x in (once.group(1) if once else sec).splitlines() if x.strip().startswith("- ")][:3]
-    today = ('<h2>今日の10分(オーナーがやること)</h2><p class="meta">1日10分以内。内訳:</p><ul>'
-             "<li>朝のカレンダー通知を見る(1分)</li><li>noteに1本貼る(2分)</li>"
-             "<li>AIとの会話で「出品して」と送る(1分)</li><li>お客様への返信案を確認して送る(3分)</li>"
-             "<li>数字を1つ報告する(PVやnoteのビュー、3分)</li></ul>"
-             + ("<p class=\"meta\">初回のみの設定(次の依頼から最大3件):</p><ul>" + "".join(f"<li>{E(x)}</li>" for x in bl) + "</ul>" if bl else ""))
+    chk = re.search(r"(?ms)^### 2週間チェックリスト[^\n]*\n(.*?)(?=^###? |\Z)", sec)
+    bl = [re.sub(r"\*\*", "", x.strip()[6:]) for x in (chk.group(1) if chk else sec).splitlines()
+          if x.strip().startswith("- [ ] ")][:3]
+    today = ('<h2>今日の10分(オーナーがやること)</h2>'
+             + ("<p class=\"meta\">2週間チェックリストの未完了の先頭3件:</p><ul>" + "".join(f"<li>{E(x)}</li>" for x in bl) + "</ul>"
+                if bl else "<p>いまお願いしたいことはありません。</p>"))
     pend = _requests(pd / "requests", False)
     done = _requests(pd / "requests" / "done", True)
     now = datetime.now(JST)
