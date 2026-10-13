@@ -95,3 +95,12 @@
 - 公開前に `grep -rn "booth.pm/items" site/content site/tool site/tools` が0件であることを確認する(build_site.py も dist 内の直リンクを警告する)。
 - note用原稿のBOOTHリンクも `/go/<商品slug>/?from=note-<原稿名>` にする(例: https://sheet-lab-site.pages.dev/go/meibo-trial/?from=note-meibo-01)。
 - 見方: Cloudflare Web Analytics の /go/ のページビュー = 商品へのクリック数、from = どの記事から。BOOTH側の閲覧数・購入はGoogleアナリティクス(BOOTHの測定ID欄)とBOOTH管理画面で見て、突き合わせる。
+
+## Xの原稿(2026-10-13追加。オーナー判断: 集客の起点としてXを始める。アカウント開設と投稿はオーナー、原稿はAI)
+- 定期実行は、その日の最初の実行(0時台)で pdca/deliverables/outreach/x/<日付>.md に翌日分の投稿原稿を2本作る。
+  - 1本目: 140字前後のExcelの小技。サイトの検証済み記事から、数式と結果をそのまま使える形で書く(「LibreOfficeで計算」「Excelでは未確認」の別を守る)。
+  - 2本目: 無料ツールか記事の紹介。リンクはサイトのURLに `?from=x` を付ける。
+- 商品の宣伝は週に2回まで(宣伝には【PR】等、運営者の商品であることを明記)。BOOTHのリンクは `/go/<商品slug>/?from=x`。
+- 同じ文面やほぼ同じ投稿を繰り返さない。作る前に過去の原稿(outreach/x/)と比べる。
+- 誇大表現・実績の捏造・「稼げる」系の言葉は禁止。ハッシュタグは1〜2個。
+- AIは投稿・送信をしない(貼り付けはオーナー)。複数アカウントでの同種の投稿、架空の人物は禁止。
