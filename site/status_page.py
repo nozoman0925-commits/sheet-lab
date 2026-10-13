@@ -91,7 +91,9 @@ def build_status(root, md_to_html, n_articles, n_tools):
                 pm = re.search(r"(\d[\d,]*)円", cells[1])
                 mp = pm.group(1).replace(",", "") if pm else ""
             price = f"{int(mp):,}円" if mp.isdigit() and mp != "0" else ("無料" if mp == "0" else "価格未設定")
-            links.append(f'<li><a href="{E(u.group(0))}" rel="noopener" target="_blank">{E(name)}</a>({price})</li>')
+            slug = (meta.get(mid.group(1), {}) if mid else {}).get("slug", "")
+            href = f"/go/{slug}/?from=status" if slug else u.group(0)
+            links.append(f'<li><a href="{E(href)}">{E(name)}</a>({price})</li>')
     nums = (f'<div class="num"><div>売上<b>{E(sales)}</b></div><div>販売中の商品<b>{len(sell)}点</b></div>'
             f'<div>公開中の記事<b>{n_articles}本</b></div><div>無料ツール<b>{n_tools}個</b></div></div>')
     # 今日のまとめ: STATE.md の最新の日付の最後のエントリから最大6行

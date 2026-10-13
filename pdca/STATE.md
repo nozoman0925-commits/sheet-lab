@@ -139,3 +139,9 @@
 ## 2026-10-13 追記(計測の土台)
 - オーナー判断「原稿の量より先に、集客→購入→利益を計測できる状態にする」を反映。INBOXにBOOTH実測(販売0・スキ0・売上0円、無料お試し版もDL0)を追記し、pdca/METRICS.md(週次の計測表)を新規作成。PLAN_1M.mdに判断ルール、HUMAN_TASKSに最優先のCloudflareトークン設定と週1回のnote数字報告を追加。
 - 事業の数字: 売上0円、サイトPV・noteビューは未計測。BOOTHの手数料は未確認。quality_check 10本OK、build_site成功。
+
+## 2026-10-13 方針A・クリック計測(無人実行)
+- 方針A(商品製作1日1本まで・既存5商品の改善・集客・計測を優先)を CHARTER / PLAN_1M に反映。spec_ready の補充は3件未満に変更。
+- サイトのBOOTH商品リンクをすべて /go/<slug>/?from=<ページ> 経由に変更。/go/ は build_site.py が生成(noindex、sitemap非掲載、外部送信なし)。dist に /go/ 以外の商品直リンクは0件(ショップのトップは直リンク)。
+- 既存5商品の改善案: pdca/deliverables/booth-improve/。HUMAN_TASKS の先頭2件を GA測定ID設定・Cloudflare Web Analytics有効化に変更。
+- 事業の数字: 売上0円。閲覧データなし(計測はこれから)。推測の数字は書かない。

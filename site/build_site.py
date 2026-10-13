@@ -108,7 +108,7 @@ def load_products():
         pm = re.search(r"(\d[\d,]*)円", cells[1])
         price = info.get("price") or (pm.group(1).replace(",", "") if pm else "")
         out.append({"id": m.group(1), "url": m.group(0), "name": name, "price": price, "can": info.get("can", ""),
-                    "cannot": info.get("cannot", ""), "tags": info.get("tags", []), "summary": info.get("summary", "")})
+                    "cannot": info.get("cannot", ""), "slug": info.get("slug", ""), "tags": info.get("tags", []), "summary": info.get("summary", "")})
     return out
 
 
@@ -187,7 +187,7 @@ def main():
 <p>{E(CFG['author_bio'])}</p>
 <h2>記事の作り方</h2><p>{E(CFG['ai_disclosure'])}</p>
 <p>数式や手順は、LibreOfficeなどで実際に再計算して確かめたものだけを載せ、確認できていない点は「未確認」と書きます。出典は、中身を確認した公式ページなどに限ります。</p>
-<h2>運営者の商品について</h2><p>運営者は、Excel用テンプレート「<a href="https://nozoman.booth.pm/items/8973300" rel="noopener" target="_blank">名簿クレンジングシート</a>」、「<a href="https://nozoman.booth.pm/items/8977893" rel="noopener" target="_blank">月間家計簿</a>」、「<a href="https://nozoman.booth.pm/items/8978610" rel="noopener" target="_blank">工事・リフォーム用 見積書テンプレート</a>」(ほかに名簿の<a href="https://nozoman.booth.pm/items/8978060" rel="noopener" target="_blank">無料お試し版</a>)をBOOTH(<a href="https://nozoman.booth.pm/" rel="noopener" target="_blank">nozoman.booth.pm</a>)で販売しています。関連する記事やツールのページには、運営者自身の商品であることを明記して案内を置くことがあります。</p>
+<h2>運営者の商品について</h2><p>運営者は、Excel用テンプレート「<a href="/go/meibo-cleansing/?from=about">名簿クレンジングシート</a>」、「<a href="/go/budget-monthly/?from=about">月間家計簿</a>」、「<a href="/go/estimate-construction/?from=about">工事・リフォーム用 見積書テンプレート</a>」(ほかに名簿の<a href="/go/meibo-trial/?from=about">無料お試し版</a>)をBOOTH(<a href="https://nozoman.booth.pm/" rel="noopener" target="_blank">nozoman.booth.pm</a>)で販売しています。関連する記事やツールのページには、運営者自身の商品であることを明記して案内を置くことがあります。</p>
 <h2>発信している場所</h2><p>Excelの使い方や見積書の考え方は、noteでも発信しています: <a href="https://note.com/nozoman0925" rel="noopener" target="_blank">note(nozoman0925)</a>。最初の記事は「<a href="https://note.com/nozoman0925/n/n8f765cc7ec94" rel="noopener" target="_blank">工事・リフォームの見積書をExcelで作るときの計算の順番</a>」です。</p>
 <h2>無料ツールについて</h2><p>/tool/ と /tools/ の無料ツールは、ブラウザの中だけで計算し、入力内容を外部に送信しません。計算結果は、ご自身の環境で必ずご確認のうえお使いください。</p>
 <h2>広告について</h2><p>現時点では、広告の掲載やアフィリエイトは行っていません。今後、広告(Google AdSenseなど)やアフィリエイトを導入する場合は、該当する記事に『広告』『PR』と明記し、このページとプライバシーポリシーを更新します。</p>""", "/about/"))
@@ -205,7 +205,7 @@ def main():
 <h1>プライバシーポリシー</h1>
 <p class="meta">制定: 2026年10月</p>
 <h2>無料ツールに入力したデータ</h2><p>当サイトの無料ツールは、入力内容をブラウザの中だけで処理し、当サイトのサーバーを含む外部へ送信しません。入力内容は運営者には届きません。</p>
-<h2>アクセス状況の把握</h2><p>運営者は、検索結果での表示状況を把握するために、Google Search Consoleを利用しています。当サイトでは現在、閲覧者の行動を追跡するアクセス解析タグや広告タグは設置していません。公開しているホスティング(Cloudflare Pages)では、サービスの提供に必要な範囲でアクセスログが処理されることがあります。</p>
+<h2>アクセス状況の把握</h2><p>運営者は、検索結果での表示状況を把握するために、Google Search Consoleを利用しています。当サイトのソースには、閲覧者の行動を追跡するアクセス解析タグや広告タグを設置していません。ホスティング側のCloudflare Web Analyticsを有効にした場合、ページごとの閲覧数と、商品ページへ移動する中継ページ(/go/)の閲覧数が集計されます(Cookieは使わず、個人を特定する情報は取得しません)。公開しているホスティング(Cloudflare Pages)では、サービスの提供に必要な範囲でアクセスログが処理されることがあります。</p>
 <h2>先行登録アンケート</h2><p>/waitlist/ から回答できるアンケートはGoogleフォームで運営されています。回答内容(メールアドレスを任意でご記入いただく場合を含む)は、有料ツールの需要の把握と、ご希望された方へのご案内の目的にのみ使い、第三者へ提供しません。回答は任意で、料金は発生しません。回答の削除を希望される場合は、<a href="/contact/">お問い合わせ</a>のページに記載の方法でご連絡ください。</p>
 <h2>お問い合わせ</h2><p>お問い合わせでいただいたメールアドレス等は、返信の目的以外には利用しません。</p>
 <h2>外部サイトへのリンク</h2><p>BOOTHなど外部サイトへのリンクがあります。リンク先での情報の取り扱いは、各サイトのポリシーに従います。</p>
@@ -240,13 +240,23 @@ def main():
                    + (f'<p><b>価格: {"無料" if p["price"] == "0" else E(p["price"]) + "円"}</b>(BOOTH)</p>' if p["price"] else "")
                    + (f'<p><b>できること:</b> {E(p["can"])}</p>' if p["can"] else "")
                    + (f'<p><b>できないこと:</b> {E(p["cannot"])}</p>' if p["cannot"] else "")
-                   + f'<p><a href="{E(p["url"])}" rel="noopener" target="_blank">BOOTHで見る</a></p></div>')
+                   + f'<p><a href="/go/{E(p["slug"])}/?from=products">BOOTHで見る</a></p></div>')
     write("/products/", layout(f'テンプレート(有料)一覧 | {CFG["site_name"]}', "運営者が販売しているExcelテンプレートの一覧。できること・できないことを明記しています。",
           "<h1>テンプレート(有料)一覧</h1><p>運営者自身の商品です(BOOTHで販売)。購入前に、各商品の「できないこと」と確認済みの環境をご確認ください。</p>" + (pitems or "<p>準備中です。</p>"),
           "/products/", crumbs=[("ホーム", "/"), ("テンプレート(有料)", "/products/")]))
+    # クリック計測用の中継ページ: /go/<商品slug>/?from=<ページslug>。外部送信なし。noindex・サイトマップ非掲載。
+    for p in products:
+        if not p["slug"]:
+            continue
+        u = E(p["url"])
+        go_body = (f'<h1>ただいまBOOTHの商品ページへ移動しています</h1><p>自動で移動しない場合は、次のリンクから開いてください。</p>'
+                   f'<p><a href="{u}" rel="noopener">{E(p["name"])}(BOOTH)を開く</a></p>')
+        page = layout(f'BOOTHへ移動中 | {CFG["site_name"]}', "BOOTHの商品ページへ移動します", go_body, f'/go/{p["slug"]}/', noindex=True)
+        page = page.replace("<title>", f'<meta http-equiv="refresh" content="0;url={u}"><title>', 1)
+        write(f'/go/{p["slug"]}/', page)
     wl = CFG.get("waitlist_url", "").strip()
     if wl:
-        wl_body = (f'<h1>先行登録(有料版の需要調査)</h1><p>現在、有料の<b>ブラウザ版ツールはまだ提供していません</b>(Excel用の有料テンプレート商品は別にあり、<a href="https://nozoman.booth.pm/items/8973300" rel="noopener" target="_blank">BOOTHで販売中</a>です)。住所分割や名寄せなどの高度なデータ整形ツールを作るかどうかを判断するための、アンケート形式の先行登録です。登録しても料金は発生せず、購入の義務もありません。</p>'
+        wl_body = (f'<h1>先行登録(有料版の需要調査)</h1><p>現在、有料の<b>ブラウザ版ツールはまだ提供していません</b>(Excel用の有料テンプレート商品は別にあり、<a href="/go/meibo-cleansing/?from=waitlist">BOOTHで販売中</a>です)。住所分割や名寄せなどの高度なデータ整形ツールを作るかどうかを判断するための、アンケート形式の先行登録です。登録しても料金は発生せず、購入の義務もありません。</p>'
                    f'<p><a href="{E(wl)}" rel="noopener" target="_blank">アンケートに回答する</a></p>')
     else:
         wl_body = "<h1>先行登録</h1><p>準備中です。ブラウザ版の有料ツールは現在提供していません。</p>"
@@ -265,6 +275,12 @@ def main():
           + "".join(f"<item><title>{E(fm['title'])}</title><link>{BASE}/{fm['slug']}/</link><description>{E(fm['description'])}</description></item>" for fm, _ in published[:20])
           + "</channel></rss>")
 
+    # 置き換え漏れ検知: /go/ 以外にBOOTH商品への直リンクがあれば警告
+    for f in DIST.rglob("*.html"):
+        if "go" in f.relative_to(DIST).parts[:1]:
+            continue
+        if re.search(r"booth\.pm/items/", f.read_text(encoding="utf-8")):
+            print(f"  警告: BOOTH直リンク残り {f.relative_to(DIST)}")
     print(f"公開 {len(published)} 本 / 除外 {len(skipped)} 本 → {DIST}")
     for name, errs in skipped:
         print(f"  除外 {name}: " + " / ".join(errs))
