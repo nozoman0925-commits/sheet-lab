@@ -216,3 +216,9 @@
 - 解釈: 24時間内に記事2本公開済みで(a)スキップ、spec_ready 2件で(e)スキップ、requests/に依頼なし、INBOXに新しい実績なし、日曜でないため週次レビューなし。プライバシーポリシー・お問い合わせ・運営者情報は整備済みと確認。
 - Do: /about/ の「運営者の商品」に見積書テンプレートと名簿の無料お試し版を追加(BOOTH URLはINBOX記載のもの)。
 - Check: quality_check 5本OK、build_site成功(/usr/bin/python3)、dist/about に見積書URLを確認。人間への依頼は新規なし。
+
+## 2026-10-13 記事見送り(定期実行・(a))
+- Plan: 仮説=販売中の名簿シートにつながる「電話番号ハイフン削除」記事(topics.csv #3)が入口になる(指標: Search Consoleの表示。7日分未満で判断しない)。
+- 解釈: 直近24時間の公開記事は0本で(a)可能。ただし出典URLを取得して確認するルールのため、取得を試みた。
+- Do/Check: support.microsoft.com はWebFetchが名前解決失敗、curlはプロキシ403。learn.microsoft.com / support.google.com / nta.go.jp も同様に接続不可。推測でURLを書かないため記事は作らず、サイト・商品の変更なし。quality_check 5本OK、build_site成功を確認。
+- 次回: 出典に接続できる環境なら #3 を執筆。できなければ(b)(f)など出典不要の作業を選ぶ。人間への依頼は新規なし。
