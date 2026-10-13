@@ -360,3 +360,10 @@
 - 01:10 [note] 無料原稿「2ポイント増と25%増は別もの」を作成(outreach/note/point-vs-rate-01.md、未投稿ストック3本目)。式とツールの結果だけ使用。BOOTHは【PR】で /go/budget-monthly/?from=note-point-vs-rate-01。
 - 解釈: 日付はJSTで数え、00時台=10/14の最初の回として毎日の分析を行った。X原稿は10/14〜10/18分がすでにあるため追加なし。仕様の補充も、spec_ready の未作成が3件以上のためなし。リポジトリは公開とみなし商品ファイルは置かない。
 - Check: quality_check 12本OK、tools_test fail=0、build_site 成功(markdown を pip 導入)、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。
+
+## 2026-10-14 定期実行(3時台JST)
+- 03:55 [記事] 「家計簿で前月繰越を翌月に引き継ぐ方法」を公開(kakeibo-carryover)。LibreOfficeで3パターン9か月(36件)を計算して不一致0。シートコピー時の参照は未検証と明記。月間家計簿の繰越は手入力で自動引き継ぎではないことも書いた。本日の記事 2本目。
+- 04:05 [ツール] 「勤務時間の計算ツール」を公開(tools/unit-time)。開始・終了・休憩と時間の合計に対応。テスト約25万件+手計算ケースが全部合格。本日のツール 2本目。
+- 04:15 [note] 有料(300円)原稿「勤務時間をExcelで出す式集」を作成(outreach/note/work-hours-paid-01.md、有料の未投稿ストック1本目)。work_hours.py で14件すべて一致した式だけ使用。BOOTHは【PR】で /go/shift-monthly/?from=note-work-hours-paid-01。
+- 解釈: 今回は、その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。有料ストックが0本だったため、無料でなく有料を1本。仕様は spec_ready の未作成が3件以上のため補充なし。リポジトリは公開とみなし商品ファイルは置かない。
+- Check: quality_check 13本OK、tools_test fail=0、build_site 成功(markdown を pip 導入)、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。

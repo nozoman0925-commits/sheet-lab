@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -207,5 +207,43 @@ const pt=load('tools/percent/body.html');
   eq(pt.calc('ratio','3','0',1).ok,false,'pt16 B=0');
   eq(pt.calc('change','0.1','0.3',1).value,'200.0','pt17 小数誤差なし');
   console.log('percent '+k+' cases');
+})();
+
+// unit-time: 全開始・終了の組(5分刻み)をDate差による独立計算と照合 + 手計算ケース
+const ut=load('tools/unit-time/body.html');
+(function(){
+  let k=0;const p2=n=>String(n).padStart(2,'0');
+  const tm=m=>Math.floor(m/60)+':'+p2(m%60);
+  for(let s=0;s<1440;s+=5)for(let e=0;e<1440;e+=5)for(const br of [0,45,60]){
+    const d0=Date.UTC(2026,0,1,Math.floor(s/60),s%60);let d1=Date.UTC(2026,0,1,Math.floor(e/60),e%60);if(d1<=d0)d1+=86400000;
+    const span=(d1-d0)/60000,w=span-br;
+    const r=ut.workMinutes(tm(s),tm(e),String(br));k++;
+    if(w<0)ok(!r.ok,`ut neg ${s} ${e} ${br}`);else ok(r.ok&&r.minutes===w&&r.hm===Math.floor(w/60)+':'+p2(w%60),`ut ${s} ${e} ${br} got ${JSON.stringify(r)}`);
+  }
+  // 小数時間: 分0〜6000を独立計算(Number丸め)と照合。0.5境界はテスト用に厳密整数で確認
+  for(let m=0;m<=6000;m++){const exact=m*100/60;const f=Math.floor(exact),fr=exact-f;
+    if(Math.abs(fr-0.5)>1e-9){const c=Math.round(exact);ok(Number(ut.fmtDec(m))===c/100,`ut dec ${m} ${ut.fmtDec(m)}`);k++;}}
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  eq(ut.workMinutes('9:00','18:30','60').hm,'8:30','ut1');
+  eq(ut.workMinutes('22:00','6:00','60').hm,'7:00','ut2 日またぎ');
+  eq(ut.workMinutes('9:00','9:00','0').hm,'24:00','ut3 同時刻=24h');
+  eq(ut.workMinutes('9:00','10:00','61').ok,false,'ut4 休憩超過');
+  eq(ut.workMinutes('24:00','10:00','0').ok,false,'ut5 24:00不可');
+  eq(ut.workMinutes('9:60','10:00','0').ok,false,'ut6 分60不可');
+  eq(ut.workMinutes('９：３０','１７時００分','','').hm,'7:30','ut7 全角・時分表記・休憩空');
+  eq(ut.workMinutes('9:00','17:00','-5').ok,false,'ut8 休憩負');
+  eq(ut.workMinutes('9:00','17:00','1.5').ok,false,'ut9 休憩小数');
+  eq(ut.workMinutes('9:00','17:45','0').dec,'8.75','ut10 8.75');
+  eq(ut.workMinutes('9:00','17:20','0').dec,'8.33','ut11 8.33');
+  eq(ut.workMinutes('9:00','17:50','0').dec,'8.83','ut12 8.83');
+  eq(ut.sumTimes('7:45\n8:15\n0:30').hm,'16:30','ut13 合計');
+  eq(ut.sumTimes('12:30\r\n13:45').hm,'26:15','ut14 24h超');
+  eq(ut.sumTimes('7:45\n\n  \n8:15\n').count,2,'ut15 空行無視');
+  eq(ut.sumTimes('7:45\n8:6x').ok,false,'ut16 不正行');
+  eq(ut.sumTimes('7:75').ok,false,'ut17 分75不可');
+  eq(ut.sumTimes('').ok,false,'ut18 空');
+  eq(ut.sumTimes('0:20\n0:20\n0:20').hm,'1:00','ut19 20分×3');
+  eq(ut.fmtDec(0),'0.00','ut20');
+  console.log('unit-time '+k+' cases');
 })();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

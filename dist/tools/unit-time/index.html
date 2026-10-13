@@ -1,0 +1,115 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>勤務時間の計算ツール(開始・終了・休憩/時間の合計) | シート実務ラボ</title><meta name="description" content="開始時刻と終了時刻から休憩を引いた勤務時間を求める、または「1:30」のような時間をまとめて合計する無料ツール。日またぎに対応し、「7:45」と「7.75時間」の両方で表示します。ブラウザ内で処理し、入力は送信されません。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/tools/unit-time/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="勤務時間の計算ツール(開始・終了・休憩/時間の合計) | シート実務ラボ"><meta property="og:description" content="開始時刻と終了時刻から休憩を引いた勤務時間を求める、または「1:30」のような時間をまとめて合計する無料ツール。日またぎに対応し、「7:45」と「7.75時間」の両方で表示します。ブラウザ内で処理し、入力は送信されません。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/tools/unit-time/"><meta property="og:type" content="website">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "勤務時間の計算ツール(開始・終了・休憩/時間の合計)", "description": "開始時刻と終了時刻から休憩を引いた勤務時間を求める、または「1:30」のような時間をまとめて合計する無料ツール。日またぎに対応し、「7:45」と「7.75時間」の両方で表示します。ブラウザ内で処理し、入力は送信されません。", "url": "https://sheet-lab-site.pages.dev/tools/unit-time/", "applicationCategory": "BusinessApplication", "operatingSystem": "Web browser", "inLanguage": "ja", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "無料ツール", "item": "https://sheet-lab-site.pages.dev/tools/"}, {"@type": "ListItem", "position": 3, "name": "勤務時間の計算ツール(開始・終了・休憩/時間の合計)", "item": "https://sheet-lab-site.pages.dev/tools/unit-time/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; <a href="/tools/">無料ツール</a> &gt; 勤務時間の計算ツール(開始・終了・休憩/時間の合計)</p><h1>勤務時間の計算ツール</h1>
+<p>2つの計算ができます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p>計算の種類:
+<label><input type="radio" name="m" value="work" checked> 勤務時間(開始・終了・休憩)</label>
+<label><input type="radio" name="m" value="sum"> 時間の合計(1行に1つ)</label>
+</p>
+<div id="pw">
+<p><label>開始: <input type="text" id="s" size="8" placeholder="例: 9:00"></label>
+<label>終了: <input type="text" id="e" size="8" placeholder="例: 18:30"></label>
+<label>休憩(分): <input type="text" id="r" size="5" inputmode="numeric" value="60"></label></p>
+</div>
+<div id="ps" style="display:none">
+<p><label>時間を1行に1つ(例: 7:45、8:15、0:30):<br><textarea id="l" rows="6" style="width:100%" placeholder="7:45&#10;8:15&#10;0:30"></textarea></label></p>
+</div>
+<p><button type="button" id="br">計算</button> <span id="st"></span></p>
+<p><textarea id="o" rows="4" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>勤務時間</b>: 終了−開始−休憩(分)。終了が開始より早い、または同じ場合は、終了を翌日の時刻として計算します(例: 22:00〜翌6:00 は8時間)。同じ時刻を入れた場合は24時間として扱うため、休憩を引いた結果にご注意ください。</li>
+<li><b>時間の合計</b>: 「7:45」のような時:分を分に直して足します。24時間を超える合計も「26:15」のように表示します。</li>
+<li>表示は「時間:分」と「小数の時間(分÷60を小数第2位で四捨五入)」の両方です。小数の時間は丸めが入るため、給与の計算には使わず、勤務先の規則に従ってください。</li>
+<li>全角数字と「9時30分」「9：30」形式も読み取ります。時は0〜23、分は0〜59だけ受け付けます(24:00は読み取りません)。</li>
+<li>休憩が勤務時間より長いなど、結果がマイナスになる入力は計算せずに知らせます。</li>
+</ul>
+<p class="meta">このツールは時間の足し引きだけです。法定の休憩時間、残業・深夜の割増、給与の判断はしません。</p>
+<p class="meta">関連: <a href="/kakeibo-carryover/">家計簿の前月繰越を翌月に引き継ぐ方法(記事)</a> / <a href="/tools/percent/">割合・増減率の計算ツール</a> / 月間のシフト管理に使える Excel のシフト表:<a href="/go/shift-monthly/?from=tool-unit-time">月間シフト表(運営者の商品・500円)</a>(法定の休憩・残業の判定や給与計算は入っていません)</p>
+<script>
+function parseTime(s){
+  s=String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[：]/g,":").replace(/\s|　/g,"");
+  var m=/^(\d{1,2})(?::|時)(\d{1,2})分?$/.exec(s);
+  if(!m)return null;
+  var h=parseInt(m[1],10),mi=parseInt(m[2],10);
+  if(h>23||mi>59)return null;
+  return h*60+mi;
+}
+function fmtHM(min){
+  var neg=min<0;if(neg)min=-min;
+  var h=Math.floor(min/60),m=min%60;
+  return (neg?"-":"")+h+":"+(m<10?"0":"")+m;
+}
+// 分÷60を小数第2位に四捨五入(整数で計算)。min>=0
+function fmtDec(min){
+  var c,q=Math.floor(min*100/60),r=min*100%60;
+  c=(r*2>=60)?q+1:q;
+  var s=String(c);while(s.length<3)s="0"+s;
+  return s.slice(0,s.length-2)+"."+s.slice(s.length-2);
+}
+function workMinutes(startStr,endStr,breakStr){
+  var s=parseTime(startStr),e=parseTime(endStr);
+  if(s===null||e===null)return {ok:false,text:"開始・終了は「9:00」のような時刻で入力してください(時は0〜23、分は0〜59)"};
+  var bs=String(breakStr).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/\s|　/g,"");
+  if(bs==="")bs="0";
+  if(!/^\d{1,4}$/.test(bs))return {ok:false,text:"休憩は分を整数で入力してください(例: 60)"};
+  var br=parseInt(bs,10);
+  var span=e-s;if(span<=0)span+=1440;
+  var w=span-br;
+  if(w<0)return {ok:false,text:"休憩が拘束時間("+fmtHM(span)+")より長いため、計算できません"};
+  return {ok:true,minutes:w,span:span,hm:fmtHM(w),dec:fmtDec(w),text:"拘束 "+fmtHM(span)+" − 休憩 "+br+"分 = 勤務 "+fmtHM(w)+"(約 "+fmtDec(w)+" 時間)"};
+}
+function sumTimes(text){
+  var lines=String(text).split(/\r\n|\r|\n/),tot=0,n=0;
+  for(var i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var t=parseTimeLoose(lines[i]);
+    if(t===null)return {ok:false,text:(i+1)+"行目「"+lines[i]+"」を時間として読めません(例: 7:45)"};
+    tot+=t;n++;
+  }
+  if(n===0)return {ok:false,text:"時間が入力されていません"};
+  return {ok:true,minutes:tot,count:n,hm:fmtHM(tot),dec:fmtDec(tot),text:n+"件の合計: "+fmtHM(tot)+"(約 "+fmtDec(tot)+" 時間)"};
+}
+// 合計用: 時は何桁でも可(26:15など)、分は0〜59
+function parseTimeLoose(s){
+  s=String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[：]/g,":").replace(/\s|　/g,"");
+  var m=/^(\d{1,4})(?::|時間?)(\d{1,2})分?$/.exec(s);
+  if(!m)return null;
+  var mi=parseInt(m[2],10);if(mi>59)return null;
+  return parseInt(m[1],10)*60+mi;
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  var upd=function(){var m=document.querySelector('input[name="m"]:checked').value;g("pw").style.display=m==="work"?"":"none";g("ps").style.display=m==="sum"?"":"none";};
+  Array.prototype.forEach.call(document.getElementsByName("m"),function(e){e.onchange=upd;});upd();
+  g("br").onclick=function(){
+    var m=document.querySelector('input[name="m"]:checked').value;
+    var r=m==="work"?workMinutes(g("s").value,g("e").value,g("r").value):sumTimes(g("l").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
+<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>

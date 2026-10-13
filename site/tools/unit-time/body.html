@@ -1,0 +1,89 @@
+<h1>勤務時間の計算ツール</h1>
+<p>2つの計算ができます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p>計算の種類:
+<label><input type="radio" name="m" value="work" checked> 勤務時間(開始・終了・休憩)</label>
+<label><input type="radio" name="m" value="sum"> 時間の合計(1行に1つ)</label>
+</p>
+<div id="pw">
+<p><label>開始: <input type="text" id="s" size="8" placeholder="例: 9:00"></label>
+<label>終了: <input type="text" id="e" size="8" placeholder="例: 18:30"></label>
+<label>休憩(分): <input type="text" id="r" size="5" inputmode="numeric" value="60"></label></p>
+</div>
+<div id="ps" style="display:none">
+<p><label>時間を1行に1つ(例: 7:45、8:15、0:30):<br><textarea id="l" rows="6" style="width:100%" placeholder="7:45&#10;8:15&#10;0:30"></textarea></label></p>
+</div>
+<p><button type="button" id="br">計算</button> <span id="st"></span></p>
+<p><textarea id="o" rows="4" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>勤務時間</b>: 終了−開始−休憩(分)。終了が開始より早い、または同じ場合は、終了を翌日の時刻として計算します(例: 22:00〜翌6:00 は8時間)。同じ時刻を入れた場合は24時間として扱うため、休憩を引いた結果にご注意ください。</li>
+<li><b>時間の合計</b>: 「7:45」のような時:分を分に直して足します。24時間を超える合計も「26:15」のように表示します。</li>
+<li>表示は「時間:分」と「小数の時間(分÷60を小数第2位で四捨五入)」の両方です。小数の時間は丸めが入るため、給与の計算には使わず、勤務先の規則に従ってください。</li>
+<li>全角数字と「9時30分」「9：30」形式も読み取ります。時は0〜23、分は0〜59だけ受け付けます(24:00は読み取りません)。</li>
+<li>休憩が勤務時間より長いなど、結果がマイナスになる入力は計算せずに知らせます。</li>
+</ul>
+<p class="meta">このツールは時間の足し引きだけです。法定の休憩時間、残業・深夜の割増、給与の判断はしません。</p>
+<p class="meta">関連: <a href="/kakeibo-carryover/">家計簿の前月繰越を翌月に引き継ぐ方法(記事)</a> / <a href="/tools/percent/">割合・増減率の計算ツール</a> / 月間のシフト管理に使える Excel のシフト表:<a href="/go/shift-monthly/?from=tool-unit-time">月間シフト表(運営者の商品・500円)</a>(法定の休憩・残業の判定や給与計算は入っていません)</p>
+<script>
+function parseTime(s){
+  s=String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[：]/g,":").replace(/\s|　/g,"");
+  var m=/^(\d{1,2})(?::|時)(\d{1,2})分?$/.exec(s);
+  if(!m)return null;
+  var h=parseInt(m[1],10),mi=parseInt(m[2],10);
+  if(h>23||mi>59)return null;
+  return h*60+mi;
+}
+function fmtHM(min){
+  var neg=min<0;if(neg)min=-min;
+  var h=Math.floor(min/60),m=min%60;
+  return (neg?"-":"")+h+":"+(m<10?"0":"")+m;
+}
+// 分÷60を小数第2位に四捨五入(整数で計算)。min>=0
+function fmtDec(min){
+  var c,q=Math.floor(min*100/60),r=min*100%60;
+  c=(r*2>=60)?q+1:q;
+  var s=String(c);while(s.length<3)s="0"+s;
+  return s.slice(0,s.length-2)+"."+s.slice(s.length-2);
+}
+function workMinutes(startStr,endStr,breakStr){
+  var s=parseTime(startStr),e=parseTime(endStr);
+  if(s===null||e===null)return {ok:false,text:"開始・終了は「9:00」のような時刻で入力してください(時は0〜23、分は0〜59)"};
+  var bs=String(breakStr).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/\s|　/g,"");
+  if(bs==="")bs="0";
+  if(!/^\d{1,4}$/.test(bs))return {ok:false,text:"休憩は分を整数で入力してください(例: 60)"};
+  var br=parseInt(bs,10);
+  var span=e-s;if(span<=0)span+=1440;
+  var w=span-br;
+  if(w<0)return {ok:false,text:"休憩が拘束時間("+fmtHM(span)+")より長いため、計算できません"};
+  return {ok:true,minutes:w,span:span,hm:fmtHM(w),dec:fmtDec(w),text:"拘束 "+fmtHM(span)+" − 休憩 "+br+"分 = 勤務 "+fmtHM(w)+"(約 "+fmtDec(w)+" 時間)"};
+}
+function sumTimes(text){
+  var lines=String(text).split(/\r\n|\r|\n/),tot=0,n=0;
+  for(var i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var t=parseTimeLoose(lines[i]);
+    if(t===null)return {ok:false,text:(i+1)+"行目「"+lines[i]+"」を時間として読めません(例: 7:45)"};
+    tot+=t;n++;
+  }
+  if(n===0)return {ok:false,text:"時間が入力されていません"};
+  return {ok:true,minutes:tot,count:n,hm:fmtHM(tot),dec:fmtDec(tot),text:n+"件の合計: "+fmtHM(tot)+"(約 "+fmtDec(tot)+" 時間)"};
+}
+// 合計用: 時は何桁でも可(26:15など)、分は0〜59
+function parseTimeLoose(s){
+  s=String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[：]/g,":").replace(/\s|　/g,"");
+  var m=/^(\d{1,4})(?::|時間?)(\d{1,2})分?$/.exec(s);
+  if(!m)return null;
+  var mi=parseInt(m[2],10);if(mi>59)return null;
+  return parseInt(m[1],10)*60+mi;
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  var upd=function(){var m=document.querySelector('input[name="m"]:checked').value;g("pw").style.display=m==="work"?"":"none";g("ps").style.display=m==="sum"?"":"none";};
+  Array.prototype.forEach.call(document.getElementsByName("m"),function(e){e.onchange=upd;});upd();
+  g("br").onclick=function(){
+    var m=document.querySelector('input[name="m"]:checked').value;
+    var r=m==="work"?workMinutes(g("s").value,g("e").value,g("r").value):sumTimes(g("l").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
