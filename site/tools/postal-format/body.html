@@ -1,0 +1,55 @@
+<h1>郵便番号の整形ツール</h1>
+<p>名簿の郵便番号を1行1件で貼り付けると、「〒」・ハイフン・スペースを取り除き、全角の数字を半角にして、<b>7桁の数字</b>にそろえます。必要ならハイフン付き(123-4567)にも変えられます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><textarea id="t" rows="8" style="width:100%" placeholder="ここに貼り付けてください(例:&#10;123-4567&#10;〒1234567&#10;１２３－４５６７)"></textarea></p>
+<p>出力の形:
+<label><input type="radio" name="m" value="digits" checked> 数字だけ(1234567)</label>
+<label><input type="radio" name="m" value="hyphen"> ハイフンを入れる(123-4567)</label>
+</p>
+<p>
+<button type="button" id="br">実行</button>
+<button type="button" id="bc">結果をコピー</button>
+<span id="st"></span>
+</p>
+<p><textarea id="o" rows="8" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<div id="nt"></div>
+<h2>このツールの扱い</h2>
+<ul>
+<li>全角の数字(０〜９)を半角にし、「〒」、ハイフンに似た記号(-、－、‐、−、ー など)、半角・全角のスペースを取り除きます。</li>
+<li>取り除いたあとに<b>ちょうど7桁の数字</b>になった行だけを整形します。それ以外(桁数が違う、英字が混じる、空欄以外で数字が無い)は、元の行のまま出力し、行番号を下に表示します。</li>
+<li>先頭の0が消えた6桁(Excelで数値になったとき)は、自動で0を足しません。「6桁です」と表示するので、元の住所録で確認してください。</li>
+<li>ハイフンの位置が違う行(例: 12-34567)も、7桁の数字になれば整形されます。位置の違いは検出しません。</li>
+</ul>
+<p class="meta">このツールは書式をそろえるだけで、郵便番号が実在するか、住所と合っているかは確認しません。Excelの関数で同じことをする方法は、関連記事で計算して確認しています(Excelでは未確認)。</p>
+<p class="meta">関連: <a href="/postal-code-hyphen/">郵便番号のハイフンあり・なしをそろえる方法(記事)</a> / <a href="/tools/phone-format/">電話番号の整形ツール</a> / <a href="/tools/zenkaku/">全角・半角変換ツール</a> / 名簿の表記ゆれをまとめて整える Excel シート:<a href="/products/">名簿クレンジングシート(運営者の商品)</a>(50行までの<a href="https://nozoman.booth.pm/items/8978060">無料お試し版</a>あり)</p>
+<script>
+function cleanPostal(text,mode){
+  var lines=text.split(/\r\n|\n|\r/),out=[],notes=[];
+  var DASH=/[\-‐‑‒–—―−ーｰ－・]/g;
+  for(var i=0;i<lines.length;i++){
+    var orig=lines[i];
+    if(orig.replace(/[\s　]/g,"")===""){out.push("");continue;}
+    var s=orig.replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);});
+    s=s.replace(/〒/g,"").replace(DASH,"").replace(/[ 　\t]/g,"");
+    if(!/^[0-9]+$/.test(s)){out.push(orig);notes.push((i+1)+"行目: 数字以外の文字が残るため、そのままにしました");continue;}
+    if(s.length!==7){
+      out.push(orig);
+      notes.push((i+1)+"行目: "+s.length+"桁です(7桁ではないため、そのままにしました)"+(s.length===6?"。先頭の0が消えた可能性があります":""));
+      continue;
+    }
+    out.push(mode==="hyphen"?s.slice(0,3)+"-"+s.slice(3):s);
+  }
+  return {text:out.join("\n"),notes:notes};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var m=document.querySelector('input[name="m"]:checked').value;
+    var r=cleanPostal(g("t").value,m);
+    g("o").value=r.text;
+    g("st").textContent="確認が必要な行: "+r.notes.length+"件";
+    var nt=g("nt");nt.textContent="";
+    if(r.notes.length){var ul=document.createElement("ul");r.notes.forEach(function(n){var li=document.createElement("li");li.textContent=n;ul.appendChild(li);});nt.appendChild(ul);}
+  };
+  g("bc").onclick=function(){var o=g("o");o.select();try{document.execCommand("copy");}catch(e){}};
+}
+</script>

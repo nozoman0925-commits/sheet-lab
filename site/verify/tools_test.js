@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -126,5 +126,46 @@ const pf=load('tools/phone-format/body.html');
   eq(pf.cleanPhones('03ー1234ー5678','digits').text,'0312345678','pf10 長音符');
   eq(pf.cleanPhones('a\n\n03-1111-2222','digits').text,'a\n\n0311112222','pf11 空行保持');
   console.log('phone-format '+k+' cases');
+})();
+// postal-format: 独立実装(文字ごとの走査)とランダム入力で照合
+const pc=load('tools/postal-format/body.html');
+(function(){
+  const POOL=['1','2','3','0','7','９','０','-','－','ー','〒',' ','\u3000','A','E','\n'];
+  let seed=4242;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  const SKIP=new Set(['〒','-','\u2010','\u2011','\u2012','\u2013','\u2014','\u2015','\u2212','\u30FC','\uFF70','\uFF0D','\u30FB',' ','\u3000','\t']);
+  function ref(line,mode){
+    if([...line].every(c=>c===' '||c==='\u3000'||c==='\t'))return ['',false];
+    let d='',ok=true;
+    for(const c of line){
+      if(SKIP.has(c))continue;
+      const cp=c.codePointAt(0);
+      if(cp>=0xFF10&&cp<=0xFF19)d+=String.fromCharCode(cp-0xFEE0);
+      else if(c>='0'&&c<='9')d+=c;
+      else ok=false;
+    }
+    if(!ok||d.length===0)return [line,true];
+    if(d.length!==7)return [line,true];
+    return [mode==='hyphen'?d.slice(0,3)+'-'+d.slice(3):d,false];
+  }
+  let k=0;
+  for(let n=0;n<6000;n++){
+    let s='';const len=Math.floor(rnd()*14);for(let i=0;i<len;i++)s+=POOL[Math.floor(rnd()*POOL.length)];
+    for(const m of ['digits','hyphen']){
+      const r=pc.cleanPostal(s,m);const lines=s.split(/\r\n|\n|\r/).map(l=>ref(l,m));k++;
+      ok(r.text===lines.map(x=>x[0]).join('\n'),`pc text ${m} ${JSON.stringify(s)} got ${JSON.stringify(r.text)}`);
+      ok(r.notes.length===lines.filter(x=>x[1]).length,`pc notes ${m} ${JSON.stringify(s)} ${r.notes.length}`);
+    }
+  }
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  eq(pc.cleanPostal('123-4567','digits').text,'1234567','pc1');
+  eq(pc.cleanPostal('1234567','hyphen').text,'123-4567','pc2');
+  eq(pc.cleanPostal('〒１２３－４５６７','hyphen').text,'123-4567','pc3');
+  eq(pc.cleanPostal('123ー4567','digits').text,'1234567','pc4 長音');
+  eq(pc.cleanPostal('234567','hyphen').text,'234567','pc5 6桁は0を足さない');
+  ok(pc.cleanPostal('234567','hyphen').notes[0].includes('先頭の0'),'pc5 note');
+  eq(pc.cleanPostal('1E34567','digits').text,'1E34567','pc6 英字混じりは元のまま');
+  eq(pc.cleanPostal('12-34567','hyphen').text,'123-4567','pc7 位置違いも7桁なら整形');
+  eq(pc.cleanPostal('1\n\n123-4567','digits').text,'1\n\n1234567','pc8 空行保持');
+  console.log('postal-format '+k+' cases');
 })();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);
