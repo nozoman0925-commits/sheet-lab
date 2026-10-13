@@ -146,10 +146,13 @@ window.open(r.url,"_blank","noopener");}});
 CRON_HOURS = [0, 3, 6, 9, 12, 15, 18, 21]  # 毎日0:53から3時間おき(JST)
 KIND_ICON = {"記事": "📝", "ツール": "🛠️", "商品": "📦", "note": "✍️", "X": "🐦", "分析": "🔍", "ルール": "📋", "その他": "🤖"}
 KIND_LABEL = {"記事": "きじ", "ツール": "ツール", "商品": "しょうひん", "note": "note", "X": "X", "分析": "しらべもの", "ルール": "ルール", "その他": "そのほか"}
-EASY = [("開設し", "つくり"), ("開設", "つくる"), ("設定する", "せっていする"), ("出品", "お店にならべる"),
+EASY = [("既存5商品の商品名と説明文の冒頭を改善案に貼り替える", "いまの5この商品の名前と説明を、よくした案にはりかえる"),
+        ("既存", "いまある"), ("冒頭", "はじめの部分"), ("商品名と説明文", "名前と説明"), ("ショップ情報編集", "お店の情報のへんしゅう画面"),
+        ("開設し", "つくり"), ("開設", "つくる"), ("設定する", "せっていする"), ("出品", "お店にならべる"),
         ("改善案", "よくした案"), ("貼り替える", "はりかえる"), ("貼る", "はる"), ("判断する", "きめる"),
         ("プロフィール", "じこしょうかい"), ("固定ポスト", "いちばん上のポスト"), ("測定ID", "数える番号"),
-        ("サムネイル", "商品のかおの絵"), ("差し替える", "とりかえる"), ("予約投稿", "じかんを決めて投稿")]
+        ("サムネイル", "商品のかおの絵"), ("差し替える", "とりかえる"), ("予約投稿", "じかんを決めて投稿"),
+        ("有効にする", "つかえるようにする"), ("伝える", "ロボットに教える")]
 
 
 def _next_run(now):
@@ -182,15 +185,33 @@ def _git_added_today(root, today):
     return out
 
 
-def _counts(root, pd, prod_txt, today):
+def _notes_on_pc(inbox):
+    """INBOX.md の最新の「オーナーPCにnote無料記事N本(未投稿)」の N。無ければ 0。"""
+    ms = re.findall(r"オーナーPCにnote無料記事\s*(\d+)\s*本", inbox)
+    return int(ms[-1]) if ms else 0
+
+
+def _x_posts(xdir):
+    """Xの投稿の本数 = 日付ファイル内の「## N本目」見出しの数(profile/pinned/REACTIONS は数えない)。"""
+    n = 0
+    for f in sorted(xdir.glob("20*.md")):
+        n += len(re.findall(r"(?m)^##\s*\d+\s*本目", f.read_text(encoding="utf-8")))
+    return n
+
+
+def _counts(root, pd, prod_txt, inbox, today):
     arts = sorted((root / "content").glob("*.md"))
     tools = [d for d in sorted((root / "tools").glob("*")) if d.is_dir()]
-    sell_slugs = set(re.findall(r"selling[^|]*\(slug:\s*([\w-]+)\)", prod_txt))
-    sell_n = len([l for l in prod_txt.splitlines() if re.match(r"\|\s*\d+\s*\|\s*selling", l)])
-    pdirs = [d.name for d in sorted((pd / "deliverables" / "products").glob("*")) if d.is_dir()] if (pd / "deliverables" / "products").exists() else []
-    waiting = [n for n in pdirs if n not in sell_slugs]
+    rows = [l for l in prod_txt.splitlines() if re.match(r"\|\s*\d+\s*\|", l)]
+    sell_n = len([l for l in rows if re.match(r"\|\s*\d+\s*\|\s*selling", l)])
+    built_n = len([l for l in rows if re.match(r"\|\s*\d+\s*\|\s*built", l)])
+    spec_slugs = [re.search(r"slug:\s*([\w-]+)", l).group(1) for l in rows
+                  if re.match(r"\|\s*\d+\s*\|\s*spec_ready", l) and re.search(r"slug:\s*([\w-]+)", l)]
+    pdirs = {d.name for d in (pd / "deliverables" / "products").glob("*") if d.is_dir()} if (pd / "deliverables" / "products").exists() else set()
+    spec_n = len([s for s in spec_slugs if s in pdirs])  # 設計図のフォルダがあり、まだ作っていない商品
     notes = sorted((pd / "deliverables" / "outreach" / "note").glob("*.md"))
-    xs = sorted((pd / "deliverables" / "outreach" / "x").glob("20*.md"))
+    note_pc = _notes_on_pc(inbox)
+    xdir = pd / "deliverables" / "outreach" / "x"
     added = _git_added_today(root, today)
 
     def tdy(prefix, pred=lambda p: True):
@@ -198,12 +219,14 @@ def _counts(root, pd, prod_txt, today):
             return None
         return len({p for p in added if p.startswith(prefix) and pred(p)})
     return {
-        "art": (len(arts), tdy("site/content/", lambda p: p.endswith(".md"))),
-        "tool": (len(tools) + 1, (lambda v: v)(None if added is None else len({p.split("/")[2] for p in added if p.startswith("site/tools/")}))),
-        "sell": (sell_n, None),
-        "wait": (len(waiting), None if added is None else len({p.split("/")[3] for p in added if p.startswith("pdca/deliverables/products/") and p.split("/")[3] in waiting})),
-        "note": (len(notes), tdy("pdca/deliverables/outreach/note/")),
-        "x": (len(xs), tdy("pdca/deliverables/outreach/x/", lambda p: re.search(r"/20\d\d-", p) is not None)),
+        "art": (len(arts), tdy("site/content/", lambda p: p.endswith(".md")), ""),
+        "tool": (len(tools) + 1, (lambda v: v)(None if added is None else len({p.split("/")[2] for p in added if p.startswith("site/tools/")})), ""),
+        "sell": (sell_n, None, ""),
+        "built": (built_n, None, ""),
+        "spec": (spec_n, None, ""),
+        "note": (len(notes) + note_pc, tdy("pdca/deliverables/outreach/note/"),
+                 f"パソコンに{note_pc}本＋サイトに{len(notes)}本" if note_pc else ""),
+        "x": (_x_posts(xdir), None, ""),
     }
 
 
@@ -269,13 +292,110 @@ def _parse_log(log):
     return days
 
 
-def _short(text, n=78):
+def _title_of(path, key="title"):
+    """記事は先頭の front matter の title、ツールは meta.json の title。【】の部分と () の補足は省く。"""
+    try:
+        if path.suffix == ".json":
+            t = json.loads(path.read_text(encoding="utf-8")).get(key, "")
+        else:
+            m = re.search(r'(?m)^title:\s*"?(.*?)"?\s*$', path.read_text(encoding="utf-8"))
+            t = m.group(1) if m else ""
+    except Exception:
+        return ""
+    t = re.sub(r"【[^】]*】", "", t).replace("「", "『").replace("」", "』")
+    t = re.sub(r"[(（][^)）]*[)）]", "", t)
+    return t.strip(" 　|｜")
+
+
+def _kids_sentence(root, pd, kind, text):
+    """LOG の1行を、小学生にも分かる1文にする。戻り値 (文, 太字の題名, 種類)。
+    確認作業は ("CHECK", "", ...)、はっきり言いかえられない行は ("", "", ...) で日記に出さない(元の文は「くわしい記録」に残る)。"""
+    t = re.sub(r"`|\*\*", "", text).strip()
+    if re.match(r"(次回|仮説|解釈|アイデア登録|外部|人間への依頼)", t) or re.search(r"のためなし|再記録|反映済み", t):
+        return ("", "", kind)
+    if re.match(r"(site/)?(quality_check|build_site|tools_test)|検証スクリプト|Do/Check", t):
+        return ("CHECK", "", kind)
+    if re.search(r"進捗ページ", t) and not re.search(r"再生成|pip", t):
+        return ("このページ(進捗ページ)を、見やすくつくりなおしたよ。", "", "ルール")
+    if re.search(r"CHARTER|PLAN_1M|HUMAN_TASKS|RUNBOOK|PORTFOLIO", t) and re.search(r"追記|更新|統一|整理|新規|新方針|反映", t) \
+            and not re.search(r"完了欄|INBOX/STATE", t):
+        return ("お店のきまりを、えらい版に書きなおしたよ。", "", "ルール")
+    if re.search(r"手数料|受取額", t):
+        return ("商品のねだんの計算を、見なおしたよ。", "", "商品")
+    if re.search(r"文体|フランク", t):
+        return ("文章を、読みやすいことばに書きなおしたよ。", "", "記事")
+    if re.search(r"改善案|booth-improve", t):
+        return ("商品の名前や説明を、よくする案をかいたよ。", "", "商品")
+    if re.search(r"オーナー報告", t):
+        return ("オーナーからのおしらせを、ノートに書きとめたよ。", "", "その他")
+    if re.search(r"/about/|運営者情報", t):
+        return ("お店の人の紹介ページを、あたらしくしたよ。", "", "その他")
+    m = re.match(r"記事:.*?公開[(（]([a-z0-9-]+)[)）]", t)
+    if m:
+        for f in (root / "content").glob(f"*-{m.group(1)}.md"):
+            ti = _title_of(f)
+            if ti:
+                return ("の記事をかいたよ。", ti, "記事")
+        return ("あたらしい記事をかいたよ。", "", "記事")
+    m = re.match(r"無料ツール:\s*/tools/([a-z0-9-]+)/", t)
+    if m:
+        ti = _title_of(root / "tools" / m.group(1) / "meta.json")
+        return ("をつくったよ(無料ツール)。", ti, "ツール") if ti else ("あたらしい無料ツールをつくったよ。", "", "ツール")
+    m = re.match(r"仕様:.*?#(\d+)", t)
+    if m:
+        for l in _read(pd, "PRODUCTS.md").splitlines():
+            c = [x.strip() for x in l.split("|")]
+            if len(c) > 3 and c[1] == m.group(1):
+                return ("の設計図をかいたよ。", re.sub(r"【[^】]*】", "", re.split(r"[(（]", c[3])[0]).strip(), "商品")
+        return ("あたらしい商品の設計図をかいたよ。", "", "商品")
+    if re.search(r"quality_check|build_site|tools_test|直リンク", t):
+        return ("CHECK", "", kind)
+    if re.match(r"note原稿", t):
+        return ("noteにのせる文章を1本かいたよ。", "", "note")
+    if re.match(r"X(の)?原稿", t):
+        return ("Xにのせる文章をかいたよ。", "", "X")
+    if re.match(r"(分析|数字)", t):
+        return ("お店の数字をしらべたよ。", "", "分析")
+    return ("", "", kind)
+
+
+def _short(text, n=78):  # 互換用(「くわしい記録」側の表示)
     text = re.sub(r"`|\*\*", "", text)
-    text = re.sub(r"[A-Za-z0-9_./-]+\.(md|py|js|json|html)", "ファイル", text)
     first = re.split(r"(?<=。)", text)[0]
-    if len(first) > n:
-        first = first[:n].rstrip("、,") + "…"
-    return first
+    return first[:n].rstrip("、,") + "…" if len(first) > n else first
+
+
+def _sort_key(t):
+    m = re.match(r"(\d+):(\d+)", t or "")
+    if m:
+        return int(m.group(1)) * 60 + int(m.group(2))
+    m = re.match(r"(\d+)時", t or "")
+    return int(m.group(1)) * 60 if m else -1
+
+
+def _diary_items(root, pd, ents):
+    """日記の <li> 用タプル [(時刻, 種類, 文HTML)]。新しい順、時刻なしは最後に「きょう」。確認作業は1行にまとめる。"""
+    out, check_t, seen = [], None, set()
+    for t, k, x in ents:
+        a, ti, k = _kids_sentence(root, pd, k, x)
+        if a == "CHECK":
+            if check_t is None or _sort_key(t) > _sort_key(check_t):
+                check_t = t
+            continue
+        if not a:
+            continue
+        body = (f"「{E(ti)}」" if ti else "") + E(a)
+        if body in seen:
+            continue
+        seen.add(body)
+        out.append((t, k, body))
+    timed = sorted([o for o in out if _sort_key(o[0]) >= 0], key=lambda o: _sort_key(o[0]), reverse=True)
+    untimed = [o for o in out if _sort_key(o[0]) < 0]
+    chk = [(check_t or "", "分析", "ちゃんと動くかたしかめたよ✅")] if check_t is not None else []
+    if chk and _sort_key(check_t) >= 0:
+        timed = sorted(timed + chk, key=lambda o: _sort_key(o[0]), reverse=True)
+        chk = []
+    return timed + untimed + chk
 
 
 def _easy(t):
@@ -332,7 +452,7 @@ body{background:#fff8e8;color:#3a3226}
 .kd .grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .kd .stat{background:#fff;border-radius:20px;padding:10px 12px;text-align:center;border:3px solid var(--c,#cfe9ff)}
 .kd .stat .ic{font-size:2rem;line-height:1.2}.kd .stat b{display:block;font-size:2.1rem;line-height:1.2}
-.kd .stat .lb{font-size:1rem}.kd .stat .pl{font-size:.95rem;color:#7a6a50}
+.kd .grid .stat:last-child:nth-child(odd){grid-column:1/-1}.kd .stat .lb{font-size:1rem}.kd .stat .pl{font-size:.95rem;color:#7a6a50}
 .kd .meter{display:flex;gap:12px;align-items:center}.kd .pig-svg{width:110px;flex:none}
 .kd .yen{font-size:2.2rem;font-weight:800}.kd .bar{background:#f0e6d0;border-radius:999px;height:22px;overflow:hidden;margin:6px 0}
 .kd .bar i{display:block;height:100%;background:linear-gradient(90deg,#8fd3f4,#7be0a8);border-radius:999px;min-width:6px}
@@ -376,11 +496,11 @@ body{background:#1b1710;color:#f2ead8}
 def build_status(root, md_to_html, n_articles, n_tools):
     pd = root.parent / "pdca"
     state, prod, human = _read(pd, "STATE.md"), _read(pd, "PRODUCTS.md"), _read(pd, "HUMAN_TASKS.md")
-    metrics, log = _read(pd, "METRICS.md"), _read(pd, "LOG.md")
+    metrics, log, inbox = _read(pd, "METRICS.md"), _read(pd, "LOG.md"), _read(pd, "INBOX.md")
     now = datetime.now(JST)
     today = now.strftime("%Y-%m-%d")
     nxt_run = _next_run(now)
-    cnt = _counts(root, pd, prod, today)
+    cnt = _counts(root, pd, prod, inbox, today)
     # 売上(実測): STATE.md の「売上○円」。無ければ0円
     m = re.search(r"売上\s*([\d,]+)\s*円", state)
     yen = int(m.group(1).replace(",", "")) if m else 0
@@ -395,28 +515,30 @@ def build_status(root, md_to_html, n_articles, n_tools):
             f'<div class="pill">🤖 ロボット(AI)はいまもはたらいています。つぎは {nxt_run:%-d日 %-H時%M分}ごろ</div></section>')
 
     # 2 ひとこと
-    made = cnt["sell"][0] + cnt["wait"][0]
+    sell_c, built_c = cnt["sell"][0], cnt["built"][0]
     if yen > 0 or sold_n > 0:
         sale_s = f"{sold_n if sold_n else 1}こ売れて、売上は{yen:,}円になったよ。"
     else:
         sale_s = "まだ売れていないよ。"
-    one = (f'<section><h2>🏪 お店のいま、ひとことで</h2><div class="card one">商品は{made}こできたよ。{sale_s}'
+    wait_s = f"、できあがって並べるのを待っている商品が{built_c}こ" if built_c else ""
+    one = (f'<section><h2>🏪 お店のいま、ひとことで</h2><div class="card one">お店に並んでいる商品は{sell_c}こ{wait_s}。{sale_s}'
            f'いまはお客さんに見つけてもらう準備をしているよ。</div></section>')
 
     # 3 できたもの
     def stat(ic, label, key, c):
-        n, t = cnt[key]
-        pl = f"きょう +{t}" if t is not None else "きょうの数は不明"
+        n, t, sub = cnt[key]
+        pl = sub or (f"きょう +{t}" if t is not None else "")
         return (f'<div class="stat" style="--c:{c}"><div class="ic">{ic}</div><div class="lb">{label}</div>'
-                f'<b>{n}</b><div class="pl">{pl}</div></div>')
+                f'<b>{n}</b>' + (f'<div class="pl">{pl}</div>' if pl else "") + '</div>')
     made_html = ('<section><h2>🎁 できたもの</h2><div class="grid">'
                  + stat("📝", "記事(本)", "art", "#cfe9ff") + stat("🛠️", "無料ツール(こ)", "tool", "#d6f5df")
-                 + stat("🛍️", "売っている商品(こ)", "sell", "#ffe08a") + stat("📦", "出品まちの商品(こ)", "wait", "#ffc9d6")
+                 + stat("🛍️", "売っている商品(こ)", "sell", "#ffe08a") + stat("📦", "できあがって、ならべるのを待っている商品(こ)", "built", "#ffc9d6")
+                 + stat("📐", "設計図ができた商品(こ・まだ作っていない)", "spec", "#f6e3c4")
                  + stat("✍️", "noteの原稿(本)", "note", "#e6dcff") + stat("🐦", "Xの原稿(本)", "x", "#cfe9ff")
-                 + '</div><p class="meta">「出品まち」は、できているけれど、まだお店にならんでいない商品です(ならべるのは人間のしごと)。</p></section>')
+                 + '</div><p class="meta">「ならべるのを待っている商品」は、できあがってExcelで確かめ終わったけれど、まだお店にならんでいない商品です(ならべるのは人間のしごと)。「設計図ができた商品」は、まだ作っていない商品です。</p></section>')
 
     # 4 お金のメーター
-    goals = [("① はじめの1こが売れる", 1), ("② 月に1万円", 10000), ("③ 月に10万円", 100000), ("④ 月に100万円(大きな夢)", 1000000)]
+    goals = [("① はじめの1こが売れる", 1), ("② 月に1万円", 10000), ("③ 月に10万円", 100000), ("④ 月に100万円(長い目でのゴール)", 1000000)]
     cur = 0
     for i, (_, g) in enumerate(goals):
         if (i == 0 and (sold_n >= 1 or yen > 0)) or (i > 0 and yen >= g):
@@ -434,7 +556,7 @@ def build_status(root, md_to_html, n_articles, n_tools):
              f'<div><div>いままでの売上</div><div class="yen">{yen:,}円</div><div>つぎの目標: {goals[cur][0]}</div></div></div>'
              f'<div class="bar" role="img" aria-label="つぎの目標まで {pct}%"><i style="width:{pct}%"></i></div>'
              f'<ul class="stairs">{steps}</ul>'
-             f'<p class="meta">売上は実際に確かめた数字だけです。階段の一番上は「大きな夢」で、いまの予定ではありません。</p></div></section>')
+             f'<p class="meta">売上は実際に確かめた数字だけです。いちばん上は、長い目でめざすゴールだよ。まずは①からひとつずつ。</p></div></section>')
 
     # 5 買うまでの道
     def light(v, kind):
@@ -472,9 +594,16 @@ def build_status(root, md_to_html, n_articles, n_tools):
         t = re.sub(r"\*\*", "", x[6:])
         mm = re.match(r"(.*?)[::]\s*(.*)", t)
         day, body = (mm.group(1), mm.group(2)) if mm else ("", t)
-        dm = re.search(r"[(（](\d+)分", body)
-        mins = dm.group(1) + "分" if dm else ""
         title = re.split(r"[(（]", body)[0].strip()
+        dm = re.search(r"[(（](?:各)?(\d+)分", body)
+        mins = dm.group(1) + "分" if dm else ""
+        if not mins:  # 本文に時間が無ければ HUMAN_TASKS 全体から同じ題名の行を探す
+            for hl in human.splitlines():
+                if title[:12] and title[:12] in hl and re.search(r"(\d+)分", hl):
+                    mins = re.search(r"(\d+)分", hl).group(1) + "分"
+                    break
+        if mins and re.search(r"[(（]各\d+分", body):
+            mins = "1つ" + mins
         title = _easy(title)
         cards += (f'<div class="todo"><div class="box3" aria-hidden="true"></div><div><b>{E(title)}</b><br>'
                   + (f'<span class="clock">🕒 {mins}</span> ' if mins else "") + (f'<span class="meta">{E(re.sub(r"[(（]", " ", day).rstrip(")）"))}</span>' if day else "") + '</div></div>')
@@ -488,10 +617,11 @@ def build_status(root, md_to_html, n_articles, n_tools):
     shown_day = today if today in days else (max(days) if days else today)
     allents = days.get(shown_day, [])
     ents = [e for e in allents if e[1] != "メモ"]
-    lis = "".join(f'<li><span class="tm">{E(t) if t else "きょう"}</span>{KIND_ICON[k]} <b>{KIND_LABEL[k]}</b> {E(_short(x))}</li>' for t, k, x in ents[-12:])
+    items_d = _diary_items(root, pd, ents)[:20]
+    lis = "".join(f'<li><span class="tm">{E(t) if _sort_key(t) >= 0 else "きょう"}</span>{KIND_ICON[k]} {body}</li>' for t, k, body in items_d)
     note = ""
     if re.search(r"上限", " ".join(x for _, _, x in allents)):
-        note = '<div class="card"><b>🌙 きょうの記事は、ぜんぶ書いたよ。つぎはあしたやるよ。</b><br><span class="meta">ひとつの日に出せる記事とツールの数は決めてあります(品質をたもつため)。そのあとは、noteやXの原稿や商品の仕様を作っています。</span></div>'
+        note = '<div class="card"><b>🌙 きょうの記事は、ぜんぶ書いたよ。つぎはあしたやるよ。</b><br><span class="meta">ひとつの日に出せる記事とツールの数は決めてあります(品質をたもつため)。そのあとは、noteやXの文章や、商品の設計図を作っています。</span></div>'
     head7 = "きょうやったこと" if shown_day == today else f"さいごに記録されたひ({shown_day})のこと"
     diary = (f'<section><h2>📓 ロボットの日記({head7})</h2>{note}'
              + (f'<ul class="tl">{lis}</ul>' if lis else '<div class="card">まだきょうの記録はありません。つぎの実行でここに出ます。</div>')
@@ -508,5 +638,7 @@ def build_status(root, md_to_html, n_articles, n_tools):
            '</div><p class="meta">ロボットは3時間ごとに動いて、そのたびに日記を書きます。</p></section>')
 
     legacy = _legacy(root, md_to_html, n_articles, n_tools)
-    adult = f'<section><details class="adult"><summary>🔧 くわしい記録(大人向け)</summary>{legacy}</details></section>'
+    raw = "".join(f'<li>{E(t) if t else "きょう"} [{E(k)}] {E(x)}</li>' for t, k, x in allents)
+    raw_html = f'<h2>ロボットの日記の元の文({shown_day})</h2><ul>{raw}</ul>' if raw else ""
+    adult = f'<section><details class="adult"><summary>🔧 くわしい記録(大人向け)</summary>{legacy}{raw_html}</details></section>'
     return f'<style>{CSS}</style><div class="kd">{hero}{one}{made_html}{money}{path_html}{help_html}{diary}{cal}{adult}</div>'
