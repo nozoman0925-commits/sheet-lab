@@ -1,0 +1,76 @@
+<h1>見積の合計計算ツール</h1>
+<p>明細(数量×単価)から、<b>小計 → 諸経費 → 値引き → 消費税 → 税込合計</b>の順に計算します。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><label>明細(1行に1件。「数量,単価」または「品名,数量,単価」。区切りはカンマかタブ):<br>
+<textarea id="l" rows="8" style="width:100%" placeholder="解体工事,1,100000&#10;クロス張替,2,35000&#10;養生,10,1200"></textarea></label></p>
+<p><label>諸経費率(%): <input type="text" id="p" size="6" inputmode="decimal" value="0"></label>
+<label>値引き(円): <input type="text" id="d" size="10" inputmode="numeric" value="0"></label>
+<label>消費税の端数:
+<select id="m"><option value="floor">切り捨て</option><option value="round">四捨五入</option><option value="ceil">切り上げ</option></select></label></p>
+<p><button type="button" id="br">計算</button> <span id="st"></span></p>
+<p><textarea id="o" rows="8" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>明細の金額</b>: 数量×単価を円未満で<b>四捨五入</b>して整数にし、その合計を小計とします(例: 2.5×3,333=8,332.5 → 8,333)。</li>
+<li><b>諸経費</b>: 小計×諸経費率を四捨五入します。<b>値引き</b>は諸経費の後に引きます。</li>
+<li><b>消費税</b>: (小計+諸経費−値引き)の10%を、<b>1回だけ</b>計算します。端数は選んだ方法(初期値は切り捨て)で処理します。税率は10%のみです。</li>
+<li>数量・単価・諸経費率は小数4桁まで、全角数字も読み取ります(金額の桁区切りカンマは使えません。カンマは列の区切りです)。マイナスは受け付けません。値引きが「小計+諸経費」を超えるときは計算せずに知らせます。</li>
+<li>この順番と丸め方は一つの例です。取引先との取り決めや社内ルールが違う場合は、そちらに合わせてください。</li>
+</ul>
+<p class="meta">このツールは金額の計算だけです。軽減税率(8%)の混在、インボイスの記載要件、請求書への変換、税の判断はしません。</p>
+<p class="meta">関連: <a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式(記事)</a> / <a href="/tools/tax/">消費税 計算ツール</a> / 運営者の商品: <a href="/go/estimate-construction/?from=tool-estimate-total">工事・リフォーム用 見積書テンプレート(Excel・980円)</a></p>
+<script>
+function z(s){return String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[．]/g,".").replace(/[，、]/g,",").replace(/\s|　/g,"");}
+// 非負の10進文字列を {n:BigInt, d:小数桁数} に。小数は4桁まで。
+function dec(s,maxd){
+  s=z(s).replace(/,/g,"");
+  var m=/^(\d+)(?:\.(\d+))?$/.exec(s);
+  if(!m)return null;
+  var f=m[2]||"";if(f.length>maxd)return null;
+  return {n:BigInt(m[1]+f),d:f.length};
+}
+function pow10(k){return BigInt("1"+"0".repeat(k));}
+function divRound(num,den,mode){
+  var q=num/den,r=num%den;
+  if(r===0n)return q;
+  if(mode==="floor")return q;
+  if(mode==="ceil")return q+1n;
+  return (r*2n>=den)?q+1n:q;
+}
+function fmt(b){var s=b.toString(),o="";while(s.length>3){o=","+s.slice(-3)+o;s=s.slice(0,-3);}return s+o;}
+// 明細テキスト → [{qty,price}]  末尾2要素を数量・単価とする
+function parseLines(text){
+  var lines=String(text).split(/\r\n|\r|\n/),items=[];
+  for(var i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var parts=lines[i].split(/[\t,，、]/);
+    if(parts.length<2)return {ok:false,text:(i+1)+"行目を「数量,単価」または「品名,数量,単価」の形で入力してください"};
+    var q=dec(parts[parts.length-2],4),p=dec(parts[parts.length-1],4);
+    if(q===null||p===null)return {ok:false,text:(i+1)+"行目の数量・単価を読めません(0以上の数、小数は4桁まで)"};
+    items.push({q:q,p:p});
+  }
+  return {ok:true,items:items};
+}
+function estimate(text,ratePct,discount,taxMode){
+  var pl=parseLines(text);if(!pl.ok)return pl;
+  var rt=dec(ratePct===""?"0":ratePct,4);
+  if(rt===null)return {ok:false,text:"諸経費率は0以上の数(小数4桁まで)で入力してください"};
+  var dc=dec(discount===""?"0":discount,0);
+  if(dc===null)return {ok:false,text:"値引きは0以上の整数(円)で入力してください"};
+  var sub=0n,i;
+  for(i=0;i<pl.items.length;i++){var it=pl.items[i];sub+=divRound(it.q.n*it.p.n,pow10(it.q.d+it.p.d),"round");}
+  var exp=divRound(sub*rt.n,100n*pow10(rt.d),"round");
+  var taxable=sub+exp-dc.n;
+  if(taxable<0n)return {ok:false,text:"値引き("+fmt(dc.n)+"円)が小計+諸経費("+fmt(sub+exp)+"円)を超えています"};
+  var tax=divRound(taxable*10n,100n,taxMode);
+  var total=taxable+tax;
+  return {ok:true,sub:sub.toString(),expenses:exp.toString(),discount:dc.n.toString(),taxable:taxable.toString(),tax:tax.toString(),total:total.toString(),count:pl.items.length,
+    text:"明細 "+pl.items.length+"件\n小計: "+fmt(sub)+"円\n諸経費: "+fmt(exp)+"円\n値引き: -"+fmt(dc.n)+"円\n課税対象額: "+fmt(taxable)+"円\n消費税(10%): "+fmt(tax)+"円\n税込合計: "+fmt(total)+"円"};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var r=estimate(g("l").value,g("p").value,g("d").value,g("m").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>

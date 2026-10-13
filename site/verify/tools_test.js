@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -245,5 +245,56 @@ const ut=load('tools/unit-time/body.html');
   eq(ut.sumTimes('0:20\n0:20\n0:20').hm,'1:00','ut19 20分×3');
   eq(ut.fmtDec(0),'0.00','ut20');
   console.log('unit-time '+k+' cases');
+})();
+
+// estimate-total: 記事の10ケース(LibreOffice計算値)+Number整数計算との総当たり照合
+const et=load('tools/estimate-total/body.html');
+(function(){
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  const L=a=>a.map(x=>x.join(',')).join('\n');
+  const T=(lines,pct,disc,exp,m)=>{const r=et.estimate(L(lines),String(pct),String(disc),'floor');ok(r.ok&&[r.sub,r.expenses,r.taxable,r.tax,r.total].join()===exp.join(),m+' got '+JSON.stringify(r));};
+  const A=[[1,100000],[2,35000],[10,1200]];
+  T(A,0,0,[182000,0,182000,18200,200200],'et1');
+  T(A,10,0,[182000,18200,200200,20020,220220],'et2');
+  T(A,10,5000,[182000,18200,195200,19520,214720],'et3');
+  T([[2.5,3333],[0.5,12345]],0,0,[14506,0,14506,1450,15956],'et4');
+  T([[1,12345],[3,6789]],7,0,[32712,2290,35002,3500,38502],'et5');
+  T([[1,1005]],0,0,[1005,0,1005,100,1105],'et6');
+  T([[1,99999]],5,1234,[99999,5000,103765,10376,114141],'et7');
+  T([],10,0,[0,0,0,0,0],'et8 空');
+  T([[1,10000]],10,11000,[10000,1000,0,0,0],'et9');
+  T([[12,987654],[3,456789]],15,100000,[13222215,1983332,15105547,1510554,16616101],'et10');
+  eq(et.estimate(L(A),'0','0','round').tax,'18200','et11 round');
+  eq(et.estimate('1,1005','0','0','floor').tax,'100','et12 100.5切り捨て');
+  eq(et.estimate('1,1005','0','0','round').tax,'101','et13 100.5四捨五入');
+  eq(et.estimate('1,1005','0','0','ceil').tax,'101','et14 切り上げ');
+  eq(et.estimate('1,1001','0','0','ceil').tax,'101','et15 100.1切り上げ');
+  eq(et.estimate('1,10000','10','11001','floor').ok,false,'et16 値引き超過');
+  eq(et.estimate('品名,2,500\n\n  \nB\t3\t100','0','0','floor').sub,'1300','et17 品名・タブ・空行');
+  eq(et.estimate('１,１０００','０','０','floor').sub,'1000','et18 全角');
+  eq(et.estimate('1,-5','0','0','floor').ok,false,'et19 負');
+  eq(et.estimate('abc','0','0','floor').ok,false,'et20 1要素');
+  eq(et.estimate('1,2','x','0','floor').ok,false,'et21 率');
+  eq(et.estimate('1,2','0','1.5','floor').ok,false,'et22 値引き小数');
+  eq(et.estimate('1.23456,2','0','0','floor').ok,false,'et23 5桁');
+  eq(et.estimate('','0','0','floor').sub,'0','et24 空');
+  eq(et.estimate('0.1,0.3','0','0','floor').sub,'0','et25 0.03→0');
+  eq(et.estimate('0.5,1','0','0','floor').sub,'1','et26 0.5→1');
+  let seed=4242;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  const hu=(a,b)=>Math.floor((2*a+b)/(2*b));
+  let k=0;
+  for(let n=0;n<20000;n++){
+    const nl=1+Math.floor(rnd()*4);let sub=0;const lines=[];
+    for(let i=0;i<nl;i++){const q10=Math.floor(rnd()*500),p=Math.floor(rnd()*100000);lines.push((q10/10).toFixed(1)+','+p);sub+=hu(q10*p,10);}
+    const pct=Math.floor(rnd()*2500)/100;const pc=Math.round(pct*100);
+    const ex=hu(sub*pc,10000);const disc=Math.floor(rnd()*(sub+ex+1));
+    const taxable=sub+ex-disc;
+    for(const md of ['floor','round','ceil']){
+      const tax=md==='floor'?Math.floor(taxable/10):md==='round'?hu(taxable,10):Math.ceil(taxable/10);
+      const r=et.estimate(lines.join('\n'),pct.toFixed(2),String(disc),md);k++;
+      ok(r.ok&&r.sub===String(sub)&&r.expenses===String(ex)&&r.taxable===String(taxable)&&r.tax===String(tax)&&r.total===String(taxable+tax),`et rnd ${lines} ${pct} ${disc} ${md} got ${JSON.stringify(r)}`);
+    }
+  }
+  console.log('estimate-total '+k+' cases');
 })();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

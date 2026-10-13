@@ -1,0 +1,189 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="見積書の明細(数量×単価)から、小計・諸経費・値引き・消費税・税込合計を出すExcelの式を解説。端数処理(四捨五入と切り捨て)の置き場所と、値引きが大きすぎる場合の注意点を、10ケースと約4万件の照合でLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/estimate-total/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="見積書の明細(数量×単価)から、小計・諸経費・値引き・消費税・税込合計を出すExcelの式を解説。端数処理(四捨五入と切り捨て)の置き場所と、値引きが大きすぎる場合の注意点を、10ケースと約4万件の照合でLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/estimate-total/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】", "datePublished": "2026-10-14", "dateModified": "2026-10-14", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "見積書の明細(数量×単価)から、小計・諸経費・値引き・消費税・税込合計を出すExcelの式を解説。端数処理(四捨五入と切り捨て)の置き場所と、値引きが大きすぎる場合の注意点を、10ケースと約4万件の照合でLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/estimate-total/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/estimate-total/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/estimate-total/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-14 ・ Excel関数</p><h1>見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】</h1><p>見積書をExcelで作ると、「諸経費は税抜の小計にかけるのか」「値引きは消費税の前か後か」「端数はどこで丸めるのか」で手が止まりがちです。この記事では、<strong>小計 → 諸経費 → 値引き → 消費税 → 税込合計</strong>という一つの順番で、各セルに入れる式と、端数処理を入れる場所を示します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/estimate_total.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはSUM・ROUND・ROUNDDOWN・IF・ORだけですが、本番の見積書に使う前に、数行で結果を確かめてください。</p>
+<p>この記事で示す順番と丸め方は、検証のために決めた「一つの例」です。取引先との取り決めや社内ルールが違えば、そちらが優先です。インボイスなど請求書の記載要件の判断は、この記事では行いません。</p>
+<h2 id="_1">先に結論</h2>
+<p>明細を2〜21行目(20行)、金額を合計するセルを G列に置いた場合の式です。</p>
+<pre><code>D2〜D21(金額):  =IF(OR(B2=&quot;&quot;,C2=&quot;&quot;),0,ROUND(B2*C2,0))
+G2 (小計):       =SUM(D2:D21)
+G3 (諸経費率):   0.1  ← 10%なら「10%」または0.1と入力
+G4 (諸経費):     =ROUND(G2*G3,0)
+G5 (値引き):     (円で入力)
+G6 (課税対象額): =G2+G4-G5
+G7 (消費税):     =ROUNDDOWN(G6*0.1,0)
+G8 (税込合計):   =G6+G7
+</code></pre>
+<ul>
+<li>端数は<strong>3か所</strong>で処理します。明細の金額(四捨五入)、諸経費(四捨五入)、消費税(切り捨て)です。</li>
+<li>消費税は、明細ごとではなく、<strong>課税対象額に対して1回だけ</strong>計算しています。</li>
+<li>数量や単価が空の行は、<code>IF(OR(...),0,...)</code> で0円にして、エラーを防いでいます。</li>
+</ul>
+<h2 id="_2">実際に計算した結果</h2>
+<p>次の10ケースを計算しました(諸経費の率は%、値引きは円)。</p>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>小計</th>
+<th>諸経費</th>
+<th>値引き</th>
+<th>課税対象額</th>
+<th>消費税</th>
+<th>税込合計</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>単純3行</td>
+<td>182,000</td>
+<td>0</td>
+<td>0</td>
+<td>182,000</td>
+<td>18,200</td>
+<td>200,200</td>
+</tr>
+<tr>
+<td>諸経費10%</td>
+<td>182,000</td>
+<td>18,200</td>
+<td>0</td>
+<td>200,200</td>
+<td>20,020</td>
+<td>220,220</td>
+</tr>
+<tr>
+<td>諸経費10%+値引き5,000</td>
+<td>182,000</td>
+<td>18,200</td>
+<td>5,000</td>
+<td>195,200</td>
+<td>19,520</td>
+<td>214,720</td>
+</tr>
+<tr>
+<td>小数の数量</td>
+<td>14,506</td>
+<td>0</td>
+<td>0</td>
+<td>14,506</td>
+<td>1,450</td>
+<td>15,956</td>
+</tr>
+<tr>
+<td>諸経費7%(端数あり)</td>
+<td>32,712</td>
+<td>2,290</td>
+<td>0</td>
+<td>35,002</td>
+<td>3,500</td>
+<td>38,502</td>
+</tr>
+<tr>
+<td>税の端数(1,005円)</td>
+<td>1,005</td>
+<td>0</td>
+<td>0</td>
+<td>1,005</td>
+<td>100</td>
+<td>1,105</td>
+</tr>
+<tr>
+<td>諸経費5%+値引き1,234</td>
+<td>99,999</td>
+<td>5,000</td>
+<td>1,234</td>
+<td>103,765</td>
+<td>10,376</td>
+<td>114,141</td>
+</tr>
+<tr>
+<td>明細が空(諸経費10%)</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>値引き=小計+諸経費</td>
+<td>10,000</td>
+<td>1,000</td>
+<td>11,000</td>
+<td>0</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>大きな金額(諸経費15%)</td>
+<td>13,222,215</td>
+<td>1,983,332</td>
+<td>100,000</td>
+<td>15,105,547</td>
+<td>1,510,554</td>
+<td>16,616,101</td>
+</tr>
+</tbody>
+</table>
+<p>10ケース、各5項目(小計・諸経費・課税対象額・消費税・税込合計)の計50件がすべて、整数計算の期待値と一致しました。</p>
+<p>見るところを3つ挙げます。</p>
+<ul>
+<li><strong>小数の数量</strong>: 2.5×3,333=8,332.5 は 8,333 に、0.5×12,345=6,172.5 は 6,173 に四捨五入され、小計は 14,506 になりました。明細ごとに丸めてから合計する形なので、<strong>明細の金額を足した値と小計が一致します</strong>(見積書を見た人が電卓で検算しやすい形です)。</li>
+<li><strong>諸経費の端数</strong>: 32,712円の7%は 2,289.84 で、四捨五入して 2,290円。</li>
+<li><strong>税の端数</strong>: 1,005円の10%は 100.5 で、切り捨てて 100円。税込は 1,105円です。</li>
+</ul>
+<h2 id="_3">端数処理の式が、ほかの値でも崩れないかを確認</h2>
+<p>「<code>G6*0.1</code> のような小数のかけ算は、浮動小数点の誤差で端数が狂うのでは」と心配になるため、次の範囲を整数計算と全件照合しました。</p>
+<ul>
+<li>消費税 <code>=ROUNDDOWN(N*0.1,0)</code>: N=0〜30,000 の30,001件 → <strong>不一致 0件</strong></li>
+<li>諸経費 <code>=ROUND(S*率,0)</code>: S=0〜2,000円 × 率1〜20%(1%刻み)の40,020件 → <strong>不一致 0件</strong></li>
+</ul>
+<p>これはLibreOfficeでの結果で、<strong>Excelで同じとは限りません</strong>。重要な見積書では、端数が出そうな金額で一度、電卓と照らし合わせてください。</p>
+<h2 id="_4">つまずきやすい点</h2>
+<ul>
+<li><strong>値引きが大きすぎると課税対象額がマイナスになります。</strong> <code>G2+G4-G5</code> が負になると、消費税や税込合計も負になり、見積書として成り立ちません(この記事ではマイナスの場合の結果は検証していません)。値引き額が「小計+諸経費」以下かを確認する列(<code>=IF(G6&lt;0,"値引き超過","")</code> など)を置くと安全です。値引き=小計+諸経費ちょうどの場合は、課税対象額0・税0・税込0になりました(上の表の9行目)。</li>
+<li><strong>諸経費率を「10」と入力すると1,000%になります。</strong> セルを%表示にして「10%」と入力するか、0.1と入力します。</li>
+<li><strong>丸め方を変えると結果が変わります。</strong> 諸経費を切り捨てにすれば、上の7%のケースは 2,289円になり、税込も変わります。<strong>どの項目をどう丸めるかを、見積書の備考に書いておく</strong>と、後で食い違いにくくなります。</li>
+<li><strong>軽減税率(8%)の品目が混ざる見積書は、この式では扱えません。</strong> 税率ごとに課税対象額を分ける必要があります。</li>
+</ul>
+<h2 id="_5">注意点: この記事ができないこと</h2>
+<ul>
+<li>税率ごとの区分記載、インボイスの記載要件、請求書への変換は扱いません。</li>
+<li>消費税の端数処理の方法(切り捨て・切り上げ・四捨五入)の適否は判断しません。ここでは切り捨てを例にしました。</li>
+<li>数量×単価の「単価」が小数になる場合の取り扱いは、四捨五入で明細を整数にするという一つの方法を示しただけです。</li>
+</ul>
+<h2 id="_6">見積書のひな形が必要なら</h2>
+<p>この記事の式は、自分で作った表にそのまま使えます。工事・リフォーム向けのひな形を探しているなら、運営者が作った<a href="/go/estimate-construction/?from=estimate-total">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。軽減税率の混在や、インボイス要件の保証はできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>消費税だけをさっと計算したいときは、無料の<a href="/tools/tax/">消費税 計算ツール</a>や、見積の小計から税込までを一度に出す<a href="/tools/estimate-total/">見積の合計計算ツール</a>も使えます(入力は外部に送信されません)。</p>
+<h2 id="_7">まとめ</h2>
+<ul>
+<li>順番は「小計 → 諸経費 → 値引き → 消費税 → 税込合計」</li>
+<li>端数は、明細の金額(ROUND)、諸経費(ROUND)、消費税(ROUNDDOWN)の3か所で処理する</li>
+<li>消費税は課税対象額に1回だけかける</li>
+<li>値引きが「小計+諸経費」を超えるとマイナスになるので、確認の列を置く</li>
+<li>10ケース(50件)と約7万件の端数照合はLibreOfficeで一致。Excelでは未確認のため、本番の見積書では電卓で検算する</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、10ケース(諸経費・値引きの有無、小数の数量、端数が出る金額、明細が空、値引きが課税前の合計と等しい場合、大きな金額)の小計・諸経費・課税対象額・消費税・税込合計(計50件)が整数計算の期待値と一致することを確認しました。さらに、消費税の式をN=0〜30,000の30,001件、諸経費の式を金額0〜2,000×率1〜20%の40,020件で整数計算と照合し、不一致は0件でした。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/estimate_total.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/tools/estimate-total/">見積の合計計算ツール(小計・諸経費・値引き・消費税・税込)</a></li><li><a href="/kakeibo-carryover/">エクセル家計簿で前月繰越を翌月に引き継ぐ方法(月ごとのシートで残高をつなぐ式)【LibreOfficeで計算して確認】</a></li><li><a href="/kakeibo-month-over-month/">エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>

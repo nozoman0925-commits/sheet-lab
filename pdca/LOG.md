@@ -367,3 +367,10 @@
 - 04:15 [note] 有料(300円)原稿「勤務時間をExcelで出す式集」を作成(outreach/note/work-hours-paid-01.md、有料の未投稿ストック1本目)。work_hours.py で14件すべて一致した式だけ使用。BOOTHは【PR】で /go/shift-monthly/?from=note-work-hours-paid-01。
 - 解釈: 今回は、その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。有料ストックが0本だったため、無料でなく有料を1本。仕様は spec_ready の未作成が3件以上のため補充なし。リポジトリは公開とみなし商品ファイルは置かない。
 - Check: quality_check 13本OK、tools_test fail=0、build_site 成功(markdown を pip 導入)、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。
+
+## 2026-10-14 定期実行(6時台JST)
+- 06:55 [記事] 「見積書の合計・税込計算をExcelで自動にする式」を公開(estimate-total)。LibreOfficeで10ケース50件と、消費税・諸経費の端数式の約7万件を整数計算と照合して不一致0。Excelでは未確認と明記。見積書テンプレへの案内は /go/ 経由。本日の記事 3本目。
+- 07:10 [ツール] 「見積の合計計算ツール」を公開(tools/estimate-total)。記事の10ケースと約6万件の総当たりテストが全部合格。本日のツール 3本目(上限)。
+- 07:20 [note] 無料原稿「家計簿の前月繰越を自動でつなぐ式」を作成(outreach/note/carryover-01.md、無料の未投稿ストック4本目)。carryover.py を再実行して不一致0の式だけ使用。BOOTHは【PR】で /go/budget-monthly/?from=note-carryover-01(繰越の自動引き継ぎは商品に無いと明記)。
+- 解釈: その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。spec_ready の未作成は3件以上のため仕様の補充なし。note原稿は1回1本までなので無料1本のみ。リポジトリは公開とみなし商品ファイルは置いていない。
+- Check: quality_check 14本OK、tools_test fail=0、build_site 成功、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。

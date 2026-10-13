@@ -1,0 +1,102 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>見積の合計計算ツール(小計・諸経費・値引き・消費税・税込) | シート実務ラボ</title><meta name="description" content="数量と単価の明細から、小計・諸経費・値引き・消費税・税込合計を一度に計算する無料ツール。明細ごとの四捨五入、消費税の端数処理(切り捨て・四捨五入・切り上げ)を選べます。ブラウザ内で処理し、入力は送信されません。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/tools/estimate-total/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="見積の合計計算ツール(小計・諸経費・値引き・消費税・税込) | シート実務ラボ"><meta property="og:description" content="数量と単価の明細から、小計・諸経費・値引き・消費税・税込合計を一度に計算する無料ツール。明細ごとの四捨五入、消費税の端数処理(切り捨て・四捨五入・切り上げ)を選べます。ブラウザ内で処理し、入力は送信されません。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/tools/estimate-total/"><meta property="og:type" content="website">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "見積の合計計算ツール(小計・諸経費・値引き・消費税・税込)", "description": "数量と単価の明細から、小計・諸経費・値引き・消費税・税込合計を一度に計算する無料ツール。明細ごとの四捨五入、消費税の端数処理(切り捨て・四捨五入・切り上げ)を選べます。ブラウザ内で処理し、入力は送信されません。", "url": "https://sheet-lab-site.pages.dev/tools/estimate-total/", "applicationCategory": "BusinessApplication", "operatingSystem": "Web browser", "inLanguage": "ja", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "無料ツール", "item": "https://sheet-lab-site.pages.dev/tools/"}, {"@type": "ListItem", "position": 3, "name": "見積の合計計算ツール(小計・諸経費・値引き・消費税・税込)", "item": "https://sheet-lab-site.pages.dev/tools/estimate-total/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; <a href="/tools/">無料ツール</a> &gt; 見積の合計計算ツール(小計・諸経費・値引き・消費税・税込)</p><h1>見積の合計計算ツール</h1>
+<p>明細(数量×単価)から、<b>小計 → 諸経費 → 値引き → 消費税 → 税込合計</b>の順に計算します。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><label>明細(1行に1件。「数量,単価」または「品名,数量,単価」。区切りはカンマかタブ):<br>
+<textarea id="l" rows="8" style="width:100%" placeholder="解体工事,1,100000&#10;クロス張替,2,35000&#10;養生,10,1200"></textarea></label></p>
+<p><label>諸経費率(%): <input type="text" id="p" size="6" inputmode="decimal" value="0"></label>
+<label>値引き(円): <input type="text" id="d" size="10" inputmode="numeric" value="0"></label>
+<label>消費税の端数:
+<select id="m"><option value="floor">切り捨て</option><option value="round">四捨五入</option><option value="ceil">切り上げ</option></select></label></p>
+<p><button type="button" id="br">計算</button> <span id="st"></span></p>
+<p><textarea id="o" rows="8" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>明細の金額</b>: 数量×単価を円未満で<b>四捨五入</b>して整数にし、その合計を小計とします(例: 2.5×3,333=8,332.5 → 8,333)。</li>
+<li><b>諸経費</b>: 小計×諸経費率を四捨五入します。<b>値引き</b>は諸経費の後に引きます。</li>
+<li><b>消費税</b>: (小計+諸経費−値引き)の10%を、<b>1回だけ</b>計算します。端数は選んだ方法(初期値は切り捨て)で処理します。税率は10%のみです。</li>
+<li>数量・単価・諸経費率は小数4桁まで、全角数字も読み取ります(金額の桁区切りカンマは使えません。カンマは列の区切りです)。マイナスは受け付けません。値引きが「小計+諸経費」を超えるときは計算せずに知らせます。</li>
+<li>この順番と丸め方は一つの例です。取引先との取り決めや社内ルールが違う場合は、そちらに合わせてください。</li>
+</ul>
+<p class="meta">このツールは金額の計算だけです。軽減税率(8%)の混在、インボイスの記載要件、請求書への変換、税の判断はしません。</p>
+<p class="meta">関連: <a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式(記事)</a> / <a href="/tools/tax/">消費税 計算ツール</a> / 運営者の商品: <a href="/go/estimate-construction/?from=tool-estimate-total">工事・リフォーム用 見積書テンプレート(Excel・980円)</a></p>
+<script>
+function z(s){return String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[．]/g,".").replace(/[，、]/g,",").replace(/\s|　/g,"");}
+// 非負の10進文字列を {n:BigInt, d:小数桁数} に。小数は4桁まで。
+function dec(s,maxd){
+  s=z(s).replace(/,/g,"");
+  var m=/^(\d+)(?:\.(\d+))?$/.exec(s);
+  if(!m)return null;
+  var f=m[2]||"";if(f.length>maxd)return null;
+  return {n:BigInt(m[1]+f),d:f.length};
+}
+function pow10(k){return BigInt("1"+"0".repeat(k));}
+function divRound(num,den,mode){
+  var q=num/den,r=num%den;
+  if(r===0n)return q;
+  if(mode==="floor")return q;
+  if(mode==="ceil")return q+1n;
+  return (r*2n>=den)?q+1n:q;
+}
+function fmt(b){var s=b.toString(),o="";while(s.length>3){o=","+s.slice(-3)+o;s=s.slice(0,-3);}return s+o;}
+// 明細テキスト → [{qty,price}]  末尾2要素を数量・単価とする
+function parseLines(text){
+  var lines=String(text).split(/\r\n|\r|\n/),items=[];
+  for(var i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var parts=lines[i].split(/[\t,，、]/);
+    if(parts.length<2)return {ok:false,text:(i+1)+"行目を「数量,単価」または「品名,数量,単価」の形で入力してください"};
+    var q=dec(parts[parts.length-2],4),p=dec(parts[parts.length-1],4);
+    if(q===null||p===null)return {ok:false,text:(i+1)+"行目の数量・単価を読めません(0以上の数、小数は4桁まで)"};
+    items.push({q:q,p:p});
+  }
+  return {ok:true,items:items};
+}
+function estimate(text,ratePct,discount,taxMode){
+  var pl=parseLines(text);if(!pl.ok)return pl;
+  var rt=dec(ratePct===""?"0":ratePct,4);
+  if(rt===null)return {ok:false,text:"諸経費率は0以上の数(小数4桁まで)で入力してください"};
+  var dc=dec(discount===""?"0":discount,0);
+  if(dc===null)return {ok:false,text:"値引きは0以上の整数(円)で入力してください"};
+  var sub=0n,i;
+  for(i=0;i<pl.items.length;i++){var it=pl.items[i];sub+=divRound(it.q.n*it.p.n,pow10(it.q.d+it.p.d),"round");}
+  var exp=divRound(sub*rt.n,100n*pow10(rt.d),"round");
+  var taxable=sub+exp-dc.n;
+  if(taxable<0n)return {ok:false,text:"値引き("+fmt(dc.n)+"円)が小計+諸経費("+fmt(sub+exp)+"円)を超えています"};
+  var tax=divRound(taxable*10n,100n,taxMode);
+  var total=taxable+tax;
+  return {ok:true,sub:sub.toString(),expenses:exp.toString(),discount:dc.n.toString(),taxable:taxable.toString(),tax:tax.toString(),total:total.toString(),count:pl.items.length,
+    text:"明細 "+pl.items.length+"件\n小計: "+fmt(sub)+"円\n諸経費: "+fmt(exp)+"円\n値引き: -"+fmt(dc.n)+"円\n課税対象額: "+fmt(taxable)+"円\n消費税(10%): "+fmt(tax)+"円\n税込合計: "+fmt(total)+"円"};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var r=estimate(g("l").value,g("p").value,g("d").value,g("m").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
+<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div><section class="related"><h2>関連</h2><ul><li><a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
