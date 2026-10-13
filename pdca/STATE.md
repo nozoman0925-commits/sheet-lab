@@ -135,3 +135,7 @@
 ## 2026-10-13 追記(15時台の定期実行)
 - 公開: 記事 kabu-position、無料ツール /tools/phone-format/。仕様 rent-ledger(spec_ready 3件)。本日累計: 記事3本・ツール2本。
 - 事業の数字: 売上0円、閲覧データなし、INBOXに新しい実績なし。7日分未満のため判断せず(推測の数字は書かない)。
+
+## 2026-10-13 追記(計測の土台)
+- オーナー判断「原稿の量より先に、集客→購入→利益を計測できる状態にする」を反映。INBOXにBOOTH実測(販売0・スキ0・売上0円、無料お試し版もDL0)を追記し、pdca/METRICS.md(週次の計測表)を新規作成。PLAN_1M.mdに判断ルール、HUMAN_TASKSに最優先のCloudflareトークン設定と週1回のnote数字報告を追加。
+- 事業の数字: 売上0円、サイトPV・noteビューは未計測。BOOTHの手数料は未確認。quality_check 10本OK、build_site成功。
