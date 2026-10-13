@@ -228,3 +228,9 @@
 - Do: CHARTER追記、quality_check/build_site を最小修正、site/verify/phone_hyphen.py と記事 phone-hyphen-remove を作成、topics #3 を done に。
 - Check: 検証スクリプト不一致0件、quality_check 6本OK、build_site 公開6本。
 - Act: 次回以降、関数系の記事(#5など)は同じ方式で書ける。税金・法令・製品仕様は従来どおり公式出典が必要。
+
+## 2026-10-13 5つ目の商品の記録(単発依頼)
+- Plan: オーナー報告(シフト表の公開、通知手段の変更)を記録し、サイトに反映する。
+- Do: INBOX/STATE追記、PRODUCTS #7 を selling に、products_meta.json 追加、topics.csv に #51・#52 を追加、ビルド。
+- Check: build_site 成功(公開6本)、/products/ と /status/ に月間シフト表が表示されることを確認。
+- Act: 次回は #49 など商品に近い記事、またはシフト表の記事(#51)を検討。人間への依頼は新規なし。

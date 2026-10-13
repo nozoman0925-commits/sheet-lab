@@ -114,3 +114,6 @@
 - CHARTERに「出典に接続できないときの記事」を追記。quality_check は、sourcesに外部URLがなくても site/verify/*.py への参照と実在があれば合格にし、build_site は非URLの出典を文字で表示するよう最小修正。
 - 記事 phone-hyphen-remove(topics #3 電話番号ハイフン削除)を公開。式は site/verify/phone_hyphen.py でLibreOffice再計算、18項目+数値セルが期待値と一致(最初の1件は長音符のASC変換の想定違いで、期待値を実測に直して記事に注意として記載)。Excelでは未確認と明記。名簿クレンジングシート無料お試し版への控えめな案内あり。
 - quality_check 6本OK、build_site成功(/usr/bin/python3)。事業の数字: 売上0円、閲覧データなし。7日分未満のため判断せず。人間への依頼は新規なし。
+
+## 2026-10-13 追記(5つ目の商品「月間シフト表」公開の記録)
+- PRODUCTS #7 を selling(500円、公開名「月間シフト表」)に更新、products_meta.json に追加、シフト表関連の記事テーマ2件(topics #51, #52)を追加。毎朝8時の通知はGoogleカレンダーの予定に切り替え済み。事業の数字: 売上0円(実績の報告なし)、閲覧データなし。7日分未満のため判断せず。
