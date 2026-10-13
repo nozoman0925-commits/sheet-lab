@@ -222,3 +222,9 @@
 - 解釈: 直近24時間の公開記事は0本で(a)可能。ただし出典URLを取得して確認するルールのため、取得を試みた。
 - Do/Check: support.microsoft.com はWebFetchが名前解決失敗、curlはプロキシ403。learn.microsoft.com / support.google.com / nta.go.jp も同様に接続不可。推測でURLを書かないため記事は作らず、サイト・商品の変更なし。quality_check 5本OK、build_site成功(pip で markdown を導入後。dist/status を再生成)。
 - 次回: 出典に接続できる環境なら #3 を執筆。できなければ(b)(f)など出典不要の作業を選ぶ。人間への依頼は新規なし。
+
+## 2026-10-13 出典接続不可の環境向けルールと記事#3(単発依頼)
+- Plan: 出典に接続できず止まっていた記事を、LibreOffice検証を根拠に書けるようにする。仮説=名簿シートへの入口記事になる(指標: Search Console表示。7日分未満で判断しない)。
+- Do: CHARTER追記、quality_check/build_site を最小修正、site/verify/phone_hyphen.py と記事 phone-hyphen-remove を作成、topics #3 を done に。
+- Check: 検証スクリプト不一致0件、quality_check 6本OK、build_site 公開6本。
+- Act: 次回以降、関数系の記事(#5など)は同じ方式で書ける。税金・法令・製品仕様は従来どおり公式出典が必要。

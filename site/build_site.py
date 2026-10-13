@@ -158,7 +158,7 @@ def main():
         notes = ""
         if fm.get("verification_note"):
             notes = f'<div class="box"><b>確認方法:</b> {E(str(fm["verification_note"]))}</div>'
-        src = "".join(f'<li><a href="{E(u)}" rel="noopener nofollow" target="_blank">{E(u)}</a></li>' for u in fm["sources"])
+        src = "".join((f'<li><a href="{E(u)}" rel="noopener nofollow" target="_blank">{E(u)}</a></li>' if str(u).startswith("http") else f'<li>{E(u)}</li>') for u in fm["sources"])
         jsonld = ld({
             "@context": "https://schema.org", "@type": "Article", "headline": fm["title"],
             "datePublished": fm["date"], "dateModified": str(fm.get("updated", fm["date"])),

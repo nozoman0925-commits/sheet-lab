@@ -48,8 +48,10 @@ def check_all(content_dir):
         if len(text) < Q["min_chars"]:
             errs.append(f"文字数不足: {len(text)} < {Q['min_chars']}")
         srcs = [s for s in fm["sources"] if isinstance(s, str) and s.startswith("http")]
-        if len(srcs) < Q["min_sources"]:
-            errs.append("出典URLが不足")
+        # 外部URLがない場合は、存在する検証スクリプト(site/verify/*.py)への参照があれば可(CHARTER 2026-10-13)
+        scripts = [m for s in fm["sources"] if isinstance(s, str) for m in re.findall(r"site/verify/[\w\-]+\.py", s)]
+        if len(srcs) < Q["min_sources"] and not any((ROOT.parent / m).exists() for m in scripts):
+            errs.append("出典URLが不足(または参照先の検証スクリプトが存在しない)")
         if Q["require_verified"] and fm.get("verified") is not True:
             errs.append("verified: true ではない(数式・手順の実機確認が未了)")
         if Q["require_verified"] and fm.get("verified") is True and not fm.get("verification_note"):

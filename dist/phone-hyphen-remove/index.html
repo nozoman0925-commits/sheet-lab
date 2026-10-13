@@ -1,0 +1,113 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>電話番号のハイフンを一括で削除する方法【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="名簿の電話番号からハイフン・括弧・スペースを一括で外すSUBSTITUTEの式を、ケース別に実際に計算して確認。全角はASC関数で半角にそろえる方法と、削除できない文字の落とし穴も解説します。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/phone-hyphen-remove/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="電話番号のハイフンを一括で削除する方法【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="名簿の電話番号からハイフン・括弧・スペースを一括で外すSUBSTITUTEの式を、ケース別に実際に計算して確認。全角はASC関数で半角にそろえる方法と、削除できない文字の落とし穴も解説します。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/phone-hyphen-remove/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "電話番号のハイフンを一括で削除する方法【LibreOfficeで計算して確認】", "datePublished": "2026-10-13", "dateModified": "2026-10-13", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "名簿の電話番号からハイフン・括弧・スペースを一括で外すSUBSTITUTEの式を、ケース別に実際に計算して確認。全角はASC関数で半角にそろえる方法と、削除できない文字の落とし穴も解説します。", "url": "https://sheet-lab-site.pages.dev/phone-hyphen-remove/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/phone-hyphen-remove/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "電話番号のハイフンを一括で削除する方法【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/phone-hyphen-remove/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 電話番号のハイフンを一括で削除する方法【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-13 ・ Excel関数</p><h1>電話番号のハイフンを一括で削除する方法【LibreOfficeで計算して確認】</h1><p>名簿の電話番号が「03-1234-5678」「(03)1234-5678」「０３－１２３４－５６７８」とばらばらで、システムに取り込めない、重複を探せない、という場面は多いものです。この記事では、ハイフンなどを<strong>一括で</strong>外す式を、パターン別に実際に計算して確かめた結果だけを紹介します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/phone_hyphen.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です(SUBSTITUTE関数とASC関数はExcelにもありますが、動作の細かな差はありうるため、お使いの環境で必ず少数の行で試してください)。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>ハイフンだけなら <code>=SUBSTITUTE(A2,"-","")</code> で足ります。</li>
+<li>括弧やスペースも混じるなら、SUBSTITUTEを入れ子にして1つずつ外します。</li>
+<li>全角の数字・ハイフンが混じるなら、先に<code>ASC</code>で半角にそろえてから外します。</li>
+<li>ただし、長音符「ー」など、ハイフンに見えて別の文字は、この式では消えません。</li>
+</ul>
+<h2 id="1">手順1: ハイフンだけ外す</h2>
+<p>A2に電話番号が入っているとして、B2に次の式を入れ、下へコピーします。</p>
+<pre><code>=SUBSTITUTE(A2,&quot;-&quot;,&quot;&quot;)
+</code></pre>
+<p>SUBSTITUTEは「文字列の中の指定した文字を、別の文字に置き換える」関数で、置き換え後を空("")にすれば削除になります。実際に計算した結果は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>入力</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>03-1234-5678</td>
+<td>0312345678</td>
+</tr>
+<tr>
+<td>090-1234-5678</td>
+<td>09012345678</td>
+</tr>
+<tr>
+<td>(03)1234-5678</td>
+<td>(03)12345678 ※括弧が残る</td>
+</tr>
+<tr>
+<td>03 1234 5678</td>
+<td>03 1234 5678 ※スペースが残る</td>
+</tr>
+</tbody>
+</table>
+<p>ハイフン以外は残るので、括弧やスペースが混じる名簿では、次の手順が必要です。</p>
+<h2 id="2">手順2: 括弧とスペースも外す</h2>
+<p>SUBSTITUTEを入れ子にして、外したい文字の数だけ重ねます。</p>
+<pre><code>=SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(A2,&quot;-&quot;,&quot;&quot;),&quot;(&quot;,&quot;&quot;),&quot;)&quot;,&quot;&quot;),&quot; &quot;,&quot;&quot;),&quot;　&quot;,&quot;&quot;)
+</code></pre>
+<p>内側から順に、ハイフン、左括弧、右括弧、半角スペース、全角スペースを外しています。計算結果は、次の表のとおり、上の4パターンすべてが「0312345678」の形にそろいました。</p>
+<table>
+<thead>
+<tr>
+<th>入力</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>(03)1234-5678</td>
+<td>0312345678</td>
+</tr>
+<tr>
+<td>03 1234 5678</td>
+<td>0312345678</td>
+</tr>
+</tbody>
+</table>
+<p>ただし、入力が全角の「０３－１２３４－５６７８」の場合、この式では何も外れず、そのまま残りました。半角の「-」と全角の「－」は別の文字だからです。</p>
+<h2 id="3-asc">手順3: 全角が混じるときはASCで半角にそろえる</h2>
+<p><code>ASC</code>関数は、全角の英数字・記号・カタカナを半角に変換します。先にASCをかけてから外すと、全角の数字やハイフンも対応できます。</p>
+<pre><code>=SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(SUBSTITUTE(ASC(A2),&quot;-&quot;,&quot;&quot;),&quot;(&quot;,&quot;&quot;),&quot;)&quot;,&quot;&quot;),&quot; &quot;,&quot;&quot;),&quot;－&quot;,&quot;&quot;)
+</code></pre>
+<p>実際に計算すると、「０３－１２３４－５６７８」は「0312345678」になりました。全角の数字が半角になり、全角ハイフンも外れています。ASCが全角スペースも半角スペースに変換するため、全角スペースの置換は式から省いています。</p>
+<h2 id="_2">注意点: 消えない文字がある</h2>
+<p>ハイフンのように見えても、別の文字は消えません。たとえば、長音符「ー」を使った「03ー1234ー5678」は、手順3の式でも「03ｰ1234ｰ5678」となり、記号が残りました。しかも、ASCによって半角の「ｰ」に変わった状態で残ります。</p>
+<p>こうした文字がある場合は、その文字を式に1つ足して外します。どの文字が混じっているかは、該当セルを<code>=CODE(MID(A2,3,1))</code>のような式で調べると見当がつきます(この調べ方自体は、本記事では検証していません)。</p>
+<h2 id="_3">注意点: 結果は「文字列」になる</h2>
+<p>SUBSTITUTEの結果は文字列です。数値として入っているセル(たとえば312345678)に使っても、結果は文字列の「312345678」になり、<code>ISNUMBER</code>で確認するとFALSEでした。電話番号は計算に使わないので通常は問題ありませんが、先頭の「0」が消えた数値を元に戻す作業は、この式の役目ではありません。</p>
+<h2 id="_4">元のデータに戻すとき</h2>
+<p>式の結果を残したいときは、結果の列をコピーして「値として貼り付け」をしてから、元の列を削除します。いきなり元の列を上書きすると、やり直せなくなるので、列を分けておくのが安全です。</p>
+<h2 id="_5">名簿全体を整えるなら</h2>
+<p>電話番号のほかに、会社名の「株式会社」の位置、全角・半角、スペースの混在など、名簿には直したい表記ゆれが重なりがちです。運営者が作った「名簿クレンジングシート」は、そうした整形をまとめて行うExcelのシートです。まず試したい方向けに、50行までの<a href="https://nozoman.booth.pm/items/8978060">無料お試し版</a>があります。この記事の方法で足りる場合は、使う必要はありません。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>ハイフンだけなら <code>SUBSTITUTE(A2,"-","")</code></li>
+<li>括弧・スペースも外すならSUBSTITUTEを入れ子にする</li>
+<li>全角が混じるなら先に<code>ASC</code>で半角にそろえる</li>
+<li>長音符など別の文字は残るので、混じる文字を調べて式に足す</li>
+<li>結果は文字列。元の列は残して、別の列で作業する</li>
+</ul>
+<p>式はいずれもLibreOfficeで計算した結果です。Excelでは未確認のため、本番のデータに使う前に、数行で結果を確かめてください。</p><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、6種類の電話番号の表記すべてで期待値と一致することを検証スクリプト(site/verify/phone_hyphen.py)で確認しました。SUBSTITUTEとASCはExcelにもある関数ですが、Excelでは未確認です。特にASC関数は、Excelの言語・環境の設定によって動きが異なる場合があります。外部サイトの記述は参照していません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/phone_hyphen.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/vlookup-na-causes/">VLOOKUPが#N/Aになる5つの原因と直し方【計算して確認済み】</a></li><li><a href="/hyouki-yure-kansu/">表記ゆれ(全角半角・株式会社)を関数でそろえる方法と限界【計算して確認済み】</a></li><li><a href="/tool/">日本語データ整形ツール</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">名簿クレンジングシート</a>(500円)</li><li><a href="/products/">【無料・お試し版】名簿クレンジングシート(50行まで)</a>(無料)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
