@@ -292,6 +292,6 @@
 ## 2026-10-13 /go/ 中継ページと方針A(無人実行)
 - 解釈: 商品slugは PRODUCTS.md の slug があれば同じ、無い #1 は meibo-cleansing とし、5件とも products_meta.json の slug に持たせた。from は記事=slug、ツール=tool / tools-<名前>、固定ページ=about / products / waitlist / status。
 - 解釈: /status/ の商品リンクも /go/ 経由(from=status)にした。プライバシーポリシーに、Cloudflare Web Analytics を有効にした場合の集計(Cookieなし)を追記。
-- 解釈: pdca/deliverables/outreach/ の外部投稿用文面にはBOOTH直リンクが残る(サイトではないため未変更)。今後その文面を使うときは /go/<slug>/?from=<媒体名> にする(CHARTERに追記)。
+- 解釈: pdca/deliverables/outreach/ の外部投稿用文面にはBOOTH直リンクが残る(サイトではないため未変更)。今後その文面を使うときは /go/<slug>/?from=<媒体名> にする(CHARTERにはnote原稿のルールのみ追記)。
 - 改善案は products_meta.json と PRODUCTS.md の確認済みの内容だけで作成。「何分浮く」は計測していないため書かず。
 - Check: tools_test 合格、quality_check 10本OK、build_site 成功(markdown は pip で導入)。dist/go/ に5ページ生成、直リンク残り0。外部送信スクリプトの追加なし。
