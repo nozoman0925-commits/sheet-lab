@@ -326,3 +326,7 @@
 
 ## 2026-10-13 運営ルールを整理(無人実行)
 - CHARTER/PLAN_1M/HUMAN_TASKS を新方針に統一。status_page.py を新構成に対応。quality_check 10/10 OK、tools_test fail=0、build_site 成功。
+
+## 2026-10-13 計測開始とBOOTH設定の記録(無人実行)
+- HUMAN_TASKSの Cloudflare Analytics と 購入者へのひとこと を [x] にし完了欄に記録。「Googleアナリティクス測定ID」の項目は別件のため未完了のまま。METRICS/INBOX/STATEに追記。
+- Check: build_site.py 実行結果は下記コミット時点。外部投稿・送信なし。
