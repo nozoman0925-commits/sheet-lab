@@ -188,6 +188,7 @@ def main():
 <h2>記事の作り方</h2><p>{E(CFG['ai_disclosure'])}</p>
 <p>数式や手順は、LibreOfficeなどで実際に再計算して確かめたものだけを載せ、確認できていない点は「未確認」と書きます。出典は、中身を確認した公式ページなどに限ります。</p>
 <h2>運営者の商品について</h2><p>運営者は、Excel用テンプレート「<a href="https://nozoman.booth.pm/items/8973300" rel="noopener" target="_blank">名簿クレンジングシート</a>」、「<a href="https://nozoman.booth.pm/items/8977893" rel="noopener" target="_blank">月間家計簿</a>」、「<a href="https://nozoman.booth.pm/items/8978610" rel="noopener" target="_blank">工事・リフォーム用 見積書テンプレート</a>」(ほかに名簿の<a href="https://nozoman.booth.pm/items/8978060" rel="noopener" target="_blank">無料お試し版</a>)をBOOTH(<a href="https://nozoman.booth.pm/" rel="noopener" target="_blank">nozoman.booth.pm</a>)で販売しています。関連する記事やツールのページには、運営者自身の商品であることを明記して案内を置くことがあります。</p>
+<h2>発信している場所</h2><p>Excelの使い方や見積書の考え方は、noteでも発信しています: <a href="https://note.com/nozoman0925" rel="noopener" target="_blank">note(nozoman0925)</a>。最初の記事は「<a href="https://note.com/nozoman0925/n/n8f765cc7ec94" rel="noopener" target="_blank">工事・リフォームの見積書をExcelで作るときの計算の順番</a>」です。</p>
 <h2>無料ツールについて</h2><p>/tool/ と /tools/ の無料ツールは、ブラウザの中だけで計算し、入力内容を外部に送信しません。計算結果は、ご自身の環境で必ずご確認のうえお使いください。</p>
 <h2>広告について</h2><p>現時点では、広告の掲載やアフィリエイトは行っていません。今後、広告(Google AdSenseなど)やアフィリエイトを導入する場合は、該当する記事に『広告』『PR』と明記し、このページとプライバシーポリシーを更新します。</p>""", "/about/"))
     email = CFG.get("contact_email", "").strip()

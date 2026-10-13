@@ -234,3 +234,9 @@
 - Do: INBOX/STATE追記、PRODUCTS #7 を selling に、products_meta.json 追加、topics.csv に #51・#52 を追加、ビルド。
 - Check: build_site 成功(公開6本)、/products/ と /status/ に月間シフト表が表示されることを確認。
 - Act: 次回は #49 など商品に近い記事、またはシフト表の記事(#51)を検討。人間への依頼は新規なし。
+
+## 2026-10-13 note投稿の記録(単発依頼)
+- Plan: note1本目の投稿と毎日18時の仕組みを記録し、運営者情報にnoteへのリンクを足す。
+- Do: INBOX/STATE/HUMAN_TASKS更新、/about/ に「発信している場所」を追加。見積書に関係するサイト記事は無く、記事側は変更なし。
+- Check: build_site 実行。
+- Act: 次回はnote無料記事の流れ(10/14〜)を見て、サイト側の関連リンクを検討。
