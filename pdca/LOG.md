@@ -420,3 +420,10 @@
 - 04:35 [note] 有料(300円)原稿「家計簿の費目別合計が合わない…取りこぼしを見つけて直す式集」を作成(outreach/note/category-leak-paid-01.md、有料の未投稿ストック4本目)。category_sum_mini.py で10行の結果が不一致0の式だけ使用。BOOTHは【PR】で /go/budget-monthly/?from=note-category-leak-paid-01
 - 解釈: その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。直前が無料だったので note は有料1本。spec_ready の未作成は3件のため仕様の補充なし。リポジトリは公開とみなし商品ファイルは置かない。
 - Check: quality_check 19本OK、tools_test fail=0、build_site 成功、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。
+
+## 2026-10-15 定期実行(6時台JST)
+- 06:55 [記事] 「家計簿をエクセルで自作してA4・1枚に印刷する方法」を公開(kakeibo-a4-print)。LibreOfficeで残高の式・費目別合計の48件が不一致0、PDF出力でA4・1ページを確認(設定なしで列を広げた表は3ページ)。Excelの画面と実プリンターは未確認、文字の縮み具合は未測定と明記。月間家計簿への案内は /go/ 経由で、通年集計・グラフ等ができないことも書いた。本日の記事 3本目。
+- 07:05 [ツール] 「時給×勤務時間の簡易計算ツール」を公開(tools/hourly-wage)。日ごとの丸め(5・15・30分)と円の端数を選べる。テスト約4.9万件(Date/BigIntの独立計算)+手計算ケースが全部合格。割増・控除は計算しないと明記。本日のツール 3本目(上限)。
+- 07:15 [note] 無料原稿「自作の家計簿、印刷したら3ページに割れた」を作成(outreach/note/kakeibo-print-01.md、無料の未投稿ストック9本目)。式と設定のみ(プロンプトなし)。BOOTHは【PR】で /go/budget-monthly/?from=note-kakeibo-print-01。
+- 解釈: その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。直前が有料だったため note は無料1本。spec_ready の未作成は3件のため仕様の補充なし。リポジトリは公開とみなし商品ファイルは置かない。
+- Check: quality_check 20本OK、tools_test fail=0、build_site 成功(markdown を pip 導入)、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。

@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -398,5 +398,52 @@ const et=load('tools/estimate-total/body.html');
     ok(res.onlyA.join('\n')===rOnlyA.join('\n')&&res.both.join('\n')===rBoth.join('\n')&&res.onlyB.join('\n')===rOnlyB.join('\n')&&res.aCount===fa.length&&res.bCount===fb.length&&res.onlyA.length===rOnlyA.length&&res.onlyB.length===rOnlyB.length,'ld random '+it);
   }
   console.log('list-diff '+n+' random cases');
+})();
+// hourly-wage: 手計算ケース+Dateによる独立計算(BigInt)との照合
+(function(){
+  const hw=load('tools/hourly-wage/body.html');
+  let r=hw.wageCalc('9:00 18:00 60','1200',1,'floor','floor');
+  ok(r.ok&&r.totalMinutes===480&&r.wage===9600,'hw basic');
+  r=hw.wageCalc('9:00 18:00 60\n10:00 15:30 45','1000',1,'floor','floor');
+  ok(r.totalMinutes===480+285&&r.wage===12750,'hw two days');
+  r=hw.wageCalc('9:00 9:50 0','1000',15,'floor','floor');ok(r.totalMinutes===45&&r.wage===750,'hw unit floor');
+  r=hw.wageCalc('9:00 9:50 0','1000',15,'ceil','floor');ok(r.totalMinutes===60&&r.wage===1000,'hw unit ceil');
+  r=hw.wageCalc('9:00 9:53 0','1000',15,'round','floor');ok(r.totalMinutes===60,'hw unit round up');
+  r=hw.wageCalc('9:00 9:52 0','1000',15,'round','floor');ok(r.totalMinutes===45,'hw unit round down');
+  r=hw.wageCalc('22:00 6:00 60','1000',1,'floor','floor');ok(r.totalMinutes===420,'hw overnight');
+  r=hw.wageCalc('9:00 9:00 0','1000',1,'floor','floor');ok(r.totalMinutes===1440,'hw same time 24h');
+  r=hw.wageCalc('９：００ １８時００分 ６０','１２００',1,'floor','floor');ok(r.ok&&r.wage===9600,'hw fullwidth');
+  r=hw.wageCalc('9:00 18:00','1200',1,'floor','floor');ok(r.ok&&r.totalMinutes===540,'hw no break');
+  r=hw.wageCalc('9:00,18:00,60\n\n  10:00 11:00 0 ','1000',1,'floor','floor');ok(r.ok&&r.rows.length===2,'hw comma and blank');
+  r=hw.wageCalc('9:00 10:00 90','1000',1,'floor','floor');ok(!r.ok&&r.text.indexOf('1行目')===0,'hw break too long');
+  r=hw.wageCalc('9:00','1000',1,'floor','floor');ok(!r.ok,'hw too few tokens');
+  r=hw.wageCalc('24:00 25:00 0','1000',1,'floor','floor');ok(!r.ok,'hw bad time');
+  r=hw.wageCalc('','1000',1,'floor','floor');ok(!r.ok,'hw empty');
+  r=hw.wageCalc('9:00 10:00 0','abc',1,'floor','floor');ok(!r.ok,'hw bad wage');
+  r=hw.wageCalc('9:00 10:00 0','100000',1,'floor','floor');ok(!r.ok,'hw wage too large');
+  r=hw.wageCalc('9:00 9:01 0','1000',1,'floor','floor');ok(r.wage===16,'hw yen floor');
+  r=hw.wageCalc('9:00 9:01 0','1000',1,'floor','round');ok(r.wage===17,'hw yen round');
+  r=hw.wageCalc('9:00 9:01 0','1000',1,'floor','ceil');ok(r.wage===17,'hw yen ceil');
+  r=hw.wageCalc('9:00 9:03 0','1000',1,'floor','round');ok(r.wage===50,'hw yen exact');
+  // 独立計算: 5分刻みの全開始・終了+休憩の組、全丸め設定
+  const ref=(s,e,b,unit,um,ym,h)=>{
+    const d0=Date.UTC(2026,0,1,Math.floor(s/60),s%60),d1=Date.UTC(2026,0,1+(e<=s?1:0),Math.floor(e/60),e%60);
+    const w=(d1-d0)/60000-b; if(w<0)return null;
+    let c=w; if(unit>1){const q=Math.floor(w/unit),rem=w-q*unit;c=(um==='floor'||rem===0?q:um==='ceil'?q+1:(rem*2>=unit?q+1:q))*unit;}
+    const num=BigInt(c)*BigInt(h);const q=num/60n,rem=num%60n;
+    const y=rem===0n||ym==='floor'?q:ym==='ceil'?q+1n:(rem*2n>=60n?q+1n:q);
+    return {c,y:Number(y)};
+  };
+  const f2=m=>Math.floor(m/60)+':'+String(m%60).padStart(2,'0');
+  let n=0;
+  for(const unit of [1,5,15,30])for(const um of ['floor','round','ceil'])for(const ym of ['floor','round','ceil'])
+    for(let s=0;s<1440;s+=85)for(let e=0;e<1440;e+=95)for(const b of [0,30,45,60,120]){
+      const h=[800,1013,1250,2999][(s+e+b)%4];
+      const x=ref(s,e,b,unit,um,ym,h);
+      const res=hw.wageCalc(f2(s)+' '+f2(e)+' '+b,String(h),unit,um,ym);n++;
+      if(x===null)ok(!res.ok,'hw ref neg');
+      else ok(res.ok&&res.totalMinutes===x.c&&res.wage===x.y,'hw ref '+f2(s)+' '+f2(e)+' '+b+' '+unit+um+ym);
+    }
+  console.log('hourly-wage '+n+' cases');
 })();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

@@ -1,0 +1,107 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>時給×勤務時間の簡易計算ツール(分単位の丸め・円の端数を選べる) | シート実務ラボ</title><meta name="description" content="日ごとの開始・終了・休憩を貼り付けると、勤務時間の合計と時給をかけた金額を出す無料ツール。日ごとの分の丸め(1・5・15・30分)と、合計金額の円の端数(切り捨て・四捨五入・切り上げ)を選べます。割増や控除は計算しません。ブラウザ内で処理し、入力は送信されません。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/tools/hourly-wage/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="時給×勤務時間の簡易計算ツール(分単位の丸め・円の端数を選べる) | シート実務ラボ"><meta property="og:description" content="日ごとの開始・終了・休憩を貼り付けると、勤務時間の合計と時給をかけた金額を出す無料ツール。日ごとの分の丸め(1・5・15・30分)と、合計金額の円の端数(切り捨て・四捨五入・切り上げ)を選べます。割増や控除は計算しません。ブラウザ内で処理し、入力は送信されません。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/tools/hourly-wage/"><meta property="og:type" content="website">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "時給×勤務時間の簡易計算ツール(分単位の丸め・円の端数を選べる)", "description": "日ごとの開始・終了・休憩を貼り付けると、勤務時間の合計と時給をかけた金額を出す無料ツール。日ごとの分の丸め(1・5・15・30分)と、合計金額の円の端数(切り捨て・四捨五入・切り上げ)を選べます。割増や控除は計算しません。ブラウザ内で処理し、入力は送信されません。", "url": "https://sheet-lab-site.pages.dev/tools/hourly-wage/", "applicationCategory": "BusinessApplication", "operatingSystem": "Web browser", "inLanguage": "ja", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "無料ツール", "item": "https://sheet-lab-site.pages.dev/tools/"}, {"@type": "ListItem", "position": 3, "name": "時給×勤務時間の簡易計算ツール(分単位の丸め・円の端数を選べる)", "item": "https://sheet-lab-site.pages.dev/tools/hourly-wage/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; <a href="/tools/">無料ツール</a> &gt; 時給×勤務時間の簡易計算ツール(分単位の丸め・円の端数を選べる)</p><h1>時給×勤務時間の簡易計算ツール</h1>
+<p>日ごとの「開始 終了 休憩(分)」を1行ずつ貼り付けると、<b>勤務時間の合計</b>と、時給をかけた<b>金額の目安</b>を出します。丸め方(分の単位・円の端数)を選べるので、「15分単位で切り捨てるとどれだけ変わるか」の比較にも使えます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p>勤務の記録(1行に1日。例: <code>9:00 18:00 60</code>。休憩は省略すると0分):<br><textarea id="l" rows="8" style="width:100%" placeholder="9:00 18:00 60&#10;10:00 15:30 45&#10;13:00 22:00 60"></textarea></p>
+<p><label>時給(円): <input type="text" id="h" size="8" inputmode="numeric" value="1200"></label>
+<label>日ごとの分の丸め:
+<select id="u"><option value="1">しない</option><option value="5">5分</option><option value="15">15分</option><option value="30">30分</option></select></label>
+<label><select id="um"><option value="floor">切り捨て</option><option value="round">四捨五入</option><option value="ceil">切り上げ</option></select></label>
+<label>合計金額の円の端数:
+<select id="ym"><option value="floor">切り捨て</option><option value="round">四捨五入</option><option value="ceil">切り上げ</option></select></label></p>
+<p><button type="button" id="br">計算</button> <span id="st"></span></p>
+<p><textarea id="o" rows="10" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>勤務時間</b>: 終了−開始−休憩(分)。終了が開始より早い、または同じ場合は、終了を翌日の時刻として計算します(例: 22:00〜翌6:00 は8時間)。</li>
+<li><b>日ごとの分の丸め</b>: 日ごとの勤務分を、選んだ単位(5・15・30分)の倍数にそろえてから足します。「しない」を選ぶと分のまま足します。丸め方が給与の規則として認められるかどうかは判断しません。勤務先の規則に従ってください。</li>
+<li><b>金額</b>: 丸めたあとの合計分 × 時給 ÷ 60 を、選んだ端数処理で円にします。整数だけで計算するので、小数の誤差は入りません。</li>
+<li>全角数字と「9時30分」「9：30」形式も読み取ります。時刻は0〜23時、分は0〜59だけ受け付け、読めない行があるときは、その行番号を知らせて計算しません。空行は飛ばします。</li>
+<li>時給は0〜99,999の整数だけ受け付けます。</li>
+</ul>
+<p class="meta">このツールは時間×時給の掛け算だけです。残業・深夜・休日の割増、法定の休憩時間、社会保険や税の控除、交通費は計算しません。給与の判断には使わず、目安として使ってください。</p>
+<p class="meta">関連: <a href="/tools/unit-time/">勤務時間の計算ツール</a> / <a href="/kakeibo-carryover/">家計簿の前月繰越を翌月に引き継ぐ方法(記事)</a> / 運営者の商品: <a href="/go/shift-monthly/?from=tool-hourly-wage">月間シフト表(Excel・500円)</a>(日付と曜日が自動で入るシフト表です。給与計算・祝日の判定・法定の休憩や残業の判定はできません)</p>
+<script>
+function parseTimeW(s){
+  s=String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[：]/g,":").replace(/\s|　/g,"");
+  var m=/^(\d{1,2})(?::|時)(\d{1,2})分?$/.exec(s);
+  if(!m)return null;
+  var h=parseInt(m[1],10),mi=parseInt(m[2],10);
+  if(h>23||mi>59)return null;
+  return h*60+mi;
+}
+function toHalfDigits(s){return String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);});}
+function fmtHMw(min){var h=Math.floor(min/60),m=min%60;return h+":"+(m<10?"0":"")+m;}
+function fmtYen(n){return String(n).replace(/\B(?=(\d{3})+(?!\d))/g,",");}
+// 整数 a/b を mode で丸める(a>=0,b>0)
+function divMode(a,b,mode){
+  var q=Math.floor(a/b),r=a-q*b;
+  if(r===0)return q;
+  if(mode==="floor")return q;
+  if(mode==="ceil")return q+1;
+  return (r*2>=b)?q+1:q;
+}
+function wageCalc(text,hourlyStr,unit,unitMode,yenMode){
+  var hs=toHalfDigits(hourlyStr).replace(/[,\s　]/g,"");
+  if(!/^\d{1,5}$/.test(hs))return {ok:false,text:"時給は0〜99,999の整数で入力してください(例: 1200)"};
+  var hourly=parseInt(hs,10);
+  var lines=String(text).split(/\r\n|\r|\n/),rows=[],total=0,raw=0;
+  for(var i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var t=lines[i].replace(/^[\s　]+|[\s　]+$/g,"").split(/[\s　,、，]+/);
+    if(t.length<2||t.length>3)return {ok:false,text:(i+1)+"行目「"+lines[i]+"」は「開始 終了 休憩(分)」の形で入力してください(例: 9:00 18:00 60)"};
+    var s=parseTimeW(t[0]),e=parseTimeW(t[1]);
+    if(s===null||e===null)return {ok:false,text:(i+1)+"行目「"+lines[i]+"」の開始・終了を時刻として読めません(例: 9:00)"};
+    var b=0;
+    if(t.length===3){
+      var bs=toHalfDigits(t[2]);
+      if(!/^\d{1,4}$/.test(bs))return {ok:false,text:(i+1)+"行目「"+lines[i]+"」の休憩は分を整数で入力してください(例: 60)"};
+      b=parseInt(bs,10);
+    }
+    var span=e-s;if(span<=0)span+=1440;
+    var w=span-b;
+    if(w<0)return {ok:false,text:(i+1)+"行目「"+lines[i]+"」は休憩が拘束時間("+fmtHMw(span)+")より長いため、計算できません"};
+    var c=unit>1?divMode(w,unit,unitMode)*unit:w;
+    rows.push({line:i+1,minutes:w,counted:c});
+    raw+=w;total+=c;
+  }
+  if(rows.length===0)return {ok:false,text:"勤務の記録が入力されていません"};
+  var wage=divMode(total*hourly,60,yenMode);
+  var out=rows.map(function(r){return r.line+"行目: 勤務 "+fmtHMw(r.minutes)+(unit>1?" → 計上 "+fmtHMw(r.counted):"");}).join("\n");
+  out+="\n合計: "+rows.length+"日、"+fmtHMw(total)+"("+total+"分)";
+  if(unit>1)out+="(丸める前は "+fmtHMw(raw)+")";
+  out+="\n金額: "+total+"分 × "+fmtYen(hourly)+"円 ÷ 60 = "+fmtYen(wage)+"円";
+  return {ok:true,rows:rows,rawMinutes:raw,totalMinutes:total,wage:wage,text:out};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var r=wageCalc(g("l").value,g("h").value,parseInt(g("u").value,10),g("um").value,g("ym").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
+<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div><section class="related"><h2>関連</h2><ul><li><a href="/tools/unit-time/">勤務時間の計算ツール(開始・終了・休憩/時間の合計)</a></li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
