@@ -1,0 +1,155 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="エクセルで日付と金額が並ぶ表から、指定した年月の合計を出す式を解説。SUMIFSの日付範囲指定とSUMPRODUCT(YEAR・MONTH)を比べ、月だけで集計すると別の年が混ざる点を、LibreOfficeで実際に計算して確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/monthly-sum-by-date/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="エクセルで日付と金額が並ぶ表から、指定した年月の合計を出す式を解説。SUMIFSの日付範囲指定とSUMPRODUCT(YEAR・MONTH)を比べ、月だけで集計すると別の年が混ざる点を、LibreOfficeで実際に計算して確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/monthly-sum-by-date/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】", "datePublished": "2026-10-14", "dateModified": "2026-10-14", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "エクセルで日付と金額が並ぶ表から、指定した年月の合計を出す式を解説。SUMIFSの日付範囲指定とSUMPRODUCT(YEAR・MONTH)を比べ、月だけで集計すると別の年が混ざる点を、LibreOfficeで実際に計算して確認しました。", "url": "https://sheet-lab-site.pages.dev/monthly-sum-by-date/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/monthly-sum-by-date/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/monthly-sum-by-date/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-14 ・ Excel関数</p><h1>日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】</h1><p>日付と金額を1行ずつ並べた表から、「2026年4月の合計はいくら?」を出したい場面は多いはずです。この記事では、<strong>日付の列から指定した年月の合計を出す式</strong>を2通り紹介し、<strong>「月」だけで集計すると別の年が混ざる</strong>という落とし穴を、実際に計算して確かめた結果で示します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/month_sum.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。本番の表に使う前に、数行で結果を確かめてください。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>表はA列が日付、B列が金額です(2行目〜)。集計したい年をD列、月をE列に入れます。</li>
+<li><strong>おすすめはSUMIFS</strong>: <code>=SUMIFS(B2:B61,A2:A61,"&gt;="&amp;DATE(D1,E1,1),A2:A61,"&lt;"&amp;EDATE(DATE(D1,E1,1),1))</code></li>
+<li>SUMPRODUCTでも同じ結果になります: <code>=SUMPRODUCT((YEAR(A2:A61)=D1)*(MONTH(A2:A61)=E1)*B2:B61)</code></li>
+<li><strong>月だけを条件にすると(年を見ないと)、別の年の同じ月が混ざります。</strong> 複数年のデータでは必ず年も条件に入れます。</li>
+</ul>
+<h2 id="_2">式の意味</h2>
+<p>SUMIFSの式は、「日付が当月1日以上、かつ翌月1日未満」の行だけを合計しています。<code>DATE(D1,E1,1)</code> は年月から1日の日付を作り、<code>EDATE(…,1)</code> はその1か月後の日付です。月末の日数(28日か31日か)を気にしなくてよいのが利点です。</p>
+<p>SUMPRODUCTの式は、各行の年と月を取り出して一致する行の金額を足しています。どちらも結果は同じでしたが、SUMIFSのほうが式が短く、読みやすいと感じます。</p>
+<h2 id="_3">実際に計算した結果</h2>
+<p>2025〜2026年の日付をランダムに60行並べた表と、境界の日付を入れた8行の表で、指定した年月の合計を3種類の式で出しました。</p>
+<ul>
+<li>式1: SUMIFS(日付範囲)</li>
+<li>式2: SUMPRODUCT(年と月)</li>
+<li>式3: SUMPRODUCT(月だけ。年を見ない)</li>
+</ul>
+<p>境界の表は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>日付</th>
+<th>金額</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026-04-01</td>
+<td>100</td>
+</tr>
+<tr>
+<td>2026-04-30</td>
+<td>200</td>
+</tr>
+<tr>
+<td>2026-05-01</td>
+<td>400</td>
+</tr>
+<tr>
+<td>2026-03-31</td>
+<td>800</td>
+</tr>
+<tr>
+<td>2024-02-29</td>
+<td>1,600</td>
+</tr>
+<tr>
+<td>2025-02-28</td>
+<td>3,200</td>
+</tr>
+<tr>
+<td>2026-12-31</td>
+<td>6,400</td>
+</tr>
+<tr>
+<td>2027-01-01</td>
+<td>12,800</td>
+</tr>
+</tbody>
+</table>
+<p>結果の一部です。</p>
+<table>
+<thead>
+<tr>
+<th>集計する年月</th>
+<th>式1・式2(年も見る)</th>
+<th>式3(月だけ)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026年4月</td>
+<td>300</td>
+<td>300</td>
+</tr>
+<tr>
+<td>2026年5月</td>
+<td>400</td>
+<td>400</td>
+</tr>
+<tr>
+<td>2026年1月</td>
+<td>0</td>
+<td>12,800</td>
+</tr>
+<tr>
+<td>2026年2月</td>
+<td>0</td>
+<td>4,800</td>
+</tr>
+<tr>
+<td>2025年2月</td>
+<td>3,200</td>
+<td>4,800</td>
+</tr>
+<tr>
+<td>2024年2月</td>
+<td>1,600</td>
+<td>4,800</td>
+</tr>
+</tbody>
+</table>
+<p>2026年4月は、月初の4/1(100)と月末の4/30(200)の両方が入り、合計300で正しく出ました。翌日の5/1(400)は4月に混ざりません。</p>
+<p>一方、<strong>式3(月だけ)では、2026年1月が「0」ではなく12,800になりました。</strong> これは2027年1月1日の金額です。2月も、2024年のうるう日(2/29)と2025年(2/28)の金額が合算され、どの年を指定しても4,800になりました。</p>
+<p>2026年1月〜12月と2025年2月・2024年2月の計14か月分で、式1・式2は期待値と全件一致しました。60行の表と合わせた28件の集計すべてで不一致0件です。月だけで集計した場合に年の違いで結果が変わった月は、28件中16件ありました。</p>
+<h2 id="_4">つまずきやすい点</h2>
+<ul>
+<li><strong>年をまたぐデータでは、月だけの条件は使わない。</strong> 1年分しか入れない表なら問題になりませんが、翌年も同じ表に続けると、突然合計が合わなくなります。</li>
+<li><strong>日付の列が文字列だと正しく集計できないことがあります。</strong> この記事では、日付として入力した値だけを検証しています。文字列の場合の動きは確認していません。</li>
+<li><strong>範囲を固定すると、追加した行が集計に入りません。</strong> 上の式は2行目〜61行目の例です。行を足す予定なら、範囲を余裕をもって広めに取っておきます。</li>
+<li>集計したい年月は、式に直接書かず、セル(D1・E1)から読むと、年月を変えるだけで別の月も出せます。</li>
+</ul>
+<h2 id="_5">注意点: この式ができないこと</h2>
+<ul>
+<li>会計年度(4月始まりなど)での集計は、この記事では扱いません。年月を2つのセルで指定する形です。</li>
+<li>費目ごとの月別集計は、条件を足す必要があります(SUMIFSに「費目」の条件を足せば可能ですが、この記事では検証していません)。</li>
+<li>家計の良し悪しや、節約できる金額の判断はしません。</li>
+</ul>
+<h2 id="_6">家計簿のひな形が必要なら</h2>
+<p>この記事の式は、自分で作った表にそのまま使えます。1か月分の収支を費目別に集計するひな形を探しているなら、運営者が作った<a href="/go/budget-monthly/?from=monthly-sum-by-date">月間家計簿(Excelテンプレート・400円)</a>があります。A4で印刷できます。ただし、<strong>複数の月をまたいだ通年の集計はできません</strong>(1か月ごとに使う形です)。Excelの確認はWindowsデスクトップ版16のみです。この記事の方法で足りる場合は、買う必要はありません。</p>
+<p>前月と比べた増減の割合を知りたいときは、無料の<a href="/tools/percent/">割合・増減率の計算ツール</a>も使えます(入力は外部に送信されません)。月ごとの繰越の式は、<a href="/kakeibo-carryover/">前月繰越を翌月に引き継ぐ方法</a>で計算して確認しています。</p>
+<h2 id="_7">まとめ</h2>
+<ul>
+<li>指定した年月の合計は、SUMIFSで「当月1日以上、翌月1日未満」を条件にする</li>
+<li>SUMPRODUCT(YEAR・MONTH)でも同じ結果になる</li>
+<li>月だけで集計すると、別の年の同じ月が混ざる(今回の確認では28件中16件で結果が変わった)</li>
+<li>式はいずれもLibreOfficeで計算した結果。Excelでは未確認のため、本番の表に使う前に数行で確かめる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、日付と金額が合計68行並ぶ2つの表(2024〜2027年の日付、月初・月末・うるう日を含む)について、指定した年月の合計28件を、3種類の式で期待値と照合して不一致0件であることを検証スクリプト(site/verify/month_sum.py)で確認しました。使った関数はSUMIFS、EDATE、DATE、SUMPRODUCT、YEAR、MONTHで、Excelにもある関数ですが、Excelでは未確認です。日付の列が文字列の場合は検証していません。外部サイトの記述は参照していません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/month_sum.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/kakeibo-carryover/">エクセル家計簿で前月繰越を翌月に引き継ぐ方法(月ごとのシートで残高をつなぐ式)【LibreOfficeで計算して確認】</a></li><li><a href="/kakeibo-month-over-month/">エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】</a></li><li><a href="/tools/percent/">割合・増減率の計算ツール(前月比・達成率・ポイント差)</a></li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>

@@ -374,3 +374,10 @@
 - 07:20 [note] 無料原稿「家計簿の前月繰越を自動でつなぐ式」を作成(outreach/note/carryover-01.md、無料の未投稿ストック4本目)。carryover.py を再実行して不一致0の式だけ使用。BOOTHは【PR】で /go/budget-monthly/?from=note-carryover-01(繰越の自動引き継ぎは商品に無いと明記)。
 - 解釈: その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。spec_ready の未作成は3件以上のため仕様の補充なし。note原稿は1回1本までなので無料1本のみ。リポジトリは公開とみなし商品ファイルは置いていない。
 - Check: quality_check 14本OK、tools_test fail=0、build_site 成功、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。
+
+## 2026-10-14 定期実行(9時台JST)
+- 09:55 [記事] 「シフト表で日ごとの出勤人数を数える方法」を公開(shift-headcount)。LibreOfficeで5人×7日と表記ゆれ表(末尾スペースで数え漏れる)の56件を計算して不一致0。商品には出勤人数の行はあるが「不足」判定は無いと明記。本日の記事 4本目。
+- 10:05 [記事] 「日付の列から月別に合計を出す方法」を公開(monthly-sum-by-date)。SUMIFSとSUMPRODUCTの2式で28件を照合して不一致0。月だけで集計すると別の年が混ざる(28件中16件)ことを実測で示した。本日の記事 5本目。
+- 10:15 [note] 無料原稿「シフト表の出勤人数をCOUNTIFで自動に」を作成(outreach/note/shift-headcount-01.md、無料の未投稿ストック5本目)。式のみ使用(プロンプトは未検証のため使わず)。BOOTHは【PR】で /go/shift-monthly/?from=note-shift-headcount-01。
+- 解釈: その日の最初の回ではないため毎日の分析は省略。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。ツールは本日3本で上限のため作らず。spec_ready の未作成が3件以上のため仕様の補充なし。リポジトリは公開とみなし商品ファイルは置かない。
+- Check: quality_check と build_site の結果は下のコミット時点。外部投稿・送信なし。人間への依頼は新規なし。
