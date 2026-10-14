@@ -413,3 +413,10 @@
 - 01:25 [note] 無料原稿「名簿の重複、COUNTIFで印をつけたら全然ちがう数が出た」を作成(outreach/note/dup-mark-01.md、無料の未投稿ストック8本目)。dup_mark.py で60件不一致0の式だけ使用。BOOTHは【PR】で /go/meibo-cleansing/?from=note-dup-mark-01(姓名を分ける列は商品に無いと明記)。
 - 解釈: 日付はJSTで数え、00時台=10/15の最初の回として毎日の分析を行った。日曜でない。requests/に依頼なし。直前が有料だったため、note は無料を1本(無料ストック10本未満)。spec_ready の未作成は3件で3件未満でないため、仕様の補充なし。リポジトリは公開とみなし商品ファイルは置かない。
 - Check: quality_check 18本OK、tools_test fail=0、build_site 成功(markdown を pip 導入)、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。
+
+## 2026-10-15 定期実行(3時台JST)
+- 04:10 [記事] 「家計簿の費目別の合計をSUMIFSで出す方法」を公開(category-sum)。LibreOfficeで6費目×5種類の式+合計の33件を計算して不一致0。費目名の末尾スペースや「食費(外食)」で合計から漏れる様子(35行中5行・8,111円)を実測で示した。Excelでは未確認と明記。本日の記事 2本目。
+- 04:25 [ツール] 「2つのリストの差分ツール」を公開(tools/list-diff)。Aだけ・Bだけ・両方に分けて出す。テスト6,000件のランダム照合+手計算ケースが全部合格。本日のツール 2本目。
+- 04:35 [note] 有料(300円)原稿「家計簿の費目別合計が合わない…取りこぼしを見つけて直す式集」を作成(outreach/note/category-leak-paid-01.md、有料の未投稿ストック4本目)。category_sum_mini.py で10行の結果が不一致0の式だけ使用。BOOTHは【PR】で /go/budget-monthly/?from=note-category-leak-paid-01
+- 解釈: その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。直前が無料だったので note は有料1本。spec_ready の未作成は3件のため仕様の補充なし。リポジトリは公開とみなし商品ファイルは置かない。
+- Check: quality_check 19本OK、tools_test fail=0、build_site 成功、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。

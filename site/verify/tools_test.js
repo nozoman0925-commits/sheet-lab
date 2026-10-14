@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('dup-check')?'dupCheck,normKey':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -352,5 +352,51 @@ const et=load('tools/estimate-total/body.html');
     ok(res.dupRows===refDup&&res.total===refTotal&&res.blank===refBlankFix&&res.unique===firstIdx.length&&res.kept.join('\n')===refKept.join('\n')&&res.groups.map(g=>g.lines.join()).join('|')===refGroups.join('|'),'dc rnd '+JSON.stringify(L)+JSON.stringify(o)+' got '+JSON.stringify([res.dupRows,res.total,res.blank,res.unique])+' ref '+JSON.stringify([refDup,refTotal,refBlankFix,firstIdx.length]));
   }
   console.log('dup-check '+n+' random cases');
+})();
+// list-diff: 手計算ケース+独立実装(総当たり比較)との照合
+(function(){
+  const ld=load('tools/list-diff/body.html');
+  const O=(e,a,w,c)=>({edge:e,all:a,width:w,nocase:c});
+  let r=ld.listDiff('a\nb\nc','b\nc\nd',O(true,false,true,false));
+  ok(r.onlyA.join()==='a'&&r.onlyB.join()==='d'&&r.both.join()==='b,c','ld basic');
+  r=ld.listDiff('',"",O(true,false,true,false));ok(r.aCount===0&&r.bCount===0&&r.both.length===0,'ld empty');
+  r=ld.listDiff('a\na\nb','a',O(true,false,true,false));ok(r.aCount===2&&r.onlyA.join()==='b'&&r.both.join()==='a','ld dup within list');
+  r=ld.listDiff(' 山田 \n佐藤','山田\n鈴木',O(true,false,true,false));ok(r.both.join()===' 山田 '&&r.onlyA.join()==='佐藤','ld edge keeps A notation');
+  r=ld.listDiff(' 山田 ','山田',O(false,false,true,false));ok(r.both.length===0&&r.onlyA.length===1&&r.onlyB.length===1,'ld no edge');
+  r=ld.listDiff('山田 太郎','山田　太郎',O(true,false,true,false));ok(r.both.length===1,'ld inner width');
+  r=ld.listDiff('山田 太郎','山田太郎',O(true,true,true,false));ok(r.both.length===1,'ld all spaces');
+  r=ld.listDiff('山田 太郎','山田太郎',O(true,false,true,false));ok(r.both.length===0,'ld inner differs');
+  r=ld.listDiff('ＡＢＣ\nｱｲ','ABC\nアイ',O(true,false,true,false));ok(r.both.length===2,'ld width');
+  r=ld.listDiff('Abc','abc',O(true,false,true,true));ok(r.both.length===1,'ld case');
+  r=ld.listDiff('Abc','abc',O(true,false,true,false));ok(r.both.length===0,'ld case off');
+  r=ld.listDiff('a*\nab','ab\na?',O(true,false,true,false));ok(r.both.join()==='ab'&&r.onlyA.join()==='a*'&&r.onlyB.join()==='a?','ld wildcard literal');
+  r=ld.listDiff('a\r\nb','b\r\nc',O(true,false,true,false));ok(r.both.join()==='b','ld crlf');
+  r=ld.listDiff('  \n　','\t',O(true,false,true,false));ok(r.aCount===0&&r.bCount===0,'ld blanks');
+  r=ld.listDiff('a','a',O(true,false,true,false));ok(r.summary==='A 1件、B 1件(同じリスト内の重複と空行を除く)。Aだけ 0件、Bだけ 0件、両方 1件','ld summary');
+  function refKey(s,o){
+    let a=o.width?s.normalize('NFKC'):s;
+    const sp=c=>c===' '||c==='　'||c==='\t'||c==='\n'||c==='\r'||c==='\f'||c==='\v'||c===' '||c==='﻿'||(c>=' '&&c<=' ')||c===' '||c===' '||c===' '||c===' '||c===' '||c==='　';
+    let out='';
+    if(o.all){for(const ch of a)if(!sp(ch))out+=ch;}
+    else if(o.edge){let st=0,en=a.length;while(st<en&&sp(a[st]))st++;while(en>st&&sp(a[en-1]))en--;out=a.slice(st,en);}
+    else out=a;
+    return o.nocase?out.toLowerCase():out;
+  }
+  const alpha=['A','Ａ','a','ａ','ｱ','ア','1','１',' ','　','\t','株','㈱','(',')','*','?','山'];
+  let seed=4242;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  const mk=()=>{const nl=Math.floor(rnd()*8),L=[];for(let i=0;i<nl;i++){let s='';const len=Math.floor(rnd()*4);for(let j=0;j<len;j++)s+=alpha[Math.floor(rnd()*alpha.length)];L.push(s);}return L;};
+  let n=0;
+  for(let it=0;it<6000;it++){
+    const LA=mk(),LB=mk(),o=O(rnd()<0.5,rnd()<0.5,rnd()<0.5,rnd()<0.5);
+    const res=ld.listDiff(LA.join('\n'),LB.join('\n'),o);n++;
+    const kA=LA.map(s=>refKey(s,o)),kB=LB.map(s=>refKey(s,o));
+    const firstOf=(L,K)=>{const out=[];for(let i=0;i<K.length;i++){if(K[i]==='')continue;let dup=false;for(let j=0;j<i;j++)if(K[j]===K[i]){dup=true;break;}if(!dup)out.push(i);}return out;};
+    const fa=firstOf(LA,kA),fb=firstOf(LB,kB);
+    const inB=k=>{for(const x of kB)if(x===k)return true;return false;};
+    const inA=k=>{for(const x of kA)if(x===k)return true;return false;};
+    const rOnlyA=fa.filter(i=>!inB(kA[i])).map(i=>LA[i]),rBoth=fa.filter(i=>inB(kA[i])).map(i=>LA[i]),rOnlyB=fb.filter(i=>!inA(kB[i])).map(i=>LB[i]);
+    ok(res.onlyA.join('\n')===rOnlyA.join('\n')&&res.both.join('\n')===rBoth.join('\n')&&res.onlyB.join('\n')===rOnlyB.join('\n')&&res.aCount===fa.length&&res.bCount===fb.length&&res.onlyA.length===rOnlyA.length&&res.onlyB.length===rOnlyB.length,'ld random '+it);
+  }
+  console.log('list-diff '+n+' random cases');
 })();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

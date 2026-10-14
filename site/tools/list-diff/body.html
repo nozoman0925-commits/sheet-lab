@@ -1,0 +1,56 @@
+<h1>2つのリストの差分ツール</h1>
+<p>リストAとリストBを1行1データで貼り付けると、<b>Aだけにある行</b>、<b>Bだけにある行</b>、<b>両方にある行</b>に分けて出します。名簿どうしの突き合わせ、「申込者リスト」と「入金済みリスト」の見比べなどに使えます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p>リストA:<br><textarea id="ta" rows="8" style="width:100%" placeholder="ここにリストAを貼り付けてください(1行に1データ)"></textarea></p>
+<p>リストB:<br><textarea id="tb" rows="8" style="width:100%" placeholder="ここにリストBを貼り付けてください(1行に1データ)"></textarea></p>
+<p>同じとみなす違い:
+<label><input type="checkbox" id="oe" checked> 前後の空白</label>
+<label><input type="checkbox" id="oa"> 途中の空白もすべて</label>
+<label><input type="checkbox" id="ow" checked> 全角と半角</label>
+<label><input type="checkbox" id="oc"> 大文字と小文字</label>
+</p>
+<p><button type="button" id="br">比べる</button> <span id="st"></span></p>
+<p id="sm" aria-live="polite"></p>
+<p>Aだけにある行:<br><textarea id="oa1" rows="6" style="width:100%" readonly></textarea></p>
+<p>Bだけにある行:<br><textarea id="ob1" rows="6" style="width:100%" readonly></textarea></p>
+<p>両方にある行(Aの表記で表示):<br><textarea id="oab" rows="6" style="width:100%" readonly></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>比較</b>: 各行を、選んだ条件で整えた文字列どうしで比べます。「全角と半角」は、互換文字の規則(Unicodeの正規化 NFKC)でそろえます。全角の英数字は半角に、半角カナは全角カナになります。「㈱」は「(株)」になりますが、「株式会社」とは同じになりません。</li>
+<li><b>空白</b>: 「前後の空白」は半角・全角スペース、タブを行頭・行末から取ります。「途中の空白もすべて」を選ぶと、行の中のスペースやタブもすべて無視します。</li>
+<li><b>空行</b>: 整えたあとに何も残らない行は、比較から外します。</li>
+<li><b>同じリストの中の重複</b>: 同じデータが同じリストに複数あっても、1件として扱い、最初に出た行の<b>元の表記</b>を出します。リストの中の重複そのものを調べたいときは<a href="/tools/dup-check/">重複チェックツール</a>を使ってください。</li>
+<li>人が見て同じと分かる違い(「(株)山田」と「株式会社山田」、「山田商事」と「山田商事 本社」)は同じとみなしません。そうした名寄せは対象外です。</li>
+</ul>
+<p class="meta">ExcelのCOUNTIFやVLOOKUPで突き合わせると、「*」や「?」を含むデータがワイルドカードとして扱われる場合があります。このツールは文字をそのまま比べます。数万行を超えるデータは、ブラウザが重くなることがあります。</p>
+<p class="meta">関連: <a href="/tools/dup-check/">リストの重複チェックツール</a> / <a href="/tools/space-remove/">スペース一括削除ツール</a> / <a href="/name-split/">エクセルで氏名を姓と名に分ける方法(記事)</a> / 運営者の商品: <a href="/go/meibo-cleansing/?from=tool-list-diff">名簿クレンジングシート(Excel・500円)</a>(会社名+電話番号の重複判定を関数だけで行います。2つのリストの突き合わせ機能はありません)</p>
+<script>
+function normKey(s,o){
+  var k=String(s);
+  if(o.width)k=k.normalize("NFKC");
+  if(o.all)k=k.replace(/[\s　]+/g,"");
+  else if(o.edge)k=k.replace(/^[\s　]+|[\s　]+$/g,"");
+  if(o.nocase)k=k.toLowerCase();
+  return k;
+}
+function uniqueKeys(text,o){
+  var lines=String(text).split(/\r\n|\r|\n/),map=new Map(),order=[],i;
+  for(i=0;i<lines.length;i++){
+    var k=normKey(lines[i],o);
+    if(k==="")continue;
+    if(!map.has(k)){map.set(k,lines[i]);order.push(k);}
+  }
+  return {map:map,order:order,lines:lines.length};
+}
+function listDiff(ta,tb,o){
+  var A=uniqueKeys(ta,o),B=uniqueKeys(tb,o),onlyA=[],onlyB=[],both=[];
+  A.order.forEach(function(k){if(B.map.has(k))both.push(A.map.get(k));else onlyA.push(A.map.get(k));});
+  B.order.forEach(function(k){if(!A.map.has(k))onlyB.push(B.map.get(k));});
+  return {aCount:A.order.length,bCount:B.order.length,onlyA:onlyA,onlyB:onlyB,both:both,
+    summary:"A "+A.order.length+"件、B "+B.order.length+"件(同じリスト内の重複と空行を除く)。Aだけ "+onlyA.length+"件、Bだけ "+onlyB.length+"件、両方 "+both.length+"件"};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  var opts=function(){return {edge:g("oe").checked,all:g("oa").checked,width:g("ow").checked,nocase:g("oc").checked};};
+  g("br").onclick=function(){var r=listDiff(g("ta").value,g("tb").value,opts());g("oa1").value=r.onlyA.join("\n");g("ob1").value=r.onlyB.join("\n");g("oab").value=r.both.join("\n");g("sm").textContent=r.summary;g("st").textContent="";};
+}
+</script>

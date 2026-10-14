@@ -1,0 +1,197 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>家計簿の費目別の合計をSUMIFSで出す方法(予算との差と、費目名がずれたときの落とし穴)【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="エクセルの家計簿で、食費・日用品などの費目別の合計と予算との差を出すSUMIFSの式を解説。費目名の末尾スペースや「食費(外食)」のような表記ゆれで集計から漏れる様子を、LibreOfficeで実際に計算して確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/category-sum/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="家計簿の費目別の合計をSUMIFSで出す方法(予算との差と、費目名がずれたときの落とし穴)【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="エクセルの家計簿で、食費・日用品などの費目別の合計と予算との差を出すSUMIFSの式を解説。費目名の末尾スペースや「食費(外食)」のような表記ゆれで集計から漏れる様子を、LibreOfficeで実際に計算して確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/category-sum/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "家計簿の費目別の合計をSUMIFSで出す方法(予算との差と、費目名がずれたときの落とし穴)【LibreOfficeで計算して確認】", "datePublished": "2026-10-15", "dateModified": "2026-10-15", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "エクセルの家計簿で、食費・日用品などの費目別の合計と予算との差を出すSUMIFSの式を解説。費目名の末尾スペースや「食費(外食)」のような表記ゆれで集計から漏れる様子を、LibreOfficeで実際に計算して確認しました。", "url": "https://sheet-lab-site.pages.dev/category-sum/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/category-sum/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "家計簿の費目別の合計をSUMIFSで出す方法(予算との差と、費目名がずれたときの落とし穴)【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/category-sum/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 家計簿の費目別の合計をSUMIFSで出す方法(予算との差と、費目名がずれたときの落とし穴)【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-15 ・ Excel関数</p><h1>家計簿の費目別の合計をSUMIFSで出す方法(予算との差と、費目名がずれたときの落とし穴)【LibreOfficeで計算して確認】</h1><p>家計簿の明細が1行ずつ並んでいて、<strong>費目ごとの合計と、予算との差を自動で出したい</strong>ときの式を紹介します。明細の費目名がきれいにそろっていない場合に、どう数え漏れるかも、実際に計算して確かめました。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/category_sum.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使う関数はExcelにもありますが、本番のデータに使う前に、数行で結果を確かめてください。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>費目別の合計は <code>SUMIFS(金額の列, 費目の列, 費目名)</code> で出せます。</li>
+<li>予算との差は、予算のセルから合計を引くだけです。超過の判定は <code>IF</code> で付けられます。</li>
+<li><strong>明細の費目名が1文字でもずれると、その行は合計に入りません</strong>(エラーにもなりません)。末尾のスペースが混ざった「食費 」は「食費」と別物として扱われました。</li>
+<li>取りこぼしを見つけるには、「全明細の合計」と「費目別の合計の合計」を並べて、差を見る方法が簡単です。</li>
+</ul>
+<h2 id="_2">表の作り方</h2>
+<p>明細はA列が費目、B列が金額で、2行目から36行目まで入っているとします。別の場所(D〜H列)に費目ごとの集計表を作ります。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>式(2行目の例)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>D</td>
+<td>費目名</td>
+<td>食費(手入力)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>予算</td>
+<td>40000(手入力)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>合計</td>
+<td><code>=SUMIFS($B$2:$B$36,$A$2:$A$36,D2)</code></td>
+</tr>
+<tr>
+<td>G</td>
+<td>予算との差</td>
+<td><code>=E2-F2</code></td>
+</tr>
+<tr>
+<td>H</td>
+<td>判定</td>
+<td><code>=IF(F2&gt;E2,"超過","範囲内")</code></td>
+</tr>
+</tbody>
+</table>
+<p>範囲に <code>$</code> を付けて固定してあるので、2行目の式を下へコピーすれば、日用品・交通費…の行も同じ形で計算できます。</p>
+<h2 id="_3">実際に計算した結果</h2>
+<p>食費・日用品・交通費・光熱費・通信費・趣味の6費目で、明細を入れて計算しました。予算は食費40,000円、日用品8,000円、交通費10,000円、光熱費12,000円、通信費9,000円、趣味15,000円としました(試すための値です)。</p>
+<table>
+<thead>
+<tr>
+<th>費目</th>
+<th>合計(F)</th>
+<th>予算との差(G)</th>
+<th>判定(H)</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>食費</td>
+<td>8,031</td>
+<td>31,969</td>
+<td>範囲内</td>
+</tr>
+<tr>
+<td>日用品</td>
+<td>7,850</td>
+<td>150</td>
+<td>範囲内</td>
+</tr>
+<tr>
+<td>交通費</td>
+<td>2,147</td>
+<td>7,853</td>
+<td>範囲内</td>
+</tr>
+<tr>
+<td>光熱費</td>
+<td>14,775</td>
+<td>-2,775</td>
+<td>超過</td>
+</tr>
+<tr>
+<td>通信費</td>
+<td>9,957</td>
+<td>-957</td>
+<td>超過</td>
+</tr>
+<tr>
+<td>趣味</td>
+<td>7,490</td>
+<td>7,510</td>
+<td>範囲内</td>
+</tr>
+</tbody>
+</table>
+<p>6費目の合計は50,250円でした。全明細の合計は58,361円で、<strong>8,111円が費目別の合計に入っていません</strong>。ここから、取りこぼしの中身を調べます。</p>
+<h2 id="_4">取りこぼしの正体: 費目名のずれ</h2>
+<p>今回の明細には、あえて次の5行を混ぜていました。</p>
+<table>
+<thead>
+<tr>
+<th>明細の費目名</th>
+<th>金額</th>
+<th>「食費」の合計に入ったか</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>食費</code>(末尾に半角スペース)</td>
+<td>1,234</td>
+<td>入らない</td>
+</tr>
+<tr>
+<td><code>食費</code>(末尾に全角スペース)</td>
+<td>777</td>
+<td>入らない</td>
+</tr>
+<tr>
+<td><code>食費(外食)</code></td>
+<td>2,500</td>
+<td>入らない</td>
+</tr>
+<tr>
+<td><code>食費(自炊)</code></td>
+<td>3,100</td>
+<td>入らない</td>
+</tr>
+<tr>
+<td>(費目が空欄)</td>
+<td>500</td>
+<td>入らない</td>
+</tr>
+</tbody>
+</table>
+<p>足すと 1,234 + 777 + 2,500 + 3,100 + 500 = 8,111円で、取りこぼしの差額とちょうど一致しました。<strong>目で見るとどれも「食費」ですが、SUMIFSは文字が完全に同じものだけを数えます</strong>。</p>
+<h2 id="2">直し方は2通り</h2>
+<h3 id="1">1. 前方一致にする(「食費(外食)」なども含めたいとき)</h3>
+<p>条件の費目名の後ろに <code>"*"</code> をつなぎます。</p>
+<pre><code>=SUMIFS($B$2:$B$36,$A$2:$A$36,D2&amp;&quot;*&quot;)
+</code></pre>
+<p>食費は 15,642円になりました。もとの8,031円に、末尾スペースの2行と「(外食)」「(自炊)」の行(合計7,611円)が加わった数字です。ただし、<strong>「食費」で始まる別の費目(たとえば「食費以外」)があると、それも混ざります</strong>。費目名の付け方に合わせて使ってください。</p>
+<h3 id="2_1">2. 前後と全角のスペースを除いてから完全一致で数える</h3>
+<p>スペースのずれだけを直したいときは、<code>SUMPRODUCT</code> で次のようにします。</p>
+<pre><code>=SUMPRODUCT((TRIM(SUBSTITUTE($A$2:$A$36,&quot;　&quot;,&quot; &quot;))=D2)*$B$2:$B$36)
+</code></pre>
+<p>食費は 10,042円になりました。もとの8,031円に、スペースのずれた2行(1,234円と777円)が加わった数字で、「食費(外食)」と「食費(自炊)」は入りません。金額の列は数字だけの表で確かめています。</p>
+<p>どちらの式でも、ほかの5費目の結果は変わりませんでした。</p>
+<h2 id="_5">つまずきやすい点</h2>
+<ul>
+<li><strong>取りこぼしはエラーにならない</strong>ので、合計の合計と全明細の合計を並べる確認が必要です(上の例では <code>=SUM(B2:B36)</code> と <code>=SUM(F2:F7)</code> の差が8,111円でした)。</li>
+<li>費目名を<strong>入力規則のプルダウン</strong>にすると、ずれそのものを減らせます(この記事ではプルダウンの設定は検証していません)。</li>
+<li>予算の判定は「合計 &gt; 予算」だけです。予算の立て方や、家計の良し悪しの判断はしません。</li>
+</ul>
+<h2 id="_6">注意点: この式ができないこと</h2>
+<ul>
+<li>費目名のずれを<strong>自動で正しい費目に直す</strong>ことはしません。式で数え方を変えるだけです。</li>
+<li>複数の月が混ざった明細では、月の条件が別に必要です。その式は<a href="/monthly-sum-by-date/">日付の列から月別に合計を出す方法</a>で計算して確認しています。</li>
+<li>家計の助言や、節約できる金額の保証はしません。</li>
+</ul>
+<h2 id="_7">家計簿のひな形が必要なら</h2>
+<p>この記事の式は、自分で作った表にそのまま使えます。費目別の集計つきの家計簿を最初から探しているなら、運営者が作った<a href="/go/budget-monthly/?from=category-sum">月間家計簿(Excelテンプレート・400円)</a>があります。A4で印刷できます。ただし、<strong>複数の月をまたいだ通年の集計はできません</strong>(1か月ごとに使う形です)。Excelの確認はWindowsデスクトップ版16のみです。この記事の方法で足りる場合は、買う必要はありません。</p>
+<p>先月より増えた・減ったの割合を知りたいときは、無料の<a href="/tools/percent/">割合・増減率の計算ツール</a>も使えます(入力は外部に送信されません)。月ごとの繰越の式は、<a href="/kakeibo-carryover/">前月繰越を翌月に引き継ぐ方法</a>で確認しています。</p>
+<h2 id="_8">まとめ</h2>
+<ul>
+<li>費目別の合計は <code>SUMIFS</code> で出し、予算との差は引き算、超過は <code>IF</code> で判定する</li>
+<li>費目名が1文字でもずれた行は、エラーなしで合計から漏れる(今回は35行中5行・8,111円)</li>
+<li>前方一致(<code>&amp;"*"</code>)かスペースを除いた完全一致で拾えるが、拾う範囲が違うので表の作りに合わせて選ぶ</li>
+<li>式はいずれもLibreOfficeで計算した結果。Excelでは未確認のため、本番の表に使う前に数行で確かめる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、35行の明細(費目名の末尾スペース、全角スペース、「食費(外食)」「食費(自炊)」、費目が空欄の行を含む)について、6費目×5種類の式の結果と合計3件の計33件が、独立に計算した期待値と一致することを検証スクリプト(site/verify/category_sum.py)で確認しました。SUMIFS・SUMPRODUCT・TRIM・SUBSTITUTE・IF・SUMはExcelにもある関数ですが、Excelでは未確認です。外部サイトの記述は参照していません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/category_sum.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/monthly-sum-by-date/">日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】</a></li><li><a href="/kakeibo-carryover/">エクセル家計簿で前月繰越を翌月に引き継ぐ方法(月ごとのシートで残高をつなぐ式)【LibreOfficeで計算して確認】</a></li><li><a href="/kakeibo-month-over-month/">エクセル家計簿で前月比の増減を費目別に出す方法(増減額・増減率・先月0円の扱い)【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">名簿クレンジングシート</a>(500円)</li><li><a href="/products/">【無料・お試し版】名簿クレンジングシート(50行まで)</a>(無料)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
