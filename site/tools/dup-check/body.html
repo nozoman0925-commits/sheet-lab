@@ -1,0 +1,54 @@
+<h1>リストの重複チェックツール</h1>
+<p>1行を1データとして、<b>重複している行</b>を探します。何回出ているか・何行目かを一覧にし、最初の1件だけを残したリストも作ります。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><textarea id="t" rows="10" style="width:100%" placeholder="ここに貼り付けてください(1行に1データ。例: 会社名、メールアドレス、商品コード)"></textarea></p>
+<p>同じとみなす違い:
+<label><input type="checkbox" id="oe" checked> 前後の空白</label>
+<label><input type="checkbox" id="oa"> 途中の空白もすべて</label>
+<label><input type="checkbox" id="ow" checked> 全角と半角</label>
+<label><input type="checkbox" id="oc"> 大文字と小文字</label>
+</p>
+<p><button type="button" id="br">チェック</button> <button type="button" id="bc">残すリストをコピー</button> <span id="st"></span></p>
+<p>重複の一覧:<br><textarea id="o" rows="8" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<p>重複を除いたリスト(最初に出た行だけ残します):<br><textarea id="u" rows="8" style="width:100%" readonly></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>比較</b>: 各行を、選んだ条件で整えた文字列どうしで比べます。「全角と半角」は、互換文字の規則(Unicodeの正規化 NFKC)でそろえます。全角の英数字は半角に、半角カナは全角カナになります(「Ａ」と「A」、「ｱ」と「ア」は同じ扱い。行の途中の全角スペースも半角スペースになるので、「山田　太郎」と「山田 太郎」は同じになります。「㈱」は「(株)」になりますが、「株式会社」とは同じになりません)。</li>
+<li><b>空白</b>: 「前後の空白」は半角・全角スペース、タブを行頭・行末から取ります。「途中の空白もすべて」を選ぶと、行の中のスペースやタブもすべて無視します(「山田 太郎」と「山田太郎」が同じになります)。</li>
+<li><b>空行</b>: 整えたあとに何も残らない行は、比較から外します(重複には数えません)。</li>
+<li><b>残すリスト</b>: 重複しているデータは、最初に出た行の<b>元の表記</b>を1件だけ残します。行の順番は変えません。</li>
+<li>人が見て同じと分かる違い(「(株)山田」と「株式会社山田」、「山田商事」と「山田商事 本社」)は同じとみなしません。そうした名寄せは対象外です。</li>
+</ul>
+<p class="meta">ExcelのCOUNTIFで重複を数えると、「*」や「?」を含むデータがワイルドカードとして扱われる場合があります。このツールは文字をそのまま比べます。1行が非常に長い、数万行を超えるデータは、ブラウザが重くなることがあります。</p>
+<p class="meta">関連: <a href="/name-split/">エクセルで氏名を姓と名に分ける方法(記事)</a> / <a href="/tools/space-remove/">スペース一括削除ツール</a> / <a href="/tools/zenkaku/">全角・半角変換ツール</a> / 運営者の商品: <a href="/go/meibo-cleansing/?from=tool-dup-check">名簿クレンジングシート(Excel・500円)</a>(会社名+電話番号の重複判定を関数だけで行います)</p>
+<script>
+function normKey(s,o){
+  var k=String(s);
+  if(o.width)k=k.normalize("NFKC");
+  if(o.all)k=k.replace(/[\s　]+/g,"");
+  else if(o.edge)k=k.replace(/^[\s　]+|[\s　]+$/g,"");
+  if(o.nocase)k=k.toLowerCase();
+  return k;
+}
+function dupCheck(text,o){
+  var lines=String(text).split(/\r\n|\r|\n/),map=new Map(),order=[],blank=0,kept=[],total=0,i;
+  for(i=0;i<lines.length;i++){
+    var k=normKey(lines[i],o);
+    if(k===""){blank++;continue;}
+    total++;
+    var g=map.get(k);
+    if(!g){g={key:k,first:lines[i],lines:[i+1]};map.set(k,g);order.push(g);kept.push(lines[i]);}
+    else g.lines.push(i+1);
+  }
+  var groups=order.filter(function(g){return g.lines.length>1;});
+  var dupRows=0;groups.forEach(function(g){dupRows+=g.lines.length-1;});
+  var rep=["入力 "+lines.length+"行(空行を除く "+total+"行)","重複しているデータ "+groups.length+"種類、除ける行 "+dupRows+"行","重複を除いた残り "+kept.length+"行"];
+  if(groups.length){rep.push("");groups.forEach(function(g){rep.push(g.first+" … "+g.lines.length+"回(行 "+g.lines.join(", ")+")");});}
+  return {total:total,blank:blank,unique:kept.length,groups:groups,dupRows:dupRows,kept:kept,text:rep.join("\n"),keptText:kept.join("\n")};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  var opts=function(){return {edge:g("oe").checked,all:g("oa").checked,width:g("ow").checked,nocase:g("oc").checked};};
+  g("br").onclick=function(){var r=dupCheck(g("t").value,opts());g("o").value=r.text;g("u").value=r.keptText;g("st").textContent="";};
+  g("bc").onclick=function(){var v=g("u").value;if(navigator.clipboard&&v){navigator.clipboard.writeText(v).then(function(){g("st").textContent="コピーしました";},function(){g("u").select();g("st").textContent="選択しました。Ctrl+Cでコピーしてください";});}else{g("u").select();g("st").textContent="選択しました。Ctrl+Cでコピーしてください";}};
+}
+</script>

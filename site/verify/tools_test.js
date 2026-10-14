@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('dup-check')?'dupCheck,normKey':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -296,5 +296,61 @@ const et=load('tools/estimate-total/body.html');
     }
   }
   console.log('estimate-total '+k+' cases');
+})();
+// dup-check: 手計算ケース+独立実装(総当たり比較)との照合
+(function(){
+  const dc=load('tools/dup-check/body.html');
+  const O=(e,a,w,c)=>({edge:e,all:a,width:w,nocase:c});
+  let r=dc.dupCheck('a\nb\na\n\nc\nb\na',O(true,false,true,false));
+  ok(r.total===6&&r.blank===1&&r.unique===3&&r.dupRows===3&&r.groups.length===2,'dc1 '+JSON.stringify([r.total,r.blank,r.unique,r.dupRows]));
+  ok(r.groups[0].key==='a'&&r.groups[0].lines.join()==='1,3,7'&&r.groups[1].lines.join()==='2,6','dc1 lines');
+  ok(r.keptText==='a\nb\nc','dc1 kept');
+  ok(r.text.includes('a … 3回(行 1, 3, 7)'),'dc1 text');
+  r=dc.dupCheck(' 山田 \n山田',O(true,false,true,false));ok(r.dupRows===1,'dc edge');
+  r=dc.dupCheck(' 山田 \n山田',O(false,false,true,false));ok(r.dupRows===0,'dc no edge');
+  r=dc.dupCheck('山田 太郎\n山田　太郎\n山田太郎',O(true,false,true,false));ok(r.dupRows===1&&r.unique===2,'dc inner space full=half');
+  r=dc.dupCheck('山田 太郎\n山田　太郎\n山田太郎',O(true,false,false,false));ok(r.dupRows===0&&r.unique===3,'dc inner differs');
+  r=dc.dupCheck('山田 太郎\n山田　太郎\n山田太郎',O(true,true,true,false));ok(r.dupRows===2&&r.unique===1,'dc all');
+  r=dc.dupCheck('ＡＢＣ\nABC\nｱｲ\nアイ',O(true,false,true,false));ok(r.dupRows===2,'dc width');
+  r=dc.dupCheck('ＡＢＣ\nABC',O(true,false,false,false));ok(r.dupRows===0,'dc no width');
+  r=dc.dupCheck('Abc\nabc',O(true,false,true,true));ok(r.dupRows===1,'dc case');
+  r=dc.dupCheck('Abc\nabc',O(true,false,true,false));ok(r.dupRows===0,'dc case off');
+  r=dc.dupCheck('a*\nab\na?\nab',O(true,false,true,false));ok(r.dupRows===1&&r.groups[0].key==='ab','dc wildcard literal');
+  r=dc.dupCheck('㈱山田\n(株)山田\n株式会社山田',O(true,false,true,false));ok(r.dupRows===1&&r.unique===2,'dc kabu');
+  r=dc.dupCheck('',O(true,false,true,false));ok(r.total===0&&r.unique===0&&r.groups.length===0,'dc empty');
+  r=dc.dupCheck('  \n　\n\t',O(true,false,true,false));ok(r.total===0&&r.blank===3,'dc blanks');
+  r=dc.dupCheck('a\r\nb\r\na',O(true,false,true,false));ok(r.dupRows===1&&r.groups[0].lines.join()==='1,3','dc crlf');
+  r=dc.dupCheck('x\n x\nx ',O(true,false,true,false));ok(r.keptText==='x'&&r.groups[0].lines.length===3,'dc first kept original');
+  r=dc.dupCheck(' x\nx',O(true,false,true,false));ok(r.keptText===' x','dc keeps original notation');
+  // 独立実装: 行ごとに文字を1つずつ処理して正規形を作り、O(n^2)で最初の一致を探す
+  function refKey(s,o){
+    let a=o.width?s.normalize('NFKC'):s;
+    const sp=c=>c===' '||c==='　'||c==='\t'||c==='\n'||c==='\r'||c===' '||c==='\f'||c==='\v'||c===' '||c===' '||c===' '||c===' '||c===' '||c==='﻿';
+    let out='';
+    if(o.all){for(const ch of a)if(!sp(ch))out+=ch;}
+    else if(o.edge){let st=0,en=a.length;while(st<en&&sp(a[st]))st++;while(en>st&&sp(a[en-1]))en--;out=a.slice(st,en);}
+    else out=a;
+    return o.nocase?out.toLowerCase():out;
+  }
+  const alpha=['A','Ａ','a','ａ','ｱ','ア','ｲ','1','１',' ','　','\t','株','㈱','(',')','*','?','山','田'];
+  let seed=777;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  let n=0;
+  for(let it=0;it<6000;it++){
+    const nl=Math.floor(rnd()*9),L=[];
+    for(let i=0;i<nl;i++){let s='';const len=Math.floor(rnd()*4);for(let j=0;j<len;j++)s+=alpha[Math.floor(rnd()*alpha.length)];L.push(s);}
+    const o=O(rnd()<0.5,rnd()<0.5,rnd()<0.5,rnd()<0.5);
+    const res=dc.dupCheck(L.join('\n'),o);n++;
+    const keys=L.map(s=>refKey(s,o));
+    const firstIdx=[],cnt=new Map();
+    for(let i=0;i<keys.length;i++){if(keys[i]==='')continue;let f=-1;for(let j=0;j<i;j++)if(keys[j]===keys[i]){f=j;break;}if(f<0)firstIdx.push(i);}
+    const refKept=firstIdx.map(i=>L[i]);
+    let refDup=0,refTotal=0,refBlank=0;
+    for(let i=0;i<keys.length;i++){if(keys[i]===''){refBlank++;continue;}refTotal++;for(let j=0;j<i;j++)if(keys[j]===keys[i]){refDup++;break;}}
+    const refGroups=firstIdx.filter(i=>{let c=0;for(let j=0;j<keys.length;j++)if(keys[j]===keys[i])c++;return c>1;}).map(i=>{const ls=[];for(let j=0;j<keys.length;j++)if(keys[j]===keys[i])ls.push(j+1);return ls.join();});
+    // 空入力('')は1行として数える: L=[] のとき text='' → 1行の空行
+    const refBlankFix=nl===0?1:refBlank;
+    ok(res.dupRows===refDup&&res.total===refTotal&&res.blank===refBlankFix&&res.unique===firstIdx.length&&res.kept.join('\n')===refKept.join('\n')&&res.groups.map(g=>g.lines.join()).join('|')===refGroups.join('|'),'dc rnd '+JSON.stringify(L)+JSON.stringify(o)+' got '+JSON.stringify([res.dupRows,res.total,res.blank,res.unique])+' ref '+JSON.stringify([refDup,refTotal,refBlankFix,firstIdx.length]));
+  }
+  console.log('dup-check '+n+' random cases');
 })();
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);
