@@ -1,0 +1,168 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>エクセルで年と月から日付と曜日を出す方法(DATE・EOMONTH・曜日表示)【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="シフト表や月間表の日付と曜日を、年と月の2つのセルから自動で出す式を解説。月末の日数、うるう年の2月、31日が無い月の空欄処理まで、10か月分(70件)をLibreOfficeで実際に計算して確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/date-weekday-from-ym/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="エクセルで年と月から日付と曜日を出す方法(DATE・EOMONTH・曜日表示)【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="シフト表や月間表の日付と曜日を、年と月の2つのセルから自動で出す式を解説。月末の日数、うるう年の2月、31日が無い月の空欄処理まで、10か月分(70件)をLibreOfficeで実際に計算して確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/date-weekday-from-ym/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "エクセルで年と月から日付と曜日を出す方法(DATE・EOMONTH・曜日表示)【LibreOfficeで計算して確認】", "datePublished": "2026-10-14", "dateModified": "2026-10-14", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "シフト表や月間表の日付と曜日を、年と月の2つのセルから自動で出す式を解説。月末の日数、うるう年の2月、31日が無い月の空欄処理まで、10か月分(70件)をLibreOfficeで実際に計算して確認しました。", "url": "https://sheet-lab-site.pages.dev/date-weekday-from-ym/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/date-weekday-from-ym/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "エクセルで年と月から日付と曜日を出す方法(DATE・EOMONTH・曜日表示)【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/date-weekday-from-ym/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; エクセルで年と月から日付と曜日を出す方法(DATE・EOMONTH・曜日表示)【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-14 ・ Excel関数</p><h1>エクセルで年と月から日付と曜日を出す方法(DATE・EOMONTH・曜日表示)【LibreOfficeで計算して確認】</h1><p>月が変わるたびに、シフト表の日付と曜日を手で打ち直していないでしょうか。この記事では、<strong>年と月を入れるだけで、その月の日付と曜日を自動で出す式</strong>を、実際に計算して確かめた結果だけで紹介します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/date_weekday.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのは基本的な関数ですが、本番の表に使う前に、何か月分かで結果を確かめてください。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>A2に年(例: 2026)、B2に月(例: 10)を入れます。</li>
+<li>その月の1日は <code>=DATE(A2,B2,1)</code> です。</li>
+<li>2日目以降は、前のセルに1を足します。</li>
+<li>月末日は <code>=EOMONTH(その月の1日,0)</code> で出ます。日数は <code>=DAY(月末日)</code> です。</li>
+<li>曜日は <code>=CHOOSE(WEEKDAY(日付),"日","月","火","水","木","金","土")</code> で、書式設定に頼らず文字として出せます。</li>
+<li>月に31日が無い月は、29日〜31日のセルを <code>=IF(前の日付+1の月が同じ月,前の日付+1,"")</code> の形で空欄にします。</li>
+</ul>
+<h2 id="_2">日付を並べる式</h2>
+<p>C2に1日目を入れ、D2以降は1日ずつ足します。</p>
+<pre><code>C2: =DATE($A$2,$B$2,1)
+D2: =IF(C2=&quot;&quot;,&quot;&quot;,IF(MONTH(C2+1)=$B$2,C2+1,&quot;&quot;))
+</code></pre>
+<p>D2の式は、「前のセルが空欄なら空欄」「翌日がまだ同じ月なら翌日」「月が変わったら空欄」と判断します。D2をそのまま右へ31日分コピーすれば、30日の月は31日目が、2月は29〜31日目が空欄になります。</p>
+<h2 id="_3">実際に計算した結果</h2>
+<p>次の10か月で、1日・月末日・日数・曜日・15日・31日目を計算しました(月末日の表の日付は、書式を「日付」にした場合の表示です)。</p>
+<table>
+<thead>
+<tr>
+<th>年月</th>
+<th>月末日</th>
+<th>日数</th>
+<th>1日の曜日</th>
+<th>末日の曜日</th>
+<th>31日目</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2024年2月</td>
+<td>2024-02-29</td>
+<td>29</td>
+<td>木</td>
+<td>木</td>
+<td>(空)</td>
+</tr>
+<tr>
+<td>2023年2月</td>
+<td>2023-02-28</td>
+<td>28</td>
+<td>水</td>
+<td>火</td>
+<td>(空)</td>
+</tr>
+<tr>
+<td>2026年10月</td>
+<td>2026-10-31</td>
+<td>31</td>
+<td>木</td>
+<td>土</td>
+<td>2026-10-31</td>
+</tr>
+<tr>
+<td>2026年12月</td>
+<td>2026-12-31</td>
+<td>31</td>
+<td>火</td>
+<td>木</td>
+<td>2026-12-31</td>
+</tr>
+<tr>
+<td>2025年1月</td>
+<td>2025-01-31</td>
+<td>31</td>
+<td>水</td>
+<td>金</td>
+<td>2025-01-31</td>
+</tr>
+<tr>
+<td>2100年2月</td>
+<td>2100-02-28</td>
+<td>28</td>
+<td>月</td>
+<td>日</td>
+<td>(空)</td>
+</tr>
+<tr>
+<td>2000年2月</td>
+<td>2000-02-29</td>
+<td>29</td>
+<td>火</td>
+<td>火</td>
+<td>(空)</td>
+</tr>
+<tr>
+<td>2026年4月</td>
+<td>2026-04-30</td>
+<td>30</td>
+<td>水</td>
+<td>木</td>
+<td>(空)</td>
+</tr>
+<tr>
+<td>2027年3月</td>
+<td>2027-03-31</td>
+<td>31</td>
+<td>月</td>
+<td>水</td>
+<td>2027-03-31</td>
+</tr>
+<tr>
+<td>2028年2月</td>
+<td>2028-02-29</td>
+<td>29</td>
+<td>火</td>
+<td>火</td>
+<td>(空)</td>
+</tr>
+</tbody>
+</table>
+<p>10か月×7項目の70件すべて、Pythonの標準ライブラリで求めた期待値と一致しました。ポイントは次の3つです。</p>
+<ul>
+<li><strong>うるう年の判断は、DATEとEOMONTHに任せて大丈夫でした。</strong> 2024年・2000年・2028年の2月は29日、2023年・2100年の2月は28日と出ました(2100年は4で割り切れても平年です)。自分で「4年に1度」の判定式を書く必要はありませんでした。</li>
+<li><strong>31日目の式は、月が30日以下のとき空欄になりました。</strong> 2026年4月(30日)と各年の2月で、空欄になることを確認しています。</li>
+<li><strong>EOMONTHの結果は、書式を設定しないと数字(シリアル値)で出ます。</strong> 今回の検証でも、書式を付けない状態では「45351」のような数字が返りました。セルの書式を「日付」にしてください。ここでつまずく人が多いはずです。</li>
+</ul>
+<h2 id="2">曜日を出す2つの方法</h2>
+<p>曜日の出し方は2つあります。</p>
+<pre><code>方法1(文字として出す): =CHOOSE(WEEKDAY(C2),&quot;日&quot;,&quot;月&quot;,&quot;火&quot;,&quot;水&quot;,&quot;木&quot;,&quot;金&quot;,&quot;土&quot;)
+方法2(表示だけ変える): 日付のセルの書式を「aaa」にする
+</code></pre>
+<p>方法1は、結果が文字なので、あとから <code>=IF(C3="土",...)</code> のように曜日で判定できます。方法2は、セルの中身は日付のままで、見た目だけ曜日になります。今回の検証で確かめたのは方法1の式です。方法2の書式「aaa」は、この記事では検証していません。</p>
+<h2 id="_4">注意点: この式ができないこと</h2>
+<ul>
+<li>祝日は判定しません。祝日の一覧を別に用意して照合する形になりますが、その一覧は祝日の改正で変わるため、この記事では扱いません。</li>
+<li>土日の列に自動で色を付ける設定(条件付き書式)は、この記事では検証していません。</li>
+<li>西暦以外(和暦)の表示は扱いません。</li>
+<li>月の途中で締める(20日締めなど)の表は、式を変える必要があります。</li>
+</ul>
+<h2 id="_5">シフト表のひな形が必要なら</h2>
+<p>この記事の式は、自分で作った表にそのまま使えます。年月を入れるだけで日付と曜日が自動で入るひな形を探しているなら、運営者が作った<a href="/go/shift-monthly/?from=date-weekday-from-ym">月間シフト表(Excelテンプレート・500円)</a>があります。A4横1枚で印刷でき、15人まで入ります。ただし、<strong>祝日の判定は入っていません</strong>。Excelの確認はWindowsデスクトップ版16のみです。この記事の方法で足りる場合は、買う必要はありません。</p>
+<p>関連して、日数の差や勤務時間を計算したいときは、無料の<a href="/tools/unit-time/">勤務時間の計算ツール</a>も使えます(入力は外部に送信されません)。出勤人数を数える方法は<a href="/shift-headcount/">シフト表で日ごとの出勤人数を数える方法</a>にまとめています。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>1日は <code>=DATE(年,月,1)</code>、月末は <code>=EOMONTH(1日,0)</code></li>
+<li>2日目以降は前のセル+1。月が変わったら空欄にする式で、28〜31日を1本の式で済ませる</li>
+<li>うるう年の判定は自分で書かず、DATE・EOMONTHに任せる(2024・2000・2028は29日、2023・2100は28日と確認)</li>
+<li>EOMONTHの結果は書式を「日付」にする</li>
+<li>式はいずれもLibreOfficeで計算した結果。Excelでは未確認のため、本番の表に使う前に数か月分で確かめる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、うるう年・平年の2月、100年の例外(2100年2月)、30日の月、31日の月を含む10か月について、1日、月末日、日数、1日と末日の曜日、15日、31日目(月に無ければ空)の計70件が、Pythonの標準ライブラリで求めた期待値と一致することを検証スクリプト(site/verify/date_weekday.py)で確認しました。使った関数はDATE、EOMONTH、DAY、WEEKDAY、CHOOSE、IFで、Excelにもある関数ですが、Excelでは未確認です。外部サイトの記述は参照していません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/date_weekday.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/shift-headcount/">シフト表で日ごとの出勤人数を数える方法(COUNTIFと人数不足の判定)【LibreOfficeで計算して確認】</a></li><li><a href="/tools/age/">年齢計算ツール(満年齢・年月日・次の誕生日まで/基準日を指定)</a></li><li><a href="/tools/wareki/">和暦・西暦 変換ツール(令和・平成・昭和・大正・明治6年以降)</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">月間シフト表</a>(500円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
