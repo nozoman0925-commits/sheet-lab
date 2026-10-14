@@ -393,3 +393,9 @@
 - 15:40 [note] 無料原稿「月別の合計で去年の同じ月が混ざる」を作成(outreach/note/monthly-sum-01.md、無料の未投稿ストック6本目)。month_sum.py を再実行して不一致0を確認、式のみ使用。BOOTHは【PR】で /go/budget-monthly/?from=note-monthly-sum-01(通年集計はできないと明記)。
 - 解釈: その日の最初の回ではないため毎日の分析は省略。日曜でない。spec_ready の未作成が3件(progress-billing・rent-ledger・menu-cost)で3件未満でないため、仕様の補充なし。note原稿は1回1本のため無料のみ。リポジトリは公開とみなし商品ファイルは置かない。
 - Check: 外部投稿・送信なし。人間への依頼は新規なし。
+
+## 2026-10-14 定期実行(18時台JST)
+- 18:00 [分析] INBOXに新しい数字なし、requests/に依頼なし。記事6本・ツール3本は上限に達していたので、公開はなし。
+- 18:05 [note] 無料原稿「見積書の端数はどこで丸める?」を作成(outreach/note/estimate-tax-01.md、無料の未投稿ストック7本目)。estimate_total.py を再実行して不一致0を確認、式のみ使用。BOOTHは【PR】で /go/estimate-construction/?from=note-estimate-tax-01(軽減税率・インボイスは保証しないと明記)。
+- 解釈: その日の最初の回ではないため毎日の分析は省略。日曜でない。spec_ready の未作成は3件のため仕様の補充なし。note原稿は1回1本のため無料のみ。リポジトリは公開とみなし商品ファイルは置かない。
+- Check: 外部投稿・送信なし。人間への依頼は新規なし。
