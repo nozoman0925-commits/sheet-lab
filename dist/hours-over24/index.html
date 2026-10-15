@@ -1,0 +1,171 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>勤務時間の合計が24時間を超えると0に戻る?「[h]:mm」で40時間を正しく表示する方法【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="勤務時間を合計したら「40:00」ではなく「16:00」と出て困ったときの直し方。表示形式「[h]:mm」と、時間・分・小数の時間に分ける式を、49通りの合計で実際に計算して確認。文字列の時刻が合計されない落とし穴も解説します。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/hours-over24/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="勤務時間の合計が24時間を超えると0に戻る?「[h]:mm」で40時間を正しく表示する方法【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="勤務時間を合計したら「40:00」ではなく「16:00」と出て困ったときの直し方。表示形式「[h]:mm」と、時間・分・小数の時間に分ける式を、49通りの合計で実際に計算して確認。文字列の時刻が合計されない落とし穴も解説します。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/hours-over24/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "勤務時間の合計が24時間を超えると0に戻る?「[h]:mm」で40時間を正しく表示する方法【LibreOfficeで計算して確認】", "datePublished": "2026-10-15", "dateModified": "2026-10-15", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "勤務時間を合計したら「40:00」ではなく「16:00」と出て困ったときの直し方。表示形式「[h]:mm」と、時間・分・小数の時間に分ける式を、49通りの合計で実際に計算して確認。文字列の時刻が合計されない落とし穴も解説します。", "url": "https://sheet-lab-site.pages.dev/hours-over24/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/hours-over24/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "勤務時間の合計が24時間を超えると0に戻る?「[h]:mm」で40時間を正しく表示する方法【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/hours-over24/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 勤務時間の合計が24時間を超えると0に戻る?「[h]:mm」で40時間を正しく表示する方法【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-15 ・ Excel関数</p><h1>勤務時間の合計が24時間を超えると0に戻る?「[h]:mm」で40時間を正しく表示する方法【LibreOfficeで計算して確認】</h1><p>日ごとの勤務時間を合計したら、<strong>40時間のはずが「16:00」と表示された</strong>。勤務表を作るとき、よく起きることです。この記事では、24時間を超えても正しく表示する書き方と、時間・分・小数の時間に分ける式を、実際に計算して確かめた結果だけで紹介します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/hours_over24.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使う関数はExcelにもありますが、本番の表に使う前に数行で確かめてください。</p>
+<h2 id="_1">先に結論</h2>
+<ul>
+<li>合計の数字は合っていて、<strong>表示の書式が「24時間で0に戻る」形</strong>になっていることが原因です。</li>
+<li>書式を <strong><code>[h]:mm</code></strong>(時間を角かっこで囲む)にすると、24時間を超えても「40:00」「167:30」のように表示されます。</li>
+<li>給与などの計算に使うなら、表示ではなく <strong>時間を小数にする式(合計×24)</strong> や <strong>分の整数</strong> にしておくと扱いやすくなります。</li>
+</ul>
+<h2 id="_2">何が起きているのか</h2>
+<p>Excelなどの表計算では、時刻は「1日 = 1」の小数として持ちます。8:00は 1/3(約0.3333)です。8時間の日を5日合計すると、中身は 5/3(約1.6667)で、<strong>合計の値としては正しい40時間</strong>です。</p>
+<p>ただし <code>h:mm</code> という書式は「1日の中の時刻」を表すものなので、1日(24時間)を超えた分を捨てて表示します。結果、40時間が16時間に見えてしまいます。</p>
+<h2 id="1-hmm">手順1: 表示を <code>[h]:mm</code> にする</h2>
+<p>合計のセルに <code>=SUM(A2:A6)</code> を入れ、書式として <code>[h]:mm</code> を指定します。この記事では、同じ書式を <code>TEXT</code> 関数で指定して確かめました。</p>
+<pre><code>=TEXT(SUM(A2:A6),&quot;[h]:mm&quot;)   → 24時間を超えても表示される
+=TEXT(SUM(A2:A6),&quot;h:mm&quot;)     → 24時間で0に戻る
+</code></pre>
+<p>8:00の日が5日の合計を計算した結果です。</p>
+<table>
+<thead>
+<tr>
+<th>合計の内容</th>
+<th><code>[h]:mm</code></th>
+<th><code>h:mm</code></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>8:00 × 3日</td>
+<td>24:00</td>
+<td>0:00</td>
+</tr>
+<tr>
+<td>8:00 × 5日</td>
+<td>40:00</td>
+<td>16:00</td>
+</tr>
+<tr>
+<td>12:00 + 12:01</td>
+<td>24:01</td>
+<td>0:01</td>
+</tr>
+<tr>
+<td>23:59 × 2日</td>
+<td>47:58</td>
+<td>23:58</td>
+</tr>
+<tr>
+<td>8:00 × 20日 + 7:30</td>
+<td>167:30</td>
+<td>23:30</td>
+</tr>
+<tr>
+<td>1:00 × 25日</td>
+<td>25:00</td>
+<td>1:00</td>
+</tr>
+<tr>
+<td>8:00(1日だけ)</td>
+<td>8:00</td>
+<td>8:00</td>
+</tr>
+</tbody>
+</table>
+<p>見てのとおり、<strong>合計が24時間未満なら2つの書式は同じ</strong>で、気づかないまま作りがちです。月末に合計が24時間を超えたときに初めて「0に戻る」ことに気づきます。</p>
+<h2 id="2">手順2: 時間・分・小数の時間に分ける</h2>
+<p>合計のセルを A8 とします。</p>
+<pre><code>合計の分(整数): =ROUND(A8*1440,0)
+時間の部分     : =INT(ROUND(A8*1440,0)/60)
+分の部分       : =MOD(ROUND(A8*1440,0),60)
+小数の時間     : =ROUND(A8*24,2)
+</code></pre>
+<p>1日は1440分なので、合計×1440で分になります。<code>ROUND</code>で整数にしてから割ると、小数の誤差による「59分になってしまう」ようなずれを避けられます。</p>
+<p>例として、12:00 + 12:01 の合計(24時間1分)は次のとおりです。</p>
+<table>
+<thead>
+<tr>
+<th>項目</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>合計の分</td>
+<td>1441</td>
+</tr>
+<tr>
+<td>時間の部分</td>
+<td>24</td>
+</tr>
+<tr>
+<td>分の部分</td>
+<td>1</td>
+</tr>
+<tr>
+<td>小数の時間(小数第2位まで)</td>
+<td>24.02</td>
+</tr>
+</tbody>
+</table>
+<p>49通りの合計すべてで、この6項目が期待値と一致しました(乱数で作った40通りを含みます)。時給を掛けるなど金額の計算に使うときは、<code>A8*24</code> の小数の時間か、分の整数を使う方が、表示の書式に左右されません。端数をどこで丸めるかは、時給の規則に合わせて自分で決めてください(この記事では扱いません)。</p>
+<h2 id="800">落とし穴: 文字列の「8:00」は合計に入らない</h2>
+<p>見た目は時刻でも、<strong>文字列として入っているデータ</strong>は <code>SUM</code> の合計に入りません。実際に、文字列の「8:00」と、時刻の値の8:00を並べて <code>SUM</code> した結果は次のとおりでした。</p>
+<table>
+<thead>
+<tr>
+<th>式</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>=SUM(A1:A2)</code></td>
+<td>8:00の1つ分(0.3333…)だけ。文字列は無視される</td>
+</tr>
+<tr>
+<td><code>=ISTEXT(A1)</code></td>
+<td>TRUE(文字列だと分かる)</td>
+</tr>
+<tr>
+<td><code>=TIMEVALUE(A1)*24</code></td>
+<td>8</td>
+</tr>
+<tr>
+<td><code>=SUM(TIMEVALUE(A1),A2)*24</code></td>
+<td>16(文字列を時刻に変えれば合計できる)</td>
+</tr>
+</tbody>
+</table>
+<p>エラーにならず、<strong>黙って少ない合計が出る</strong>ので注意が必要です。左寄せで表示される、<code>ISTEXT</code>がTRUEになる、といった点で見分けられます。文字列の時刻は <code>TIMEVALUE</code> で時刻の値にできます。なお、他の形式の文字列(「8時00分」など)は検証していません。</p>
+<h2 id="_3">注意点: この記事の式ができないこと</h2>
+<ul>
+<li>日をまたぐ勤務(22:00〜6:00)の時間の出し方、休憩の引き方は、この記事では扱っていません(開始・終了の時刻から勤務時間を出す部分は別の工夫が必要です)。</li>
+<li>割増賃金・残業の判定・給与の計算は扱いません。就業規則や法令に基づく判断は、この記事の範囲外です。</li>
+<li>Excelでの画面表示は未確認です。</li>
+</ul>
+<h2 id="_4">シフトの表から作りたいなら</h2>
+<p>勤務時間の合計の式は、自分で作った表にそのまま使えます。シフトを1か月分まとめるひな形が欲しいなら、運営者が作った<a href="/go/shift-monthly/?from=hours-over24">月間シフト表(Excelテンプレート・500円)</a>があります。A4横1枚で印刷でき、15人まで入り、日付と曜日が自動で入ります。<strong>勤務時間の合計や給与の計算は入っていません</strong>(この記事の式を自分で足す形になります)。Excelの確認はWindowsデスクトップ版16のみです。この記事の方法で足りる場合は、買う必要はありません。</p>
+<p>ブラウザだけで試したいときは、無料の<a href="/tools/hourly-wage/">時給×勤務時間の簡易計算ツール</a>も使えます(入力は外部に送信されません)。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>40時間が16時間に見える原因は、合計の値ではなく <code>h:mm</code> という書式</li>
+<li>書式は <code>[h]:mm</code>。合計が24時間未満では違いが出ないため、月末まで気づきにくい</li>
+<li>計算に使うなら、<code>ROUND(合計*1440,0)</code> の分、または <code>ROUND(合計*24,2)</code> の小数の時間</li>
+<li>文字列の「8:00」は <code>SUM</code> に黙って入らない。<code>ISTEXT</code> で調べ、<code>TIMEVALUE</code> で直す</li>
+<li>式はいずれもLibreOfficeで計算した結果。Excelでは未確認のため、本番の表に使う前に数行で確かめる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、日ごとの勤務時間(h:mm)の合計49通り(8時間×3日・5日、25時間ちょうど、23:59×2、乱数で作った40通りなど)について、TEXT関数の「[h]:mm」と「h:mm」の表示、小数の時間、時間の部分、分の部分、合計の分の計6項目が期待値と一致すること、および文字列の「8:00」が合計に入らないことを検証スクリプト(site/verify/hours_over24.py)で確認しました。TEXT・SUM・ROUND・INT・MOD・TIME・TIMEVALUEはExcelにもある関数ですが、Excelでは未確認です。セルの表示形式として設定した場合の見え方は、TEXT関数で同じ書式を指定して確認したもので、画面の表示そのものは未確認です。外部サイトの記述は参照していません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/hours_over24.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/tools/hourly-wage/">時給×勤務時間の簡易計算ツール(分単位の丸め・円の端数を選べる)</a></li><li><a href="/tools/unit-time/">勤務時間の計算ツール(開始・終了・休憩/時間の合計)</a></li><li><a href="/estimate-number/">エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】</a></li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
