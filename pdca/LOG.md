@@ -427,3 +427,9 @@
 - 07:15 [note] 無料原稿「自作の家計簿、印刷したら3ページに割れた」を作成(outreach/note/kakeibo-print-01.md、無料の未投稿ストック9本目)。式と設定のみ(プロンプトなし)。BOOTHは【PR】で /go/budget-monthly/?from=note-kakeibo-print-01。
 - 解釈: その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。直前が有料だったため note は無料1本。spec_ready の未作成は3件のため仕様の補充なし。リポジトリは公開とみなし商品ファイルは置かない。
 - Check: quality_check 20本OK、tools_test fail=0、build_site 成功(markdown を pip 導入)、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。
+
+## 2026-10-15 定期実行(9時台JST)
+- 09:20 [記事] 「エクセルで見積番号を自動で振る方法」を公開(estimate-number)。月ごとに001から数え直す式と通し番号の式を、LibreOfficeで1,570件(月またぎ・うるう日・空行・1,001件・ランダム500件)計算して不一致0。並べ替えると番号が変わること、1,000件目で桁が増えることも実測で書いた。見積書テンプレートへの案内は /go/ 経由で、番号を自動で振る機能は商品に無いと明記。本日の記事 4本目。
+- 09:35 [note] 有料(300円)原稿「見積番号の自動採番 式集(年度ごと・取引先ごと・次の番号)」を作成(outreach/note/estimate-number-paid-01.md、有料の未投稿ストック5本目)。number_sets.py で10行22件不一致0の式だけ使用。BOOTHは【PR】で /go/estimate-construction/?from=note-estimate-number-paid-01。
+- 解釈: その日の最初の回ではないため毎日の分析は省略(0時台に実施済み)。INBOXに新しい数字なし、requests/に依頼なし、日曜でない。ツールは本日3本で上限のため作らず。直前が無料だったので note は有料1本。spec_ready の未作成は3件のため仕様の補充なし。リポジトリは公開とみなし商品ファイルは置かない。
+- Check: quality_check 21本OK、build_site 成功(markdown を pip 導入)、booth.pm直リンク0件。外部投稿・送信なし。人間への依頼は新規なし。

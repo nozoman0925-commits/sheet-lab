@@ -1,0 +1,164 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="見積書や台帳の「見積番号」を、日付から「Q202610-001」のように自動で振るExcelの式を解説。月ごとに001から数え直す式と、通し番号の式を、1,570件の照合でLibreOfficeで確認。並べ替えると番号が変わる点や、1,000件目で桁が増える点も実測で示します。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/estimate-number/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="見積書や台帳の「見積番号」を、日付から「Q202610-001」のように自動で振るExcelの式を解説。月ごとに001から数え直す式と、通し番号の式を、1,570件の照合でLibreOfficeで確認。並べ替えると番号が変わる点や、1,000件目で桁が増える点も実測で示します。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/estimate-number/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】", "datePublished": "2026-10-15", "dateModified": "2026-10-15", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "見積書や台帳の「見積番号」を、日付から「Q202610-001」のように自動で振るExcelの式を解説。月ごとに001から数え直す式と、通し番号の式を、1,570件の照合でLibreOfficeで確認。並べ替えると番号が変わる点や、1,000件目で桁が増える点も実測で示します。", "url": "https://sheet-lab-site.pages.dev/estimate-number/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/estimate-number/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/estimate-number/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-15 ・ Excel関数</p><h1>エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】</h1><p>見積書を出すたびに番号を手で打っていると、欠番や重複が起きがちです。この記事では、見積の<strong>日付から見積番号を自動で出す</strong>式を2通り紹介します。1つは「Q202610-001」のように<strong>月ごとに001から数え直す</strong>形、もう1つは「Q-0001」のような<strong>通し番号</strong>です。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/estimate_number.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・TEXT・COUNTIFS・EOMONTH・ROW・COUNTIFだけですが、本番の台帳に使う前に、数行で確かめてください。</p>
+<p>番号の付け方(桁数、頭の文字、年度で区切るかどうか)に決まりはありません。この記事の形は、検証のために決めた「一つの例」です。取引先や社内のルールがあれば、そちらが優先です。</p>
+<h2 id="_1">先に結論</h2>
+<p>台帳の2行目から下に見積を並べ、A列に見積日を入れる場合の式です(日付は<strong>古い順に上から並べる</strong>前提です)。</p>
+<pre><code>B2 (月ごとの見積番号):
+=IF(A2=&quot;&quot;,&quot;&quot;,&quot;Q&quot;&amp;TEXT(A2,&quot;yyyymm&quot;)&amp;&quot;-&quot;&amp;TEXT(COUNTIFS($A$2:A2,&quot;&gt;=&quot;&amp;DATE(YEAR(A2),MONTH(A2),1),$A$2:A2,&quot;&lt;=&quot;&amp;EOMONTH(A2,0)),&quot;000&quot;))
+
+C2 (通し番号):
+=IF(A2=&quot;&quot;,&quot;&quot;,&quot;Q-&quot;&amp;TEXT(ROW()-1,&quot;0000&quot;))
+
+D2 (重複チェック):
+=IF(B2=&quot;&quot;,&quot;&quot;,IF(COUNTIF($B$2:$B$200,B2)&gt;1,&quot;重複&quot;,&quot;OK&quot;))
+</code></pre>
+<p>B2を下へコピーすると、<strong>範囲の始まり($A$2)は固定され、終わり(A2)だけが行ごとにずれます</strong>。つまり「その行までに、同じ月の日付が何件あったか」を数えて、それが連番になります。</p>
+<ul>
+<li><code>TEXT(A2,"yyyymm")</code> で日付が「202610」の形になります。</li>
+<li><code>TEXT(…,"000")</code> で連番が3桁(001、002…)になります。</li>
+<li>日付が空の行は <code>IF(A2="","",…)</code> で空欄になり、エラーになりません。</li>
+<li>C列の <code>ROW()-1</code> は「2行目なら1」です。表の1行目が見出しの場合の数え方です。</li>
+</ul>
+<h2 id="_2">実際に計算した結果</h2>
+<p>次の14行で計算しました(同じ日付が2行ある日も含みます)。</p>
+<table>
+<thead>
+<tr>
+<th>見積日</th>
+<th>月ごとの番号</th>
+<th>通し番号</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026/09/28</td>
+<td>Q202609-001</td>
+<td>Q-0001</td>
+</tr>
+<tr>
+<td>2026/09/30</td>
+<td>Q202609-002</td>
+<td>Q-0002</td>
+</tr>
+<tr>
+<td>2026/10/01</td>
+<td>Q202610-001</td>
+<td>Q-0003</td>
+</tr>
+<tr>
+<td>2026/10/01</td>
+<td>Q202610-002</td>
+<td>Q-0004</td>
+</tr>
+<tr>
+<td>2026/10/15</td>
+<td>Q202610-003</td>
+<td>Q-0005</td>
+</tr>
+<tr>
+<td>2026/10/31</td>
+<td>Q202610-004</td>
+<td>Q-0006</td>
+</tr>
+<tr>
+<td>2026/11/01</td>
+<td>Q202611-001</td>
+<td>Q-0007</td>
+</tr>
+<tr>
+<td>2026/11/02</td>
+<td>Q202611-002</td>
+<td>Q-0008</td>
+</tr>
+<tr>
+<td>2026/12/31</td>
+<td>Q202612-001</td>
+<td>Q-0009</td>
+</tr>
+<tr>
+<td>2027/01/01</td>
+<td>Q202701-001</td>
+<td>Q-0010</td>
+</tr>
+<tr>
+<td>2027/01/01</td>
+<td>Q202701-002</td>
+<td>Q-0011</td>
+</tr>
+<tr>
+<td>2024/02/29</td>
+<td>Q202402-001</td>
+<td>Q-0012</td>
+</tr>
+<tr>
+<td>2024/02/29</td>
+<td>Q202402-002</td>
+<td>Q-0013</td>
+</tr>
+<tr>
+<td>2024/03/01</td>
+<td>Q202403-001</td>
+<td>Q-0014</td>
+</tr>
+</tbody>
+</table>
+<p>14行すべて、月ごとの番号・通し番号・重複チェック(すべて「OK」)が期待値と一致しました。月が変わると001に戻り、年が変わっても「202612」から「202701」に切り替わります。うるう日(2024/02/29)も問題ありませんでした。</p>
+<p>見るところを2つ挙げます。</p>
+<ul>
+<li><strong>同じ日に2件あっても番号は別になります。</strong> 2026/10/01の2件は、001と002に分かれました。</li>
+<li><strong>月の範囲は <code>DATE(YEAR,MONTH,1)</code> から <code>EOMONTH(…,0)</code>(月末)までです。</strong> 「月だけ」で数えると別の年の同じ月が混ざるため、年も含めて範囲を決めています。</li>
+</ul>
+<h2 id="_3">追加で確認したこと</h2>
+<ul>
+<li><strong>途中に空行があっても</strong>、そのほかの行の番号は変わりませんでした(空行の番号欄は空)。ただし、行を<strong>削除</strong>すると、下の行の番号は詰まります。</li>
+<li><strong>同じ月に1,001件</strong>入れると、<code>Q202610-999</code>、<code>Q202610-1000</code>、<code>Q202610-1001</code> となり、<strong>1,000件目から連番が4桁になります</strong>。実務ではほぼ起きませんが、桁をそろえたいなら <code>"0000"</code> にします。</li>
+<li><strong>ランダムな日付500件</strong>(2026〜2027年、古い順)で、整数計算の期待値と全件一致しました。</li>
+</ul>
+<h2 id="_4">つまずきやすい点</h2>
+<ul>
+<li><strong>並べ替えると番号が変わります。</strong> この式は「上から数えて何件目か」で番号を決めるため、台帳を新しい順に並べ替えたり、途中に行を挿入したりすると、すでに相手に渡した見積番号と食い違います。実際に、同じ14件を逆順に並べた表で試すと、先頭の行が <code>Q202403-001</code> になりました。<strong>番号を出したら、「値だけ貼り付け」で固定する</strong>のが安全です。</li>
+<li><strong>通し番号の <code>ROW()-1</code> は、行の位置そのもの</strong>です。行を削除すると、その下の番号が1つずつ繰り上がります。欠番を出したくない書類の番号には、そのままでは向きません。</li>
+<li><strong>日付が文字列になっていると数えられません。</strong> 「2026-10-15」のような見た目でも、文字列だと <code>COUNTIFS</code> の範囲に入りません。見積日の列は日付の形式にしてください。</li>
+<li><strong>TEXTの書式は環境で違うことがあります。</strong> <code>"yyyymm"</code> はLibreOfficeで確認した形です。Excelの表示言語が日本語以外の環境では書式の文字が変わる場合があります(Excelでは未確認)。</li>
+</ul>
+<h2 id="_5">注意点: この記事ができないこと</h2>
+<ul>
+<li>複数人が同時に台帳を開いて番号を振る場合の重複防止はできません。</li>
+<li>年度(4月始まりなど)で区切る、取引先ごとに別の連番にする、といった付け方は扱いません。</li>
+<li>番号を自動で「確定」することはできません。最終的な管理は、台帳の運用ルールで決めてください。</li>
+</ul>
+<h2 id="_6">見積書のひな形が必要なら</h2>
+<p>この記事の式は、自分で作った台帳にそのまま使えます。工事・リフォーム向けのひな形を探しているなら、運営者が作った<a href="/go/estimate-construction/?from=estimate-number">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>見積番号を自動で振る機能は、この商品にはありません</strong>(番号の欄に手で入力します)。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の合計を先にさっと確かめたいときは、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>も使えます(入力は外部に送信されません)。計算の順番と端数処理は、<a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式</a>で解説しています。</p>
+<h2 id="_7">まとめ</h2>
+<ul>
+<li>月ごとに001から振り直すなら、<code>COUNTIFS</code> で「その行までの同じ月の件数」を数えて <code>TEXT(…,"000")</code> で桁をそろえる</li>
+<li>通し番号なら <code>ROW()-1</code> が手軽だが、行の削除で番号がずれる</li>
+<li>日付は古い順に並べる。並べ替えや行の挿入をすると番号が変わるので、出した番号は値で固定する</li>
+<li>14行・空行・逆順・1,001件・ランダム500件の計1,570件はLibreOfficeで一致。Excelでは未確認のため、本番の台帳は数行で確かめる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、14行の日付(月またぎ・年またぎ・うるう日・同じ日の重複を含む)、空行を含む表、日付を逆順に並べた表、同じ月に1,001件、ランダムな500件で、月別の見積番号・通し番号・重複チェックの結果が整数計算の期待値と一致することを確認しました(計1,570件、不一致0)。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/estimate_number.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】</a></li><li><a href="/name-split/">エクセルで氏名を姓と名に分ける方法(スペース区切りの式と、分けられないケース)【LibreOfficeで計算して確認】</a></li><li><a href="/kakeibo-carryover/">エクセル家計簿で前月繰越を翌月に引き継ぐ方法(月ごとのシートで残高をつなぐ式)【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
