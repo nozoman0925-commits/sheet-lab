@@ -1,0 +1,247 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>消費税の端数処理はROUND・ROUNDUP・ROUNDDOWNのどれ?式の違いと内税の逆算【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="消費税の計算で使うROUND(四捨五入)・ROUNDUP(切り上げ)・ROUNDDOWN(切り捨て)の違いを、同じ金額で並べて比較。税込金額から消費税を逆算する式、桁指定(-2)、マイナスの扱い、表示形式だけ丸めたときの合計のずれを、518件の照合でLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/round-tax/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="消費税の端数処理はROUND・ROUNDUP・ROUNDDOWNのどれ?式の違いと内税の逆算【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="消費税の計算で使うROUND(四捨五入)・ROUNDUP(切り上げ)・ROUNDDOWN(切り捨て)の違いを、同じ金額で並べて比較。税込金額から消費税を逆算する式、桁指定(-2)、マイナスの扱い、表示形式だけ丸めたときの合計のずれを、518件の照合でLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/round-tax/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "消費税の端数処理はROUND・ROUNDUP・ROUNDDOWNのどれ?式の違いと内税の逆算【LibreOfficeで計算して確認】", "datePublished": "2026-10-15", "dateModified": "2026-10-15", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "消費税の計算で使うROUND(四捨五入)・ROUNDUP(切り上げ)・ROUNDDOWN(切り捨て)の違いを、同じ金額で並べて比較。税込金額から消費税を逆算する式、桁指定(-2)、マイナスの扱い、表示形式だけ丸めたときの合計のずれを、518件の照合でLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/round-tax/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/round-tax/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "消費税の端数処理はROUND・ROUNDUP・ROUNDDOWNのどれ?式の違いと内税の逆算【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/round-tax/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 消費税の端数処理はROUND・ROUNDUP・ROUNDDOWNのどれ?式の違いと内税の逆算【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-15 ・ Excel関数</p><h1>消費税の端数処理はROUND・ROUNDUP・ROUNDDOWNのどれ?式の違いと内税の逆算【LibreOfficeで計算して確認】</h1><p>見積書や請求書で消費税を計算すると、「小数が出たとき、どう丸めるか」で金額が1円ずれることがあります。Excelでは <strong>ROUND(四捨五入)・ROUNDUP(切り上げ)・ROUNDDOWN(切り捨て)</strong> のどれかを選びますが、同じ金額に3つを当てると結果が変わるのは、どこからでしょうか。</p>
+<p>この記事では、同じ金額で3つの式を並べて比べ、<strong>内税(税込金額)から消費税を逆算する式</strong>、<strong>桁を指定する書き方</strong>、<strong>マイナスの扱い</strong>、<strong>「表示だけ丸めた」ときの合計のずれ</strong>まで、実際に計算した結果を示します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/round_tax.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。なお、<strong>どの端数処理を使うべきか(法令や取引上の決まり)はこの記事では判断しません</strong>。取引先や社内のルール、公式の案内で確認してください。</p>
+<h2 id="_1">先に結論</h2>
+<p>税抜金額が A2 に入っているとして、消費税10%の式は次の3通りです。</p>
+<pre><code>切り捨て: =ROUNDDOWN(A2*0.1,0)
+切り上げ: =ROUNDUP(A2*0.1,0)
+四捨五入: =ROUND(A2*0.1,0)
+</code></pre>
+<p>最後の <code>0</code> は「小数点以下0桁にする(=整数にする)」の意味です。金額が整数のとき、<strong>結果が分かれるのは、A2 の下1桁が0でないとき</strong>だけです(下1桁が0なら税額がちょうど整数になり、3つとも同じ)。</p>
+<h2 id="_2">同じ金額で並べた結果</h2>
+<p>LibreOfficeで再計算した結果です(税率10%)。</p>
+<table>
+<thead>
+<tr>
+<th>税抜金額</th>
+<th>切り捨て</th>
+<th>切り上げ</th>
+<th>四捨五入</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1,000</td>
+<td>100</td>
+<td>100</td>
+<td>100</td>
+</tr>
+<tr>
+<td>1,004</td>
+<td>100</td>
+<td>101</td>
+<td>100</td>
+</tr>
+<tr>
+<td>1,005</td>
+<td>100</td>
+<td>101</td>
+<td>101</td>
+</tr>
+<tr>
+<td>12,345</td>
+<td>1,234</td>
+<td>1,235</td>
+<td>1,235</td>
+</tr>
+<tr>
+<td>99,995</td>
+<td>9,999</td>
+<td>10,000</td>
+<td>10,000</td>
+</tr>
+</tbody>
+</table>
+<p>ポイントは2つです。</p>
+<ul>
+<li><strong>下1桁が0なら3つとも同じ</strong>です(1,000)。</li>
+<li><strong>下1桁が5のとき</strong>(1,005 や 12,345)は、四捨五入と切り上げが同じ値になり、切り捨てだけが小さくなります。<strong>4以下</strong>(1,004)では、四捨五入は切り捨てと同じです。</li>
+</ul>
+<p>境界の値と乱数500件、合計518件の金額で、3つの式の結果を整数計算(切り捨ては <code>n÷10</code> の商、切り上げは商+余りがあれば1、四捨五入は <code>(2n+10)÷20</code> の商)と照合し、<strong>不一致は0件</strong>でした。</p>
+<h2 id="_3">税込金額から消費税を逆算する(内税)</h2>
+<p>税込の金額 M から消費税額を求めるときは、税率10%なら「M × 10 ÷ 110」です。</p>
+<pre><code>切り捨て: =ROUNDDOWN(M2*10/110,0)
+四捨五入: =ROUND(M2*10/110,0)
+税抜金額: =M2-ROUNDDOWN(M2*10/110,0)
+</code></pre>
+<p>税込 10,005 円で試すと、</p>
+<table>
+<thead>
+<tr>
+<th>求めるもの</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>消費税額(切り捨て)</td>
+<td>909</td>
+</tr>
+<tr>
+<td>消費税額(四捨五入)</td>
+<td>910</td>
+</tr>
+<tr>
+<td>税抜金額(税込 − 切り捨てた税額)</td>
+<td>9,096</td>
+</tr>
+<tr>
+<td>税抜金額(税込 ÷ 1.1 の切り捨て)</td>
+<td>9,095</td>
+</tr>
+</tbody>
+</table>
+<p><strong>税抜を出す方法が2通りあると、1円ずれることがあります。</strong> 実際、518件の金額のうち大半で、「税込 − 税額」と「税込 ÷ 1.1 の切り捨て」の結果は食い違いました(税込1円なら前者が1、後者が0)。どちらを使うかは、先に「税額」と「税抜」のどちらを正とするかを決めてから選んでください。</p>
+<h2 id="round-2">桁を指定して丸める(ROUND の第2引数)</h2>
+<p>第2引数を変えると、小数点以下や百の位などでも丸められます。LibreOfficeで確認した結果です。</p>
+<table>
+<thead>
+<tr>
+<th>元の数</th>
+<th>第2引数</th>
+<th>ROUND</th>
+<th>ROUNDUP</th>
+<th>ROUNDDOWN</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1234.5678</td>
+<td>2</td>
+<td>1234.57</td>
+<td>1234.57</td>
+<td>1234.56</td>
+</tr>
+<tr>
+<td>1234.5678</td>
+<td>0</td>
+<td>1235</td>
+<td>1235</td>
+<td>1234</td>
+</tr>
+<tr>
+<td>1234.5678</td>
+<td>-2</td>
+<td>1200</td>
+<td>1300</td>
+<td>1200</td>
+</tr>
+<tr>
+<td>1250</td>
+<td>-2</td>
+<td>1300</td>
+<td>1300</td>
+<td>1200</td>
+</tr>
+<tr>
+<td>1349</td>
+<td>-2</td>
+<td>1300</td>
+<td>1400</td>
+<td>1300</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li>第2引数が<strong>正</strong>なら小数点以下の桁数、<strong>0</strong>なら整数、<strong>マイナス</strong>なら整数部の桁(-2は百の位)で丸めます。</li>
+<li>1250 を百の位で四捨五入すると 1300 でした(ちょうど半分は上に丸まる)。</li>
+</ul>
+<h2 id="_4">マイナスの金額はどうなる?</h2>
+<p>値引きや返品で金額がマイナスになるときの結果です。</p>
+<table>
+<thead>
+<tr>
+<th>元の数</th>
+<th>桁</th>
+<th>ROUND</th>
+<th>ROUNDUP</th>
+<th>ROUNDDOWN</th>
+<th>INT</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>-1234.5</td>
+<td>0</td>
+<td>-1235</td>
+<td>-1235</td>
+<td>-1234</td>
+<td>-1235</td>
+</tr>
+<tr>
+<td>-1250</td>
+<td>-2</td>
+<td>-1300</td>
+<td>-1300</td>
+<td>-1200</td>
+<td>-1250</td>
+</tr>
+<tr>
+<td>-0.5</td>
+<td>0</td>
+<td>-1</td>
+<td>-1</td>
+<td>0</td>
+<td>-1</td>
+</tr>
+</tbody>
+</table>
+<ul>
+<li><strong>ROUNDUP・ROUNDDOWN は「0から遠ざかる/近づく」方向</strong>で動きます。マイナスの ROUNDDOWN は 0 に近い側(-1234.5 → -1234)になります。</li>
+<li><strong>INT は「小さい方」に切り捨てる</strong>ので、マイナスでは ROUNDDOWN と結果が変わります(-1234.5 → -1235)。<strong>マイナスを含む表で切り捨てるなら、ROUNDDOWN と INT を混ぜない</strong>ことです。</li>
+</ul>
+<h2 id="_5">「表示だけ丸めた」ときの合計のずれ</h2>
+<p>セルの表示形式で「小数点以下0桁」にしても、<strong>中身の値は丸まりません</strong>。1.4 を3行並べて試すと、</p>
+<ul>
+<li>表示は「1」「1」「1」なのに、SUM は <strong>4.2</strong>(表示は4)</li>
+<li>各行を <code>=ROUND(A1,0)</code> で丸めてから足すと <strong>3</strong></li>
+</ul>
+<p>となりました。画面の数字を足し算して合計が合わないときは、<strong>表示だけでなく式で丸めているか</strong>を見てください。金額を丸めるなら、ROUND系の式で値そのものを丸め、その丸めた値を合計するのが確実です。</p>
+<h2 id="_6">つまずきやすい点</h2>
+<ul>
+<li><strong>浮動小数点の誤差</strong>: <code>A2*0.1</code> のように小数をかける式は、ごく小さな誤差が出る可能性があります。今回の518件では問題は出ませんでしたが、金額が非常に大きいときは <code>A2/10</code> のように割り算で書く方法もあります(この記事では未検証)。</li>
+<li><strong>端数処理のタイミング</strong>: 明細ごとに丸めるか、合計に対して1回だけ丸めるかで、合計が変わります。これも取引先や社内のルールで決めます。</li>
+<li><strong>軽減税率(8%)が混ざる場合</strong>: 税率ごとに別々に計算する必要があるなど、この記事の範囲を超えます。</li>
+</ul>
+<h2 id="_7">注意点: この記事ができないこと</h2>
+<ul>
+<li>どの端数処理が適切か、インボイスなどの要件を満たすかの判断はしません。</li>
+<li>Excel(Microsoft)での動作確認はしていません(LibreOfficeのみ)。</li>
+<li>税率は10%のみ扱いました。</li>
+</ul>
+<h2 id="_8">見積書のひな形が必要なら</h2>
+<p>この記事の式は、自分で作る表にそのまま使えます。工事・リフォーム向けのひな形を探しているなら、運営者が作った<a href="/go/estimate-construction/?from=round-tax">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>端数処理の方法(切り捨て・四捨五入の切り替え)を選ぶ機能はありません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の合計を先にさっと確かめたいときは、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>も使えます(入力は外部に送信されません)。計算の順番は、<a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式</a>で解説しています。</p>
+<h2 id="_9">まとめ</h2>
+<ul>
+<li>消費税の式は <code>ROUNDDOWN(A2*0.1,0)</code>(切り捨て)・<code>ROUNDUP</code>(切り上げ)・<code>ROUND</code>(四捨五入)。下1桁が0なら3つとも同じで、違いが出るのは端数があるとき</li>
+<li>税込から逆算するなら <code>M*10/110</code> を丸める。税抜は「税込−税額」と「税込÷1.1」で1円ずれることがある</li>
+<li>桁指定は第2引数。マイナスでは ROUNDDOWN と INT が違う動きになる</li>
+<li>表示形式だけでは値は丸まらない。合計が合わないときは式で丸めているか確認する</li>
+<li>518件+桁指定・マイナス10ケースをLibreOfficeで確認(Excelは未確認)。どれを使うべきかは取引先・公式の案内で確認する</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、税率10%の5つの式(切り捨て・切り上げ・四捨五入、税込からの逆算の切り捨て・四捨五入)を518件の金額(境界の値と乱数500件)で整数計算の期待値と照合して不一致0、桁指定とマイナスの10ケースも独立した計算(Decimal)と一致することを確認しました。Excelでは未確認です。どの端数処理を使うべきかは、取引先・社内ルール・公式の案内で確認してください。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/round_tax.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】</a></li><li><a href="/tools/estimate-total/">見積の合計計算ツール(小計・諸経費・値引き・消費税・税込)</a></li><li><a href="/estimate-number/">エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
