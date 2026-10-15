@@ -452,3 +452,6 @@
 - 16:45 [商品] PRODUCTS.md に koumuten-jimu-set(¥3,980)を#0で追加し、事務セットの部品・工務店向け以外の todo 74件を on_hold に変更(請求書(工事用)#13は部品として todo のまま)。仕様 deliverables/products/koumuten-jimu-set/spec.md を作成して spec_ready(検証ケース22件。期待値は仕様側のPythonで検算、Excelでの確認はローカル側で未実施)。
 - 16:50 [ルール] HUMAN_TASKS.md の「今日の10分」を方針Bに更新(Pinterest削除)。試用のお願い文の下書き outreach/trial-request.md を作成(送るのはオーナー)。STATE.md と PORTFOLIO.md に方針Bへの切り替えを追記。
 - 外部への投稿・送信・支払い・アカウント作成はなし。販売用の商品ファイルはリポジトリに置いていない。
+
+## 2026-10-15 方針Bへの追加(スケジュール実行)
+- 17:30 [ルール] 聞き取りの質問6つと記録の型(research/interview-template.md)、紹介先向け1枚資料の下書き2本(outreach/partner-*.md)を作成。HUMAN_TASKS.md を毎日5分・今週60分・今月30分と4週間の予定に再編し、METRICS.md に「判断の材料」表(行は空)と判断条件2つ、CHARTER.md に2行を追加。事務セット仕様に誤操作ケース23〜29(期待値はPythonで検算できる分を検算、Excelでの確認はローカル側で未実施)、インボイス確認方法、見せ方の素材、改善の記録の節を追加(spec_readyのまま)。外部への投稿・送信・支払い・アカウント作成はなし。
