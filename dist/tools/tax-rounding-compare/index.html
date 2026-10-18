@@ -1,0 +1,86 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>消費税の端数処理の比較ツール(明細ごと・合計1回 × 切り捨て/四捨五入/切り上げ) | シート実務ラボ</title><meta name="description" content="税抜の明細を入れると、消費税10%を「明細ごとに計算して足す」場合と「合計に1回かける」場合、それぞれ切り捨て・四捨五入・切り上げで何円になるかを並べて比べる無料ツール。見積書の金額が1円ずれる理由の確認に。ブラウザ内で処理し、入力は送信されません。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/tools/tax-rounding-compare/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="消費税の端数処理の比較ツール(明細ごと・合計1回 × 切り捨て/四捨五入/切り上げ) | シート実務ラボ"><meta property="og:description" content="税抜の明細を入れると、消費税10%を「明細ごとに計算して足す」場合と「合計に1回かける」場合、それぞれ切り捨て・四捨五入・切り上げで何円になるかを並べて比べる無料ツール。見積書の金額が1円ずれる理由の確認に。ブラウザ内で処理し、入力は送信されません。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/tools/tax-rounding-compare/"><meta property="og:type" content="website">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "消費税の端数処理の比較ツール(明細ごと・合計1回 × 切り捨て/四捨五入/切り上げ)", "description": "税抜の明細を入れると、消費税10%を「明細ごとに計算して足す」場合と「合計に1回かける」場合、それぞれ切り捨て・四捨五入・切り上げで何円になるかを並べて比べる無料ツール。見積書の金額が1円ずれる理由の確認に。ブラウザ内で処理し、入力は送信されません。", "url": "https://sheet-lab-site.pages.dev/tools/tax-rounding-compare/", "applicationCategory": "BusinessApplication", "operatingSystem": "Web browser", "inLanguage": "ja", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "無料ツール", "item": "https://sheet-lab-site.pages.dev/tools/"}, {"@type": "ListItem", "position": 3, "name": "消費税の端数処理の比較ツール(明細ごと・合計1回 × 切り捨て/四捨五入/切り上げ)", "item": "https://sheet-lab-site.pages.dev/tools/tax-rounding-compare/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; <a href="/tools/">無料ツール</a> &gt; 消費税の端数処理の比較ツール(明細ごと・合計1回 × 切り捨て/四捨五入/切り上げ)</p><h1>消費税の端数処理の比較ツール</h1>
+<p>税抜の明細を入れると、消費税10%を<b>「明細ごとに計算して足す」</b>場合と<b>「税抜合計に1回だけかける」</b>場合で、<b>切り捨て・四捨五入・切り上げ</b>それぞれ何円になるかを並べます。見積書や請求書の税額が1円ずれる原因の確認に使えます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><label>税抜の金額(1行に1件。「金額」または「品名,金額」。区切りはカンマかタブ):<br>
+<textarea id="l" rows="8" style="width:100%" placeholder="解体工事,100005&#10;クロス張替,70005&#10;養生,12005"></textarea></label></p>
+<p><button type="button" id="br">比較する</button> <span id="st"></span></p>
+<p><textarea id="o" rows="10" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>明細ごと</b>: 各行の金額×10%を端数処理して、行ごとの税額を足します。<b>合計1回</b>: 税抜合計×10%を1回だけ端数処理します。</li>
+<li>金額は0以上の整数(円)、全角数字も読み取ります。金額の桁区切りカンマは使えません(カンマは列の区切りです)。マイナスや小数は受け付けません。</li>
+<li>どの方法を使うかは、取引先との取り決めや使っている会計・請求のルールで決まります。このツールはどの方法が正しいかを判断せず、差が出る範囲を確認するためのものです。</li>
+</ul>
+<p class="meta">このツールは税率10%の金額の計算だけです。軽減税率(8%)の混在、インボイスの記載要件、税の判断はしません。</p>
+<p class="meta">関連: <a href="/tools/estimate-total/">見積の合計計算ツール</a> / <a href="/tools/tax/">消費税 計算ツール</a> / <a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式(記事)</a> / 運営者の商品: <a href="/go/estimate-construction/?from=tool-tax-rounding-compare">工事・リフォーム用 見積書テンプレート(Excel・980円)</a></p>
+<script>
+function z(s){return String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[，、]/g,",").replace(/\s|　/g,"");}
+function divRound(num,den,mode){
+  var q=num/den,r=num%den;
+  if(r===0n)return q;
+  if(mode==="floor")return q;
+  if(mode==="ceil")return q+1n;
+  return (r*2n>=den)?q+1n:q;
+}
+function fmt(b){var s=b.toString(),o="";while(s.length>3){o=","+s.slice(-3)+o;s=s.slice(0,-3);}return s+o;}
+function parseAmounts(text){
+  var lines=String(text).split(/\r\n|\r|\n/),items=[];
+  for(var i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var parts=lines[i].split(/[\t,，、]/);
+    var v=z(parts[parts.length-1]);
+    if(!/^\d+$/.test(v))return {ok:false,text:(i+1)+"行目の金額を読めません(0以上の整数、円)"};
+    items.push(BigInt(v));
+  }
+  return {ok:true,items:items};
+}
+var MODES=[["floor","切り捨て"],["round","四捨五入"],["ceil","切り上げ"]];
+function compare(text){
+  var pa=parseAmounts(text);if(!pa.ok)return pa;
+  var sub=0n,i,j;
+  for(i=0;i<pa.items.length;i++)sub+=pa.items[i];
+  var res={ok:true,count:pa.items.length,sub:sub.toString(),each:{},once:{}};
+  var out="明細 "+pa.items.length+"件 / 税抜合計: "+fmt(sub)+"円\n";
+  for(j=0;j<MODES.length;j++){
+    var m=MODES[j][0],t=0n;
+    for(i=0;i<pa.items.length;i++)t+=divRound(pa.items[i]*10n,100n,m);
+    var o=divRound(sub*10n,100n,m);
+    res.each[m]=t.toString();res.once[m]=o.toString();
+    out+="\n["+MODES[j][1]+"]\n  明細ごとに計算して足す: 税 "+fmt(t)+"円 → 税込 "+fmt(sub+t)+"円\n  合計に1回かける: 税 "+fmt(o)+"円 → 税込 "+fmt(sub+o)+"円\n  差(明細ごと − 合計1回): "+(t>=o?"":"-")+fmt(t>=o?t-o:o-t)+"円\n";
+  }
+  res.text=out;
+  return res;
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var r=compare(g("l").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
+<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div><section class="related"><h2>関連</h2><ul><li><a href="/tools/estimate-total/">見積の合計計算ツール(小計・諸経費・値引き・消費税・税込)</a></li><li><a href="/round-tax/">消費税の端数処理はROUND・ROUNDUP・ROUNDDOWNのどれ?式の違いと内税の逆算【LibreOfficeで計算して確認】</a></li><li><a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式(小計→諸経費→値引き→消費税の順)【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>

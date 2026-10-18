@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('tax-rounding-compare')?'compare,parseAmounts':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -296,6 +296,43 @@ const et=load('tools/estimate-total/body.html');
     }
   }
   console.log('estimate-total '+k+' cases');
+})();
+
+// tax-rounding-compare: 手計算ケース+Number整数計算との総当たり照合
+(function(){
+  const tr=load('tools/tax-rounding-compare/body.html');
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  let r=tr.compare('解体工事,100005\nクロス張替,70005\n養生,12005');
+  eq(r.sub,'182015','tr1 sub');
+  eq(r.each.floor+'/'+r.once.floor,'18200/18201','tr1 切り捨て 10000+7000+1200 / 18201.5→18201');
+  eq(r.each.round+'/'+r.once.round,'18203/18202','tr1 四捨五入 10001+7001+1201 / 18201.5→18202');
+  eq(r.each.ceil+'/'+r.once.ceil,'18203/18202','tr1 切り上げ 10001+7001+1201 / 18202');
+  r=tr.compare('1005\n1005');
+  eq(r.each.floor+'/'+r.once.floor,'200/201','tr2 切り捨て');
+  eq(r.each.round+'/'+r.once.round,'202/201','tr2 四捨五入');
+  eq(r.each.ceil+'/'+r.once.ceil,'202/201','tr2 切り上げ');
+  r=tr.compare('');eq(r.sub,'0','tr3 空');eq(r.each.ceil,'0','tr3 空税');
+  eq(tr.compare('品名,１２３４\n\n  \nB\t10').sub,'1244','tr4 全角・タブ・空行');
+  eq(tr.compare('-5').ok,false,'tr5 負');
+  eq(tr.compare('1.5').ok,false,'tr6 小数');
+  eq(tr.compare('abc').ok,false,'tr7 文字');
+  eq(tr.compare('品名,').ok,false,'tr8 金額なし');
+  eq(tr.compare('0').each.floor,'0','tr9 ゼロ');
+  eq(tr.compare('5').each.ceil+'/'+tr.compare('5').each.round+'/'+tr.compare('5').each.floor,'1/1/0','tr10 5円');
+  let seed=777;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  const hu=(a,b)=>Math.floor((2*a+b)/(2*b));
+  let k=0;
+  for(let n=0;n<20000;n++){
+    const nl=1+Math.floor(rnd()*6);const a=[];let sub=0;
+    for(let i=0;i<nl;i++){const v=Math.floor(rnd()*1000000);a.push(v);sub+=v;}
+    const r=tr.compare(a.join('\n'));
+    const f={floor:x=>Math.floor(x/10),round:x=>hu(x,10),ceil:x=>Math.ceil(x/10)};
+    for(const m of ['floor','round','ceil']){
+      const e=a.reduce((s,v)=>s+f[m](v),0),o=f[m](sub);k++;
+      ok(r.sub===String(sub)&&r.each[m]===String(e)&&r.once[m]===String(o),'tr rnd '+a+' '+m+' got '+JSON.stringify(r));
+    }
+  }
+  console.log('tax-rounding-compare '+k+' cases');
 })();
 // dup-check: 手計算ケース+独立実装(総当たり比較)との照合
 (function(){

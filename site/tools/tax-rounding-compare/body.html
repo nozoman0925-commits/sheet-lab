@@ -1,0 +1,60 @@
+<h1>消費税の端数処理の比較ツール</h1>
+<p>税抜の明細を入れると、消費税10%を<b>「明細ごとに計算して足す」</b>場合と<b>「税抜合計に1回だけかける」</b>場合で、<b>切り捨て・四捨五入・切り上げ</b>それぞれ何円になるかを並べます。見積書や請求書の税額が1円ずれる原因の確認に使えます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><label>税抜の金額(1行に1件。「金額」または「品名,金額」。区切りはカンマかタブ):<br>
+<textarea id="l" rows="8" style="width:100%" placeholder="解体工事,100005&#10;クロス張替,70005&#10;養生,12005"></textarea></label></p>
+<p><button type="button" id="br">比較する</button> <span id="st"></span></p>
+<p><textarea id="o" rows="10" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li><b>明細ごと</b>: 各行の金額×10%を端数処理して、行ごとの税額を足します。<b>合計1回</b>: 税抜合計×10%を1回だけ端数処理します。</li>
+<li>金額は0以上の整数(円)、全角数字も読み取ります。金額の桁区切りカンマは使えません(カンマは列の区切りです)。マイナスや小数は受け付けません。</li>
+<li>どの方法を使うかは、取引先との取り決めや使っている会計・請求のルールで決まります。このツールはどの方法が正しいかを判断せず、差が出る範囲を確認するためのものです。</li>
+</ul>
+<p class="meta">このツールは税率10%の金額の計算だけです。軽減税率(8%)の混在、インボイスの記載要件、税の判断はしません。</p>
+<p class="meta">関連: <a href="/tools/estimate-total/">見積の合計計算ツール</a> / <a href="/tools/tax/">消費税 計算ツール</a> / <a href="/estimate-total/">見積書の合計・税込計算をExcelで自動にする式(記事)</a> / 運営者の商品: <a href="/go/estimate-construction/?from=tool-tax-rounding-compare">工事・リフォーム用 見積書テンプレート(Excel・980円)</a></p>
+<script>
+function z(s){return String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[，、]/g,",").replace(/\s|　/g,"");}
+function divRound(num,den,mode){
+  var q=num/den,r=num%den;
+  if(r===0n)return q;
+  if(mode==="floor")return q;
+  if(mode==="ceil")return q+1n;
+  return (r*2n>=den)?q+1n:q;
+}
+function fmt(b){var s=b.toString(),o="";while(s.length>3){o=","+s.slice(-3)+o;s=s.slice(0,-3);}return s+o;}
+function parseAmounts(text){
+  var lines=String(text).split(/\r\n|\r|\n/),items=[];
+  for(var i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var parts=lines[i].split(/[\t,，、]/);
+    var v=z(parts[parts.length-1]);
+    if(!/^\d+$/.test(v))return {ok:false,text:(i+1)+"行目の金額を読めません(0以上の整数、円)"};
+    items.push(BigInt(v));
+  }
+  return {ok:true,items:items};
+}
+var MODES=[["floor","切り捨て"],["round","四捨五入"],["ceil","切り上げ"]];
+function compare(text){
+  var pa=parseAmounts(text);if(!pa.ok)return pa;
+  var sub=0n,i,j;
+  for(i=0;i<pa.items.length;i++)sub+=pa.items[i];
+  var res={ok:true,count:pa.items.length,sub:sub.toString(),each:{},once:{}};
+  var out="明細 "+pa.items.length+"件 / 税抜合計: "+fmt(sub)+"円\n";
+  for(j=0;j<MODES.length;j++){
+    var m=MODES[j][0],t=0n;
+    for(i=0;i<pa.items.length;i++)t+=divRound(pa.items[i]*10n,100n,m);
+    var o=divRound(sub*10n,100n,m);
+    res.each[m]=t.toString();res.once[m]=o.toString();
+    out+="\n["+MODES[j][1]+"]\n  明細ごとに計算して足す: 税 "+fmt(t)+"円 → 税込 "+fmt(sub+t)+"円\n  合計に1回かける: 税 "+fmt(o)+"円 → 税込 "+fmt(sub+o)+"円\n  差(明細ごと − 合計1回): "+(t>=o?"":"-")+fmt(t>=o?t-o:o-t)+"円\n";
+  }
+  res.text=out;
+  return res;
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var r=compare(g("l").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
