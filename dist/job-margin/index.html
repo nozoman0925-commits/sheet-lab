@@ -1,0 +1,260 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="原価を1行ずつ入力し、工事ごとに材料費・外注費・経費・粗利・粗利率を自動で出し、目標粗利率に届かない工事や赤字を表示するExcelの式を解説。11ケースと工事300件・原価1,000行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/job-margin/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="原価を1行ずつ入力し、工事ごとに材料費・外注費・経費・粗利・粗利率を自動で出し、目標粗利率に届かない工事や赤字を表示するExcelの式を解説。11ケースと工事300件・原価1,000行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/job-margin/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】", "datePublished": "2026-10-19", "dateModified": "2026-10-19", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "原価を1行ずつ入力し、工事ごとに材料費・外注費・経費・粗利・粗利率を自動で出し、目標粗利率に届かない工事や赤字を表示するExcelの式を解説。11ケースと工事300件・原価1,000行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/job-margin/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/job-margin/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/job-margin/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-19 ・ Excel関数</p><h1>工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】</h1><p>「あの現場、忙しかったのに手元にあまり残っていない」と感じる工事はありませんか。原因は材料費の読み違いだったり、外注費が想定より膨らんだりと、工事によって違います。<strong>どの費目で粗利が減ったのか</strong>が分からないと、次の見積で直せません。</p>
+<p>この記事では、原価を1行ずつ「材料・外注・経費」に分けて入力するだけで、工事ごとの<strong>費目別の原価、粗利、粗利率</strong>が出て、<strong>目標の粗利率に届かない工事に印がつく</strong>式を示します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/job_margin.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはSUMIFS・SUM・IF・MATCH・ISNA・ASC・TRIMなどの一般的な関数ですが、本番の台帳に使う前に数行で結果を確かめてください。金額はすべて税抜の例です。どの支出を原価に入れるかという会計・税務の判断や、消費税・インボイスの扱いは、この記事では行いません。</p>
+<h2 id="2">先に作る表: 2枚のシート</h2>
+<p><strong>「原価」シート</strong>(1行1回の支払い。2行目から)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: K-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>費目</td>
+<td>手入力(「材料」「外注」「経費」のどれか)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>原価額(税抜)</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>D</td>
+<td>整えた番号</td>
+<td>式(全角→半角、前後のスペース除去)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>D2: =ASC(TRIM(A2))
+E2: =IF(AND(A2=&quot;&quot;,C2=&quot;&quot;),&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,IF(ISNA(MATCH(D2,台帳!$A$2:$A$2000,0)),&quot;工事番号なし&quot;,
+      IF(ISNA(MATCH(B2,台帳!$C$1:$E$1,0)),&quot;費目が不明&quot;,&quot;&quot;))))
+</code></pre>
+<p><strong>「台帳」シート</strong>(1行1工事。1行目の見出しは C1=材料、D1=外注、E1=経費 と、費目と同じ文字で入れます)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>契約金額(税抜)</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C〜E</td>
+<td>材料費・外注費・経費</td>
+<td>式</td>
+</tr>
+<tr>
+<td>F</td>
+<td>原価合計</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>粗利</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>粗利率</td>
+<td>式(表示形式はパーセンテージ)</td>
+</tr>
+<tr>
+<td>I</td>
+<td>状態</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>C2: =IF($A2=&quot;&quot;,&quot;&quot;,SUMIFS(原価!$C$2:$C$2000,原価!$D$2:$D$2000,$A2,原価!$B$2:$B$2000,C$1))
+    (C2を右のE2までコピー。D2・E2は見出しの費目が自動で入る)
+F2: =IF(A2=&quot;&quot;,&quot;&quot;,SUM(C2:E2))
+G2: =IF(A2=&quot;&quot;,&quot;&quot;,B2-F2)
+H2: =IF(A2=&quot;&quot;,&quot;&quot;,IF(B2=0,&quot;&quot;,G2/B2))
+I2: =IF(A2=&quot;&quot;,&quot;&quot;,IF(B2=0,&quot;契約金額が0&quot;,IF(F2=0,&quot;原価未入力&quot;,IF(G2&lt;0,&quot;赤字&quot;,IF(H2&lt;$L$1,&quot;目標未達&quot;,&quot;&quot;)))))
+</code></pre>
+<p>台帳の端に、目標と照合用のセルを置きます。</p>
+<pre><code>K1: 目標粗利率    L1: 20%(0.2。自社の目標に合わせて変更)
+K2: 未集計の原価  L2: =SUM(原価!C2:C2000)-SUM(F2:F2000)
+</code></pre>
+<p>L2が0でなければ、<strong>入力した原価のどこかが、どの工事のどの費目にも入っていません</strong>(番号の間違い、費目の書き間違いなど)。粗利が実際より大きく見えるので、原価シートのチェック列を見て直します。</p>
+<h2 id="20">実際に計算した結果(目標粗利率20%)</h2>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>契約金額</th>
+<th>入力した原価</th>
+<th>原価合計</th>
+<th>粗利率</th>
+<th>表示</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>通常</td>
+<td>1,000,000</td>
+<td>材料400,000・外注250,000・経費50,000</td>
+<td>700,000</td>
+<td>30.0%</td>
+<td>(なし)</td>
+</tr>
+<tr>
+<td>赤字</td>
+<td>500,000</td>
+<td>材料400,000・外注200,000</td>
+<td>600,000</td>
+<td>−20.0%</td>
+<td>赤字</td>
+</tr>
+<tr>
+<td>目標未達</td>
+<td>1,000,000</td>
+<td>材料850,000</td>
+<td>850,000</td>
+<td>15.0%</td>
+<td>目標未達</td>
+</tr>
+<tr>
+<td>ちょうど目標</td>
+<td>1,000,000</td>
+<td>材料800,000</td>
+<td>800,000</td>
+<td>20.0%</td>
+<td>(なし。目標と同じなら印はつかない)</td>
+</tr>
+<tr>
+<td>原価未入力</td>
+<td>800,000</td>
+<td>なし</td>
+<td>0</td>
+<td>100.0%</td>
+<td>原価未入力</td>
+</tr>
+<tr>
+<td>契約金額0</td>
+<td>0</td>
+<td>材料50,000</td>
+<td>50,000</td>
+<td>(空欄)</td>
+<td>契約金額が0</td>
+</tr>
+<tr>
+<td>存在しない番号</td>
+<td>800,000</td>
+<td>K-070(台帳にない)に100,000</td>
+<td>0</td>
+<td>100.0%</td>
+<td>原価側「工事番号なし」、L2=100,000</td>
+</tr>
+<tr>
+<td>番号が空欄</td>
+<td>800,000</td>
+<td>番号なしで100,000</td>
+<td>0</td>
+<td>100.0%</td>
+<td>原価側「工事番号が空欄」、L2=100,000</td>
+</tr>
+<tr>
+<td>費目の書き間違い</td>
+<td>800,000</td>
+<td>「材量」に100,000、「材料」に30,000</td>
+<td>30,000</td>
+<td>96.25%</td>
+<td>原価側「費目が不明」、L2=100,000</td>
+</tr>
+<tr>
+<td>全角・スペース</td>
+<td>800,000</td>
+<td>「Ｋ－010」の材料100,000、「 K-010 」の外注50,000</td>
+<td>150,000</td>
+<td>81.25%</td>
+<td>(なし。正しく集計される)</td>
+</tr>
+<tr>
+<td>割り切れない率</td>
+<td>3,000,000</td>
+<td>材料1,234,567</td>
+<td>1,234,567</td>
+<td>約58.85%</td>
+<td>(なし)</td>
+</tr>
+</tbody>
+</table>
+<p>11ケースすべて、費目別の原価・粗利・粗利率・状態・チェック表示・L2が、Pythonでの計算と一致しました。</p>
+<p>さらに、工事300件(契約金額0の工事も混在)・原価1,000行の乱数データ(正しい入力は約76%、存在しない番号・空欄・全角・前後スペース・費目の書き間違いを混ぜた)で照合し、<strong>すべて一致</strong>しました(Excelでは未確認)。</p>
+<h2 id="_1">使うときの注意</h2>
+<ul>
+<li><strong>原価未入力の工事は粗利率が100%に見えます</strong>。完工後にこの表示が出たら、入力漏れです。</li>
+<li><strong>「材料」と「材 料」のようにスペースの入った費目は、費目が不明になります</strong>。費目は番号と違って整える列を作っていないので、入力規則のプルダウンで選ぶ運用にすると間違いません(この記事ではプルダウンの作り方は扱いません)。</li>
+<li><strong>目標粗利率に届かない=悪い工事とは限りません</strong>。印は「見直す候補」の目印です。工事の性質(小口の修理など)に応じて、目標を使い分けるか、印を参考程度に使ってください。</li>
+<li>**粗利率の分母は契約金額(税抜)**です。会社によっては別の定義を使うことがあるので、社内の定義に合わせてください。</li>
+<li><strong>追加工事・値引きで契約金額が変わったとき</strong>は、台帳の契約金額を直さないと粗利が合いません。</li>
+<li>工事番号は「K-001」のように英字入りで、台帳と原価で表記をそろえてください(ハイフンの有無や大文字小文字の違いは吸収しません)。数字だけの番号の動きは、Excelでは確認していません。</li>
+</ul>
+<h2 id="_2">この記事ができないこと</h2>
+<ul>
+<li>自社の人件費や車両費の按分など、原価の範囲の判断はしません。会計・税務は税理士などの専門家に確認してください。</li>
+<li>消費税、インボイス、請求書の書式の適否は扱いません。</li>
+<li>工事の途中の見込み原価や、進捗に応じた粗利の予測は扱いません。</li>
+</ul>
+<h2 id="_3">見積の段階から計算したいとき</h2>
+<p>この記事の式は、自分で作った台帳にそのまま使えます。見積の計算(数量×単価、諸経費、値引き、消費税)から作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=job-margin">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の台帳・原価の機能は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>請求の残額の管理は<a href="/split-billing-balance/">工事の分割請求の残額をExcelで管理する式</a>に、見積の小計から税込までを一度に出すなら無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_4">まとめ</h2>
+<ul>
+<li>原価は「工事番号・費目・金額」で1行ずつ入力し、台帳ではSUMIFSで費目ごとに集める</li>
+<li>粗利=契約金額−原価合計、粗利率=粗利÷契約金額。契約金額0は0除算を避けて空欄にする</li>
+<li>目標粗利率のセルと比べて、赤字・目標未達・原価未入力を状態列に表示する</li>
+<li>未集計の原価(L2)が0でなければ、番号か費目の書き間違いがある</li>
+<li>11ケースと、工事300件・原価1,000行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数件を電卓で検算する</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、11ケース(通常、赤字、目標未達、ちょうど目標、原価未入力、契約金額0、存在しない工事番号、工事番号の空欄、費目の書き間違い、全角・前後スペース、割り切れない粗利率)と、工事300件・原価1,000行(誤入力を約24%混ぜた乱数データ)で、費目別の原価・粗利・粗利率・状態表示・未集計額がPythonの計算と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/job_margin.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/split-billing-balance/">工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li><li><a href="/category-sum/">家計簿の費目別の合計をSUMIFSで出す方法(予算との差と、費目名がずれたときの落とし穴)【LibreOfficeで計算して確認】</a></li><li><a href="/monthly-sum-by-date/">日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
