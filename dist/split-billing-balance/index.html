@@ -1,0 +1,242 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="工事ごとに契約金額・請求済み・残額を出し、請求の入力ミス(存在しない工事番号、空欄、全角、契約日より前の日付、請求超過)を見つけるExcelの式を解説。8ケースと工事300件・請求1,000行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/split-billing-balance/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="工事ごとに契約金額・請求済み・残額を出し、請求の入力ミス(存在しない工事番号、空欄、全角、契約日より前の日付、請求超過)を見つけるExcelの式を解説。8ケースと工事300件・請求1,000行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/split-billing-balance/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】", "datePublished": "2026-10-19", "dateModified": "2026-10-19", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "工事ごとに契約金額・請求済み・残額を出し、請求の入力ミス(存在しない工事番号、空欄、全角、契約日より前の日付、請求超過)を見つけるExcelの式を解説。8ケースと工事300件・請求1,000行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/split-billing-balance/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/split-billing-balance/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/split-billing-balance/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-19 ・ Excel関数</p><h1>工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</h1><p>工事の請求を「着手金・中間金・完了時」の3回に分けると、<strong>いくら請求済みで、あといくら残っているか</strong>を台帳で追うのが面倒になります。請求書を作るたびに契約金額を見に行き、電卓で引き算して、工事番号を打ち間違えて別の工事に積み上がっていた——というのもよくある失敗です。</p>
+<p>この記事では、<strong>「請求」の表に1行ずつ入力するだけで、「台帳」の表に請求済みと残額が自動で出る</strong>式を示します。あわせて、入力ミス(存在しない工事番号、空欄、全角、契約日より前の日付、請求しすぎ)を表に表示させる列も作ります。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/split_billing.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはSUMIFS・INDEX・MATCH・IFERROR・ASC・TRIMなどの一般的な関数ですが、本番の台帳に使う前に、数行で結果を確かめてください。金額はすべて税抜で管理する例です。税込の請求額や、消費税の扱い、インボイスの記載要件の判断はこの記事では行いません。</p>
+<h2 id="_1">先に結論</h2>
+<p>2枚のシートを使います。</p>
+<p><strong>「台帳」シート</strong>(1行1工事。2行目から。範囲は2〜2000行の例)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: K-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>契約日</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>契約金額(税抜)</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>D</td>
+<td>請求済み</td>
+<td>式</td>
+</tr>
+<tr>
+<td>E</td>
+<td>残額</td>
+<td>式</td>
+</tr>
+<tr>
+<td>F</td>
+<td>状態</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>D2: =IF(A2=&quot;&quot;,&quot;&quot;,SUMIFS(請求!$C$2:$C$2000,請求!$D$2:$D$2000,A2))
+E2: =IF(A2=&quot;&quot;,&quot;&quot;,C2-D2)
+F2: =IF(A2=&quot;&quot;,&quot;&quot;,IF(E2&lt;0,&quot;請求超過&quot;,IF(E2=0,&quot;請求完了&quot;,&quot;&quot;)))
+</code></pre>
+<p><strong>「請求」シート</strong>(1行1回の請求。2行目から)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>請求日</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>工事番号</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>請求額(税抜)</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>D</td>
+<td>整えた番号</td>
+<td>式(全角→半角、前後のスペース除去)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>契約金額</td>
+<td>式(台帳から引く)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>D2: =ASC(TRIM(B2))
+E2: =IF(D2=&quot;&quot;,&quot;&quot;,IFERROR(INDEX(台帳!$C$2:$C$2000,MATCH(D2,台帳!$A$2:$A$2000,0)),&quot;&quot;))
+F2: =IF(AND(B2=&quot;&quot;,C2=&quot;&quot;),&quot;&quot;,IF(B2=&quot;&quot;,&quot;工事番号が空欄&quot;,IF(E2=&quot;&quot;,&quot;工事番号なし&quot;,
+      IF(AND(A2&lt;&gt;&quot;&quot;,INDEX(台帳!$B$2:$B$2000,MATCH(D2,台帳!$A$2:$A$2000,0))&gt;A2),&quot;契約日より前の日付&quot;,&quot;&quot;))))
+</code></pre>
+<p>さらに、台帳の端のセルに<strong>照合用</strong>として次の式を置きます。</p>
+<pre><code>H1: 未紐づけの請求額
+I1: =SUM(請求!C2:C2000)-SUM(D2:D2000)
+</code></pre>
+<p>「請求」に入力した金額の合計と、「台帳」の請求済みの合計が一致していれば0です。<strong>0でなければ、どこかの請求が工事に結びついていません</strong>(工事番号の間違いなど)。請求の「チェック」列に出た行を直してください。</p>
+<p>ポイントは3つです。</p>
+<ul>
+<li>「台帳」の請求済みは、請求の**D列(整えた番号)**で集計します。B列(手入力の番号)で集計すると、全角や前後のスペースが入った行が集計から漏れます。</li>
+<li>工事番号が台帳にない行は、金額が<strong>どの工事にも足されません</strong>。その代わり、チェック列に「工事番号なし」と出て、I1に未紐づけの額として現れます。</li>
+<li>行を追加するときは、式の範囲(2〜2000行)の中に入れてください。範囲を超える行は集計されません。</li>
+</ul>
+<h2 id="_2">実際に計算した結果</h2>
+<p>次の8ケースを計算しました。</p>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>契約金額</th>
+<th>入力した請求</th>
+<th>請求済み</th>
+<th>残額</th>
+<th>表示</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>分割3回</td>
+<td>1,000,000</td>
+<td>300,000 / 400,000 / 100,000</td>
+<td>800,000</td>
+<td>200,000</td>
+<td>(なし)</td>
+</tr>
+<tr>
+<td>ちょうど全額</td>
+<td>500,000</td>
+<td>200,000 / 300,000</td>
+<td>500,000</td>
+<td>0</td>
+<td>請求完了</td>
+</tr>
+<tr>
+<td>請求しすぎ</td>
+<td>500,000</td>
+<td>300,000 / 300,000</td>
+<td>600,000</td>
+<td>−100,000</td>
+<td>請求超過</td>
+</tr>
+<tr>
+<td>存在しない工事番号</td>
+<td>800,000</td>
+<td>K-040(台帳にない)に100,000</td>
+<td>0</td>
+<td>800,000</td>
+<td>請求側「工事番号なし」、I1=100,000</td>
+</tr>
+<tr>
+<td>工事番号が空欄</td>
+<td>800,000</td>
+<td>番号なしで100,000</td>
+<td>0</td>
+<td>800,000</td>
+<td>請求側「工事番号が空欄」、I1=100,000</td>
+</tr>
+<tr>
+<td>全角・スペース</td>
+<td>800,000</td>
+<td>「Ｋ－006」に100,000、「 K-006 」に50,000</td>
+<td>150,000</td>
+<td>650,000</td>
+<td>(なし。正しく集計される)</td>
+</tr>
+<tr>
+<td>日付の逆転</td>
+<td>800,000</td>
+<td>契約日より前の日付で100,000</td>
+<td>100,000</td>
+<td>700,000</td>
+<td>「契約日より前の日付」</td>
+</tr>
+<tr>
+<td>請求なし</td>
+<td>800,000</td>
+<td>なし</td>
+<td>0</td>
+<td>800,000</td>
+<td>(なし)</td>
+</tr>
+</tbody>
+</table>
+<p>8ケースすべて、請求済み・残額・チェック表示・I1が、Pythonでの計算結果と一致しました。</p>
+<p>さらに、工事300件・請求1,000行の乱数データで照合しました。請求のうち約80%は正しい入力、約6%は存在しない番号、約5%は空欄、約5%は全角、約4%は前後にスペースを入れ、日付も契約日の5日前〜90日後にばらつかせています。<strong>請求済み・残額・チェック表示・未紐づけ額のすべてが一致</strong>しました(Excelでの確認はしていません)。</p>
+<h2 id="_3">つまずきやすい点</h2>
+<ul>
+<li><strong>請求の行を消したとき</strong>: <strong>台帳の行を消す</strong>と、その工事あての請求は台帳にない番号になるので、「工事番号なし」と表示され、I1にも現れます(上の「存在しない工事番号」と同じ動きです。行の削除操作そのものはExcelでは試していません)。</li>
+<li><strong>工事番号の付け方がそろっていないとき</strong>: 台帳が「K-001」、請求が「K001」のようにハイフンの有無が違うと、一致しません。この式は全角→半角と前後のスペースだけを整えます。ハイフンや大文字小文字の違いまでは吸収しません。</li>
+<li><strong>番号が数字だけのとき</strong>: 台帳と請求の両方を同じ形(どちらも文字列、またはどちらも数値)で入力してください。この記事では数字だけの工事番号の動きを、Excelでは確認していません。「K-001」のように英字を含めると迷いません。</li>
+<li><strong>範囲の上限</strong>: 式は2000行までです。工事が増えたら、範囲を広げて(<code>$2000</code>を<code>$5000</code>などに)ください。</li>
+<li><strong>残額がマイナスになる</strong>のは、請求しすぎ、または契約金額の変更が台帳に反映されていないときです。変更契約(追加工事)の扱いは、この記事では扱いません。台帳の契約金額を直すか、別の工事番号で台帳に足す運用にしてください。</li>
+<li><strong>日付のチェック</strong>は「請求日が契約日より前」だけです。請求日が空欄の行は、日付のチェックを飛ばします。</li>
+</ul>
+<h2 id="_4">注意点: この記事ができないこと</h2>
+<ul>
+<li>消費税、インボイスの記載要件、請求書の書式の適否は判断しません。金額を税抜で管理する例です。</li>
+<li>入金の管理(入金済みか、入金が遅れていないか)は扱いません。</li>
+<li>出来高に応じた請求割合(例: 30%・50%・20%)の取り決めの妥当性は扱いません。取り決めは取引先との契約が優先です。</li>
+</ul>
+<h2 id="1">見積から請求までを1つのひな形で</h2>
+<p>この記事の式は、自分で作った台帳にそのまま使えます。見積の段階の計算(数量×単価、諸経費、値引き、消費税)から作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=split-billing-balance">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の台帳・請求の機能は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の計算の考え方は<a href="/estimate-total/">見積書の合計・税込計算の記事</a>に、消費税だけをさっと出したいときは無料の<a href="/tools/tax/">消費税 計算ツール</a>、見積の小計から税込までを一度に出すなら<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>請求を1行ずつ「請求」シートに入力し、「台帳」の請求済みはSUMIFSで集計する</li>
+<li>集計の鍵は、全角・スペースを整えた「整えた番号」の列</li>
+<li>存在しない番号・空欄・契約日より前の日付・請求しすぎは、チェック列と状態列に表示させる</li>
+<li>台帳の請求済みの合計と請求の合計の差(I1)が0でなければ、工事に結びついていない請求がある</li>
+<li>8ケースと、工事300件・請求1,000行の照合はLibreOfficeで一致。Excelでは未確認のため、本番の台帳では数件を電卓で検算する</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、8ケース(分割3回、ちょうど全額、請求超過、存在しない工事番号、工事番号の空欄、全角・前後スペースの工事番号、契約日より前の請求日、請求なし)と、工事300件・請求1,000行(誤入力を約20%混ぜた乱数データ)で、請求済み・残額・チェック表示・未紐づけ額がPythonの計算と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/split_billing.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/category-sum/">家計簿の費目別の合計をSUMIFSで出す方法(予算との差と、費目名がずれたときの落とし穴)【LibreOfficeで計算して確認】</a></li><li><a href="/monthly-sum-by-date/">日付の列から月別に合計を出す方法(SUMIFSとSUMPRODUCT、年をまたぐ注意点)【LibreOfficeで計算して確認】</a></li><li><a href="/tools/estimate-total/">見積の合計計算ツール(小計・諸経費・値引き・消費税・税込)</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
