@@ -1,0 +1,255 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工事の工程表で遅れている工程を自動で表示する式|予定終了日と基準日を比べて遅れ日数を出す【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="予定開始・予定終了・実績終了を入力するだけで、各工程を「遅れ・進行中・着工前・完了」に自動で分け、遅れ日数と工事ごとの遅れ工程数を出すExcelの式を解説。15ケースと工事300件・工程1,000行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/schedule-delay/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工事の工程表で遅れている工程を自動で表示する式|予定終了日と基準日を比べて遅れ日数を出す【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="予定開始・予定終了・実績終了を入力するだけで、各工程を「遅れ・進行中・着工前・完了」に自動で分け、遅れ日数と工事ごとの遅れ工程数を出すExcelの式を解説。15ケースと工事300件・工程1,000行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/schedule-delay/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "工事の工程表で遅れている工程を自動で表示する式|予定終了日と基準日を比べて遅れ日数を出す【LibreOfficeで計算して確認】", "datePublished": "2026-10-20", "dateModified": "2026-10-20", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "予定開始・予定終了・実績終了を入力するだけで、各工程を「遅れ・進行中・着工前・完了」に自動で分け、遅れ日数と工事ごとの遅れ工程数を出すExcelの式を解説。15ケースと工事300件・工程1,000行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/schedule-delay/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/schedule-delay/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "工事の工程表で遅れている工程を自動で表示する式|予定終了日と基準日を比べて遅れ日数を出す【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/schedule-delay/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 工事の工程表で遅れている工程を自動で表示する式|予定終了日と基準日を比べて遅れ日数を出す【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-20 ・ Excel関数</p><h1>工事の工程表で遅れている工程を自動で表示する式|予定終了日と基準日を比べて遅れ日数を出す【LibreOfficeで計算して確認】</h1><p>「あの現場、解体はもう終わっているはずなのに、次の大工が入れない」。工程の遅れは、気づいた時にはすでに後ろの工程に響いていることが多いものです。工程表を毎日眺めて遅れを探すのではなく、<strong>予定終了日を過ぎているのに終わっていない工程に、自動で「遅れ」と出る</strong>ようにしておくと、確認の手間が減ります。</p>
+<p>この記事では、工程を1行ずつ入力すると、各工程を**「遅れ・進行中・着工前・完了・完了(遅れ)」<strong>に自動で分け、<strong>遅れ日数</strong>と</strong>工事ごとの遅れ工程数**を出す式を示します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/schedule_delay.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・MAX・COUNTIFS・SUMIFS・MATCH・ISNUMBER・ASC・TRIMなどの一般的な関数ですが、本番の工程表に使う前に数行で結果を確かめてください。</p>
+<h2 id="2">先に作る表: 2枚のシート</h2>
+<p><strong>「工程」シート</strong>(1行1工程。2行目から。1行目は見出し)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: K-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>工種</td>
+<td>手入力(解体、大工、電気など)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>予定開始</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>予定終了</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>実績終了</td>
+<td>終わったら手入力(日付)。終わるまで空欄</td>
+</tr>
+<tr>
+<td>F</td>
+<td>整えた番号</td>
+<td>式(全角→半角、前後のスペース除去)</td>
+</tr>
+<tr>
+<td>G</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>遅れ日数</td>
+<td>式</td>
+</tr>
+<tr>
+<td>I</td>
+<td>状態</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<p>右端に基準日を置きます。<strong>本番ではK1に <code>=TODAY()</code> を入れます</strong>(開くたびに今日の日付になります)。</p>
+<pre><code>J1: 基準日    K1: =TODAY()
+K2: =COUNTIF(I2:I2000,&quot;要確認&quot;)      ← 入力を見直す行の数
+</code></pre>
+<pre><code>F2: =ASC(TRIM(A2))
+G2: =IF(AND(A2=&quot;&quot;,C2=&quot;&quot;,D2=&quot;&quot;),&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,IF(ISNA(MATCH(F2,台帳!$A$2:$A$2000,0)),&quot;工事番号なし&quot;,
+      IF(OR(NOT(ISNUMBER(C2)),NOT(ISNUMBER(D2))),&quot;予定日が未入力か日付でない&quot;,IF(D2&lt;C2,&quot;日付が逆転&quot;,
+      IF(AND(E2&lt;&gt;&quot;&quot;,NOT(ISNUMBER(E2))),&quot;実績日が日付でない&quot;,&quot;&quot;))))))
+H2: =IF(G2&lt;&gt;&quot;&quot;,&quot;&quot;,IF(AND(A2=&quot;&quot;,C2=&quot;&quot;,D2=&quot;&quot;),&quot;&quot;,IF(E2&lt;&gt;&quot;&quot;,MAX(0,E2-D2),MAX(0,$K$1-D2))))
+I2: =IF(AND(A2=&quot;&quot;,C2=&quot;&quot;,D2=&quot;&quot;),&quot;&quot;,IF(G2&lt;&gt;&quot;&quot;,&quot;要確認&quot;,IF(E2&lt;&gt;&quot;&quot;,IF(H2&gt;0,&quot;完了(遅れ)&quot;,&quot;完了&quot;),
+      IF(H2&gt;0,&quot;遅れ&quot;,IF($K$1&lt;C2,&quot;着工前&quot;,&quot;進行中&quot;)))))
+</code></pre>
+<p><strong>「台帳」シート</strong>(1行1工事。A列に工事番号)</p>
+<pre><code>B2: =IF(A2=&quot;&quot;,&quot;&quot;,COUNTIFS(工程!$F$2:$F$2000,A2,工程!$H$2:$H$2000,&quot;&gt;0&quot;))   ← 遅れ工程の数
+C2: =IF(A2=&quot;&quot;,&quot;&quot;,SUMIFS(工程!$H$2:$H$2000,工程!$F$2:$F$2000,A2))          ← 遅れ日数の合計
+</code></pre>
+<p>考え方は2つです。</p>
+<ul>
+<li><strong>まだ終わっていない工程</strong>は、基準日が予定終了日を過ぎた日数が遅れ日数です。</li>
+<li><strong>すでに終わった工程</strong>は、実績終了が予定終了を過ぎた日数が遅れ日数です(終わった後も、遅れた事実が残ります)。</li>
+</ul>
+<p>予定終了日の<strong>当日は遅れにしません</strong>(予定終了日の翌日から「遅れ1日」)。ここは会社の考え方に合わせて、<code>$K$1-D2</code> を <code>$K$1-D2+1</code> などに変えることもできますが、この記事の検証は当日を遅れにしない形で行っています。</p>
+<h2 id="2026-10-20">実際に計算した結果(基準日 2026-10-20)</h2>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>予定開始〜終了</th>
+<th>実績終了</th>
+<th>状態</th>
+<th>遅れ日数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>予定終了の前</td>
+<td>10/15〜10/25</td>
+<td>空欄</td>
+<td>進行中</td>
+<td>0</td>
+</tr>
+<tr>
+<td>予定終了日の当日</td>
+<td>10/10〜10/20</td>
+<td>空欄</td>
+<td>進行中</td>
+<td>0</td>
+</tr>
+<tr>
+<td>1日超過</td>
+<td>10/10〜10/19</td>
+<td>空欄</td>
+<td>遅れ</td>
+<td>1</td>
+</tr>
+<tr>
+<td>着工前</td>
+<td>10/25〜10/30</td>
+<td>空欄</td>
+<td>着工前</td>
+<td>0</td>
+</tr>
+<tr>
+<td>予定内で完了</td>
+<td>10/10〜10/19</td>
+<td>10/18</td>
+<td>完了</td>
+<td>0</td>
+</tr>
+<tr>
+<td>遅れて完了</td>
+<td>10/10〜10/20</td>
+<td>10/25</td>
+<td>完了(遅れ)</td>
+<td>5</td>
+</tr>
+<tr>
+<td>月またぎ(基準日を11/2にした)</td>
+<td>10/20〜10/30</td>
+<td>空欄</td>
+<td>遅れ</td>
+<td>3</td>
+</tr>
+<tr>
+<td>存在しない工事番号</td>
+<td>(K-080)</td>
+<td>空欄</td>
+<td>要確認(工事番号なし)</td>
+<td>(空欄)</td>
+</tr>
+<tr>
+<td>工事番号が空欄</td>
+<td>10/1〜10/10</td>
+<td>空欄</td>
+<td>要確認(工事番号が空欄)</td>
+<td>(空欄)</td>
+</tr>
+<tr>
+<td>日付の逆転</td>
+<td>10/10〜10/1</td>
+<td>空欄</td>
+<td>要確認(日付が逆転)</td>
+<td>(空欄)</td>
+</tr>
+<tr>
+<td>予定終了が空欄</td>
+<td>10/1〜(なし)</td>
+<td>空欄</td>
+<td>要確認(予定日が未入力か日付でない)</td>
+<td>(空欄)</td>
+</tr>
+<tr>
+<td>日付欄に「未定」と入力</td>
+<td>未定〜10/10</td>
+<td>空欄</td>
+<td>要確認(予定日が未入力か日付でない)</td>
+<td>(空欄)</td>
+</tr>
+<tr>
+<td>実績欄に「済」と入力</td>
+<td>10/1〜10/10</td>
+<td>済</td>
+<td>要確認(実績日が日付でない)</td>
+<td>(空欄)</td>
+</tr>
+<tr>
+<td>全角・前後スペース</td>
+<td>「Ｋ－014」「 K-014 」</td>
+<td>空欄</td>
+<td>遅れ(正しく同じ工事に集計。2工程で計18日)</td>
+<td>10と8</td>
+</tr>
+<tr>
+<td>空行</td>
+<td>(なし)</td>
+<td>(なし)</td>
+<td>(空欄)</td>
+<td>(空欄)</td>
+</tr>
+</tbody>
+</table>
+<p>15ケースすべて、チェック表示・遅れ日数・状態・台帳の遅れ工程数と遅れ日数の合計が、Pythonでの計算と一致しました。</p>
+<p>さらに、工事300件・工程1,000行の乱数データ(正しい入力は約76%、存在しない番号・番号の空欄・全角・前後スペース・日付の逆転・予定終了の空欄・日付欄の文字を混ぜた)で照合し、<strong>すべて一致</strong>しました(基準日は固定の日付を入れて検証。Excelでは未確認)。</p>
+<h2 id="_1">使うときの注意</h2>
+<ul>
+<li><strong>「要確認」の行は遅れの集計に入りません</strong>。K2が0でなければ、チェック列を見て入力を直してください。直すまでは、その工程の遅れは台帳に出ません。</li>
+<li><strong>日付は日付として入力してください</strong>。「10月20日」のように入れても日付として認識されることが多いですが、「未定」「調整中」などの文字は日付ではないので「要確認」になります。予定が決まっていない工程は、決まるまで行を作らないか、仮の日付を入れる運用にします。</li>
+<li><strong>実績終了を入れ忘れると、終わった工程が「遅れ」のまま増え続けます</strong>。完了したらその日のうちにE列に入れる習慣が前提です。</li>
+<li><strong>休日・天候での順延は考慮していません</strong>。予定終了日は、順延後の日付に直して入力します。</li>
+<li><strong>TODAYは開くたびに変わります</strong>。昨日の画面を保存した資料(PDFなど)は、その日の基準日のままです。報告用に出すときは、基準日を確認してください。</li>
+<li>工事番号は「K-001」のように、台帳と工程で表記をそろえてください(ハイフンの有無や大文字小文字の違いは吸収しません)。</li>
+</ul>
+<h2 id="_2">この記事ができないこと</h2>
+<ul>
+<li>工程どうしの前後関係(解体が終わらないと大工が始まらない、など)による自動の日程の組み替えはしません。</li>
+<li>遅れの原因や、請求・支払いへの影響の判断はしません。</li>
+<li>工期や契約の取り決めの適否は扱いません。</li>
+</ul>
+<h2 id="_3">工事全体の原価や請求もあわせて見たいとき</h2>
+<p>この記事の式は、自分で作った工程表にそのまま使えます。工事ごとの原価と粗利は<a href="/job-margin/">工事の原価を材料・外注・経費に分けて粗利を見る式</a>に、請求の残額は<a href="/split-billing-balance/">工事の分割請求の残額をExcelで管理する式</a>にまとめています。見積の計算(数量×単価、諸経費、値引き、消費税)から作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=schedule-delay">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の工程の機能は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の小計から税込までを一度に出すなら、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_4">まとめ</h2>
+<ul>
+<li>工程は「工事番号・工種・予定開始・予定終了・実績終了」で1行ずつ入力し、基準日(本番は <code>=TODAY()</code>)と予定終了日を比べる</li>
+<li>終わっていない工程は「基準日−予定終了」、終わった工程は「実績終了−予定終了」が遅れ日数。予定終了日の当日は遅れにしない</li>
+<li>番号の間違い、日付の逆転、日付欄の文字は「要確認」にして、遅れの集計から外し、K2で件数を見る</li>
+<li>台帳ではCOUNTIFSとSUMIFSで、工事ごとの遅れ工程数と遅れ日数を集める</li>
+<li>15ケースと、工事300件・工程1,000行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数行を手で検算する</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、15ケース(進行中、予定終了日の当日、1日超過、着工前、予定内で完了、遅れて完了、月またぎの遅れ、存在しない工事番号、工事番号の空欄、日付の逆転、予定終了の空欄、日付欄の文字、実績欄の文字、全角・前後スペースの番号、空行)と、工事300件・工程1,000行(誤入力を約24%混ぜた乱数データ)で、チェック表示・遅れ日数・状態・工事ごとの遅れ工程数と遅れ日数の合計がPythonの計算と全件一致することを確認しました。基準日は検証では固定の日付を入れており、TODAY関数そのものの動きは確認していません。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/schedule_delay.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/job-margin/">工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】</a></li><li><a href="/split-billing-balance/">工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li><li><a href="/estimate-number/">エクセルで見積番号を自動で振る方法(月ごとに001から・通し番号の2通り)【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
