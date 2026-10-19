@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('tax-rounding-compare')?'compare,parseAmounts':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('split-billing-calc')?'splitBill,parseRatios':f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('tax-rounding-compare')?'compare,parseAmounts':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -483,4 +483,49 @@ const et=load('tools/estimate-total/body.html');
     }
   console.log('hourly-wage '+n+' cases');
 })();
+// split-billing-calc: 手計算ケース+Number整数計算との総当たり照合
+(function(){
+  const sb=load('tools/split-billing-calc/body.html');
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  let r=sb.splitBill('1000001','着手金,30\n中間金,40\n完了時,30','floor');
+  eq(r.amounts.join('/'),'300000/400000/300000','sb1 切り捨て 300000.3/400000.4/300000.3');
+  eq(r.sum,'1000000','sb1 sum');eq(r.adjusted.join('/'),'300000/400000/300001','sb1 調整');
+  r=sb.splitBill('1000001','30\n40\n30','ceil');
+  eq(r.amounts.join('/'),'300001/400001/300001','sb2 切り上げ');eq(r.sum,'1000003','sb2 sum');eq(r.adjusted.join('/'),'300001/400001/299999','sb2 調整');
+  r=sb.splitBill('１００５','33.33%\n33.33\n33.34','round');
+  eq(r.amounts.join('/'),'335/335/335','sb3 全角・小数・% 334.9665→335 / 335 / 336.67→337? 確認');
+  r=sb.splitBill('1000','50\n40','floor');
+  eq(r.sumPct,'9000','sb4 合計90%');eq(r.adjusted,null,'sb4 調整なし');
+  eq(sb.splitBill('abc','50\n50','floor').ok,false,'sb5 契約金額が文字');
+  eq(sb.splitBill('-1','50\n50','floor').ok,false,'sb6 負');
+  eq(sb.splitBill('1000','50\nx','floor').ok,false,'sb7 割合が文字');
+  eq(sb.splitBill('1000','12.345\n50','floor').ok,false,'sb8 小数3桁');
+  eq(sb.splitBill('1000','','floor').ok,false,'sb9 割合なし');
+  eq(sb.splitBill('0','30\n70','floor').adjusted.join('/'),'0/0','sb10 ゼロ');
+  eq(sb.splitBill('1000','\n100\n\n','floor').adjusted.join('/'),'1000','sb11 1回払い・空行');
+  eq(sb.splitBill('1000','A社分,カンマ,100','floor').ok,true,'sb12 名前にカンマ');
+  let seed=4242;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  let k=0;
+  for(let n=0;n<20000;n++){
+    const C=Math.floor(rnd()*100000000);
+    const parts=1+Math.floor(rnd()*5);
+    // 合計100.00%になる割合(単位0.01%)を作る
+    let left=10000;const ps=[];
+    for(let i=0;i<parts-1;i++){const v=Math.floor(rnd()*(left+1));ps.push(v);left-=v;}
+    ps.push(left);
+    const txt=ps.map(v=>Math.floor(v/100)+'.'+String(v%100).padStart(2,'0')).join('\n');
+    const r=sb.splitBill(String(C),txt,['floor','round','ceil'][n%3]);
+    const md=['floor','round','ceil'][n%3];
+    const f={floor:(a,b)=>Math.floor(a/b),round:(a,b)=>Math.floor((2*a+b)/(2*b)),ceil:(a,b)=>Math.ceil(a/b)}[md];
+    // C*p は最大 1e8*1e4=1e12 でNumberの整数範囲内
+    const am=ps.map(p=>f(C*p,10000));
+    const sum=am.reduce((s,v)=>s+v,0);
+    const ad=am.slice(0,-1).concat([C-am.slice(0,-1).reduce((s,v)=>s+v,0)]);
+    k++;
+    ok(r.ok&&r.amounts.join()===am.join()&&r.sum===String(sum)&&r.adjusted.join()===ad.join()&&ad.reduce((s,v)=>s+v,0)===C,'sb rnd '+C+' '+ps+' '+md+' got '+JSON.stringify(r));
+  }
+  console.log('split-billing-calc '+k+' cases');
+})();
+
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);
+

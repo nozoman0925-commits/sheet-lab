@@ -1,0 +1,106 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>分割請求の金額計算ツール(着手・中間・完了の割合から各回の請求額を出す) | シート実務ラボ</title><meta name="description" content="契約金額(税抜)と「着手金30%・中間金40%・完了30%」のような割合を入れると、各回の請求額を計算し、端数で合計が契約金額とずれないよう最後の回で調整した結果も並べて表示する無料ツール。ブラウザ内で処理し、入力は送信されません。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/tools/split-billing-calc/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="分割請求の金額計算ツール(着手・中間・完了の割合から各回の請求額を出す) | シート実務ラボ"><meta property="og:description" content="契約金額(税抜)と「着手金30%・中間金40%・完了30%」のような割合を入れると、各回の請求額を計算し、端数で合計が契約金額とずれないよう最後の回で調整した結果も並べて表示する無料ツール。ブラウザ内で処理し、入力は送信されません。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/tools/split-billing-calc/"><meta property="og:type" content="website">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "分割請求の金額計算ツール(着手・中間・完了の割合から各回の請求額を出す)", "description": "契約金額(税抜)と「着手金30%・中間金40%・完了30%」のような割合を入れると、各回の請求額を計算し、端数で合計が契約金額とずれないよう最後の回で調整した結果も並べて表示する無料ツール。ブラウザ内で処理し、入力は送信されません。", "url": "https://sheet-lab-site.pages.dev/tools/split-billing-calc/", "applicationCategory": "BusinessApplication", "operatingSystem": "Web browser", "inLanguage": "ja", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "無料ツール", "item": "https://sheet-lab-site.pages.dev/tools/"}, {"@type": "ListItem", "position": 3, "name": "分割請求の金額計算ツール(着手・中間・完了の割合から各回の請求額を出す)", "item": "https://sheet-lab-site.pages.dev/tools/split-billing-calc/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; <a href="/tools/">無料ツール</a> &gt; 分割請求の金額計算ツール(着手・中間・完了の割合から各回の請求額を出す)</p><h1>分割請求の金額計算ツール</h1>
+<p>契約金額(税抜)と、請求の割合(着手金30%・中間金40%・完了30%など)を入れると、<b>各回の請求額</b>を計算します。割合をかけた端数で、各回を足しても契約金額にならないことがあるので、<b>最後の回で端数を調整した場合</b>と<b>調整しない場合</b>を並べて見られます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><label>契約金額(税抜・円):<br><input id="c" type="text" size="16" placeholder="1234567"></label></p>
+<p><label>請求の割合(1行に1回分。「割合」または「名前,割合」。小数は2桁まで):<br>
+<textarea id="l" rows="5" style="width:100%" placeholder="着手金,30&#10;中間金,40&#10;完了時,30"></textarea></label></p>
+<p><label>端数の処理: <select id="m"><option value="floor">切り捨て</option><option value="round">四捨五入</option><option value="ceil">切り上げ</option></select></label></p>
+<p><button type="button" id="br">計算する</button> <span id="st"></span></p>
+<p><textarea id="o" rows="12" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li>各回の金額は「契約金額×割合」を選んだ方法で円にそろえたものです。割合の合計が100%のときだけ、「最後の回で調整」の結果(最後の回=契約金額−それまでの合計)を表示します。</li>
+<li>金額は0以上の整数(円)、割合は0以上で小数2桁まで。全角数字と「%」も読み取ります。桁区切りカンマは使えません(カンマは名前と割合の区切りです)。</li>
+<li>端数をどの回に寄せるか、切り捨てか四捨五入かは、契約書や取引先との取り決めで決まります。このツールは、どれが正しいかを判断せず、金額の差を確認するためのものです。</li>
+</ul>
+<p class="meta">税抜金額の計算だけです。消費税、インボイスの記載要件、請求書の書き方の判断はしません。</p>
+<p class="meta">関連: <a href="/split-billing-balance/">工事の分割請求の残額をExcelで管理する式(記事)</a> / <a href="/tools/tax-rounding-compare/">消費税の端数処理の比較ツール</a> / <a href="/tools/estimate-total/">見積の合計計算ツール</a> / 運営者の商品: <a href="/go/estimate-construction/?from=tool-split-billing-calc">工事・リフォーム用 見積書テンプレート(Excel・980円)</a></p>
+<script>
+function z(s){return String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[．。]/g,".").replace(/[，、]/g,",").replace(/[％]/g,"%").replace(/\s|　/g,"");}
+function divRound(num,den,mode){
+  var q=num/den,r=num%den;
+  if(r===0n)return q;
+  if(mode==="floor")return q;
+  if(mode==="ceil")return q+1n;
+  return (r*2n>=den)?q+1n:q;
+}
+function fmt(b){var s=b.toString(),o="";while(s.length>3){o=","+s.slice(-3)+o;s=s.slice(0,-3);}return s+o;}
+function fmtP(p){var i=p/100n,f=p%100n;return i.toString()+(f===0n?"":"."+(f<10n?"0":"")+f.toString().replace(/0$/,""));}
+function parseRatios(text){
+  var lines=String(text).split(/\r\n|\r|\n/),items=[];
+  for(var i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var parts=lines[i].split(/[\t,，、]/);
+    var v=z(parts[parts.length-1]).replace(/%$/,"");
+    var m=/^(\d+)(?:\.(\d{1,2}))?$/.exec(v);
+    if(!m)return {ok:false,text:(i+1)+"行目の割合を読めません(0以上、小数2桁まで)"};
+    var name=parts.length>1?parts.slice(0,-1).join(",").replace(/^[\s　]+|[\s　]+$/g,""):"";
+    items.push({name:name||((items.length+1)+"回目"),p:BigInt(m[1])*100n+BigInt((m[2]||"")+"00".slice((m[2]||"").length))});
+  }
+  return {ok:true,items:items};
+}
+function splitBill(contractText,ratioText,mode){
+  var c=z(contractText);
+  if(!/^\d+$/.test(c))return {ok:false,text:"契約金額は0以上の整数(円)で入れてください"};
+  var pr=parseRatios(ratioText);if(!pr.ok)return pr;
+  if(pr.items.length===0)return {ok:false,text:"割合を1行以上入れてください"};
+  var C=BigInt(c),sumP=0n,sumA=0n,i,rows=[];
+  for(i=0;i<pr.items.length;i++){
+    var a=divRound(C*pr.items[i].p,10000n,mode);
+    sumP+=pr.items[i].p;sumA+=a;
+    rows.push({name:pr.items[i].name,p:pr.items[i].p,amount:a});
+  }
+  var full=(sumP===10000n);
+  var adj=null;
+  if(full){
+    adj=[];var rest=0n;
+    for(i=0;i<rows.length;i++){
+      if(i<rows.length-1){adj.push(rows[i].amount);rest+=rows[i].amount;}
+      else adj.push(C-rest);
+    }
+  }
+  var out="契約金額(税抜): "+fmt(C)+"円 / 割合の合計: "+fmtP(sumP)+"%\n\n[調整しない(各回=契約金額×割合)]\n";
+  for(i=0;i<rows.length;i++)out+="  "+rows[i].name+" ("+fmtP(rows[i].p)+"%): "+fmt(rows[i].amount)+"円\n";
+  out+="  合計: "+fmt(sumA)+"円 / 契約金額との差: "+(sumA>=C?"":"-")+fmt(sumA>=C?sumA-C:C-sumA)+"円\n";
+  if(!full)out+="\n割合の合計が100%ではないため、「最後の回で調整」は表示しません。\n";
+  else{
+    out+="\n[最後の回で調整(最後の回=契約金額−それまでの合計)]\n";
+    for(i=0;i<rows.length;i++)out+="  "+rows[i].name+" ("+fmtP(rows[i].p)+"%): "+fmt(adj[i])+"円\n";
+    out+="  合計: "+fmt(C)+"円 / 契約金額との差: 0円\n";
+    if(adj[adj.length-1]<0n)out+="  注意: 最後の回がマイナスになります。割合や端数の処理を見直してください。\n";
+  }
+  return {ok:true,contract:C.toString(),sumPct:sumP.toString(),amounts:rows.map(function(r){return r.amount.toString();}),sum:sumA.toString(),adjusted:adj?adj.map(function(x){return x.toString();}):null,text:out};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var r=splitBill(g("c").value,g("l").value,g("m").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
+<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div><section class="related"><h2>関連</h2><ul><li><a href="/split-billing-balance/">工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li><li><a href="/tools/tax-rounding-compare/">消費税の端数処理の比較ツール(明細ごと・合計1回 × 切り捨て/四捨五入/切り上げ)</a></li><li><a href="/job-margin/">工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
