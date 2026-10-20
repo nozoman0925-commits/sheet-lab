@@ -1,0 +1,275 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】 | シート実務ラボ</title><meta name="description" content="日報に「日付・工事番号・作業員・人工」を1行ずつ入力するだけで、工事ごとの人工合計と労務費を出すExcelの式を解説。存在しない工事番号、空欄、全角、文字の人工、同じ日に2人工超の入力ミスを表示させる列つき。11ケースと工事300件・日報約1,500行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/daily-labor-by-job/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】 | シート実務ラボ"><meta property="og:description" content="日報に「日付・工事番号・作業員・人工」を1行ずつ入力するだけで、工事ごとの人工合計と労務費を出すExcelの式を解説。存在しない工事番号、空欄、全角、文字の人工、同じ日に2人工超の入力ミスを表示させる列つき。11ケースと工事300件・日報約1,500行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/daily-labor-by-job/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】", "datePublished": "2026-10-21", "dateModified": "2026-10-21", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "日報に「日付・工事番号・作業員・人工」を1行ずつ入力するだけで、工事ごとの人工合計と労務費を出すExcelの式を解説。存在しない工事番号、空欄、全角、文字の人工、同じ日に2人工超の入力ミスを表示させる列つき。11ケースと工事300件・日報約1,500行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/daily-labor-by-job/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/daily-labor-by-job/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】", "item": "https://sheet-lab-site.pages.dev/daily-labor-by-job/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</p><article><p class="meta">2026-10-21 ・ Excel関数</p><h1>作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</h1><p>現場の作業日報を、月末にまとめて「この工事に何人工かかったか」「労務費はいくらか」に直すのは手間がかかります。工事番号の書き間違い、「半日」と文字で書かれた人工、同じ人が同じ日に2つの現場へ入っているのに両方「1」——こうした入力の揺れが、そのまま原価のズレになります。</p>
+<p>この記事では、<strong>日報に1行ずつ入力するだけで、台帳の表に工事ごとの人工合計と労務費が自動で出る</strong>式を示します。あわせて、入力ミスを表示させるチェック列も作ります。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/daily_labor.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはSUMIFS・INDEX・MATCH・IFERROR・ROUND・ASC・TRIMなどの一般的な関数ですが、本番の台帳に使う前に、数行で結果を確かめてください。日当は税抜・社会保険等を含まない単純な「日当×人工」の例で、労務費として会計・税務上どう扱うかの判断はしません。</p>
+<h2 id="_1">先に結論</h2>
+<p>3枚のシートを使います。</p>
+<p><strong>「作業員」シート</strong>(1行1人。2行目から。氏名と日当)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>氏名(例: 職人A)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>日当(円)</td>
+</tr>
+</tbody>
+</table>
+<p><strong>「台帳」シート</strong>(1行1工事。2行目から。範囲は2〜3000行の例)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: K-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>人工合計</td>
+<td>式</td>
+</tr>
+<tr>
+<td>C</td>
+<td>労務費</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>B2: =IF(A2=&quot;&quot;,&quot;&quot;,SUMIFS(日報!$D$2:$D$3000,日報!$E$2:$E$3000,A2,日報!$D$2:$D$3000,&quot;&gt;0&quot;))
+C2: =IF(A2=&quot;&quot;,&quot;&quot;,SUMIFS(日報!$G$2:$G$3000,日報!$E$2:$E$3000,A2))
+</code></pre>
+<p><strong>「日報」シート</strong>(1行1人・1現場・1日。2行目から)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>日付</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>工事番号</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>作業員</td>
+<td>手入力(作業員シートの氏名)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>人工</td>
+<td>手入力(1日=1、半日=0.5)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>整えた番号</td>
+<td>式(全角→半角、前後のスペース除去)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>日当</td>
+<td>式(作業員シートから引く)</td>
+</tr>
+<tr>
+<td>G</td>
+<td>労務費</td>
+<td>式(人工×日当、円未満は四捨五入)</td>
+</tr>
+<tr>
+<td>H</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>E2: =ASC(TRIM(B2))
+F2: =IF(TRIM(C2)=&quot;&quot;,&quot;&quot;,IFERROR(INDEX(作業員!$B$2:$B$200,MATCH(TRIM(C2),作業員!$A$2:$A$200,0)),&quot;&quot;))
+G2: =IF(AND(ISNUMBER(D2),D2&gt;0,ISNUMBER(F2)),ROUND(D2*F2,0),0)
+H2: =IF(AND(B2=&quot;&quot;,C2=&quot;&quot;,D2=&quot;&quot;),&quot;&quot;,
+      IF(NOT(ISNUMBER(D2)),&quot;人工が未入力か数値でない&quot;,
+      IF(D2&lt;=0,&quot;人工が0以下&quot;,
+      IF(B2=&quot;&quot;,&quot;工事番号が空欄&quot;,
+      IF(ISNA(MATCH(E2,台帳!$A$2:$A$3000,0)),&quot;工事番号なし&quot;,
+      IF(F2=&quot;&quot;,&quot;作業員が未登録&quot;,
+      IF(AND(A2&lt;&gt;&quot;&quot;,SUMIFS($D$2:$D$3000,$A$2:$A$3000,A2,$C$2:$C$3000,C2)&gt;2),&quot;同日の合計が2人工超&quot;,&quot;&quot;))))))) 
+</code></pre>
+<p>(H2は見やすいよう改行していますが、実際は1つの式として入力します。)</p>
+<p>さらに、台帳の端のセルに<strong>照合用</strong>として次の式を置きます。</p>
+<pre><code>E1: 未紐づけの労務費
+F1: =SUM(日報!G2:G3000)-SUM(C2:C3000)
+</code></pre>
+<p>日報の労務費の合計と、台帳の労務費の合計が一致していれば0です。<strong>0でなければ、どこかの日報が工事に結びついていません</strong>(工事番号の間違いなど)。日報の「チェック」列に出た行を直してください。</p>
+<p>ポイントは4つです。</p>
+<ul>
+<li>台帳の集計は、日報の<strong>E列(整えた番号)</strong>で行います。B列(手入力の番号)で集計すると、全角や前後のスペースが入った行が漏れます。</li>
+<li>人工が文字(「半日」、全角の「１」)の行は、<strong>労務費が0</strong>で、人工合計にも入りません。その代わりチェック列に出ます。見つけたら半角の数字に直してください。</li>
+<li>「同日の合計が2人工超」は、<strong>同じ人・同じ日の人工を全行で足した値が2を超える</strong>行に出ます。2は例で、残業をどこまで認めるかに合わせて式の数字を変えてください。2現場に0.5ずつ入った日は、合計1なので表示されません。</li>
+<li>日当を変えたとき、過去の日報の労務費も新しい日当で計算し直されます。<strong>月ごとに日当が変わる場合は、月別に作業員シートを分けるか、日報に日当を値で保存する運用が必要</strong>です(この記事の式では扱いません)。</li>
+</ul>
+<h2 id="_2">実際に計算した結果</h2>
+<p>作業員シートは「職人A=18,000円、職人B=16,000円、職人C=15,001円」(すべて架空)として、次の11ケースを計算しました。</p>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>入力した日報</th>
+<th>人工合計</th>
+<th>労務費</th>
+<th>表示</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>通常</td>
+<td>K-001に 職人A 1、職人B 0.5、職人C 1</td>
+<td>2.5</td>
+<td>41,001</td>
+<td>(なし)</td>
+</tr>
+<tr>
+<td>1日2現場</td>
+<td>同じ日に職人Aが K-002 に0.5、K-003 に0.5</td>
+<td>各0.5</td>
+<td>各9,000</td>
+<td>(なし)</td>
+</tr>
+<tr>
+<td>存在しない工事番号</td>
+<td>K-040(台帳にない)に職人A 1</td>
+<td>—</td>
+<td>台帳に入らない。F1=18,000</td>
+<td>「工事番号なし」</td>
+</tr>
+<tr>
+<td>工事番号が空欄</td>
+<td>番号なしで職人A 1</td>
+<td>—</td>
+<td>台帳に入らない。F1=18,000</td>
+<td>「工事番号が空欄」</td>
+</tr>
+<tr>
+<td>全角・スペース</td>
+<td>「Ｋ－006」に職人A 1、「 K-006 」に職人B 1</td>
+<td>2</td>
+<td>34,000</td>
+<td>(なし。正しく集計される)</td>
+</tr>
+<tr>
+<td>人工が文字</td>
+<td>全角の「１」、「半日」</td>
+<td>0</td>
+<td>0</td>
+<td>「人工が未入力か数値でない」</td>
+</tr>
+<tr>
+<td>空欄・0・マイナス</td>
+<td>空欄、0、−1</td>
+<td>0</td>
+<td>0</td>
+<td>「未入力か数値でない」「0以下」</td>
+</tr>
+<tr>
+<td>未登録の作業員</td>
+<td>作業員表にない「職人Z」が1</td>
+<td>1</td>
+<td>0</td>
+<td>「作業員が未登録」</td>
+</tr>
+<tr>
+<td>同日の2人工超</td>
+<td>同じ日に職人Aが K-010 に1.5、K-011 に1</td>
+<td>1.5 / 1</td>
+<td>27,000 / 18,000</td>
+<td>両方「同日の合計が2人工超」</td>
+</tr>
+<tr>
+<td>端数</td>
+<td>職人C(15,001円)が0.5</td>
+<td>0.5</td>
+<td>7,501</td>
+<td>(なし。7,500.5を四捨五入)</td>
+</tr>
+<tr>
+<td>日報なし</td>
+<td>なし</td>
+<td>0</td>
+<td>0</td>
+<td>(なし)</td>
+</tr>
+</tbody>
+</table>
+<p>11ケースすべて、人工合計・労務費・チェック表示・F1が、Pythonでの計算結果と一致しました。</p>
+<p>さらに、工事300件・作業員20人・日報約1,540行の乱数データで照合しました。約82%は正しい入力、約5%は存在しない番号、約3%は空欄、約4%は全角、約2%は前後にスペース(この2つは正しく集計されるべき入力)、約2%は文字・空欄・0・マイナスの人工、約2%は未登録の作業員にし、同じ人が同じ日に2現場へ入る(合計2.5人工)行を40件混ぜています。<strong>人工合計・労務費・チェック表示・未紐づけ額のすべてが一致</strong>しました(Excelでの確認はしていません)。</p>
+<h2 id="_3">つまずきやすい点</h2>
+<ul>
+<li><strong>日報の行を消したとき</strong>: 消した分だけ人工と労務費は減ります。式は消えた行を「なかったこと」にするので、消し忘れ・消しすぎの検出はできません。月末に、日報の行数や人工の合計を手元の記録と見比べてください。</li>
+<li><strong>作業員の名前の表記ゆれ</strong>: 「職人A」と「職人 A」のように中のスペースが違うと、未登録になります。この式が整えるのは、前後のスペースだけです。</li>
+<li><strong>工事番号の付け方がそろっていないとき</strong>: 台帳が「K-001」、日報が「K001」のようにハイフンの有無が違うと一致しません。全角→半角と前後のスペース以外は吸収しません。</li>
+<li><strong>番号が数字だけのとき</strong>: 台帳と日報の両方を同じ形で入力してください。この記事では数字だけの工事番号の動きを、Excelでは確認していません。</li>
+<li><strong>範囲の上限</strong>: 日報は3000行、作業員は200人までです。増えたら範囲を広げてください。</li>
+<li><strong>日付が空欄の日報</strong>: 日付が空欄の行は「同日の合計」のチェックを飛ばします。人工と労務費は集計されます。</li>
+</ul>
+<h2 id="_4">注意点: この記事ができないこと</h2>
+<ul>
+<li>外注費(人ではなく工事単位で払うもの)、材料費、機械経費は扱いません。<strong>労務費だけ</strong>を集計します。</li>
+<li>労務費として何を含めるか(社会保険料、残業の割増など)の判断はしません。日当×人工の単純な計算です。</li>
+<li>一人親方が自分自身の人工を原価に入れるかどうか、税務・会計上の扱いは判断しません。</li>
+</ul>
+<h2 id="1">見積から請求までを1つのひな形で</h2>
+<p>この記事の式は、自分で作った台帳にそのまま使えます。工事ごとの粗利を出す考え方は<a href="/job-margin/">工事ごとの粗利を出す方法の記事</a>に、請求の残額の管理は<a href="/split-billing-balance/">分割請求の残額の記事</a>にあります。見積の段階の計算(数量×単価、諸経費、値引き、消費税)から作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=daily-labor-by-job">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の日報・労務費の機能は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>消費税だけをさっと出したいときは無料の<a href="/tools/tax/">消費税 計算ツール</a>、見積の小計から税込までを一度に出すなら<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>日報に「日付・工事番号・作業員・人工」を1行ずつ入力し、台帳の人工合計と労務費はSUMIFSで集計する</li>
+<li>集計の鍵は、全角・スペースを整えた「整えた番号」の列と、作業員シートから日当を引く列</li>
+<li>存在しない番号・空欄・文字の人工・0以下・未登録の作業員・同日の2人工超は、チェック列に表示させる</li>
+<li>日報の労務費合計と台帳の労務費合計の差(F1)が0でなければ、工事に結びついていない日報がある</li>
+<li>11ケースと、工事300件・日報約1,540行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数件を電卓で検算する</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、11ケース(通常、1日2現場、存在しない工事番号、工事番号の空欄、全角・スペースの工事番号、人工が文字、人工が空欄・0・マイナス、未登録の作業員、同日の2人工超、端数の出る日当、日報なし)と、工事300件・作業員20人・日報約1,540行(誤入力を約12%、全角・スペース入りの番号を約6%混ぜた乱数データ)で、人工合計・労務費・チェック表示・未紐づけ額がPythonの計算と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/daily_labor.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/split-billing-balance/">工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li><li><a href="/job-margin/">工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】</a></li><li><a href="/quote-to-ledger/">見積書の金額を工事台帳に転記したまま古くならない式|改訂版の最新を自動で引いてズレを表示【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
