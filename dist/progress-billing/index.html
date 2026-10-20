@@ -1,0 +1,268 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="契約金額(税抜)と進捗率から出来高を円未満切り捨てで出し、請求済みを引いた「今回請求できる額」を自動で出すExcelの式を解説。進捗率の入れ間違いや前払い超過も「要確認」にします。19ケースと工事300件・請求1,000行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/progress-billing/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="契約金額(税抜)と進捗率から出来高を円未満切り捨てで出し、請求済みを引いた「今回請求できる額」を自動で出すExcelの式を解説。進捗率の入れ間違いや前払い超過も「要確認」にします。19ケースと工事300件・請求1,000行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/progress-billing/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】", "datePublished": "2026-10-21", "dateModified": "2026-10-21", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "契約金額(税抜)と進捗率から出来高を円未満切り捨てで出し、請求済みを引いた「今回請求できる額」を自動で出すExcelの式を解説。進捗率の入れ間違いや前払い超過も「要確認」にします。19ケースと工事300件・請求1,000行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/progress-billing/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/progress-billing/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/progress-billing/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】</p><article><p class="meta">2026-10-21 ・ Excel関数</p><h1>工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】</h1><p>「工事は半分くらい進んだから、中間金はいくら請求していいのか」。契約金額に進捗率をかけ、すでに請求した分を引く。頭ではわかっていても、手計算や電卓だと、<strong>進捗率を50と入れて5,000%になる</strong>、<strong>着手金を引き忘れる</strong>、<strong>請求済みがすでに出来高より多いのに気づかない</strong>といった間違いが起きます。</p>
+<p>この記事では、工事ごとの契約金額(税抜)と進捗率を入れると、<strong>出来高(円未満切り捨て)</strong>と<strong>請求済みの合計</strong>、そして<strong>今回請求できる額</strong>を自動で出す式を示します。入力の間違いは「要確認」と表示して、計算に混ぜません。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/progress_billing.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・ROUNDDOWN・ROUND・SUMIFS・COUNTIF・MATCH・ISNUMBER・ASC・TRIMなどの一般的な関数ですが、本番で使う前に数行で結果を確かめてください。</p>
+<h2 id="2">先に作る表: 2枚のシート</h2>
+<p><strong>「台帳」シート</strong>(1行1工事。2行目から。1行目は見出し)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: K-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>契約金額(税抜)</td>
+<td>手入力(数値)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>進捗率</td>
+<td>手入力。<strong>セルの表示形式を「%」にして</strong>、50%なら「50%」と入れる</td>
+</tr>
+<tr>
+<td>D</td>
+<td>出来高</td>
+<td>式</td>
+</tr>
+<tr>
+<td>E</td>
+<td>請求済み</td>
+<td>式(請求シートから集める)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>今回請求できる額</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<p><strong>「請求」シート</strong>(1行1回の請求。工事ごとに何回入れてもよい)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>請求額(税抜)</td>
+<td>手入力(数値)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>整えた番号</td>
+<td>式</td>
+</tr>
+<tr>
+<td>D</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>台帳 G2: =IF(A2=&quot;&quot;,&quot;&quot;,IF(NOT(ISNUMBER(B2)),&quot;契約金額が未入力か数値でない&quot;,IF(B2&lt;=0,&quot;契約金額が0以下&quot;,
+      IF(NOT(ISNUMBER(C2)),&quot;進捗率が未入力か数値でない&quot;,IF(OR(C2&lt;0,C2&gt;1),&quot;進捗率が0〜100%の範囲外&quot;,
+      IF(COUNTIF(A$2:A2,A2)&gt;1,&quot;工事番号が重複&quot;,
+      IF(SUMIFS(請求!$B$2:$B$2000,請求!$C$2:$C$2000,A2)&gt;ROUNDDOWN(ROUND(B2*C2,6),0),&quot;請求済みが出来高を超えている&quot;,&quot;&quot;)))))))
+台帳 D2: =IF(A2=&quot;&quot;,&quot;&quot;,IF(G2=&quot;請求済みが出来高を超えている&quot;,ROUNDDOWN(ROUND(B2*C2,6),0),IF(G2&lt;&gt;&quot;&quot;,&quot;&quot;,ROUNDDOWN(ROUND(B2*C2,6),0))))
+台帳 E2: =IF(A2=&quot;&quot;,&quot;&quot;,SUMIFS(請求!$B$2:$B$2000,請求!$C$2:$C$2000,A2))
+台帳 F2: =IF(OR(A2=&quot;&quot;,G2&lt;&gt;&quot;&quot;),&quot;&quot;,D2-E2)
+
+請求 C2: =ASC(TRIM(A2))
+請求 D2: =IF(AND(A2=&quot;&quot;,B2=&quot;&quot;),&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,IF(ISNA(MATCH(C2,台帳!$A$2:$A$2000,0)),&quot;工事番号なし&quot;,
+      IF(NOT(ISNUMBER(B2)),&quot;請求額が数値でない&quot;,&quot;&quot;))))
+
+台帳 I1: 要確認の件数    J1: =COUNTIF(G2:G2000,&quot;?*&quot;)+COUNTIF(請求!D2:D2000,&quot;?*&quot;)
+</code></pre>
+<p>考え方は3つです。</p>
+<ul>
+<li><strong>出来高 = 契約金額 × 進捗率</strong>。円未満は切り捨てています(<code>ROUNDDOWN</code>)。<code>ROUND(…,6)</code> を間に挟んでいるのは、小数の計算誤差で1円ずれるのを避けるためです。円未満の扱い(切り捨て・四捨五入)は取引先との取り決めに合わせて、<code>ROUNDDOWN</code> を <code>ROUND</code> に変えてください。</li>
+<li><strong>今回請求できる額 = 出来高 − 請求済みの合計</strong>。請求済みは「請求」シートの同じ工事番号の行を <code>SUMIFS</code> で足し上げます。着手金、中間金など何回請求していても自動で引かれます。</li>
+<li><strong>請求シートの工事番号は <code>ASC(TRIM(…))</code> で整えてから</strong>台帳と照合します。全角の「Ｋ－017」や前後のスペースがあっても、同じ工事に集計されます。</li>
+</ul>
+<p>進捗率の欄は、<strong>表示形式を「%」にしてから</strong>入力するのが前提です。数値の「50」を表示形式「標準」のセルに入れると、5,000%(= 50)として扱われ、チェック列が「進捗率が0〜100%の範囲外」と知らせます。</p>
+<h2 id="_1">実際に計算した結果</h2>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>契約金額 × 進捗率</th>
+<th>請求済み</th>
+<th>出来高</th>
+<th>今回請求できる額</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基本</td>
+<td>1,000,000 × 35%</td>
+<td>なし</td>
+<td>350,000</td>
+<td>350,000</td>
+<td></td>
+</tr>
+<tr>
+<td>着手金を請求済み</td>
+<td>1,500,000 × 30%</td>
+<td>450,000</td>
+<td>450,000</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td>円未満の切り捨て</td>
+<td>1,234,567 × 33.3%</td>
+<td>なし</td>
+<td>411,110</td>
+<td>411,110</td>
+<td></td>
+</tr>
+<tr>
+<td>進捗率0%</td>
+<td>800,000 × 0%</td>
+<td>なし</td>
+<td>0</td>
+<td>0</td>
+<td></td>
+</tr>
+<tr>
+<td>100%・2回請求済み</td>
+<td>800,000 × 100%</td>
+<td>300,000 + 200,000</td>
+<td>800,000</td>
+<td>300,000</td>
+<td></td>
+</tr>
+<tr>
+<td>前払い超過</td>
+<td>1,000,000 × 20%</td>
+<td>300,000</td>
+<td>200,000</td>
+<td>(空欄)</td>
+<td>請求済みが出来高を超えている</td>
+</tr>
+<tr>
+<td>進捗率50(%を付け忘れ)</td>
+<td>1,000,000 × 5000%</td>
+<td></td>
+<td>(空欄)</td>
+<td>(空欄)</td>
+<td>進捗率が0〜100%の範囲外</td>
+</tr>
+<tr>
+<td>進捗率マイナス</td>
+<td>1,000,000 × −10%</td>
+<td></td>
+<td>(空欄)</td>
+<td>(空欄)</td>
+<td>進捗率が0〜100%の範囲外</td>
+</tr>
+<tr>
+<td>進捗率に「半分」</td>
+<td>1,000,000 × 文字</td>
+<td></td>
+<td>(空欄)</td>
+<td>(空欄)</td>
+<td>進捗率が未入力か数値でない</td>
+</tr>
+<tr>
+<td>契約金額が空欄・0・文字</td>
+<td></td>
+<td></td>
+<td>(空欄)</td>
+<td>(空欄)</td>
+<td>契約金額が未入力か数値でない/0以下</td>
+</tr>
+<tr>
+<td>全角・スペース付きの請求番号</td>
+<td>1,000,000 × 60%</td>
+<td>100,000 + 200,000</td>
+<td>600,000</td>
+<td>300,000</td>
+<td>(同じ工事に集計)</td>
+</tr>
+<tr>
+<td>工事番号の重複</td>
+<td>2行目のK-018</td>
+<td></td>
+<td>(空欄)</td>
+<td>(空欄)</td>
+<td>工事番号が重複</td>
+</tr>
+</tbody>
+</table>
+<p>請求シート側では、台帳にない工事番号は「工事番号なし」、番号が空欄なら「工事番号が空欄」、請求額に文字が入っていれば「請求額が数値でない」と表示します。これらの行は請求済みの合計に入りません。</p>
+<p>全19ケースで、出来高・請求済み・今回請求できる額・チェック表示が、Pythonの整数計算と一致しました。さらに、工事300件・請求1,000行の乱数データ(進捗率の範囲外や文字、契約金額の空欄・0・文字、存在しない番号、番号の空欄、全角、前後スペース、請求額の文字を約2割混ぜた)で照合し、<strong>すべて一致</strong>しました(Excelでは未確認)。</p>
+<h2 id="_2">使うときの注意</h2>
+<ul>
+<li><strong>「要確認」の行は今回請求できる額が空欄になります</strong>。J1が0でなければ、チェック列を見て入力を直してください。</li>
+<li><strong>請求シートの「工事番号なし」の行は、請求済みの合計に入りません</strong>。台帳の請求済みが少なく出ているときは、請求シートのチェック列を見てください。入れ間違いを直さないと、今回請求できる額が実際より多く出ます。</li>
+<li><strong>進捗率は現場の実態に合わせて自分で決めます</strong>。この式は進捗率の妥当性を判断しません。進捗率の決め方(工程の完了割合、材料費ベースなど)は、契約や取引先との取り決めに従ってください。</li>
+<li><strong>契約金額は税抜の金額を入れます</strong>。消費税を足した請求書の金額にするには、別に税の計算が必要です。消費税の端数処理は<a href="/tools/tax-rounding-compare/">消費税の端数処理の比較ツール</a>で並べて確認できます。</li>
+<li><strong>追加工事や契約変更</strong>は、契約金額を書き換えると出来高も変わります。変更前の請求済みはそのまま残るため、「請求済みが出来高を超えている」と出たら金額の入力を見直してください。</li>
+<li>工事番号は「K-001」のように、台帳と請求で表記をそろえてください(ハイフンの有無や大文字小文字の違いは吸収しません)。</li>
+</ul>
+<h2 id="_3">この記事ができないこと</h2>
+<ul>
+<li>請求書そのものの作成や、請求書に必要な記載項目の判断はしません。</li>
+<li>契約書の条件(支払い条件、出来高払いの定め)の確認はしません。</li>
+<li>出来高が請求できる額として適切かどうかの判断はしません。</li>
+</ul>
+<h2 id="_4">工事全体の原価や工程もあわせて見たいとき</h2>
+<p>この記事の式は、自分で作った台帳にそのまま使えます。工事ごとの原価と粗利は<a href="/job-margin/">工事の原価を材料・外注・経費に分けて粗利を見る式</a>に、分割請求の残額と番号の入力ミスの拾い方は<a href="/split-billing-balance/">工事の分割請求の残額をExcelで管理する式</a>に、工程の遅れは<a href="/schedule-delay/">工事の工程表で遅れている工程を自動で表示する式</a>にまとめています。見積の計算(数量×単価、諸経費、値引き、消費税)から作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=progress-billing">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の出来高・請求済みの機能は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>税込み・税抜の計算だけなら、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>台帳に「工事番号・契約金額(税抜)・進捗率(%表示)」、請求シートに「工事番号・請求額」を入れる</li>
+<li>出来高は契約金額×進捗率を円未満切り捨て。今回請求できる額は、出来高から請求済みの合計を引く</li>
+<li>請求済みはSUMIFSで工事ごとに集める。請求の番号は <code>ASC(TRIM(…))</code> で整えて、全角やスペースの違いを吸収する</li>
+<li>進捗率の範囲外・文字、契約金額の空欄・0、番号の重複、請求済みの超過は「要確認」にして、J1で件数を見る</li>
+<li>19ケースと、工事300件・請求1,000行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数行を手で検算する</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、19ケース(進捗率0%・100%、円未満の切り捨て、着手金を請求済みで今回0円、請求済みの超過、進捗率が100%超・マイナス・文字・空欄、契約金額の空欄・0・文字、請求に存在しない工事番号・工事番号の空欄・請求額の文字、全角・前後スペースの番号、工事番号の重複、空行)と、工事300件・請求1,000行(誤入力を約2割混ぜた乱数データ)で、出来高・請求済み・今回請求できる額・チェック表示がPythonの整数計算と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/progress_billing.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/split-billing-balance/">工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li><li><a href="/daily-labor-by-job/">作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li><li><a href="/quote-to-ledger/">見積書の金額を工事台帳に転記したまま古くならない式|改訂版の最新を自動で引いてズレを表示【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
