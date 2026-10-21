@@ -637,3 +637,5 @@
 - 01:10 [記事] 請求と入金を照合する式の記事を1本公開(payment-match。topics.csv #58を done に)。LibreOfficeで14ケースと請求300件×入金450行を計算して全件一致(検証: site/verify/payment_match.py)。Excelは未確認と明記。見積書テンプレへは /go/ 経由。
 - 01:12 [ルール] 品質ゲート30本すべてOK、BOOTH直リンク0件。今週(10/19週)は記事7本目、本日(10/22)は1本目。無料ツールは今週2本で上限(作らず)。
 - 解釈: 日付はJSTで数え、0時台=その日の最初の回とした。requests/に依頼なし、interviews/は空、INBOXに新しい数字なし。note原稿はストック15件で補充不要。事務セット仕様・商品ページ改善案・HUMAN_TASKSは新情報なく更新なし。pipで markdown と openpyxl を入れ直した。外部投稿・送信なし。
+## 2026-10-22 毎日ひとつ工房
+2026-10-22 オーナー指示: 毎日ひとつ工房を開始。SNS調査→毎日1商品→公開はローカルの毎日タスクが担当し、一覧は mainichi-hitotsu.pages.dev/progress.json。1号は あなうめ漢字 https://anaume-kanji.pages.dev/ 。売上はまだ0円。進捗ページ /status/ の「できたもの」の上に、この一覧を表示する節を追加した(ブラウザで読み込む方式)。

@@ -34,7 +34,7 @@ def _requests(d, done):
         res = re.split(r"(?m)^## 対応結果.*$", t, maxsplit=1)
         result = res[1].strip() if len(res) > 1 else ""
         theme = _field(t, "テーマ") or f.stem
-        out.append(f'<div class="req"><span class="tag">{"完了" if done else "受付中"}</span> '
+        out.append(f'<div style="border-top:2px dashed #ffe08a;padding:8px 0"><span class="tag">{"完了" if done else "受付中"}</span> '
                    f'<b>{E(theme)}</b><br><span class="meta">受付 {E(_field(t, "受付") or f.stem)} / 種類 {E(_field(t, "種類"))}'
                    f'{" / 急ぎ" if _field(t, "急ぎ") == "はい" else ""}</span>'
                    + (f'<br>対応: {E(result)}' if done and result else "") + "</div>")
@@ -439,6 +439,31 @@ def _svg_pig(pct):
 <circle cx="77" cy="14" r="9" fill="#ffd84a" stroke="#d2a817" stroke-width="2"/><text x="77" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#8a6a00">円</text></svg>"""
 
 
+DAILY_HTML = """<section id="mh"><h2>🗓️ 毎日ひとつ工房(SNS調査→毎日1つ作って公開)</h2>
+<div class="card"><p class="meta">SNSの数字で「ほしい人がいるか」を確かめて、毎日1つ商品を作って公開する取り組みです。一覧は <a href="https://mainichi-hitotsu.pages.dev/" target="_blank" rel="noopener">mainichi-hitotsu.pages.dev</a> にもあります。</p>
+<div id="mh-sum">読み込み中…</div><div id="mh-list"></div></div>
+<script>
+(function(){
+var U='https://mainichi-hitotsu.pages.dev/progress.json';
+function e(v){return String(v==null?'':v).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+function safeUrl(u){u=String(u||'');return /^https?:[/][/]/i.test(u)?u:'';}
+var sum=document.getElementById('mh-sum'),list=document.getElementById('mh-list');
+fetch(U,{cache:'no-cache'}).then(function(r){if(!r.ok)throw new Error(r.status);return r.json();}).then(function(d){
+var ps=(d&&d.products)||[];
+var sorted=ps.slice().sort(function(a,b){return (Number(b.no)||0)-(Number(a.no)||0);});
+var last=sorted.length?sorted[0].date:'';
+sum.innerHTML='<p>これまでに公開した数: <b>'+e(ps.length)+'</b> こ</p><p>さいごの公開: <b>'+e(last||'まだありません')+'</b></p>';
+list.innerHTML=sorted.slice(0,7).map(function(p){
+var u=safeUrl(p.url),nm=e(p.name);
+var t=u?'<a href="'+e(u)+'" target="_blank" rel="noopener">'+nm+'</a>':nm;
+return '<div style="border-top:2px dashed #ffe08a;padding:8px 0"><b>No.'+e(p.no)+'</b> '+e(p.date)+' '+t
++'<div>作った理由: '+e(p.evidence)+'</div><div>弱いところ: '+e(p.weakness)+'</div><div>確かめ方: '+e(p.check)+'</div></div>';
+}).join('');
+}).catch(function(){sum.textContent='一覧を読み込めませんでした(https://mainichi-hitotsu.pages.dev/ で見られます)';});
+})();
+</script></section>"""
+
+
 CSS = """
 body{background:#fff8e8;color:#3a3226}
 .kd{font-size:18px;line-height:1.8;max-width:100%;overflow-wrap:anywhere}
@@ -641,4 +666,4 @@ def build_status(root, md_to_html, n_articles, n_tools):
     raw = "".join(f'<li>{E(t) if t else "きょう"} [{E(k)}] {E(x)}</li>' for t, k, x in allents)
     raw_html = f'<h2>ロボットの日記の元の文({shown_day})</h2><ul>{raw}</ul>' if raw else ""
     adult = f'<section><details class="adult"><summary>🔧 くわしい記録(大人向け)</summary>{legacy}{raw_html}</details></section>'
-    return f'<style>{CSS}</style><div class="kd">{hero}{one}{made_html}{money}{path_html}{help_html}{diary}{cal}{adult}</div>'
+    return f'<style>{CSS}</style><div class="kd">{hero}{one}{DAILY_HTML}{made_html}{money}{path_html}{help_html}{diary}{cal}{adult}</div>'
