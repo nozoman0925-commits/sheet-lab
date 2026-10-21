@@ -1,0 +1,316 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="請求書ごとに入金額を集計し、未入金・一部入金・入金遅れ・過入金を自動で表示するExcelの式を解説。振込手数料の差引や請求番号の入力ミスも拾います。14ケースと請求300件・入金450行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/payment-match/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="請求書ごとに入金額を集計し、未入金・一部入金・入金遅れ・過入金を自動で表示するExcelの式を解説。振込手数料の差引や請求番号の入力ミスも拾います。14ケースと請求300件・入金450行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/payment-match/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】", "datePublished": "2026-10-22", "dateModified": "2026-10-22", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "請求書ごとに入金額を集計し、未入金・一部入金・入金遅れ・過入金を自動で表示するExcelの式を解説。振込手数料の差引や請求番号の入力ミスも拾います。14ケースと請求300件・入金450行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/payment-match/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/payment-match/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/payment-match/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】</p><article><p class="meta">2026-10-22 ・ Excel関数</p><h1>工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】</h1><p>「あの現場の請求、もう入っているはずだけど通帳を見ないと分からない」。工事の請求は金額が大きく、着手・中間・完了と分けて出すため、<strong>どの請求書がいくら入金済みで、どれが期限を過ぎているか</strong>が頭の中だけだと追いきれなくなります。</p>
+<p>この記事では、請求を1行ずつ、入金を1行ずつ入力するだけで、<strong>各請求書を「入金済み・一部入金・未入金・入金遅れ・過入金」に自動で分け、未入金の額と遅れ日数</strong>を出す式を示します。請求番号の打ち間違いで入金がどこにも結びつかないミスも、表に出るようにします。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/payment_match.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・SUMIFS・COUNTIF・ISNUMBER・AND・ASC・TRIMなどの一般的な関数ですが、本番の台帳に使う前に数行で結果を確かめてください。金額は請求書に書いた額(税込でも税抜でも、そろえて入れれば同じ動きです)をそのまま入れる例で、消費税・インボイスの扱いの判断はこの記事では行いません。</p>
+<h2 id="_1">先に結論</h2>
+<p>2枚のシートを使います。</p>
+<p><strong>「請求」シート</strong>(1行1請求書。2行目から。範囲は2〜2000行の例)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>請求番号</td>
+<td>手入力(例: S-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>請求日</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>入金期限</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>請求額</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>E</td>
+<td>入金済み</td>
+<td>式</td>
+</tr>
+<tr>
+<td>F</td>
+<td>未入金</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>状態</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>遅れ日数</td>
+<td>式</td>
+</tr>
+<tr>
+<td>I</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>K</td>
+<td>整えた番号</td>
+<td>式(全角→半角、前後のスペース除去)</td>
+</tr>
+<tr>
+<td>N1</td>
+<td>基準日</td>
+<td><code>=TODAY()</code>(今日の日付で判定する場合)</td>
+</tr>
+</tbody>
+</table>
+<pre><code>K2: =ASC(TRIM(A2))
+E2: =IF(A2=&quot;&quot;,&quot;&quot;,SUMIFS(入金!$C$2:$C$2000,入金!$D$2:$D$2000,K2))
+F2: =IF(A2=&quot;&quot;,&quot;&quot;,D2-E2)
+G2: =IF(A2=&quot;&quot;,&quot;&quot;,IF(F2&lt;0,&quot;過入金&quot;,IF(F2=0,&quot;入金済み&quot;,
+      IF(AND(ISNUMBER(C2),$N$1&gt;C2),&quot;入金遅れ&quot;,IF(E2&gt;0,&quot;一部入金&quot;,&quot;未入金&quot;)))))
+H2: =IF(G2=&quot;入金遅れ&quot;,$N$1-C2,&quot;&quot;)
+I2: =IF(A2=&quot;&quot;,&quot;&quot;,IF(NOT(ISNUMBER(C2)),&quot;入金期限が日付でない&quot;,
+      IF(AND(ISNUMBER(B2),C2&lt;B2),&quot;期限が請求日より前&quot;,&quot;&quot;)))
+</code></pre>
+<p><strong>「入金」シート</strong>(1行1回の入金。2行目から)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>入金日</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>請求番号</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>入金額</td>
+<td>手入力(実際に通帳に入った額)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>整えた番号</td>
+<td>式</td>
+</tr>
+<tr>
+<td>E</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>D2: =ASC(TRIM(B2))
+E2: =IF(AND(B2=&quot;&quot;,C2=&quot;&quot;),&quot;&quot;,IF(B2=&quot;&quot;,&quot;請求番号が空欄&quot;,
+      IF(COUNTIF(請求!$K$2:$K$2000,D2)=0,&quot;請求番号なし&quot;,&quot;&quot;)))
+</code></pre>
+<p>照合用に、請求シートの端に次の式を置きます。</p>
+<pre><code>P1: 未紐づけの入金額
+Q1: =SUM(入金!C2:C2000)-SUM(E2:E2000)
+</code></pre>
+<p>入金シートに入力した金額の合計と、請求シート側の入金済みの合計の差です。<strong>0でなければ、どこかの入金が請求書に結びついていません</strong>。入金シートの「チェック」列に出た行を直してください。</p>
+<p>ポイントは次の4つです。</p>
+<ul>
+<li>入金済みは「整えた番号」で集計します。手入力の番号で集計すると、全角や前後のスペースが入った行が集計から漏れます。</li>
+<li>判定の順番は <strong>過入金 → 入金済み → 入金遅れ → 一部入金 → 未入金</strong> です。期限を過ぎた一部入金は「一部入金」ではなく「入金遅れ」と表示します(入金済みの額は別の列で見えます)。</li>
+<li>入金期限の<strong>当日</strong>はまだ遅れではありません。基準日が期限より後の日付になったときに「入金遅れ」です。</li>
+<li>入金期限が空欄や文字のときは、遅れの判定ができません。その請求書は「未入金」などと表示されるだけで、<strong>遅れとは出ません</strong>。そのため、チェック列に「入金期限が日付でない」と表示するようにしています。</li>
+</ul>
+<h2 id="_2">実際に計算した結果</h2>
+<p>基準日を2026-11-30に固定して、次の14ケースを計算しました。</p>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>請求額</th>
+<th>入力した入金</th>
+<th>入金済み</th>
+<th>未入金</th>
+<th>状態</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>全額入金</td>
+<td>1,100,000</td>
+<td>1,100,000</td>
+<td>1,100,000</td>
+<td>0</td>
+<td>入金済み</td>
+</tr>
+<tr>
+<td>2回に分けて入金の途中(期限内)</td>
+<td>500,000</td>
+<td>200,000</td>
+<td>200,000</td>
+<td>300,000</td>
+<td>一部入金</td>
+</tr>
+<tr>
+<td>未入金・期限内</td>
+<td>300,000</td>
+<td>なし</td>
+<td>0</td>
+<td>300,000</td>
+<td>未入金</td>
+</tr>
+<tr>
+<td>未入金・期限超過(期限10/31)</td>
+<td>300,000</td>
+<td>なし</td>
+<td>0</td>
+<td>300,000</td>
+<td>入金遅れ(30日)</td>
+</tr>
+<tr>
+<td>期限が基準日と同じ日</td>
+<td>300,000</td>
+<td>なし</td>
+<td>0</td>
+<td>300,000</td>
+<td>未入金(遅れではない)</td>
+</tr>
+<tr>
+<td>一部入金のまま期限超過</td>
+<td>300,000</td>
+<td>100,000</td>
+<td>100,000</td>
+<td>200,000</td>
+<td>入金遅れ(30日)</td>
+</tr>
+<tr>
+<td>二重に振り込まれた</td>
+<td>300,000</td>
+<td>300,000 + 300,000</td>
+<td>600,000</td>
+<td>−300,000</td>
+<td>過入金</td>
+</tr>
+<tr>
+<td>振込手数料440円を引かれた</td>
+<td>330,000</td>
+<td>329,560</td>
+<td>329,560</td>
+<td>440</td>
+<td>一部入金</td>
+</tr>
+<tr>
+<td>存在しない請求番号</td>
+<td>330,000</td>
+<td>S-090(請求にない)に330,000</td>
+<td>0</td>
+<td>330,000</td>
+<td>入金側「請求番号なし」、Q1=330,000</td>
+</tr>
+<tr>
+<td>請求番号が空欄の入金</td>
+<td>330,000</td>
+<td>番号なしで330,000</td>
+<td>0</td>
+<td>330,000</td>
+<td>入金側「請求番号が空欄」、Q1=330,000</td>
+</tr>
+<tr>
+<td>全角・前後スペースの番号</td>
+<td>330,000</td>
+<td>「Ｓ－011」に100,000、「 S-011 」に230,000</td>
+<td>330,000</td>
+<td>0</td>
+<td>入金済み</td>
+</tr>
+<tr>
+<td>期限が請求日より前</td>
+<td>330,000</td>
+<td>なし</td>
+<td>0</td>
+<td>330,000</td>
+<td>入金遅れ(20日)+チェック「期限が請求日より前」</td>
+</tr>
+<tr>
+<td>入金期限が空欄</td>
+<td>330,000</td>
+<td>なし</td>
+<td>0</td>
+<td>330,000</td>
+<td>未入金+チェック「入金期限が日付でない」</td>
+</tr>
+<tr>
+<td>入金期限が文字(「月末」)</td>
+<td>330,000</td>
+<td>なし</td>
+<td>0</td>
+<td>330,000</td>
+<td>未入金+チェック「入金期限が日付でない」</td>
+</tr>
+</tbody>
+</table>
+<p>14ケースすべて、入金済み・未入金・状態・遅れ日数・チェック表示・Q1が、Pythonでの計算結果と一致しました。</p>
+<p>さらに、請求300件・入金450行の乱数データで照合しました。入金のうち約80%は正しい番号、約6%は存在しない番号、約5%は空欄、約5%は全角、約4%は前後にスペースです。金額は満額・半額・手数料440円差引・ばらばらの額を混ぜ、請求のうち約7%は入金期限を請求日より前、空欄、文字にしています。<strong>全項目が一致</strong>しました(Excelでの確認はしていません)。</p>
+<h2 id="_3">つまずきやすい点</h2>
+<ul>
+<li><strong>振込手数料を引かれて入金されたとき</strong>: この式は差額(例の440円)を、そのまま未入金として表示します。差額を「入金済み」にする処理は入れていません。手数料を相手が引く取り決めがある場合は、入金シートに「手数料分」として同じ請求番号で440円の行を足す運用にすると、未入金が0になります(これも式としては通常の入金と同じ扱いです)。取り決めの有無は取引先との契約が優先です。</li>
+<li><strong>請求書を作り直したとき</strong>: 番号を変えたなら、古い番号の行を請求シートに残したままにしないでください。残すと未入金として表示され続けます。</li>
+<li><strong>請求番号の付け方がそろっていないとき</strong>: 請求側が「S-001」、入金側が「S001」のようにハイフンの有無が違うと一致しません。この式は全角→半角と前後のスペースだけを整えます。</li>
+<li><strong>TODAY関数</strong>: 基準日を <code>=TODAY()</code> にすると、ファイルを開くたびに更新されます。この記事の検証では基準日を固定の日付にしており、TODAY関数そのものの動きは確認していません。月末にある日の状態を残したいときは、N1に日付を直接入力してください。</li>
+<li><strong>範囲の上限</strong>: 式は2000行までです。増えたら範囲を広げてください。</li>
+<li><strong>行を消したとき</strong>: 請求の行を消すと、その請求あての入金は「請求番号なし」と表示され、Q1に現れます。入金の行を消すと、その分が未入金に戻ります(行の削除操作そのものはExcelでは試していません)。</li>
+</ul>
+<h2 id="_4">注意点: この記事ができないこと</h2>
+<ul>
+<li>消費税、インボイスの記載要件、請求書の書式の適否は判断しません。</li>
+<li>入金遅れに対する督促の文面、遅延損害金の計算、取引先との支払条件の妥当性は扱いません。</li>
+<li>通帳やネットバンクのデータを自動で取り込む機能はありません。入金は手で入力する前提です。</li>
+<li>契約金額に対する請求の残りを追うには、<a href="/split-billing-balance/">工事の分割請求の残額をExcelで管理する式</a>を併せて使います。この記事は、<strong>出した請求書がいつ入金されたか</strong>を追う式です。</li>
+</ul>
+<h2 id="1">見積から請求までを1つのひな形で</h2>
+<p>この記事の式は、自分で作った台帳にそのまま使えます。見積の段階の計算(数量×単価、諸経費、値引き、消費税)から作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=payment-match">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の請求・入金の照合の機能は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の計算の考え方は<a href="/estimate-total/">見積書の合計・税込計算の記事</a>に、消費税だけをさっと出したいときは無料の<a href="/tools/tax/">消費税 計算ツール</a>、見積の小計から税込までを一度に出すなら<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>請求を「請求」シート、入金を「入金」シートに1行ずつ入力し、入金済みはSUMIFSで集計する</li>
+<li>集計の鍵は、全角・スペースを整えた「整えた番号」の列</li>
+<li>状態は 過入金 → 入金済み → 入金遅れ → 一部入金 → 未入金 の順で判定し、期限の当日はまだ遅れではない</li>
+<li>存在しない番号・空欄の入金は、入金側のチェック列と、請求側のQ1(未紐づけの入金額)に出る</li>
+<li>14ケースと、請求300件・入金450行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数件を通帳と突き合わせる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、14ケース(全額入金、2回に分けた入金、未入金で期限内、未入金で期限超過、期限が基準日と同じ日、一部入金のまま期限超過、二重入金、振込手数料を引かれた入金、存在しない請求番号、請求番号の空欄、全角・前後スペースの番号、期限が請求日より前、期限の空欄、期限の文字)と、請求300件・入金450行(誤入力を約20%混ぜた乱数データ)で、入金済み・未入金・状態・遅れ日数・チェック表示・未紐づけの入金額がPythonの計算と全件一致することを確認しました。基準日は検証では固定の日付を入れており、TODAY関数そのものの動きは確認していません。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/payment_match.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/progress-billing/">工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】</a></li><li><a href="/split-billing-balance/">工事の分割請求(着手・中間・完了)の残額をExcelで管理する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li><li><a href="/daily-labor-by-job/">作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
