@@ -1,7 +1,7 @@
 # HUMAN_TASKS(AIにできない作業だけ)
 終わったら `- [ ]` を `- [x]` にするか、AIに伝える。方針B: AIが95%を準備し、オーナーは承認・投稿・人と話す作業だけ行う。(2026-10-15 再編)
 
-## 今週いちばん効く3つ(2026-10-21)
+## 今週いちばん効く3つ(2026-10-23更新。10/22期限分は完了報告がないため期限を10/29に繰り延べ)
 1. [ ] 出品パックで事務セットから出品(15〜50分・PC。上から順に出す。事務セット→工事台帳→工程表→出来高管理表→家賃入金管理表)
 2. [ ] 知り合いの工務店1社にメッセージ(5分。文はオーナーPCの marketing/早く売上を出す_今日やること.md)
 3. [ ] noteを毎日1本(2分。10/13の1本のみで止まっている)
@@ -13,9 +13,9 @@
 - [ ] 問い合わせ・お客様への返信案が来ていたら確認して送る(必要なときだけ。約2分)
 
 ## 今週の60分(人と話す作業とPCが必要な作業)
-- [ ] 工程表と工事台帳をBOOTHに出品する(約15分・PC。貼る文: [工程表](deliverables/booth-improve/schedule-construction.md) / [工事台帳](deliverables/booth-improve/construction-ledger.md)。【 】の検証値はオーナーPCの検証記録から埋める。期限 10/22)
-- [ ] 知人の工務店・リフォーム店1〜2人に試用をお願いする(約30分。お願い文: [deliverables/outreach/trial-request.md](deliverables/outreach/trial-request.md)。送るのはオーナー。無料・感想は任意・載せる場合は必ず許可を取る。期限 10/22)
-- [ ] BOOTHのショップ情報編集にGA4の測定IDを設定する(約5分・PC。商品ページの閲覧数が見えるようになる。判断の基準の「商品ページの閲覧数」に必要。期限 10/22)
+- [ ] 工程表と工事台帳をBOOTHに出品する(約15分・PC。貼る文: [工程表](deliverables/booth-improve/schedule-construction.md) / [工事台帳](deliverables/booth-improve/construction-ledger.md)。【 】の検証値はオーナーPCの検証記録から埋める。期限 10/29に繰り延べ)
+- [ ] 知人の工務店・リフォーム店1〜2人に試用をお願いする(約30分。お願い文: [deliverables/outreach/trial-request.md](deliverables/outreach/trial-request.md)。送るのはオーナー。無料・感想は任意・載せる場合は必ず許可を取る。期限 10/29に繰り延べ)
+- [ ] BOOTHのショップ情報編集にGA4の測定IDを設定する(約5分・PC。商品ページの閲覧数が見えるようになる。判断の基準の「商品ページの閲覧数」に必要。期限 10/29に繰り延べ)
 - [ ] 先週の数字(10/12週): 表示・クリック・商品ページ閲覧は未計測、購入0(2026-10-19時点)。GA4設定後に数字が入る。
 - [ ] 次の日曜(10/25)・5分: noteとXの数字(ビュー数・スキ・インプレッション)とBOOTHの商品ページ閲覧・購入数をAIに伝える(METRICS.mdの表に入る)
 - [ ] 試用者への聞き取り(30分、1件。質問と記録の型: [deliverables/research/interview-template.md](deliverables/research/interview-template.md)。メモは pdca/INBOX.md に貼るかAIに渡す。実名は不要)

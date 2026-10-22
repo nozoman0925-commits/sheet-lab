@@ -1,0 +1,394 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>請求書の支払期限(月末締め翌月末払いなど)をExcelで自動計算する式|うるう年・年またぎも【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="工事の請求書で「20日締め翌月25日払い」「月末締め翌月末払い」の支払期限を、請求日から自動で出すExcelの式を解説。2月末・うるう年・年またぎ、締め日や支払日の入力ミスの拾い方まで、25ケースと1000行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/payment-due/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="請求書の支払期限(月末締め翌月末払いなど)をExcelで自動計算する式|うるう年・年またぎも【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="工事の請求書で「20日締め翌月25日払い」「月末締め翌月末払い」の支払期限を、請求日から自動で出すExcelの式を解説。2月末・うるう年・年またぎ、締め日や支払日の入力ミスの拾い方まで、25ケースと1000行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/payment-due/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "請求書の支払期限(月末締め翌月末払いなど)をExcelで自動計算する式|うるう年・年またぎも【LibreOfficeで確認】", "datePublished": "2026-10-23", "dateModified": "2026-10-23", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "工事の請求書で「20日締め翌月25日払い」「月末締め翌月末払い」の支払期限を、請求日から自動で出すExcelの式を解説。2月末・うるう年・年またぎ、締め日や支払日の入力ミスの拾い方まで、25ケースと1000行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/payment-due/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/payment-due/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "請求書の支払期限(月末締め翌月末払いなど)をExcelで自動計算する式|うるう年・年またぎも【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/payment-due/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 請求書の支払期限(月末締め翌月末払いなど)をExcelで自動計算する式|うるう年・年またぎも【LibreOfficeで確認】</p><article><p class="meta">2026-10-23 ・ Excel関数</p><h1>請求書の支払期限(月末締め翌月末払いなど)をExcelで自動計算する式|うるう年・年またぎも【LibreOfficeで確認】</h1><p>「今日出した請求書、入金はいつだろう」。取引先ごとに「20日締め翌月25日払い」「月末締め翌月末払い」など条件が違うと、頭の中で数えるのは意外と間違えます。とくに<strong>2月の末日</strong>と<strong>年またぎ</strong>で迷いがちです。</p>
+<p>この記事では、<strong>請求日・締め日・支払月・支払日</strong>を入れると、<strong>支払期限</strong>を出すExcelの式を示します。前の記事の<a href="/payment-match/">請求と入金を照合する式</a>と組み合わせると、「いつまでに入金されるはずか」と「入金されたか」を同じ表で追えます。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/payment_due.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・OR・NOT・ISNUMBER・INT・DATE・YEAR・MONTH・DAY・EOMONTH・MIN・CHOOSE・WEEKDAYという一般的な関数ですが、本番で使う前に、取引先との契約書の条件と手計算の数行を見比べてください。この記事は計算の方法の説明であり、支払条件の決め方や、下請法・建設業法など法令上の扱いの助言はしません。</p>
+<h2 id="3">先に結論: 3つの数字で支払期限が決まる</h2>
+<p>支払条件は、次の3つの数字に分けると式にできます。</p>
+<table>
+<thead>
+<tr>
+<th>条件の言い方</th>
+<th>締め日</th>
+<th>支払月</th>
+<th>支払日</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>20日締め翌月25日払い</td>
+<td>20</td>
+<td>1(翌月)</td>
+<td>25</td>
+</tr>
+<tr>
+<td>月末締め翌月末払い</td>
+<td>31(末日は31と入れる)</td>
+<td>1</td>
+<td>31</td>
+</tr>
+<tr>
+<td>25日締め翌々月10日払い</td>
+<td>25</td>
+<td>2(翌々月)</td>
+<td>10</td>
+</tr>
+<tr>
+<td>月末締め当月払い</td>
+<td>31</td>
+<td>0</td>
+<td>31</td>
+</tr>
+</tbody>
+</table>
+<p>流れは2段階です。</p>
+<ol>
+<li><strong>請求日がどの月の締めに入るか</strong>を決める(請求日の「日」が締め日より後なら、翌月の締めに回る)</li>
+<li>その締め月から<strong>支払月の数だけ進めた月</strong>の、<strong>支払日</strong>が支払期限(その月にない日付は末日に丸める)</li>
+</ol>
+<h2 id="excel">Excelの式</h2>
+<p>2行目から使います。下へコピーしてください。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>請求(請求書番号や工事名)</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>請求日</td>
+<td>手入力(日付。書式は「日付」)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>締め日(末日は31)</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>D</td>
+<td>支払月(翌月は1)</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>E</td>
+<td>支払日(末日は31)</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>F</td>
+<td>締め月</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>支払期限</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>曜日</td>
+<td>式</td>
+</tr>
+<tr>
+<td>I</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>F2: =IF(OR(A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;,I2&lt;&gt;&quot;&quot;),&quot;&quot;,
+      DATE(YEAR(B2),MONTH(B2)+IF(DAY(B2)&gt;C2,1,0),1))
+G2: =IF(F2=&quot;&quot;,&quot;&quot;,DATE(YEAR(F2),MONTH(F2)+D2,
+      MIN(E2,DAY(EOMONTH(DATE(YEAR(F2),MONTH(F2)+D2,1),0)))))
+H2: =IF(G2=&quot;&quot;,&quot;&quot;,CHOOSE(WEEKDAY(G2),&quot;日&quot;,&quot;月&quot;,&quot;火&quot;,&quot;水&quot;,&quot;木&quot;,&quot;金&quot;,&quot;土&quot;))
+I2: =IF(COUNTA(B2:E2)=0,&quot;&quot;,IF(NOT(ISNUMBER(B2)),&quot;請求日が空欄か日付でない&quot;,
+      IF(OR(B2&lt;1,B2&gt;73050),&quot;請求日が範囲外&quot;,
+      IF(NOT(ISNUMBER(C2)),&quot;締め日は1〜31の数字(末日は31)&quot;,
+      IF(OR(C2&lt;1,C2&gt;31,C2&lt;&gt;INT(C2)),&quot;締め日は1〜31の整数(末日は31)&quot;,
+      IF(NOT(ISNUMBER(D2)),&quot;支払月は0〜12の数字(翌月は1)&quot;,
+      IF(OR(D2&lt;0,D2&gt;12,D2&lt;&gt;INT(D2)),&quot;支払月は0〜12の整数(翌月は1)&quot;,
+      IF(NOT(ISNUMBER(E2)),&quot;支払日は1〜31の数字(末日は31)&quot;,
+      IF(OR(E2&lt;1,E2&gt;31,E2&lt;&gt;INT(E2)),&quot;支払日は1〜31の整数(末日は31)&quot;,&quot;&quot;)))))))))
+</code></pre>
+<p>F列とG列は、セルの書式をそれぞれ「yyyy/mm」「yyyy/mm/dd」にしておくと見やすくなります(式の結果は日付の数値です)。</p>
+<p>ポイントは次の4つです。</p>
+<ul>
+<li><strong>月の繰り上がりはDATE関数に任せます</strong>。<code>DATE(2026, 13, 1)</code> は2027年1月1日になるので、12月から先の月を自分で場合分けする必要がありません(年またぎがそのまま動きます)。</li>
+<li><strong>「末日は31と入れる」</strong>のが決まりです。支払日は、その月の末日(<code>EOMONTH</code> で求めます)と比べて小さいほうをとるので、31や30と入れても、2月なら28日(うるう年は29日)に丸まります。</li>
+<li>締め日も同じ考え方で、請求日の「日」が締め日以下なら、その月の締めに入ります。31を入れれば、どの月でも月末締めとして扱います。</li>
+<li>チェック列は、<strong>IFを入れ子にして1つずつ確かめています</strong>。ORの中にINTを書くと、文字の入ったセルで全体がエラーになるためです。入力がおかしい行は、締め月・支払期限・曜日を空欄にして、理由を表示します。</li>
+</ul>
+<h2 id="_1">実際に計算した結果</h2>
+<p>次の25ケースを計算しました。</p>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>請求日</th>
+<th>条件(締め/支払月/支払日)</th>
+<th>支払期限</th>
+<th>曜日</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>月末締め翌月末払い</td>
+<td>2026/10/23</td>
+<td>31/1/31</td>
+<td>2026/11/30</td>
+<td>月</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>月末締めの当日</td>
+<td>2026/10/31</td>
+<td>31/1/31</td>
+<td>2026/11/30</td>
+<td>月</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>20日締めの当日</td>
+<td>2026/10/20</td>
+<td>20/1/25</td>
+<td>2026/11/25</td>
+<td>水</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>20日締めの翌日</td>
+<td>2026/10/21</td>
+<td>20/1/25</td>
+<td>2026/12/25</td>
+<td>金</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>年またぎ(25日締め翌月末)</td>
+<td>2026/12/26</td>
+<td>25/1/31</td>
+<td>2027/02/28</td>
+<td>日</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>うるう年でない2月末</td>
+<td>2027/01/15</td>
+<td>31/1/31</td>
+<td>2027/02/28</td>
+<td>日</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>うるう年の2月末</td>
+<td>2028/01/15</td>
+<td>31/1/31</td>
+<td>2028/02/29</td>
+<td>火</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>30日の月の末日</td>
+<td>2026/03/10</td>
+<td>31/1/31</td>
+<td>2026/04/30</td>
+<td>木</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>支払日30日を指定して2月払い</td>
+<td>2026/01/20</td>
+<td>31/1/30</td>
+<td>2026/02/28</td>
+<td>土</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>翌々月払い</td>
+<td>2026/11/20</td>
+<td>31/2/31</td>
+<td>2027/01/31</td>
+<td>日</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>12/31請求・翌月10日払い</td>
+<td>2026/12/31</td>
+<td>31/1/10</td>
+<td>2027/01/10</td>
+<td>日</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>当月払い</td>
+<td>2026/10/05</td>
+<td>31/0/31</td>
+<td>2026/10/31</td>
+<td>土</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>時刻つきの請求日</td>
+<td>2026/10/23 14:30</td>
+<td>31/1/31</td>
+<td>2026/11/30</td>
+<td>月</td>
+<td>なし</td>
+</tr>
+<tr>
+<td>請求日が文字「2026/10/23」</td>
+<td>(文字)</td>
+<td>31/1/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>請求日が空欄か日付でない</td>
+</tr>
+<tr>
+<td>請求日が空欄</td>
+<td>空欄</td>
+<td>31/1/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>請求日が空欄か日付でない</td>
+</tr>
+<tr>
+<td>請求日が範囲外の数値</td>
+<td>99999999</td>
+<td>31/1/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>請求日が範囲外</td>
+</tr>
+<tr>
+<td>締め日が0</td>
+<td>2026/10/23</td>
+<td>0/1/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>締め日は1〜31の整数(末日は31)</td>
+</tr>
+<tr>
+<td>締め日が32</td>
+<td>2026/10/23</td>
+<td>32/1/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>締め日は1〜31の整数(末日は31)</td>
+</tr>
+<tr>
+<td>締め日が全角「３１」</td>
+<td>2026/10/23</td>
+<td>「３１」/1/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>締め日は1〜31の数字(末日は31)</td>
+</tr>
+<tr>
+<td>締め日が「末」</td>
+<td>2026/10/23</td>
+<td>「末」/1/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>締め日は1〜31の数字(末日は31)</td>
+</tr>
+<tr>
+<td>支払月がマイナス</td>
+<td>2026/10/23</td>
+<td>31/−1/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>支払月は0〜12の整数(翌月は1)</td>
+</tr>
+<tr>
+<td>支払月が13</td>
+<td>2026/10/23</td>
+<td>31/13/31</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>支払月は0〜12の整数(翌月は1)</td>
+</tr>
+<tr>
+<td>支払日が小数</td>
+<td>2026/10/23</td>
+<td>31/1/15.5</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>支払日は1〜31の整数(末日は31)</td>
+</tr>
+<tr>
+<td>支払日が空欄</td>
+<td>2026/10/23</td>
+<td>31/1/(空欄)</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>支払日は1〜31の数字(末日は31)</td>
+</tr>
+<tr>
+<td>行が空欄</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>なし</td>
+</tr>
+</tbody>
+</table>
+<p>25ケースすべて、締め月・支払期限・曜日・チェック表示が、Pythonのcalendarで計算した結果と一致しました。</p>
+<p>さらに、乱数で作った1000行(2024年〜2027年末の請求日、締め日・支払月・支払日の組み合わせを変え、約9%の行に文字の日付・空欄・範囲外の数値・全角の文字などを混ぜました)でも、<strong>全項目が一致</strong>しました。Excelでの確認はしていません。</p>
+<h2 id="_2">つまずきやすい点</h2>
+<ul>
+<li><strong>土日・祝日は動かしません</strong>: 支払期限が日曜や祝日になる場合、前の営業日にするか後ろにするかは取引先との約束で決まります。この式は暦どおりの日付を出し、曜日(H列)を見せるだけです。日曜の期限は目で確認してください。</li>
+<li><strong>締め日30で2月</strong>: 締め日を30にして2月に請求すると、2月は最大28日(うるう年は29日)なので、2月中の請求はすべて2月の締めに入ります。実質の月末締めと同じ扱いですが、取引先の契約書の書き方と一致するか確認してください。</li>
+<li><strong>請求日は日付で入れる</strong>: 「2026/10/23」と入れても、セルが文字列の扱いだと日付になりません(チェック列が知らせます)。日付の書式にして入れ直してください。日付が文字になる原因は別の記事で扱う予定です。</li>
+<li><strong>全角数字は計算に入りません</strong>: 「３１」のように文字として入ったセルは、チェック列で止まります。半角の数字で入れてください。</li>
+<li><strong>請求日に時刻がついていても動きます</strong>: 日付と時刻が入ったセルでも、日の部分だけで判定します(14:30のケースで確認)。</li>
+</ul>
+<h2 id="_3">注意点: この記事ができないこと</h2>
+<ul>
+<li>取引先との支払条件の決め方、下請代金の支払期日に関する法令上の扱いの確認はしません。契約書や社内ルールを正としてください。</li>
+<li>祝日の判定と、土日祝の前倒し・後ろ倒しは扱いません。</li>
+<li>入金されたかどうかの確認(消込)は、<a href="/payment-match/">請求と入金を照合する式</a>で扱っています。この記事は支払期限の計算だけです。</li>
+</ul>
+<h2 id="_4">見積から請求までの書類づくりで使うなら</h2>
+<p>支払期限を出す前に、見積を整える必要があります。運営者が作った<a href="/go/estimate-construction/?from=payment-due">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>は、数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「支払期限を出す」機能は、この商品には入っていません</strong>。請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の合計と税込の出し方は<a href="/estimate-total/">見積書の合計・税込計算の記事</a>で扱っています。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>支払条件は「締め日・支払月・支払日」の3つの数字にすると式になる(末日は31と入れる)</li>
+<li>請求日の「日」が締め日より後なら、翌月の締めに回る。月の繰り上がりはDATE関数に任せると年またぎも動く</li>
+<li>支払日はその月の末日(EOMONTH)と比べて小さいほうをとり、2月でも30日指定で落ちない</li>
+<li>チェック列はIFを入れ子にして、文字・全角・範囲外・小数の入力を支払期限を出す前に止める</li>
+<li>25ケースと乱数1000行の計算はLibreOfficeで一致。Excelでは未確認のため、本番では契約書の条件と手計算の数行を見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、25ケース(月末締め翌月末払い、締め日当日と翌日、年またぎ、うるう年でない2月末とうるう年の2月末、30日の月の末日、支払日30日指定の2月払い、翌々月払い、当月払い、時刻つきの請求日、文字の日付・空欄・範囲外の請求日、締め日の0・32・全角数字・文字、支払月のマイナス・13、支払日の小数・空欄、空行)と、乱数で作った1000行(入力ミスを約9%混ぜたデータ)で、締め月・支払期限・曜日・チェック表示が、Pythonのcalendarで計算した結果と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/payment_due.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/date-weekday-from-ym/">エクセルで年と月から日付と曜日を出す方法(DATE・EOMONTH・曜日表示)【LibreOfficeで計算して確認】</a></li><li><a href="/payment-match/">工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】</a></li><li><a href="/target-margin/">目標の粗利率から工事の売値を逆算するExcelの式|原価×1.2との違いも【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
