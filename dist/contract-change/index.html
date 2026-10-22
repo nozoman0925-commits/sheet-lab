@@ -1,0 +1,314 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>追加工事・減額を反映した「現在の契約金額」をExcelで出す式|変更履歴からSUMIFSで集計【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="追加工事や減額が出るたびに契約金額を上書きすると、当初の金額も経緯も消えます。変更履歴の表を別に持ち、SUMIFSで現在の契約金額と変更回数を自動で出すExcelの式を解説。存在しない工事番号・全角・文字の金額の拾い方まで、22ケースと変更600行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/contract-change/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="追加工事・減額を反映した「現在の契約金額」をExcelで出す式|変更履歴からSUMIFSで集計【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="追加工事や減額が出るたびに契約金額を上書きすると、当初の金額も経緯も消えます。変更履歴の表を別に持ち、SUMIFSで現在の契約金額と変更回数を自動で出すExcelの式を解説。存在しない工事番号・全角・文字の金額の拾い方まで、22ケースと変更600行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/contract-change/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "追加工事・減額を反映した「現在の契約金額」をExcelで出す式|変更履歴からSUMIFSで集計【LibreOfficeで確認】", "datePublished": "2026-10-23", "dateModified": "2026-10-23", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "追加工事や減額が出るたびに契約金額を上書きすると、当初の金額も経緯も消えます。変更履歴の表を別に持ち、SUMIFSで現在の契約金額と変更回数を自動で出すExcelの式を解説。存在しない工事番号・全角・文字の金額の拾い方まで、22ケースと変更600行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/contract-change/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/contract-change/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "追加工事・減額を反映した「現在の契約金額」をExcelで出す式|変更履歴からSUMIFSで集計【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/contract-change/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 追加工事・減額を反映した「現在の契約金額」をExcelで出す式|変更履歴からSUMIFSで集計【LibreOfficeで確認】</p><article><p class="meta">2026-10-23 ・ Excel関数</p><h1>追加工事・減額を反映した「現在の契約金額」をExcelで出す式|変更履歴からSUMIFSで集計【LibreOfficeで確認】</h1><p>「最初は300万円の工事だったのに、追加で20万円、あとで5万円の減額……今の契約金額はいくらだっけ」。追加工事が出るたびに台帳の契約金額を<strong>上書き</strong>していると、当初の金額も、いつ・いくら変わったかも分からなくなります。</p>
+<p>この記事では、契約金額を上書きせずに、<strong>当初の契約金額</strong>と<strong>変更履歴(追加・減額)</strong>を別の表に持ち、<strong>現在の契約金額</strong>と<strong>変更回数</strong>を式で出す方法を示します。ここで出した現在の契約金額は、<a href="/progress-billing/">出来高と今回請求できる額の式</a>の「契約金額」や、<a href="/split-billing-balance/">分割請求の残額の式</a>にそのまま使えます。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/contract_change.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・OR・NOT・ISNUMBER・INT・SUMIFS・COUNTIF・COUNTIFSという一般的な関数ですが、本番で使う前に、契約書・変更契約書(注文書)の金額と手計算の数行を見比べてください。この記事は表の作り方の説明であり、追加工事の金額の決め方や、変更契約に関する法令上の扱いの助言はしません。金額はすべて<strong>税抜</strong>で扱います(消費税の計算は含みません)。</p>
+<h2 id="2">先に結論: 「契約表」と「変更履歴」の2枚に分ける</h2>
+<ul>
+<li><strong>契約シート</strong>: 1工事1行。工事番号と、<strong>当初の</strong>契約金額(変更しない)だけを手入力する</li>
+<li><strong>変更シート</strong>: 変更のたびに1行追加。工事番号・変更日・内容・増減額(追加はプラス、減額はマイナス)を手入力する</li>
+<li>現在の契約金額 = 当初の契約金額 + その工事の増減額の合計(SUMIFS)</li>
+</ul>
+<p>当初の金額が残るので、「当初300万円、追加2回・減額1回で現在○円」と経緯をさかのぼれます。</p>
+<h2 id="excel">Excelの式</h2>
+<h3 id="2_1">契約シート(シート名は「契約」。2行目から使う)</h3>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: A-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>当初の契約金額(税抜)</td>
+<td>手入力(円・整数)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>変更の合計</td>
+<td>式</td>
+</tr>
+<tr>
+<td>D</td>
+<td>現在の契約金額</td>
+<td>式</td>
+</tr>
+<tr>
+<td>E</td>
+<td>変更回数</td>
+<td>式</td>
+</tr>
+<tr>
+<td>F</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>C2: =IF(OR(F2&lt;&gt;&quot;&quot;,A2&amp;B2=&quot;&quot;),&quot;&quot;,SUMIFS(変更!$D$2:$D$1000,変更!$A$2:$A$1000,A2))
+D2: =IF(OR(F2&lt;&gt;&quot;&quot;,A2&amp;B2=&quot;&quot;),&quot;&quot;,B2+C2)
+E2: =IF(OR(F2&lt;&gt;&quot;&quot;,A2&amp;B2=&quot;&quot;),&quot;&quot;,COUNTIFS(変更!$A$2:$A$1000,A2))
+F2: =IF(A2&amp;B2=&quot;&quot;,&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,
+      IF(COUNTIF($A$2:$A$1000,A2)&gt;1,&quot;工事番号が重複&quot;,
+      IF(NOT(ISNUMBER(B2)),&quot;当初契約額が数字でない&quot;,
+      IF(OR(B2&lt;0,B2&lt;&gt;INT(B2)),&quot;当初契約額は0以上の整数&quot;,
+      IF(COUNTIFS(変更!$A$2:$A$1000,A2,変更!$E$2:$E$1000,&quot;?*&quot;)&gt;0,&quot;この工事の変更行にエラーがある&quot;,
+      IF(B2+SUMIFS(変更!$D$2:$D$1000,変更!$A$2:$A$1000,A2)&lt;0,
+         &quot;変更の合計が大きすぎる(現契約額がマイナス)&quot;,&quot;&quot;)))))))
+</code></pre>
+<h3 id="2_2">変更シート(シート名は「変更」。2行目から使う)</h3>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(契約シートと同じ表記)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>変更日</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>内容</td>
+<td>手入力(例: 外構の追加)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>増減額(税抜)</td>
+<td>手入力(追加はプラス、減額はマイナス)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>E2: =IF(A2&amp;B2&amp;C2&amp;D2=&quot;&quot;,&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,
+      IF(COUNTIF(契約!$A$2:$A$1000,A2)=0,&quot;契約表にない工事番号&quot;,
+      IF(NOT(ISNUMBER(B2)),&quot;変更日が日付でない&quot;,
+      IF(OR(B2&lt;1,B2&gt;73050),&quot;変更日が範囲外&quot;,
+      IF(NOT(ISNUMBER(D2)),&quot;増減額が数字でない&quot;,
+      IF(D2&lt;&gt;INT(D2),&quot;増減額は整数の円&quot;,
+      IF(D2=0,&quot;増減額が0&quot;,&quot;&quot;)))))))) 
+</code></pre>
+<p>ポイントは次の4つです。</p>
+<ul>
+<li><strong>文字になった金額は、SUMIFSが黙って無視します</strong>。「20万」や全角の「２００，０００」と入っていても、合計はエラーにならず、その行だけ抜けた金額が出ます。これがいちばん気づきにくい間違いなので、変更シートのE列で「増減額が数字でない」と止め、契約シートでも<strong>その工事の現在の契約金額を空欄にして</strong>「この工事の変更行にエラーがある」と出します(間違った金額を見せないためです)。</li>
+<li>契約シートのチェックは、変更シートのチェック列に文字が入っているかを <code>"?*"</code>(1文字以上の文字)で数えて見つけています。</li>
+<li>範囲を <code>$2:$1000</code> と大きめにとっておくと、行を足しても式を直さなくて済みます。行の数が1000を超えるときは、数字を大きくしてください。</li>
+<li>工事番号の照合は、<strong>大文字小文字を区別しません</strong>(a-001とA-001は同じ扱い)。一方、<strong>全角の「Ａ-００１」や、末尾にスペースのある「A-001␣」は別の番号</strong>として扱われ、「契約表にない工事番号」になります(LibreOfficeでの結果です)。</li>
+</ul>
+<h2 id="_1">実際に計算した結果</h2>
+<p>契約シートは、A-001(当初3,000,000円)とA-002(当初1,500,000円)の2行で、変更シートに1行ずつ入れて確認しました。</p>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>変更シートの入力</th>
+<th>変更シートのチェック</th>
+<th>A-001の現在の契約金額</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>追加工事1回</td>
+<td>A-001、+200,000</td>
+<td>なし</td>
+<td>3,200,000(変更回数1)</td>
+</tr>
+<tr>
+<td>追加と減額の2回</td>
+<td>+200,000と−50,000</td>
+<td>なし</td>
+<td>3,150,000(変更回数2)</td>
+</tr>
+<tr>
+<td>大文字小文字の違い</td>
+<td>「a-001」、+100,000</td>
+<td>なし</td>
+<td>3,100,000(変更回数1)</td>
+</tr>
+<tr>
+<td>存在しない工事番号</td>
+<td>「A-009」、+100,000</td>
+<td>契約表にない工事番号</td>
+<td>3,000,000(変更回数0)</td>
+</tr>
+<tr>
+<td>全角の工事番号</td>
+<td>「Ａ-００１」、+100,000</td>
+<td>契約表にない工事番号</td>
+<td>3,000,000(変更回数0)</td>
+</tr>
+<tr>
+<td>末尾にスペース</td>
+<td>「A-001␣」、+100,000</td>
+<td>契約表にない工事番号</td>
+<td>3,000,000(変更回数0)</td>
+</tr>
+<tr>
+<td>増減額が文字</td>
+<td>「20万」</td>
+<td>増減額が数字でない</td>
+<td>空欄(契約側: この工事の変更行にエラーがある)</td>
+</tr>
+<tr>
+<td>増減額が全角</td>
+<td>「２００，０００」</td>
+<td>増減額が数字でない</td>
+<td>空欄(同上)</td>
+</tr>
+<tr>
+<td>増減額が空欄</td>
+<td>空欄</td>
+<td>増減額が数字でない</td>
+<td>空欄(同上)</td>
+</tr>
+<tr>
+<td>増減額が小数</td>
+<td>1000.5</td>
+<td>増減額は整数の円</td>
+<td>空欄(同上)</td>
+</tr>
+<tr>
+<td>増減額が0</td>
+<td>0</td>
+<td>増減額が0</td>
+<td>空欄(同上)</td>
+</tr>
+<tr>
+<td>変更日が文字</td>
+<td>「9/10」</td>
+<td>変更日が日付でない</td>
+<td>空欄(同上)</td>
+</tr>
+<tr>
+<td>変更日が空欄</td>
+<td>空欄</td>
+<td>変更日が日付でない</td>
+<td>空欄(同上)</td>
+</tr>
+<tr>
+<td>工事番号が空欄の変更行</td>
+<td>空欄、+100,000</td>
+<td>工事番号が空欄</td>
+<td>3,000,000(変更回数0)</td>
+</tr>
+<tr>
+<td>減額が大きすぎる</td>
+<td>A-002、−2,000,000</td>
+<td>なし</td>
+<td>(A-002が)変更の合計が大きすぎる</td>
+</tr>
+<tr>
+<td>契約表の番号が重複</td>
+<td>A-001が2行</td>
+<td>なし</td>
+<td>工事番号が重複(両方の行)</td>
+</tr>
+<tr>
+<td>当初契約額が文字</td>
+<td>「300万」</td>
+<td>(変更なし)</td>
+<td>当初契約額が数字でない</td>
+</tr>
+<tr>
+<td>当初契約額が空欄</td>
+<td>空欄</td>
+<td>(変更なし)</td>
+<td>当初契約額が数字でない</td>
+</tr>
+<tr>
+<td>契約表の工事番号が空欄</td>
+<td>工事番号なし、1,000</td>
+<td>(変更なし)</td>
+<td>工事番号が空欄</td>
+</tr>
+<tr>
+<td>契約表の行が空欄</td>
+<td>すべて空欄</td>
+<td>なし</td>
+<td>すべて空欄(0を出さない)</td>
+</tr>
+<tr>
+<td>契約の行を消した</td>
+<td>A-002の変更行が残る</td>
+<td>契約表にない工事番号</td>
+<td>(A-002の行が無い)</td>
+</tr>
+<tr>
+<td>変更のない工事(A-002)</td>
+<td>A-002への変更行なし</td>
+<td>なし</td>
+<td>A-002は当初と同じ1,500,000(変更回数0)</td>
+</tr>
+</tbody>
+</table>
+<p>22ケースすべて、変更の合計・現在の契約金額・変更回数・チェック表示が、Pythonで計算した結果と一致しました。</p>
+<p>さらに、乱数で作った<strong>契約200行・変更履歴600行</strong>(工事番号の大文字小文字・全角・末尾スペース・空欄、日付の文字・空欄、増減額の文字・空欄・小数・0、当初契約額の文字・空欄・負の数・小数、番号の重複などを約10%混ぜました)でも、<strong>全項目が一致</strong>しました。Excelでの確認はしていません。</p>
+<p>なお、この確認の途中で、変更履歴が600行あるのに式の範囲を500行までにしていたため、後ろの行が合計から抜けて乱数照合が合わない、という間違いを自分で出しました。範囲の下端が足りないと<strong>エラーも出ずに合計だけが少なくなる</strong>ので、行が増えても大丈夫な大きさにしておくこと、そして数行を手で検算することをおすすめします。</p>
+<h2 id="_2">つまずきやすい点</h2>
+<ul>
+<li><strong>行を消すときは、変更シートの行も見る</strong>: 契約シートの工事の行を消すと、その工事の変更行が「契約表にない工事番号」になって残ります(上の表の最後のケース)。変更行のチェックを見て片づけてください。</li>
+<li><strong>値引き・減額は、マイナスで入れる</strong>: 減額を「50000」と入れると増額として計算されます。内容の欄に「減額」と書いておくと、あとで見直しやすくなります。</li>
+<li><strong>税込で入れない</strong>: 当初の契約金額と増減額は、同じ税抜で入れてください。税込と税抜が混ざると、現在の契約金額が合いません。</li>
+<li><strong>工事番号は、見た目だけで同じに見えても別のものになることがある</strong>: 全角と半角、末尾のスペースは別の番号になります。入力欄にコピーして貼る前に、半角にそろえてください。</li>
+</ul>
+<h2 id="_3">注意点: この記事ができないこと</h2>
+<ul>
+<li>追加工事の金額の決め方、変更契約書の作り方、契約変更に関する法令上の扱いの確認はしません。契約書・注文書を正としてください。</li>
+<li>消費税・インボイス(適格請求書)の記載項目の計算や判断はしません。</li>
+<li>請求済みの管理は<a href="/split-billing-balance/">分割請求の残額の記事</a>、出来高は<a href="/progress-billing/">出来高の記事</a>で扱っています。この記事は現在の契約金額を出すところまでです。</li>
+</ul>
+<h2 id="1">見積から台帳・請求までを1つで見たいとき</h2>
+<p>見積から台帳への転記は<a href="/quote-to-ledger/">見積の明細から台帳に渡す記事</a>に、工事ごとの原価と粗利は<a href="/job-margin/">原価を材料・外注・経費に分けて粗利を見る記事</a>にまとめています。見積の計算そのものから作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=contract-change">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「変更履歴から現在の契約金額を出す」機能は、この商品には入っていません</strong>。請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>税込み・税抜の計算だけなら、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_4">まとめ</h2>
+<ul>
+<li>契約金額は上書きしない。「契約」シート(当初の金額)と「変更」シート(増減額の履歴)に分ける</li>
+<li>現在の契約金額は、当初の契約金額に、SUMIFSで集めた増減額の合計を足して出す。変更回数はCOUNTIFSで数える</li>
+<li>SUMIFSは文字の金額を黙って無視する。変更シートのチェックで止め、その工事の現在の契約金額は空欄にして「要確認」にする</li>
+<li>工事番号は大文字小文字を区別せず、全角・末尾スペースは別物として「契約表にない工事番号」で拾える</li>
+<li>22ケースと、契約200行・変更600行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では契約書の金額と数行を手で検算する</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、22ケース(追加1回、追加と減額の2回、変更のない工事、工事番号の大文字小文字の違い、存在しない工事番号、全角の工事番号、末尾にスペースのある工事番号、増減額が文字・全角・空欄・小数・0、変更日が文字・空欄、工事番号が空欄の変更行、減額が大きく契約額がマイナスになる場合、契約表の工事番号の重複・空欄、当初契約額が文字・空欄、空行、契約の行を消した場合)と、乱数で作った契約200行・変更履歴600行(入力ミスを約10%混ぜたデータ)で、変更の合計・現在の契約金額・変更回数・チェック表示が、Pythonで計算した結果と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/contract_change.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/payment-match/">工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】</a></li><li><a href="/daily-labor-by-job/">作業日報から工事ごとの人工と労務費を集計する式|工事番号の入力ミスも拾う【LibreOfficeで計算して確認】</a></li><li><a href="/progress-billing/">工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
