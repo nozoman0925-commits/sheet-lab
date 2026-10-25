@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('split-billing-calc')?'splitBill,parseRatios':f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('tax-rounding-compare')?'compare,parseAmounts':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('margin-markup')?'marginCalc':f.includes('split-billing-calc')?'splitBill,parseRatios':f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('tax-rounding-compare')?'compare,parseAmounts':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -525,6 +525,55 @@ const et=load('tools/estimate-total/body.html');
     ok(r.ok&&r.amounts.join()===am.join()&&r.sum===String(sum)&&r.adjusted.join()===ad.join()&&ad.reduce((s,v)=>s+v,0)===C,'sb rnd '+C+' '+ps+' '+md+' got '+JSON.stringify(r));
   }
   console.log('split-billing-calc '+k+' cases');
+})();
+// margin-markup: 手計算ケース+不等式(売値の定義式)による総当たり照合
+(function(){
+  const mm=load('tools/margin-markup/body.html');
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  let r=mm.marginCalc('800000','margin','20','round');
+  eq(r.price+'/'+r.profit+'/'+r.margin+'/'+r.markup,'1000000/200000/2000/2500','mm1 粗利率20%→売値100万・上乗せ25%');
+  r=mm.marginCalc('800000','markup','20','round');
+  eq(r.price+'/'+r.profit+'/'+r.margin+'/'+r.markup,'960000/160000/1667/2000','mm2 上乗せ20%→粗利率16.67%');
+  r=mm.marginCalc('１０００','markup','２５％','floor');
+  eq(r.price,'1250','mm3 全角・%');
+  r=mm.marginCalc('1000','price','1200','round');
+  eq(r.margin+'/'+r.markup,'1667/2000','mm4 売値から逆算');
+  r=mm.marginCalc('1000','price','800','round');
+  eq(r.profit+'/'+r.margin+'/'+r.markup,'-200/-2500/-2000','mm5 赤字はマイナス');
+  r=mm.marginCalc('0','price','500','round');
+  eq(r.markup,null,'mm6 原価0は上乗せ率なし');eq(r.margin,'10000','mm6 粗利率100%');
+  eq(mm.marginCalc('1000','margin','100','round').ok,false,'mm7 粗利率100%');
+  eq(mm.marginCalc('1000','margin','99.99','round').ok,true,'mm8 99.99%');
+  eq(mm.marginCalc('abc','margin','20','round').ok,false,'mm9 原価が文字');
+  eq(mm.marginCalc('1000','margin','','round').ok,false,'mm10 率が空欄');
+  eq(mm.marginCalc('1000','margin','12.345','round').ok,false,'mm11 小数3桁');
+  eq(mm.marginCalc('1000','margin','-5','round').ok,false,'mm12 負の率');
+  eq(mm.marginCalc('1000','price','0','round').ok,false,'mm13 売値0');
+  eq(mm.marginCalc('-1','price','10','round').ok,false,'mm14 負の原価');
+  eq(mm.marginCalc('1000','margin','33.33','ceil').price,'1500','mm15 33.33%切り上げ(1499.77..)');
+  let seed=777;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  let k=0;
+  for(let n=0;n<20000;n++){
+    const C=Math.floor(rnd()*10000000);
+    const rate=Math.floor(rnd()*9999);          // 0.00〜99.98%(0.01%単位)
+    const md=['floor','round','ceil'][n%3];
+    const txt=Math.floor(rate/100)+'.'+String(rate%100).padStart(2,'0');
+    // 粗利率: 売値pは p*(10000-rate) と C*10000 の大小関係で定まる
+    let d=10000-rate,t=C*10000,res=mm.marginCalc(String(C),'margin',txt,md),p=Number(res.price);
+    let good=md==='floor'?(p*d<=t&&t<(p+1)*d):md==='ceil'?((p-1)*d<t&&t<=p*d):(2*Math.abs(t-p*d)<=d&&!(2*(t-p*d)===d));
+    ok(res.ok&&good,'mm margin '+C+' '+txt+' '+md+' got '+res.price);
+    // 上乗せ率: 売値p vs C*(10000+rate)/10000
+    d=10000;t=C*(10000+rate);res=mm.marginCalc(String(C),'markup',txt,md);p=Number(res.price);
+    good=md==='floor'?(p*d<=t&&t<(p+1)*d):md==='ceil'?((p-1)*d<t&&t<=p*d):(2*Math.abs(t-p*d)<=d&&!(2*(t-p*d)===d));
+    ok(res.ok&&good,'mm markup '+C+' '+txt+' '+md+' got '+res.price);
+    // 逆算: 粗利率=(P-C)/P を独立にNumberで計算し、0.01%単位の四捨五入と一致
+    const P=Math.floor(rnd()*10000000)+1;
+    res=mm.marginCalc(String(C),'price',String(P),'round');
+    const g=P-C,ref=Math.sign(g)*Math.floor((2*Math.abs(g)*10000+P)/(2*P));
+    ok(res.ok&&res.margin===String(ref),'mm price '+C+' '+P+' got '+res.margin);
+    k+=3;
+  }
+  console.log('margin-markup '+k+' cases');
 })();
 
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);

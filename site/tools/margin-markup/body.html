@@ -1,0 +1,74 @@
+<h1>粗利率と上乗せ率の変換ツール</h1>
+<p>原価に「粗利を2割のせたい」と思って1.2倍にすると、粗利率は20%ではなく約16.7%になります。<b>粗利率</b>(売値に対する粗利の割合)と<b>上乗せ率</b>(原価に対する粗利の割合)は分母が違うためです。このツールは、原価と率から<b>売値と粗利額</b>を出し、<b>粗利率と上乗せ率の両方</b>を並べて表示します。売値から率を逆算することもできます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><label>原価(税抜・円):<br><input id="c" type="text" size="16" placeholder="800000"></label></p>
+<p><label>知りたいこと: <select id="k"><option value="margin">粗利率から売値を出す</option><option value="markup">上乗せ率(原価に対する)から売値を出す</option><option value="price">売値から粗利率・上乗せ率を出す</option></select></label></p>
+<p><label>値(率は%で小数2桁まで、売値は円):<br><input id="v" type="text" size="16" placeholder="20"></label></p>
+<p><label>売値の端数: <select id="m"><option value="round">四捨五入</option><option value="ceil">切り上げ</option><option value="floor">切り捨て</option></select></label></p>
+<p><button type="button" id="br">計算する</button> <span id="st"></span></p>
+<p><textarea id="o" rows="8" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li>粗利率から売値: 売値=原価÷(1−粗利率)。上乗せ率から売値: 売値=原価×(1+上乗せ率)。売値を円にそろえるときの端数は選んだ方法で処理します。</li>
+<li>粗利額は「売値−原価」、粗利率は「粗利額÷売値」、上乗せ率は「粗利額÷原価」で、小数2桁(四捨五入)で表示します。売値を円にそろえた後の値なので、入力した率とわずかに違うことがあります。</li>
+<li>原価と売値は0以上の整数(円)、率は0以上で小数2桁まで。全角数字と「%」も読み取ります。粗利率は100%未満です。原価が0円のときは上乗せ率は出せません。売値が原価より低い(赤字)場合はマイナスで表示します。</li>
+</ul>
+<p class="meta">税抜金額の計算だけです。経費の配分、消費税、価格をいくらにすべきかの判断はしません。値付けは自社の経費や取引先との取り決めで決まります。</p>
+<p class="meta">関連: <a href="/tools/estimate-total/">見積の合計計算ツール</a> / <a href="/tools/split-billing-calc/">分割請求の金額計算ツール</a> / 運営者の商品: <a href="/go/estimate-construction/?from=tool-margin-markup">工事・リフォーム用 見積書テンプレート(Excel・980円)</a></p>
+<script>
+function z(s){return String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[．。]/g,".").replace(/[，、]/g,",").replace(/[％]/g,"%").replace(/\s|　/g,"");}
+function divRound(num,den,mode){
+  var q=num/den,r=num%den;
+  if(r===0n)return q;
+  if(mode==="floor")return q;
+  if(mode==="ceil")return q+1n;
+  return (r*2n>=den)?q+1n:q;
+}
+function fmt(b){var neg=b<0n;if(neg)b=-b;var s=b.toString(),o="";while(s.length>3){o=","+s.slice(-3)+o;s=s.slice(0,-3);}return (neg?"-":"")+s+o;}
+function fmtP(p){var neg=p<0n;if(neg)p=-p;var i=p/100n,f=p%100n;return (neg?"-":"")+i.toString()+"."+(f<10n?"0":"")+f.toString();}
+function pctOf(num,den){
+  var neg=num<0n;if(neg)num=-num;
+  var v=divRound(num*10000n,den,"round");
+  return neg?-v:v;
+}
+function parseRate(t){
+  var v=z(t).replace(/%$/,"");
+  var m=/^(\d+)(?:\.(\d{1,2}))?$/.exec(v);
+  if(!m)return null;
+  return BigInt(m[1])*100n+BigInt((m[2]||"")+"00".slice((m[2]||"").length));
+}
+function marginCalc(costText,kind,valText,mode){
+  var cs=z(costText);
+  if(!/^\d+$/.test(cs))return {ok:false,text:"原価は0以上の整数(円)で入れてください"};
+  var C=BigInt(cs),P;
+  if(kind==="price"){
+    var ps=z(valText);
+    if(!/^\d+$/.test(ps))return {ok:false,text:"売値は0以上の整数(円)で入れてください"};
+    P=BigInt(ps);
+    if(P===0n)return {ok:false,text:"売値が0円のときは粗利率を出せません"};
+  }else{
+    var r=parseRate(valText);
+    if(r===null)return {ok:false,text:"率は0以上、小数2桁までの数で入れてください"};
+    if(kind==="margin"){
+      if(r>=10000n)return {ok:false,text:"粗利率は100%未満で入れてください"};
+      P=divRound(C*10000n,10000n-r,mode);
+    }else{
+      P=divRound(C*(10000n+r),10000n,mode);
+    }
+  }
+  var G=P-C;
+  var mg=pctOf(G,P);
+  var mk=C===0n?null:pctOf(G,C);
+  var out="原価: "+fmt(C)+"円 / 売値: "+fmt(P)+"円 / 粗利額: "+fmt(G)+"円\n"+
+    "粗利率(粗利額÷売値): "+fmtP(mg)+"%\n"+
+    "上乗せ率(粗利額÷原価): "+(mk===null?"原価が0円のため出せません":fmtP(mk)+"%")+"\n";
+  if(G<0n)out+="注意: 売値が原価より低く、赤字です。\n";
+  return {ok:true,cost:C.toString(),price:P.toString(),profit:G.toString(),margin:mg.toString(),markup:mk===null?null:mk.toString(),text:out};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("br").onclick=function(){
+    var r=marginCalc(g("c").value,g("k").value,g("v").value,g("m").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
