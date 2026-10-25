@@ -1,0 +1,285 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="リフォーム・工務店の引渡後の定期点検を、台帳の引渡日からEDATEで予定日を出し、「期限超過」「30日以内」「予定あり」を自動表示するExcelの式を解説。うるう日・月末の引渡、日付の逆転、全角の日付などの入力ミスも、23ケースと500行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/handover-check/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="リフォーム・工務店の引渡後の定期点検を、台帳の引渡日からEDATEで予定日を出し、「期限超過」「30日以内」「予定あり」を自動表示するExcelの式を解説。うるう日・月末の引渡、日付の逆転、全角の日付などの入力ミスも、23ケースと500行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/handover-check/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】", "datePublished": "2026-10-26", "dateModified": "2026-10-26", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "リフォーム・工務店の引渡後の定期点検を、台帳の引渡日からEDATEで予定日を出し、「期限超過」「30日以内」「予定あり」を自動表示するExcelの式を解説。うるう日・月末の引渡、日付の逆転、全角の日付などの入力ミスも、23ケースと500行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/handover-check/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/handover-check/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/handover-check/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】</p><article><p class="meta">2026-10-26 ・ Excel関数</p><h1>引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】</h1><p>「あのお宅、引渡からそろそろ1年だったかな……」。工事が終わって引渡したあとの定期点検は、請求が済むと頭から抜けやすい仕事です。点検の予定日を紙のメモやカレンダーに1件ずつ書いていると、書き忘れたものから漏れていきます。</p>
+<p>この記事では、台帳に<strong>引渡日</strong>と<strong>点検をした日</strong>を入れるだけで、<strong>次の点検の種類・予定日・「期限超過／30日以内／予定あり」</strong>を自動で出す式を示します。工事台帳の末尾にこの表を足しておけば、開くたびに「連絡すべきお宅」が上に出ます。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/handover_check.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・OR・AND・NOT・ISNUMBER・COUNTIF・EDATEという一般的な関数ですが、本番で使う前に、数行を手計算と見比べてください。この記事は表の作り方の説明です。<strong>点検を何年目に行うか、保証期間が何年か、といった内容は契約書・保証書に従ってください</strong>(この記事では「1年点検」「2年点検」を例にしているだけで、法令や保証の内容の助言はしません)。</p>
+<h2 id="1224edate">先に結論: 引渡日から「12か月後」「24か月後」をEDATEで出す</h2>
+<ul>
+<li>1年点検の予定日 = 引渡日の12か月後、2年点検の予定日 = 引渡日の24か月後</li>
+<li>1年点検済日が空欄なら「次は1年点検」、入っていて2年点検済日が空欄なら「次は2年点検」、両方入っていれば「完了」</li>
+<li>予定日が基準日(今日)より前なら「期限超過」、30日以内なら「30日以内」、それ以外は「予定あり」</li>
+</ul>
+<p>基準日は、セルK1に <code>=TODAY()</code> と入れておくと開くたびに今日になります(検証では日付を直接入れて確認しました)。</p>
+<h2 id="excel">Excelの式</h2>
+<p>シート名は「引渡」。2行目から使います。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>引渡日</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>1年点検済日</td>
+<td>点検したら手入力(日付)。まだなら空欄</td>
+</tr>
+<tr>
+<td>D</td>
+<td>2年点検済日</td>
+<td>点検したら手入力(日付)。まだなら空欄</td>
+</tr>
+<tr>
+<td>E</td>
+<td>次の点検</td>
+<td>式</td>
+</tr>
+<tr>
+<td>F</td>
+<td>次の点検予定日</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>状態</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>K1</td>
+<td>基準日</td>
+<td><code>=TODAY()</code> または日付</td>
+</tr>
+</tbody>
+</table>
+<pre><code>E2: =IF(OR(H2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2=&quot;&quot;),&quot;&quot;,IF(C2=&quot;&quot;,&quot;1年点検&quot;,IF(D2=&quot;&quot;,&quot;2年点検&quot;,&quot;完了&quot;)))
+F2: =IF(OR(H2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2=&quot;&quot;,E2=&quot;完了&quot;),&quot;&quot;,IF(E2=&quot;1年点検&quot;,EDATE(B2,12),EDATE(B2,24)))
+G2: =IF(OR(H2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2=&quot;&quot;),&quot;&quot;,IF(E2=&quot;完了&quot;,&quot;完了&quot;,IF(F2&lt;$K$1,&quot;期限超過&quot;,
+      IF(F2-$K$1&lt;=30,&quot;30日以内&quot;,&quot;予定あり&quot;))))
+H2: =IF(A2&amp;B2&amp;C2&amp;D2=&quot;&quot;,&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,
+      IF(COUNTIF($A$2:$A$1000,A2)&gt;1,&quot;工事番号が重複&quot;,
+      IF(NOT(ISNUMBER($K$1)),&quot;基準日が日付でない&quot;,
+      IF(NOT(ISNUMBER(B2)),&quot;引渡日が日付でない&quot;,
+      IF(OR(B2&lt;1,B2&gt;73050),&quot;引渡日が範囲外&quot;,
+      IF(AND(C2&lt;&gt;&quot;&quot;,NOT(ISNUMBER(C2))),&quot;1年点検済日が日付でない&quot;,
+      IF(AND(D2&lt;&gt;&quot;&quot;,NOT(ISNUMBER(D2))),&quot;2年点検済日が日付でない&quot;,
+      IF(AND(D2&lt;&gt;&quot;&quot;,C2=&quot;&quot;),&quot;1年点検が空欄のまま2年点検済み&quot;,
+      IF(AND(C2&lt;&gt;&quot;&quot;,C2&lt;B2),&quot;1年点検済日が引渡日より前&quot;,
+      IF(AND(D2&lt;&gt;&quot;&quot;,D2&lt;B2),&quot;2年点検済日が引渡日より前&quot;,&quot;&quot;)))))))))))
+</code></pre>
+<p>F列の表示形式は「日付」にしてください(そのままだと数字(シリアル値)で表示されます)。</p>
+<p>ポイントは次の4つです。</p>
+<ul>
+<li><strong>EDATEは「月」を足すので、月末やうるう日でも日付が壊れません</strong>。引渡が2024年2月29日なら、12か月後は存在しない2025年2月29日ではなく<strong>2025年2月28日</strong>になります。2025年10月31日の12か月後は2026年10月31日です(LibreOfficeでの結果)。「365日足す」式だと、うるう年をまたぐと1日ずれます。</li>
+<li><strong>日付の入力ミスは、黙って計算せずチェック列で止めます</strong>。「2025/9/1」を文字として入れた、全角で「２０２６/９/５」と入れた、「済」と書いた、といった行は、予定日を出さずに「〜が日付でない」と表示します。間違った予定日を見せるより、空欄にして知らせるほうが安全だからです。</li>
+<li><strong>日付の逆転も拾います</strong>。点検済日が引渡日より前になっているときは「点検済日が引渡日より前」、1年点検が空欄なのに2年点検だけ入っているときは「1年点検が空欄のまま2年点検済み」と出ます。</li>
+<li><strong>工事番号の重複も拾います</strong>。同じ工事番号の行が2つあると、どちらも「工事番号が重複」です(大文字小文字は同じ扱い)。</li>
+</ul>
+<h2 id="_1">実際に計算した結果</h2>
+<p>基準日は2026年10月26日で確認しました。</p>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>入力</th>
+<th>次の点検</th>
+<th>予定日</th>
+<th>状態</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>引渡から約10か月</td>
+<td>引渡2025/12/1、点検なし</td>
+<td>1年点検</td>
+<td>2026/12/1</td>
+<td>予定あり</td>
+</tr>
+<tr>
+<td>予定日まで25日</td>
+<td>引渡2025/11/20</td>
+<td>1年点検</td>
+<td>2026/11/20</td>
+<td>30日以内</td>
+</tr>
+<tr>
+<td>予定日を過ぎた</td>
+<td>引渡2025/9/1</td>
+<td>1年点検</td>
+<td>2026/9/1</td>
+<td>期限超過</td>
+</tr>
+<tr>
+<td>1年点検済み</td>
+<td>引渡2025/9/1、1年済2026/9/5</td>
+<td>2年点検</td>
+<td>2027/9/1</td>
+<td>予定あり</td>
+</tr>
+<tr>
+<td>両方済み</td>
+<td>引渡2024/9/1、1年済・2年済</td>
+<td>完了</td>
+<td>空欄</td>
+<td>完了</td>
+</tr>
+<tr>
+<td>うるう日の引渡</td>
+<td>引渡2024/2/29</td>
+<td>1年点検</td>
+<td>2025/2/28</td>
+<td>期限超過</td>
+</tr>
+<tr>
+<td>月末の引渡</td>
+<td>引渡2025/10/31</td>
+<td>1年点検</td>
+<td>2026/10/31</td>
+<td>30日以内</td>
+</tr>
+<tr>
+<td>予定日が基準日と同じ</td>
+<td>引渡2025/10/26</td>
+<td>1年点検</td>
+<td>2026/10/26</td>
+<td>30日以内</td>
+</tr>
+<tr>
+<td>予定日が基準日の前日</td>
+<td>引渡2025/10/25</td>
+<td>1年点検</td>
+<td>2026/10/25</td>
+<td>期限超過</td>
+</tr>
+<tr>
+<td>予定日が基準日の30日後</td>
+<td>引渡2025/11/25</td>
+<td>1年点検</td>
+<td>2026/11/25</td>
+<td>30日以内</td>
+</tr>
+<tr>
+<td>予定日が基準日の31日後</td>
+<td>引渡2025/11/26</td>
+<td>1年点検</td>
+<td>2026/11/26</td>
+<td>予定あり</td>
+</tr>
+</tbody>
+</table>
+<p>入力ミスの行は、予定日・状態を空欄にして、H列にこう出ます。</p>
+<table>
+<thead>
+<tr>
+<th>入力ミス</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>引渡日が文字「2025/9/1」、または空欄</td>
+<td>引渡日が日付でない</td>
+</tr>
+<tr>
+<td>引渡日が0</td>
+<td>引渡日が範囲外</td>
+</tr>
+<tr>
+<td>工事番号が空欄</td>
+<td>工事番号が空欄</td>
+</tr>
+<tr>
+<td>工事番号が重複(a-001とA-001)</td>
+<td>工事番号が重複</td>
+</tr>
+<tr>
+<td>2年点検済日だけ入力</td>
+<td>1年点検が空欄のまま2年点検済み</td>
+</tr>
+<tr>
+<td>1年点検済日が引渡日より前</td>
+<td>1年点検済日が引渡日より前</td>
+</tr>
+<tr>
+<td>2年点検済日が引渡日より前</td>
+<td>2年点検済日が引渡日より前</td>
+</tr>
+<tr>
+<td>点検済日が「済」または全角の日付</td>
+<td>1年点検済日が日付でない</td>
+</tr>
+<tr>
+<td>基準日が空欄または文字</td>
+<td>基準日が日付でない</td>
+</tr>
+<tr>
+<td>すべて空欄の行</td>
+<td>(何も出さない)</td>
+</tr>
+</tbody>
+</table>
+<p>23ケースすべて、次の点検・予定日・状態・チェック表示が、Pythonで計算した結果と一致しました。さらに、乱数で作った<strong>500行</strong>(引渡日の文字・空欄・0、点検済日の文字・日付の逆転、工事番号の空欄・重複、1年点検が空欄のままの2年点検などを約12%混ぜました)でも、<strong>全項目が一致</strong>しました。Excelでの確認はしていません。</p>
+<p>なお、この確認の途中で、「引渡日が0」の行を、検証用の期待値のほうで「日付でない」と書き間違え、式との不一致が出ました。式の側は意図どおり「範囲外」と出ていたので、期待値を直しました。0のような小さな数は日付としては1900年1月0日にあたるため、「文字」ではなく「範囲外」として扱われます。</p>
+<h2 id="_2">つまずきやすい点</h2>
+<ul>
+<li><strong>点検をしたら、必ずその日に日付を入れる</strong>: 空欄のままだと、いつまでも「期限超過」と出続けます。連絡して日程が決まっただけの段階では入れず、点検した日を入れてください。</li>
+<li><strong>日付は「2026/9/5」のように入れる</strong>: 入力した日付がセルの中で左寄せになっていたら文字になっている合図です。チェック列に「日付でない」と出ます。</li>
+<li><strong>「30日以内」の30は変えられる</strong>: G列の式の <code>&lt;=30</code> を、連絡に余裕がほしければ <code>&lt;=45</code> や <code>&lt;=60</code> に変えてください。</li>
+<li><strong>予定日はあくまで目安</strong>: 契約や保証書で点検の時期・回数が決まっている場合は、そちらが正です。式の12・24を、その月数に書き換えれば使えます。</li>
+</ul>
+<h2 id="_3">注意点: この記事ができないこと</h2>
+<ul>
+<li>点検の時期・回数・保証期間の決め方、保証の範囲、法令上の扱いの確認はしません。</li>
+<li>点検の連絡そのもの(メール・電話・通知)はしません。表示するだけです。</li>
+<li>土日祝日を避けた日付の調整はしません。</li>
+</ul>
+<h2 id="1">見積から台帳・請求までを1つで見たいとき</h2>
+<p>引渡までの流れは、見積から台帳への転記を<a href="/quote-to-ledger/">見積の明細から台帳に渡す記事</a>に、工程の遅れは<a href="/schedule-delay/">工程表で遅れている工程を自動で表示する記事</a>に、請求と入金の照合は<a href="/payment-match/">請求と入金をExcelで照合する記事</a>にまとめています。見積の計算そのものから作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=handover-check">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「引渡後の点検管理」機能は、この商品には入っていません</strong>。請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>税込み・税抜の計算だけなら、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_4">まとめ</h2>
+<ul>
+<li>引渡日から12か月後・24か月後をEDATEで出すと、月末・うるう日でも日付が壊れない</li>
+<li>点検済日の入力で「次の点検」を切り替え、予定日と基準日の差で「期限超過／30日以内／予定あり」を出す</li>
+<li>日付が文字・全角・空欄、日付の逆転、番号の重複は、予定日を出さずチェック列で止める</li>
+<li>23ケースと500行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数行を手計算で見比べる</li>
+<li>点検の時期や保証の内容は、契約書・保証書が正</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、23ケース(予定日が基準日の30日後・31日後・前日・同日、1年点検済み、両方済み、うるう日・月末の引渡、引渡日の文字・空欄・0、工事番号の空欄・重複、2年点検だけ入力、点検済日が引渡日より前、点検済日の文字・全角、基準日の空欄・文字、空行)と、乱数で作った500行(入力ミスを約12%混ぜたデータ)で、次の点検・予定日・状態・チェック表示が、Pythonで計算した結果と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/handover_check.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/contract-change/">追加工事・減額を反映した「現在の契約金額」をExcelで出す式|変更履歴からSUMIFSで集計【LibreOfficeで確認】</a></li><li><a href="/payment-due/">請求書の支払期限(月末締め翌月末払いなど)をExcelで自動計算する式|うるう年・年またぎも【LibreOfficeで確認】</a></li><li><a href="/payment-match/">工事の請求と入金をExcelで照合する式|入金遅れ・一部入金・二重入金を自動表示【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
