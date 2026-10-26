@@ -1,0 +1,273 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>外注先への発注額・請求額・支払済から未払いと発注残を出すExcelの式|請求が発注額を超えたら要確認【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="工務店・リフォーム店で、外注先(協力業者)への「発注額・請求額・支払済」を1行ずつ入力するだけで、未請求・未払あり・完了を自動表示し、未払い合計・発注残・外注先ごとの未払額を出すExcelの式を解説。請求が発注額を超えた行や、全角の金額などの入力ミスも、26ケースと500行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/subcontract-balance/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="外注先への発注額・請求額・支払済から未払いと発注残を出すExcelの式|請求が発注額を超えたら要確認【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="工務店・リフォーム店で、外注先(協力業者)への「発注額・請求額・支払済」を1行ずつ入力するだけで、未請求・未払あり・完了を自動表示し、未払い合計・発注残・外注先ごとの未払額を出すExcelの式を解説。請求が発注額を超えた行や、全角の金額などの入力ミスも、26ケースと500行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/subcontract-balance/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "外注先への発注額・請求額・支払済から未払いと発注残を出すExcelの式|請求が発注額を超えたら要確認【LibreOfficeで確認】", "datePublished": "2026-10-27", "dateModified": "2026-10-27", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "工務店・リフォーム店で、外注先(協力業者)への「発注額・請求額・支払済」を1行ずつ入力するだけで、未請求・未払あり・完了を自動表示し、未払い合計・発注残・外注先ごとの未払額を出すExcelの式を解説。請求が発注額を超えた行や、全角の金額などの入力ミスも、26ケースと500行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/subcontract-balance/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/subcontract-balance/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "外注先への発注額・請求額・支払済から未払いと発注残を出すExcelの式|請求が発注額を超えたら要確認【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/subcontract-balance/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 外注先への発注額・請求額・支払済から未払いと発注残を出すExcelの式|請求が発注額を超えたら要確認【LibreOfficeで確認】</p><article><p class="meta">2026-10-27 ・ Excel関数</p><h1>外注先への発注額・請求額・支払済から未払いと発注残を出すExcelの式|請求が発注額を超えたら要確認【LibreOfficeで確認】</h1><p>外注先(大工、電気、設備、塗装などの協力業者)に仕事を頼んだとき、「いくら発注して、いくら請求が来て、いくら払ったか」が頭の中や紙の控えにしかなく、月末の支払いで慌てた経験はないでしょうか。請求書が来ていない分と、来ているのに払っていない分は、分けて見ないと支払い漏れや二重払いのもとになります。</p>
+<p>この記事では、<strong>発注額・請求額・支払済</strong>を1行ずつ入れるだけで、<strong>「未請求／未払あり／支払済(発注残あり)／完了／発注額超過」の表示、未払額、発注残、全体の未払い合計、外注先ごとの未払額</strong>を出す式を示します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/subcontract_balance.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・OR・AND・NOT・ISNUMBER・INT・N・COUNTIF・SUM・SUMIF・SUMIFSという一般的な関数ですが、本番で使う前に、数行を手計算と見比べてください。この記事は表の作り方の説明です。<strong>支払期限や支払条件は、外注先との取り決め(発注書・契約)に従ってください</strong>。税の取り扱いも扱いません(金額は税抜でそろえる前提です)。</p>
+<h2 id="_1">先に結論: 「発注額 − 請求額」が発注残、「請求額 − 支払済」が未払額</h2>
+<ul>
+<li>発注残 = 発注額 − 請求額(まだ請求が来ていない分)</li>
+<li>未払額 = 請求額 − 支払済(請求は来ているが払っていない分)</li>
+<li>請求額が空欄なら「未請求」、請求額が発注額を超えていたら「発注額超過」(追加工事の確認漏れや請求ミスの可能性があるので要確認)</li>
+<li>外注先名を1つ指定すると、その外注先の未払額だけを合計できる</li>
+</ul>
+<h2 id="excel">Excelの式</h2>
+<p>シート名は「外注」。2行目から使います。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>発注番号</td>
+<td>手入力(例: H-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>外注先</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>発注額(税抜)</td>
+<td>手入力(1以上の整数)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>請求額</td>
+<td>手入力。請求が来るまで空欄</td>
+</tr>
+<tr>
+<td>E</td>
+<td>支払済</td>
+<td>手入力。払うまで空欄</td>
+</tr>
+<tr>
+<td>F</td>
+<td>状態</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>未払額</td>
+<td>式</td>
+</tr>
+<tr>
+<td>I</td>
+<td>発注残</td>
+<td>式</td>
+</tr>
+<tr>
+<td>K3</td>
+<td>外注先を指定</td>
+<td>集計したい外注先の名前(空欄なら集計しない)</td>
+</tr>
+</tbody>
+</table>
+<pre><code>F2: =IF(OR(G2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;),&quot;&quot;,IF(N(D2)&gt;C2,&quot;発注額超過&quot;,IF(N(D2)=0,&quot;未請求&quot;,
+      IF(N(E2)&lt;N(D2),&quot;未払あり&quot;,IF(N(D2)&lt;C2,&quot;支払済(発注残あり)&quot;,&quot;完了&quot;)))))
+G2: =IF(A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;,&quot;&quot;,IF(A2=&quot;&quot;,&quot;発注番号が空欄&quot;,
+      IF(COUNTIF($A$2:$A$1000,A2)&gt;1,&quot;発注番号が重複&quot;,
+      IF(B2=&quot;&quot;,&quot;外注先が空欄&quot;,
+      IF(NOT(ISNUMBER(C2)),&quot;発注額が数字でない&quot;,
+      IF(OR(C2&lt;1,C2&lt;&gt;INT(C2)),&quot;発注額は1以上の整数&quot;,
+      IF(AND(D2&lt;&gt;&quot;&quot;,NOT(ISNUMBER(D2))),&quot;請求額が数字でない&quot;,
+      IF(AND(ISNUMBER(D2),OR(D2&lt;0,D2&lt;&gt;INT(D2))),&quot;請求額は0以上の整数&quot;,
+      IF(AND(E2&lt;&gt;&quot;&quot;,NOT(ISNUMBER(E2))),&quot;支払済が数字でない&quot;,
+      IF(AND(ISNUMBER(E2),OR(E2&lt;0,E2&lt;&gt;INT(E2))),&quot;支払済は0以上の整数&quot;,
+      IF(N(E2)&gt;N(D2),&quot;支払済が請求額を超えている&quot;,&quot;&quot;)))))))))))
+H2: =IF(F2=&quot;&quot;,&quot;&quot;,N(D2)-N(E2))
+I2: =IF(F2=&quot;&quot;,&quot;&quot;,C2-N(D2))
+</code></pre>
+<p>N関数は、空欄を0として扱うために使っています(<code>N(D2)</code>は、D2が空欄なら0、数字ならその数字を返します)。入力ミスの行はチェック列に理由が出て、状態・未払額・発注残は空欄になり、集計に入りません。</p>
+<p>集計は右側のセルに置きます(範囲は1000行まで)。</p>
+<pre><code>K5 未払い合計:     =SUM($H$2:$H$1000)
+K6 発注残の合計:   =SUMIF($I$2:$I$1000,&quot;&gt;0&quot;)
+K7 発注額超過の件数: =COUNTIF($F$2:$F$1000,&quot;発注額超過&quot;)
+K8 指定した外注先の未払額: =IF($K$3=&quot;&quot;,&quot;&quot;,SUMIFS($H$2:$H$1000,$B$2:$B$1000,$K$3))
+</code></pre>
+<p>K6で「0より大きいものだけ」を足しているのは、発注額超過の行の発注残がマイナスになるためです。マイナスを足すと、他の行の発注残を打ち消してしまいます。</p>
+<h2 id="_2">実際に計算して確認した結果</h2>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>発注額</th>
+<th>請求額</th>
+<th>支払済</th>
+<th>状態</th>
+<th>未払額</th>
+<th>発注残</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>まだ請求なし</td>
+<td>500,000</td>
+<td>空欄</td>
+<td>空欄</td>
+<td>未請求</td>
+<td>0</td>
+<td>500,000</td>
+</tr>
+<tr>
+<td>請求が来て未払</td>
+<td>500,000</td>
+<td>500,000</td>
+<td>空欄</td>
+<td>未払あり</td>
+<td>500,000</td>
+<td>0</td>
+</tr>
+<tr>
+<td>一部だけ支払済</td>
+<td>500,000</td>
+<td>500,000</td>
+<td>200,000</td>
+<td>未払あり</td>
+<td>300,000</td>
+<td>0</td>
+</tr>
+<tr>
+<td>出来高の一部を請求して支払済</td>
+<td>500,000</td>
+<td>300,000</td>
+<td>300,000</td>
+<td>支払済(発注残あり)</td>
+<td>0</td>
+<td>200,000</td>
+</tr>
+<tr>
+<td>全額請求して全額支払済</td>
+<td>500,000</td>
+<td>500,000</td>
+<td>500,000</td>
+<td>完了</td>
+<td>0</td>
+<td>0</td>
+</tr>
+<tr>
+<td>請求が発注額を超過</td>
+<td>500,000</td>
+<td>550,000</td>
+<td>100,000</td>
+<td>発注額超過</td>
+<td>450,000</td>
+<td>-50,000</td>
+</tr>
+</tbody>
+</table>
+<p>複数行の集計の確認では、4件(A工業500,000円が請求済・200,000円支払済、B電気300,000円が請求100,000円・支払済100,000円、A工業200,000円が請求250,000円・未払い、C設備400,000円が請求なし)で、未払い合計 550,000円、発注残の合計 600,000円、発注額超過 1件と出ました。外注先に「A工業」を指定した別の3件のケースでは、A工業の2件の未払額(300,000円と150,000円)の合計450,000円が出ました。一覧にない外注先を指定した場合は0になります。</p>
+<p>入力ミスの行は、状態・未払額・発注残を空欄にして、G列にこう出ます。</p>
+<table>
+<thead>
+<tr>
+<th>入力ミス</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>発注番号が空欄</td>
+<td>発注番号が空欄</td>
+</tr>
+<tr>
+<td>発注番号が重複(H-001とh-001)</td>
+<td>発注番号が重複</td>
+</tr>
+<tr>
+<td>外注先が空欄</td>
+<td>外注先が空欄</td>
+</tr>
+<tr>
+<td>発注額が「50万」・全角「５００，０００」・空欄</td>
+<td>発注額が数字でない</td>
+</tr>
+<tr>
+<td>発注額が0・小数</td>
+<td>発注額は1以上の整数</td>
+</tr>
+<tr>
+<td>請求額が「済」</td>
+<td>請求額が数字でない</td>
+</tr>
+<tr>
+<td>請求額がマイナス・小数</td>
+<td>請求額は0以上の整数</td>
+</tr>
+<tr>
+<td>支払済が「払い済み」</td>
+<td>支払済が数字でない</td>
+</tr>
+<tr>
+<td>支払済がマイナス・小数</td>
+<td>支払済は0以上の整数</td>
+</tr>
+<tr>
+<td>支払済が請求額より多い(請求が空欄で支払済だけ入力した場合も)</td>
+<td>支払済が請求額を超えている</td>
+</tr>
+<tr>
+<td>すべて空欄の行</td>
+<td>(何も出さない)</td>
+</tr>
+</tbody>
+</table>
+<p>26ケースすべて、状態・未払額・発注残・チェック表示と集計が、Pythonで計算した結果と一致しました。さらに、乱数で作った<strong>500行</strong>(発注番号の空欄・重複、外注先の空欄、発注額の文字・0・小数・マイナス、請求額・支払済の文字・マイナス・小数、支払済の超過を約12%混ぜました)でも、<strong>全項目と集計4つが一致</strong>しました。Excelでの確認はしていません。</p>
+<h2 id="_3">つまずきやすい点</h2>
+<ul>
+<li><strong>請求書が届いたら、その日に請求額を入れる</strong>: 入れ忘れると「未請求」のまま残り、未払い合計に入りません。</li>
+<li><strong>支払ったら、その日に支払済を入れる</strong>: 請求額に対する累計の金額を入れてください(分けて払った場合は、合計額に書き換えます)。</li>
+<li><strong>外注先名は表記をそろえる</strong>: 「A工業」と「A工業 」(末尾に空白)は別の外注先として集計されます。入力規則のリストで選ぶ運用が安全です。この記事の検証は式の動作についてで、入力規則そのものは確認していません。</li>
+<li>**外注先名に「*」や「?」を使わない**: 外注先ごとの集計で、条件として別の意味になることがあります(この記事では確認していません)。</li>
+<li><strong>発注額超過は「ミス」とは限らない</strong>: 追加の作業を口頭で頼んでいた場合などもあります。発注額を直すか、追加の発注として別の行にするかは、外注先と相談して決めてください。</li>
+</ul>
+<h2 id="_4">注意点: この記事ができないこと</h2>
+<ul>
+<li>支払期限の計算、振込、支払いの通知はしません。支払期限の出し方は<a href="/payment-due/">締め日と支払日から支払期限を出す記事</a>にあります。</li>
+<li>外注費として扱ってよいか、源泉徴収が要るかなど、税務・法律の判断はしません。迷うときは税理士など専門家に確認してください。</li>
+<li>金額は税抜の整数だけを前提にしています。</li>
+</ul>
+<h2 id="_5">工事ごとの原価・請求までつなげたいとき</h2>
+<p>この表で出した外注費を、工事ごとの粗利に反映する方法は<a href="/job-margin/">工事の原価を材料・外注・経費に分けて粗利を見る記事</a>に、日報から労務費を出す方法は<a href="/daily-labor-by-job/">作業日報から工事ごとの人工と労務費を集計する記事</a>に、お客様からの入金との照合は<a href="/payment-match/">請求と入金をExcelで照合する記事</a>にまとめています。見積の計算そのものから作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=subcontract-balance">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「外注先の支払管理」機能は、この商品には入っていません</strong>。請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>税込み・税抜の計算だけなら、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>発注残 = 発注額 − 請求額、未払額 = 請求額 − 支払済で、「請求待ち」と「払い待ち」を分けて見る</li>
+<li>請求額が発注額を超えた行は「発注額超過」として、確認のきっかけにする</li>
+<li>発注残の合計は、超過行のマイナスを足さないよう「0より大きいものだけ」を足す</li>
+<li>数字でない金額、全角、マイナス、小数、支払済が請求額より多い行は、状態を出さずチェック列で止める</li>
+<li>26ケースと500行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数行を手計算で見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、26ケース(未請求・未払あり・一部支払済・発注残あり・完了・請求の超過、複数行の集計、外注先指定、発注番号の空欄・重複、外注先の空欄、発注額の文字・全角・空欄・0・小数、請求額・支払済の文字・マイナス・小数、支払済が請求額を超える、空行)と、乱数で作った500行(入力ミスを約12%混ぜたデータ)で、状態・未払額・発注残・チェック表示と、未払い合計・発注残合計・超過件数・外注先別の未払額が、Pythonで計算した結果と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/subcontract_balance.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/handover-check/">引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】</a></li><li><a href="/quote-followup/">見積を出したあとの回答待ちをExcelで管理する式|期限切れの見積・受注額・受注率を自動表示【LibreOfficeで確認】</a></li><li><a href="/contract-change/">追加工事・減額を反映した「現在の契約金額」をExcelで出す式|変更履歴からSUMIFSで集計【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
