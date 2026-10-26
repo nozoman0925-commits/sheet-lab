@@ -1,0 +1,113 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工期の完了日計算ツール(着工日と稼働日数から完了日を出す・日曜や土曜、休工日を除く) | シート実務ラボ</title><meta name="description" content="着工日と必要な稼働日数を入れると完了予定日を、着工日と完了日を入れると稼働日数と暦日数を計算する無料ツール。日曜・土曜を休みにするか、お盆などの休工日を日付で追加するかを選べます。ブラウザ内で処理し、入力は送信されません。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/tools/koki-calc/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工期の完了日計算ツール(着工日と稼働日数から完了日を出す・日曜や土曜、休工日を除く) | シート実務ラボ"><meta property="og:description" content="着工日と必要な稼働日数を入れると完了予定日を、着工日と完了日を入れると稼働日数と暦日数を計算する無料ツール。日曜・土曜を休みにするか、お盆などの休工日を日付で追加するかを選べます。ブラウザ内で処理し、入力は送信されません。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/tools/koki-calc/"><meta property="og:type" content="website">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "WebApplication", "name": "工期の完了日計算ツール(着工日と稼働日数から完了日を出す・日曜や土曜、休工日を除く)", "description": "着工日と必要な稼働日数を入れると完了予定日を、着工日と完了日を入れると稼働日数と暦日数を計算する無料ツール。日曜・土曜を休みにするか、お盆などの休工日を日付で追加するかを選べます。ブラウザ内で処理し、入力は送信されません。", "url": "https://sheet-lab-site.pages.dev/tools/koki-calc/", "applicationCategory": "BusinessApplication", "operatingSystem": "Web browser", "inLanguage": "ja", "isAccessibleForFree": true, "offers": {"@type": "Offer", "price": "0", "priceCurrency": "JPY"}}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "無料ツール", "item": "https://sheet-lab-site.pages.dev/tools/"}, {"@type": "ListItem", "position": 3, "name": "工期の完了日計算ツール(着工日と稼働日数から完了日を出す・日曜や土曜、休工日を除く)", "item": "https://sheet-lab-site.pages.dev/tools/koki-calc/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; <a href="/tools/">無料ツール</a> &gt; 工期の完了日計算ツール(着工日と稼働日数から完了日を出す・日曜や土曜、休工日を除く)</p><h1>工期の完了日計算ツール</h1>
+<p>着工日と<b>必要な稼働日数</b>(実際に作業する日の数)を入れると、<b>完了予定日</b>を計算します。反対に、着工日と完了日を入れて<b>稼働日数と暦日数(カレンダー上の日数)</b>を出すこともできます。日曜・土曜を休みにするか、お盆や年末年始などの<b>休工日</b>を日付で足すかを選べます。<b>入力した内容は、このページの中だけで処理され、外部には送信されません。</b></p>
+<p><label>着工日(例: 2026-11-02 または 2026/11/2):<br><input id="s" type="text" size="14" placeholder="2026-11-02"></label></p>
+<p><label>稼働日数(完了日を出すとき。1〜3650):<br><input id="d" type="text" size="8" placeholder="20"></label></p>
+<p><label>完了日(稼働日数を出すとき):<br><input id="e" type="text" size="14" placeholder="2026-12-01"></label></p>
+<p>休みにする曜日: <label><input type="checkbox" id="su" checked> 日曜</label> <label><input type="checkbox" id="sa"> 土曜</label></p>
+<p><label>休工日(1行に1日。日付だけ):<br><textarea id="x" rows="4" style="width:100%" placeholder="2026-11-03&#10;2026-11-23"></textarea></label></p>
+<p><button type="button" id="b1">完了日を出す</button> <button type="button" id="b2">稼働日数を出す</button> <span id="st"></span></p>
+<p><textarea id="o" rows="8" style="width:100%" readonly placeholder="結果がここに表示されます"></textarea></p>
+<h2>このツールの扱い</h2>
+<ul>
+<li>着工日が休みの日にあたるときは、<b>着工日の次の稼働日を1日目</b>として数えます。着工日が稼働日なら、着工日が1日目です。</li>
+<li>「稼働日数を出す」は、着工日と完了日の<b>両方の日を含めて</b>、休みを除いた日数を数えます。</li>
+<li>祝日のデータは持っていません。祝日や盆休みなどで休む日は、「休工日」に日付を入れてください。休工日が曜日の休みと重なっても、二重には引きません。</li>
+<li>雨などの天候による遅れ、職人の手配、近隣の事情は計算に入りません。日数の見込みそのものは、現場の判断です。</li>
+<li>対応する日付は西暦で、実在する日だけです(2月30日などはエラーになります)。全角数字も読み取ります。</li>
+</ul>
+<p class="meta">日付の計算だけです。契約上の工期の定め方や、遅れたときの責任の判断はしません。</p>
+<p class="meta">関連: <a href="/handover-check/">引渡日から1年点検・2年点検の予定日を出す式(記事)</a> / <a href="/tools/split-billing-calc/">分割請求の金額計算ツール</a> / 運営者の商品: <a href="/go/estimate-construction/?from=tool-koki-calc">工事・リフォーム用 見積書テンプレート(Excel・980円)</a></p>
+<script>
+function z(s){return String(s).replace(/[０-９]/g,function(c){return String.fromCharCode(c.charCodeAt(0)-0xFEE0);}).replace(/[－ー‐−]/g,"-").replace(/[／]/g,"/").replace(/\s|　/g,"");}
+function parseDay(t){
+  var m=/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/.exec(z(t));
+  if(!m)return null;
+  var y=+m[1],mo=+m[2],d=+m[3];
+  if(mo<1||mo>12||d<1||d>31)return null;
+  var n=Math.round(Date.UTC(y,mo-1,d)/86400000);
+  var c=new Date(n*86400000);
+  if(c.getUTCFullYear()!==y||c.getUTCMonth()!==mo-1||c.getUTCDate()!==d)return null;
+  return n;
+}
+function fmtDay(n){
+  var c=new Date(n*86400000),w="日月火水木金土"[((n%7)+11)%7];
+  return c.getUTCFullYear()+"年"+(c.getUTCMonth()+1)+"月"+c.getUTCDate()+"日("+w+")";
+}
+function offSet(extraText,offSun,offSat){
+  var lines=String(extraText).split(/\r\n|\r|\n/),set={},i;
+  for(i=0;i<lines.length;i++){
+    if(/^[\s　]*$/.test(lines[i]))continue;
+    var n=parseDay(lines[i]);
+    if(n===null)return {ok:false,text:"休工日の"+(i+1)+"行目を日付として読めません"};
+    set[n]=true;
+  }
+  return {ok:true,set:set,sun:!!offSun,sat:!!offSat};
+}
+function isOff(n,o){var w=((n%7)+11)%7;return (w===0&&o.sun)||(w===6&&o.sat)||o.set[n]===true;}
+function kokiEnd(startText,daysText,offSun,offSat,extraText){
+  var s=parseDay(startText);
+  if(s===null)return {ok:false,text:"着工日を日付(例 2026-11-02)で入れてください"};
+  var dt=z(daysText);
+  if(!/^\d+$/.test(dt)||+dt<1||+dt>3650)return {ok:false,text:"稼働日数は1〜3650の整数で入れてください"};
+  var o=offSet(extraText,offSun,offSat);if(!o.ok)return o;
+  var need=+dt,n=s,done=0,guard=0;
+  while(true){
+    if(!isOff(n,o)){done++;if(done===need)break;}
+    n++;guard++;
+    if(guard>200000)return {ok:false,text:"休みが多すぎて完了日が決まりません"};
+  }
+  var cal=n-s+1;
+  return {ok:true,end:n,calendarDays:cal,workDays:need,
+    text:"着工日: "+fmtDay(s)+"\n稼働日数: "+need+"日\n完了予定日: "+fmtDay(n)+"\n暦日数(着工日と完了日を含む): "+cal+"日\n休みの日数: "+(cal-need)+"日"};
+}
+function kokiCount(startText,endText,offSun,offSat,extraText){
+  var s=parseDay(startText),e=parseDay(endText);
+  if(s===null)return {ok:false,text:"着工日を日付(例 2026-11-02)で入れてください"};
+  if(e===null)return {ok:false,text:"完了日を日付(例 2026-12-01)で入れてください"};
+  if(e<s)return {ok:false,text:"完了日が着工日より前になっています"};
+  if(e-s>36500)return {ok:false,text:"期間が長すぎます(100年まで)"};
+  var o=offSet(extraText,offSun,offSat);if(!o.ok)return o;
+  var work=0,n;
+  for(n=s;n<=e;n++)if(!isOff(n,o))work++;
+  var cal=e-s+1;
+  return {ok:true,workDays:work,calendarDays:cal,
+    text:"着工日: "+fmtDay(s)+"\n完了日: "+fmtDay(e)+"\n暦日数(両端を含む): "+cal+"日\n稼働日数: "+work+"日\n休みの日数: "+(cal-work)+"日"};
+}
+if(typeof document!=="undefined"){
+  var g=function(i){return document.getElementById(i);};
+  g("b1").onclick=function(){
+    var r=kokiEnd(g("s").value,g("d").value,g("su").checked,g("sa").checked,g("x").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+  g("b2").onclick=function(){
+    var r=kokiCount(g("s").value,g("e").value,g("su").checked,g("sa").checked,g("x").value);
+    g("o").value=r.text;g("st").textContent=r.ok?"":"計算できませんでした";
+  };
+}
+</script>
+<div class="box">ブラウザの中だけで計算し、入力内容は外部に送信しません。表記ゆれの整形は<a href="/tool/">データ整形ツール</a>、要望は<a href="/waitlist/">先行登録アンケート</a>へ。</div><section class="related"><h2>関連</h2><ul><li><a href="/schedule-delay/">工事の工程表で遅れている工程を自動で表示する式|予定終了日と基準日を比べて遅れ日数を出す【LibreOfficeで計算して確認】</a></li><li><a href="/handover-check/">引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】</a></li><li><a href="/quote-followup/">見積を出したあとの回答待ちをExcelで管理する式|期限切れの見積・受注額・受注率を自動表示【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>

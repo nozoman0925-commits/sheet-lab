@@ -1,5 +1,5 @@
 const fs=require('fs');
-function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('margin-markup')?'marginCalc':f.includes('split-billing-calc')?'splitBill,parseRatios':f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('tax-rounding-compare')?'compare,parseAmounts':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
+function load(f){const h=fs.readFileSync(f,'utf8');const m=h.match(/<script>([\s\S]*?)<\/script>/);return new Function(m[1]+';return {'+ (f.includes('koki-calc')?'kokiEnd,kokiCount,parseDay':f.includes('margin-markup')?'marginCalc':f.includes('split-billing-calc')?'splitBill,parseRatios':f.includes('hourly-wage')?'wageCalc':f.includes('list-diff')?'listDiff':f.includes('dup-check')?'dupCheck,normKey':f.includes('tax-rounding-compare')?'compare,parseAmounts':f.includes('estimate-total')?'estimate,parseLines,dec,divRound':f.includes('wareki')?'toWareki,toSeireki':f.includes('tax')?'calcTax,divRound':f.includes('age')?'calcAge,leap':f.includes('zenkaku')?'toHalf,toFull,H2F,F2H':f.includes('space-remove')?'cleanSpaces':f.includes('phone-format')?'cleanPhones':f.includes('postal-format')?'cleanPostal':f.includes('unit-time')?'parseTime,fmtHM,fmtDec,workMinutes,sumTimes':f.includes('percent')?'calc,parseNum':'countText')+'}')();}
 let fail=0;const ok=(c,m)=>{if(!c){fail++;if(fail<=10)console.log('NG',m)}};
 // wareki vs Intl
 const w=load('tools/wareki/body.html');
@@ -574,6 +574,57 @@ const et=load('tools/estimate-total/body.html');
     k+=3;
   }
   console.log('margin-markup '+k+' cases');
+})();
+
+// koki-calc: 手計算ケース+Dateのget UTCDayによる日ごとの独立照合
+(function(){
+  const kc=load('tools/koki-calc/body.html');
+  const eq=(a,b,m)=>ok(a===b,m+' got '+JSON.stringify(a));
+  // 2026-11-02は月曜
+  let r=kc.kokiEnd('2026-11-02','5',true,false,'');
+  eq(r.text.split('\n')[2],'完了予定日: 2026年11月6日(金)','kc1 月〜金の5日');
+  r=kc.kokiEnd('2026-11-02','6',true,false,'');
+  eq(r.text.split('\n')[2],'完了予定日: 2026年11月7日(土)','kc2 日曜休みなら土曜');
+  r=kc.kokiEnd('2026-11-02','6',true,true,'');
+  eq(r.text.split('\n')[2],'完了予定日: 2026年11月9日(月)','kc3 土日休み');
+  r=kc.kokiEnd('2026-11-01','1',true,false,'');
+  eq(r.text.split('\n')[2],'完了予定日: 2026年11月2日(月)','kc4 着工日が日曜なら翌日が1日目');
+  r=kc.kokiEnd('2026-11-02','3',true,false,'2026-11-03\n2026-11-03\n2026/11/4');
+  eq(r.text.split('\n')[2],'完了予定日: 2026年11月6日(金)','kc5 休工日(重複・区切り違い)');
+  r=kc.kokiEnd('２０２６－１１－０２','１',true,false,'');
+  eq(r.ok&&r.end===kc.parseDay('2026-11-02'),true,'kc6 全角');
+  eq(kc.kokiEnd('2026-02-30','5',true,false,'').ok,false,'kc7 存在しない日');
+  eq(kc.kokiEnd('2026-11-02','0',true,false,'').ok,false,'kc8 0日');
+  eq(kc.kokiEnd('2026-11-02','','true',false,'').ok,false,'kc9 空欄');
+  eq(kc.kokiEnd('2026-11-02','3651',true,false,'').ok,false,'kc10 多すぎ');
+  eq(kc.kokiEnd('2026-11-02','5',true,false,'abc').ok,false,'kc11 休工日が文字');
+  eq(kc.kokiEnd('2026-11-02','5',true,false,'2026-13-01').ok,false,'kc12 休工日が不正');
+  eq(kc.kokiCount('2026-12-01','2026-11-02',true,false,'').ok,false,'kc13 日付の逆転');
+  eq(kc.kokiCount('2026-11-02','2026-11-02',true,false,'').workDays,1,'kc14 同日');
+  eq(kc.kokiCount('2026-11-01','2026-11-01',true,false,'').workDays,0,'kc15 日曜1日');
+  eq(kc.kokiCount('2026-11-02','2026-12-01',true,false,'').workDays,26,'kc16 11/2〜12/1(30日、日曜4日)');
+  eq(kc.kokiCount('2024-02-28','2024-03-01',false,false,'').calendarDays,3,'kc17 うるう日');
+  eq(kc.kokiEnd('2024-02-28','3',false,false,'').text.split('\n')[2],'完了予定日: 2024年3月1日(金)','kc18 うるう日をまたぐ');
+  let seed=4242;const rnd=()=>{seed=(seed*1103515245+12345)&0x7fffffff;return seed/0x7fffffff;};
+  let k=0;
+  const iso=t=>{const d=new Date(t);return d.getUTCFullYear()+'-'+(d.getUTCMonth()+1)+'-'+d.getUTCDate();};
+  for(let i=0;i<5000;i++){
+    const t0=Date.UTC(2020,0,1)+Math.floor(rnd()*3000)*86400000;
+    const need=1+Math.floor(rnd()*120),su=rnd()<0.8,sa=rnd()<0.5;
+    const ex=[];const nx=Math.floor(rnd()*6);
+    for(let j=0;j<nx;j++)ex.push(t0+Math.floor(rnd()*200)*86400000);
+    const exSet=new Set(ex);
+    // 独立実装: Dateの曜日で1日ずつ
+    let t=t0,done=0;
+    for(;;t+=86400000){const wd=new Date(t).getUTCDay();if((wd===0&&su)||(wd===6&&sa)||exSet.has(t))continue;if(++done===need)break;}
+    const res=kc.kokiEnd(iso(t0),String(need),su,sa,ex.map(iso).join('\n'));
+    ok(res.ok&&res.end*86400000===t&&res.calendarDays===(t-t0)/86400000+1,'kc end '+iso(t0)+' '+need+' '+su+sa+' got '+JSON.stringify(res));
+    // 逆算: 完了日までの稼働日数は元の日数に戻る
+    const back=kc.kokiCount(iso(t0),iso(t),su,sa,ex.map(iso).join('\n'));
+    ok(back.ok&&back.workDays===need,'kc back '+iso(t0)+' '+need+' got '+back.workDays);
+    k+=2;
+  }
+  console.log('koki-calc '+k+' cases');
 })();
 
 console.log(`age ${ac} dates, wareki ${n} dates, tax ${c} combos, fail=${fail}`);process.exit(fail?1:0);
