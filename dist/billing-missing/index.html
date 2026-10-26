@@ -1,0 +1,263 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>完了した工事の請求漏れをExcelで見つける式|完了日から何日たったかと未請求の金額を自動表示【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="工事が終わったのに請求していない「請求漏れ」を、完了日・請求日・請求額から自動表示するExcelの式を解説。基準日と猶予日数で請求待ち・請求漏れを分け、未請求の金額も出します。入力ミスも28ケースと500行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/billing-missing/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="完了した工事の請求漏れをExcelで見つける式|完了日から何日たったかと未請求の金額を自動表示【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="工事が終わったのに請求していない「請求漏れ」を、完了日・請求日・請求額から自動表示するExcelの式を解説。基準日と猶予日数で請求待ち・請求漏れを分け、未請求の金額も出します。入力ミスも28ケースと500行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/billing-missing/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "完了した工事の請求漏れをExcelで見つける式|完了日から何日たったかと未請求の金額を自動表示【LibreOfficeで確認】", "datePublished": "2026-10-27", "dateModified": "2026-10-27", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "工事が終わったのに請求していない「請求漏れ」を、完了日・請求日・請求額から自動表示するExcelの式を解説。基準日と猶予日数で請求待ち・請求漏れを分け、未請求の金額も出します。入力ミスも28ケースと500行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/billing-missing/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/billing-missing/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "完了した工事の請求漏れをExcelで見つける式|完了日から何日たったかと未請求の金額を自動表示【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/billing-missing/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 完了した工事の請求漏れをExcelで見つける式|完了日から何日たったかと未請求の金額を自動表示【LibreOfficeで確認】</p><article><p class="meta">2026-10-27 ・ Excel関数</p><h1>完了した工事の請求漏れをExcelで見つける式|完了日から何日たったかと未請求の金額を自動表示【LibreOfficeで確認】</h1><p>工事が終わったあと、次の現場に追われて請求書を出しそびれ、気づいたら1か月たっていた——小さな工務店・リフォーム店では、わりとよくある話です。請求が遅れると、入金も遅れます。入金が遅れると、外注先や材料屋さんへの支払いが先に出ていくことになります。</p>
+<p>この記事では、<strong>完了日・請求日・請求額</strong>を1行ずつ入れるだけで、<strong>「工事中／完了予定／請求待ち／請求漏れ／請求済」の表示、完了からの経過日、請求漏れの件数と金額</strong>を出す式を示します。「完了から何日以内なら請求待ち、それを超えたら請求漏れ」の日数(猶予日数)は、自分で決められます。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/billing_missing.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・OR・AND・NOT・ISNUMBER・INT・N・COUNTIF・SUMIFという一般的な関数ですが、本番で使う前に、数行を手計算と見比べてください。この記事は表の作り方の説明です。<strong>請求の時期や条件は、お客様との契約(請負契約書・見積書)に従ってください</strong>。税の取り扱いも扱いません(請求額は税抜でも税込でも、そろえて入れてください)。</p>
+<h2 id="_1">先に結論: 「完了日はあるのに請求日が空欄」で、基準日から猶予日数を超えていたら請求漏れ</h2>
+<ul>
+<li>完了日が空欄 → 工事中</li>
+<li>請求日が入っている → 請求済</li>
+<li>完了日が基準日より先 → 完了予定</li>
+<li>完了日から基準日までの日数が猶予日数以内 → 請求待ち</li>
+<li>猶予日数を超えている → <strong>請求漏れ</strong></li>
+<li>基準日には、毎日自動で変わる <code>TODAY()</code> を入れても、確認したい日付を手入力しても使えます</li>
+</ul>
+<h2 id="excel">Excelの式</h2>
+<p>シート名は「請求漏れ」。2行目から使います。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: K-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>工事名</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>完了日</td>
+<td>手入力。完了するまで空欄</td>
+</tr>
+<tr>
+<td>D</td>
+<td>請求日</td>
+<td>手入力。請求書を出すまで空欄</td>
+</tr>
+<tr>
+<td>E</td>
+<td>請求額(予定を含む)</td>
+<td>手入力(1以上の整数)。まだ請求していない工事は予定額</td>
+</tr>
+<tr>
+<td>F</td>
+<td>状態</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>経過日</td>
+<td>式(請求待ち・請求漏れの行だけ)</td>
+</tr>
+<tr>
+<td>K2</td>
+<td>基準日</td>
+<td>今日の日付(<code>=TODAY()</code> でもよい)</td>
+</tr>
+<tr>
+<td>K3</td>
+<td>猶予日数</td>
+<td>完了から何日までを「請求待ち」とするか(空欄は0日)</td>
+</tr>
+</tbody>
+</table>
+<pre><code>F2: =IF(OR(G2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;),&quot;&quot;,IF(C2=&quot;&quot;,&quot;工事中&quot;,IF(D2&lt;&gt;&quot;&quot;,&quot;請求済&quot;,
+      IF(NOT(ISNUMBER($K$2)),&quot;基準日を入力&quot;,IF(C2&gt;$K$2,&quot;完了予定&quot;,
+      IF($K$2-C2&gt;N($K$3),&quot;請求漏れ&quot;,&quot;請求待ち&quot;))))))
+G2: =IF(A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;,&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,
+      IF(COUNTIF($A$2:$A$1000,A2)&gt;1,&quot;工事番号が重複&quot;,
+      IF(AND(C2&lt;&gt;&quot;&quot;,NOT(ISNUMBER(C2))),&quot;完了日が日付でない&quot;,
+      IF(AND(ISNUMBER(C2),OR(C2&lt;1,C2&lt;&gt;INT(C2))),&quot;完了日が日付でない&quot;,
+      IF(AND(D2&lt;&gt;&quot;&quot;,NOT(ISNUMBER(D2))),&quot;請求日が日付でない&quot;,
+      IF(AND(ISNUMBER(D2),OR(D2&lt;1,D2&lt;&gt;INT(D2))),&quot;請求日が日付でない&quot;,
+      IF(E2=&quot;&quot;,&quot;請求額が空欄&quot;,
+      IF(NOT(ISNUMBER(E2)),&quot;請求額が数字でない&quot;,
+      IF(OR(E2&lt;1,E2&lt;&gt;INT(E2)),&quot;請求額は1以上の整数&quot;,
+      IF(AND(D2&lt;&gt;&quot;&quot;,C2=&quot;&quot;),&quot;完了日が空欄なのに請求日がある&quot;,
+      IF(AND(D2&lt;&gt;&quot;&quot;,C2&gt;D2),&quot;請求日が完了日より前&quot;,&quot;&quot;)))))))))))
+H2: =IF(OR(F2=&quot;請求漏れ&quot;,F2=&quot;請求待ち&quot;),$K$2-C2,&quot;&quot;)
+</code></pre>
+<p>H列の表示形式は「標準」か「数値」にしてください(日付の差なので、日付形式のままだと変な日付に見えます)。<code>N($K$3)</code> は、猶予日数が空欄や文字のときに0日として扱うために使っています。入力ミスの行はチェック列に理由が出て、状態は空欄になり、集計に入りません。</p>
+<p>集計は右側のセルに置きます(範囲は1000行まで)。</p>
+<pre><code>K5 請求漏れの件数:   =COUNTIF($F$2:$F$1000,&quot;請求漏れ&quot;)
+K6 請求漏れの金額:   =SUMIF($F$2:$F$1000,&quot;請求漏れ&quot;,$E$2:$E$1000)
+K7 請求待ちの金額:   =SUMIF($F$2:$F$1000,&quot;請求待ち&quot;,$E$2:$E$1000)
+K8 工事中の件数:     =COUNTIF($F$2:$F$1000,&quot;工事中&quot;)
+</code></pre>
+<h2 id="_2">実際に計算して確認した結果</h2>
+<p>基準日を2026-10-27、猶予日数を7日にして、請求額800,000円の1行を入れた結果です。</p>
+<table>
+<thead>
+<tr>
+<th>完了日</th>
+<th>請求日</th>
+<th>状態</th>
+<th>経過日</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>空欄</td>
+<td>空欄</td>
+<td>工事中</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2026-10-30(基準日より先)</td>
+<td>空欄</td>
+<td>完了予定</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2026-10-27(基準日と同じ)</td>
+<td>空欄</td>
+<td>請求待ち</td>
+<td>0</td>
+</tr>
+<tr>
+<td>2026-10-20(ちょうど7日前)</td>
+<td>空欄</td>
+<td>請求待ち</td>
+<td>7</td>
+</tr>
+<tr>
+<td>2026-10-19(8日前)</td>
+<td>空欄</td>
+<td>請求漏れ</td>
+<td>8</td>
+</tr>
+<tr>
+<td>2026-08-28(60日前)</td>
+<td>空欄</td>
+<td>請求漏れ</td>
+<td>60</td>
+</tr>
+<tr>
+<td>2026-09-17</td>
+<td>2026-10-17</td>
+<td>請求済</td>
+<td>-</td>
+</tr>
+</tbody>
+</table>
+<p>ちょうど7日前は「請求待ち」、8日前から「請求漏れ」になります(境界の動きも確認済みです)。猶予日数を空欄にすると0日として扱い、完了日が基準日と同じ日なら請求待ち、1日でも過ぎれば請求漏れです。</p>
+<p>5件を入れた集計の確認では、請求漏れ2件(完了から30日の800,000円と、9日の300,000円)、請求待ち1件(完了から2日の150,000円)、工事中1件、請求済1件で、請求漏れの件数 2件・金額 1,100,000円、請求待ちの金額 150,000円、工事中 1件と出ました。</p>
+<p>入力ミスの行は、状態を空欄にして、G列にこう出ます。</p>
+<table>
+<thead>
+<tr>
+<th>入力ミス</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工事番号が空欄</td>
+<td>工事番号が空欄</td>
+</tr>
+<tr>
+<td>工事番号が重複(K-001とk-001)</td>
+<td>工事番号が重複</td>
+</tr>
+<tr>
+<td>完了日が全角の文字「２０２６/１０/５」</td>
+<td>完了日が日付でない</td>
+</tr>
+<tr>
+<td>完了日に時刻つき(2026-10-10 12:00)</td>
+<td>完了日が日付でない</td>
+</tr>
+<tr>
+<td>請求日が「済」</td>
+<td>請求日が日付でない</td>
+</tr>
+<tr>
+<td>完了日が空欄なのに請求日がある</td>
+<td>完了日が空欄なのに請求日がある</td>
+</tr>
+<tr>
+<td>請求日が完了日より前(日付の逆転)</td>
+<td>請求日が完了日より前</td>
+</tr>
+<tr>
+<td>請求額が空欄</td>
+<td>請求額が空欄</td>
+</tr>
+<tr>
+<td>請求額が「80万」・全角「８００，０００」</td>
+<td>請求額が数字でない</td>
+</tr>
+<tr>
+<td>請求額が0・小数</td>
+<td>請求額は1以上の整数</td>
+</tr>
+<tr>
+<td>すべて空欄の行</td>
+<td>(何も出さない)</td>
+</tr>
+</tbody>
+</table>
+<p>基準日が空欄や文字のときは、請求待ち・請求漏れの判定ができないので、完了日があって請求日が空欄の行に「基準日を入力」と出ます(請求済・工事中の行はそのまま判定されます)。</p>
+<p>28ケースすべて、状態・経過日・チェック表示と集計が、Pythonで計算した結果と一致しました。さらに、乱数で作った<strong>500行</strong>(工事番号の空欄・重複、完了日・請求日の文字や時刻つき、請求額の空欄・文字・0・小数・マイナスを約12%混ぜました)でも、<strong>全項目と集計4つが一致</strong>しました。Excelでの確認はしていません。</p>
+<h2 id="_3">つまずきやすい点</h2>
+<ul>
+<li><strong>日付は「日付」として入れる</strong>: 全角の数字や「10月5日完了」のような文章は、日付として扱われずチェック列で止まります。半角で「2026/10/5」のように入れると、Excelが日付にしてくれます。</li>
+<li><strong>「請求日が完了日より前」は、すべてがミスとは限らない</strong>: 着手金や中間請求のように、完了前に請求することもあります。そうした分は、この表ではなく<a href="/split-billing-balance/">分割請求の残額を管理する記事</a>の表で見るほうが向いています。この表は「完了時に1回請求する工事」を主に想定しています。</li>
+<li><strong>請求額は予定額でよい</strong>: 請求漏れの金額は、E列の金額の合計です。まだ請求書を作っていない工事は、見積の金額や契約金額を入れてください。追加工事が入って金額が変わる場合は、<a href="/contract-change/">追加工事・減額を反映した契約金額を出す記事</a>の式で出した金額を入れると、実際の請求額に近づきます。</li>
+<li><strong>TODAYを使うと、開くたびに状態が変わる</strong>: 過去の日付時点の状態を見たい場合は、K2に日付を手入力してください。</li>
+<li><strong>猶予日数は自社のルールで決める</strong>: 「完了から7日以内」としたのは例です。月末締めで請求する会社なら、猶予を月末までの日数にするなど、自社の運用に合わせてください。</li>
+</ul>
+<h2 id="_4">注意点: この記事ができないこと</h2>
+<ul>
+<li>請求書の作成、送信、督促はしません。入金の確認は<a href="/payment-match/">請求と入金を照合する記事</a>、請求書の支払期限は<a href="/payment-due/">締め日と支払日から支払期限を出す記事</a>にあります。</li>
+<li>請求の時期や、請求できる条件(検収の有無、支払条件)の判断はしません。契約や下請法などの法令に関わることは、契約書や専門家に確認してください。</li>
+<li>金額は整数だけを前提にしています。</li>
+</ul>
+<h2 id="_5">見積から請求までつなげたいとき</h2>
+<p>見積の回答待ちを管理する方法は<a href="/quote-followup/">見積提出後の回答待ちを管理する記事</a>に、見積から工事台帳に転記する流れは<a href="/quote-to-ledger/">見積から台帳への転記の記事</a>にまとめています。見積の計算そのものから作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=billing-missing">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「請求漏れの確認」機能は、この商品には入っていません</strong>。請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>税込み・税抜の計算だけなら、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>「完了日あり・請求日なし」の行を、基準日と猶予日数で「請求待ち」と「請求漏れ」に分ける</li>
+<li>猶予日数ちょうどまでは請求待ち、1日でも超えたら請求漏れ</li>
+<li>請求漏れの件数と金額を1か所に出して、毎週見る習慣にする</li>
+<li>日付が文字、請求日が完了日より前、完了日が空欄で請求日あり、請求額の空欄などは、状態を出さずチェック列で止める</li>
+<li>28ケースと500行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数行を手計算で見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、28ケース(工事中・完了予定・請求待ち・請求漏れ・請求済、猶予日数ちょうどの境界、請求日が完了日より前、完了日が空欄で請求日あり、日付が全角の文字、時刻つきの日付、工事番号の空欄・重複、請求額の空欄・文字・全角・0・小数、猶予日数の空欄・文字、基準日の空欄・文字、集計、空行)と、乱数で作った500行(入力ミスを約12%混ぜたデータ)で、状態・経過日・チェック表示と、請求漏れの件数・金額、請求待ちの金額、工事中の件数が、Pythonで計算した結果と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/billing_missing.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/tools/koki-calc/">工期の完了日計算ツール(着工日と稼働日数から完了日を出す・日曜や土曜、休工日を除く)</a></li><li><a href="/subcontract-balance/">外注先への発注額・請求額・支払済から未払いと発注残を出すExcelの式|請求が発注額を超えたら要確認【LibreOfficeで確認】</a></li><li><a href="/handover-check/">引渡日から1年点検・2年点検の予定日と期限超過をExcelで自動表示する式|EDATEで月末・うるう日も【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
