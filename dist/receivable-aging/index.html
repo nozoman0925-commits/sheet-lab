@@ -1,0 +1,310 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>未入金の請求を経過日数別に集計するExcelの式|30日以内・31〜60日・61日以上に分けて金額を出す【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="工事の請求のうち、まだ入金されていない分を「入金期日からの超過日数」で分けて金額を集計するExcelの式を解説。基準日を決めるだけで、30日以内・31〜60日・61日以上の未入金額が出ます。入力ミスも30ケースと500行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/receivable-aging/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="未入金の請求を経過日数別に集計するExcelの式|30日以内・31〜60日・61日以上に分けて金額を出す【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="工事の請求のうち、まだ入金されていない分を「入金期日からの超過日数」で分けて金額を集計するExcelの式を解説。基準日を決めるだけで、30日以内・31〜60日・61日以上の未入金額が出ます。入力ミスも30ケースと500行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/receivable-aging/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "未入金の請求を経過日数別に集計するExcelの式|30日以内・31〜60日・61日以上に分けて金額を出す【LibreOfficeで確認】", "datePublished": "2026-10-28", "dateModified": "2026-10-28", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "工事の請求のうち、まだ入金されていない分を「入金期日からの超過日数」で分けて金額を集計するExcelの式を解説。基準日を決めるだけで、30日以内・31〜60日・61日以上の未入金額が出ます。入力ミスも30ケースと500行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/receivable-aging/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/receivable-aging/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "未入金の請求を経過日数別に集計するExcelの式|30日以内・31〜60日・61日以上に分けて金額を出す【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/receivable-aging/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 未入金の請求を経過日数別に集計するExcelの式|30日以内・31〜60日・61日以上に分けて金額を出す【LibreOfficeで確認】</p><article><p class="meta">2026-10-28 ・ Excel関数</p><h1>未入金の請求を経過日数別に集計するExcelの式|30日以内・31〜60日・61日以上に分けて金額を出す【LibreOfficeで確認】</h1><p>「請求は出したはずなのに、まだ入っていない工事がいくつあって、合計いくらなのか」——小さな工務店・リフォーム店では、これが頭の中や請求書の束にしかないことがよくあります。<strong>未入金の請求を、入金期日からの超過日数で「30日以内／31〜60日／61日以上」に分けて金額を出す</strong>と、どこから催促するかが一目でわかります。</p>
+<p>この記事では、請求番号・請求額・入金期日・入金額を1行ずつ入れ、<strong>基準日を1つ決めるだけで、区分・未入金額・超過日数、区分ごとの合計金額</strong>を出す式を示します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/receivable_aging.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・OR・NOT・ISNUMBER・INT・N・COUNTIF・SUMIF・SUMという一般的な関数ですが、本番で使う前に、数行を手計算と見比べてください。この記事は表の作り方の説明です。<strong>売掛金の会計処理や貸倒れの判断は、会社の経理のルール(必要なら税理士)に従ってください</strong>。</p>
+<h2 id="4">先に結論: 「基準日 − 入金期日」の日数で4つに分ける</h2>
+<ul>
+<li>請求額 − 入金額 が0 → <strong>入金済み</strong></li>
+<li>入金期日が基準日と同じか、まだ先 → <strong>期日内</strong></li>
+<li>期日を過ぎて30日以内 → <strong>超過30日以内</strong></li>
+<li>31〜60日 → <strong>超過31〜60日</strong></li>
+<li>61日以上 → <strong>超過61日以上</strong></li>
+</ul>
+<p>基準日はセルに入れる日付です。今日の日付で見たいときは、基準日のセルに <code>=TODAY()</code> を入れます(この記事の確認は、結果が毎回同じになるよう固定した日付で行いました)。</p>
+<h2 id="excel">Excelの式</h2>
+<p>シート名は「未入金」。2行目から使います。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>請求番号</td>
+<td>手入力(例: S-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>取引先</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>請求額</td>
+<td>手入力(1以上の整数)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>入金期日</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>入金額</td>
+<td>手入力(0以上の整数。一部入金は累計。空欄は0として扱う)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>区分</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>未入金額</td>
+<td>式</td>
+</tr>
+<tr>
+<td>I</td>
+<td>超過日数</td>
+<td>式(期日を過ぎた分だけ)</td>
+</tr>
+<tr>
+<td>N2</td>
+<td>基準日</td>
+<td>日付(例: 2026/10/31)</td>
+</tr>
+</tbody>
+</table>
+<pre><code>F2: =IF(OR(G2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;),&quot;&quot;,IF(C2-N(E2)=0,&quot;入金済み&quot;,
+      IF(D2&gt;=$N$2,&quot;期日内&quot;,IF($N$2-D2&lt;=30,&quot;超過30日以内&quot;,
+      IF($N$2-D2&lt;=60,&quot;超過31〜60日&quot;,&quot;超過61日以上&quot;)))))
+G2: =IF(A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;,&quot;&quot;,IF(NOT(ISNUMBER($N$2)),&quot;基準日が日付でない&quot;,
+      IF(OR($N$2&lt;1,$N$2&lt;&gt;INT($N$2)),&quot;基準日が日付でない&quot;,
+      IF(A2=&quot;&quot;,&quot;請求番号が空欄&quot;,IF(COUNTIF($A$2:$A$1000,A2)&gt;1,&quot;請求番号が重複&quot;,
+      IF(C2=&quot;&quot;,&quot;請求額が空欄&quot;,IF(NOT(ISNUMBER(C2)),&quot;請求額が数字でない&quot;,
+      IF(OR(C2&lt;1,C2&lt;&gt;INT(C2)),&quot;請求額は1以上の整数&quot;,
+      IF(D2=&quot;&quot;,&quot;入金期日が空欄&quot;,IF(NOT(ISNUMBER(D2)),&quot;入金期日が日付でない&quot;,
+      IF(OR(D2&lt;1,D2&lt;&gt;INT(D2)),&quot;入金期日が日付でない&quot;,
+      IF(E2=&quot;&quot;,&quot;&quot;,IF(NOT(ISNUMBER(E2)),&quot;入金額が数字でない&quot;,
+      IF(OR(E2&lt;0,E2&lt;&gt;INT(E2)),&quot;入金額は0以上の整数&quot;,
+      IF(E2&gt;C2,&quot;入金額が請求額を超えている&quot;,&quot;&quot;)))))))))))))))
+H2: =IF(OR(F2=&quot;&quot;,F2=&quot;入金済み&quot;),&quot;&quot;,C2-N(E2))
+I2: =IF(OR(F2=&quot;&quot;,F2=&quot;入金済み&quot;,F2=&quot;期日内&quot;),&quot;&quot;,$N$2-D2)
+</code></pre>
+<p>D列とN2は「日付」の表示形式にしてください。C・E・H列は「数値(桁区切り)」にします。集計は右側のセルに置きます(範囲は1000行まで)。</p>
+<pre><code>N5 期日内:           =SUMIF($F$2:$F$1000,&quot;期日内&quot;,$H$2:$H$1000)
+N6 超過30日以内:     =SUMIF($F$2:$F$1000,&quot;超過30日以内&quot;,$H$2:$H$1000)
+N7 超過31〜60日:     =SUMIF($F$2:$F$1000,&quot;超過31〜60日&quot;,$H$2:$H$1000)
+N8 超過61日以上:     =SUMIF($F$2:$F$1000,&quot;超過61日以上&quot;,$H$2:$H$1000)
+N9 超過の合計:       =SUM(N6:N8)
+</code></pre>
+<h2 id="_1">実際に計算して確認した結果</h2>
+<p>基準日を2026/10/31にして、請求額100,000円・入金なしの請求で、入金期日だけを変えた結果です。</p>
+<table>
+<thead>
+<tr>
+<th>入金期日</th>
+<th>基準日との差</th>
+<th>区分</th>
+<th>超過日数</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026/11/01</td>
+<td>期日の前日</td>
+<td>期日内</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2026/10/31</td>
+<td>当日</td>
+<td>期日内</td>
+<td>-</td>
+</tr>
+<tr>
+<td>2026/10/30</td>
+<td>1日超過</td>
+<td>超過30日以内</td>
+<td>1</td>
+</tr>
+<tr>
+<td>2026/10/01</td>
+<td>30日超過</td>
+<td>超過30日以内</td>
+<td>30</td>
+</tr>
+<tr>
+<td>2026/09/30</td>
+<td>31日超過</td>
+<td>超過31〜60日</td>
+<td>31</td>
+</tr>
+<tr>
+<td>2026/09/01</td>
+<td>60日超過</td>
+<td>超過31〜60日</td>
+<td>60</td>
+</tr>
+<tr>
+<td>2026/08/31</td>
+<td>61日超過</td>
+<td>超過61日以上</td>
+<td>61</td>
+</tr>
+</tbody>
+</table>
+<p>境界の日(30日・31日、60日・61日)で区分が切り替わることを確認しました。入金期日の当日は、まだ「期日内」です。</p>
+<p>一部入金の請求(請求額100,000円・入金40,000円・90日超過)は、未入金額が60,000円で「超過61日以上」になります。全額入金済みの請求は、期日を大きく過ぎていても「入金済み」で、集計に入りません。入金額が空欄の行は、0円として扱います。</p>
+<p>6件を入れた集計の確認では、次の結果になりました。</p>
+<table>
+<thead>
+<tr>
+<th>区分</th>
+<th>件数と内容</th>
+<th>金額</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>期日内</td>
+<td>2件(未入金額100,000円、150,000円)</td>
+<td>250,000円</td>
+</tr>
+<tr>
+<td>超過30日以内</td>
+<td>1件(10日超過)</td>
+<td>300,000円</td>
+</tr>
+<tr>
+<td>超過31〜60日</td>
+<td>1件(45日超過・一部入金あり)</td>
+<td>300,000円</td>
+</tr>
+<tr>
+<td>超過61日以上</td>
+<td>1件(100日超過)</td>
+<td>500,000円</td>
+</tr>
+<tr>
+<td>入金済み</td>
+<td>1件</td>
+<td>集計に入らない</td>
+</tr>
+<tr>
+<td>超過の合計</td>
+<td></td>
+<td>1,100,000円</td>
+</tr>
+</tbody>
+</table>
+<p>入力ミスの行は、区分を空欄にして、G列にこう出ます。</p>
+<table>
+<thead>
+<tr>
+<th>入力ミス</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>請求番号が空欄</td>
+<td>請求番号が空欄</td>
+</tr>
+<tr>
+<td>請求番号が重複(S-001とs-001)</td>
+<td>請求番号が重複</td>
+</tr>
+<tr>
+<td>請求額が空欄</td>
+<td>請求額が空欄</td>
+</tr>
+<tr>
+<td>請求額が「10万」・全角「１００，０００」</td>
+<td>請求額が数字でない</td>
+</tr>
+<tr>
+<td>請求額が0・小数</td>
+<td>請求額は1以上の整数</td>
+</tr>
+<tr>
+<td>入金期日が空欄</td>
+<td>入金期日が空欄</td>
+</tr>
+<tr>
+<td>入金期日が文字の「10/05」・全角の「２０２６/１０/０５」</td>
+<td>入金期日が日付でない</td>
+</tr>
+<tr>
+<td>入金額が「4万」</td>
+<td>入金額が数字でない</td>
+</tr>
+<tr>
+<td>入金額がマイナス</td>
+<td>入金額は0以上の整数</td>
+</tr>
+<tr>
+<td>入金額が請求額より多い(二重に入れた)</td>
+<td>入金額が請求額を超えている</td>
+</tr>
+<tr>
+<td>基準日が空欄・文字</td>
+<td>基準日が日付でない(全行に表示)</td>
+</tr>
+<tr>
+<td>すべて空欄の行</td>
+<td>(何も出さない)</td>
+</tr>
+</tbody>
+</table>
+<p>30ケースすべて、区分・未入金額・超過日数・チェック表示と集計が、Pythonで計算した結果と一致しました。さらに、乱数で作った<strong>500行</strong>(請求番号の空欄・重複、請求額・入金期日・入金額の文字・0・小数・マイナス・請求額超過を約12%混ぜました)でも、<strong>全項目と集計5つが一致</strong>しました。Excelでの確認はしていません。</p>
+<h2 id="_2">つまずきやすい点</h2>
+<ul>
+<li><strong>日付が文字になっていないか</strong>: 「10/05」のように入力しても、Excelの設定や入力の仕方によっては日付ではなく文字として入ることがあります。その行はG列に「入金期日が日付でない」と出るので、日付として入れ直してください。</li>
+<li><strong>入金額は累計で入れる</strong>: 分割で入金があったときは、入金額に足していきます(40,000円→さらに30,000円なら70,000円)。そのたびに行を増やすと、請求番号が重複します。</li>
+<li><strong>入金期日の決め方</strong>: 請求書に書いた期日の決め方は、<a href="/payment-due/">支払期限(締め日・支払月・支払日)を自動計算する記事</a>にあります。入金の遅れや一部入金・二重入金の見つけ方は、<a href="/payment-match/">請求と入金を照合する記事</a>も見てください。</li>
+<li><strong>請求漏れとの違い</strong>: この記事は「請求したが入金されていない」分です。「工事が終わったのにまだ請求していない」分は、<a href="/billing-missing/">請求漏れを見つける記事</a>で扱っています。</li>
+<li><strong>分割請求</strong>: 着手・中間・完了で分けて請求するときは、<a href="/split-billing-balance/">分割請求の残額の記事</a>の表と組み合わせ、請求ごとに1行にして入れます。</li>
+<li><strong>30日・60日の区切りは例</strong>: 取引先ごとの習慣に合わせて、式の30と60を変えて使ってください(変えた場合は、本番前に数行を手計算で確認してください)。</li>
+</ul>
+<h2 id="_3">注意点: この記事ができないこと</h2>
+<ul>
+<li>催促の仕方や、いつ法的な手続きに進むかの判断はしません。</li>
+<li>売掛金の会計処理、貸倒れの処理、遅延損害金の計算は扱いません。</li>
+<li>振込手数料を差し引いた入金など、請求額と入金額が少しずれるケースは、差額が未入金として残ります。入金額の入れ方は、会社のルールで決めてください。</li>
+<li>金額は整数だけを前提にしています。税の取り扱いは扱いません(税抜か税込のどちらかにそろえて入れてください)。</li>
+</ul>
+<h2 id="_4">見積から請求までつなげたいとき</h2>
+<p>見積の計算そのものから作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=receivable-aging">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「未入金の経過日数別の集計」機能は、この商品には入っていません</strong>。請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の合計だけをすぐ確かめたいときは、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>請求番号・請求額・入金期日・入金額を1行ずつ入れ、基準日を1つ決める</li>
+<li>入金期日の当日までは「期日内」。超過日数で30日以内／31〜60日／61日以上に分けて、未入金額を区分ごとに合計する</li>
+<li>入金額は累計で入れる。全額入金済みは集計から外れ、請求額より多い入金はチェック列で止める</li>
+<li>日付が文字になっている、請求額が0、請求番号が重複しているなどは、区分を出さずチェック列で止める</li>
+<li>30ケースと500行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数行を手計算で見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、30ケース(期日の前日・当日、1日超過、30日超過ちょうど、31日超過、60日超過ちょうど、61日超過、年またぎ、全額入金済み、一部入金、入金額の空欄・0、請求番号の空欄・重複、請求額の空欄・文字・全角・0・小数、入金期日の空欄・文字・全角文字、入金額の文字・マイナス・請求額超過、基準日の空欄・文字、集計、空行)と、乱数で作った500行(入力ミスを約12%混ぜたデータ)で、区分・未入金額・超過日数・チェック表示と、区分ごとの金額の集計が、Pythonで計算した結果と一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/receivable_aging.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/budget-actual/">工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】</a></li><li><a href="/billing-missing/">完了した工事の請求漏れをExcelで見つける式|完了日から何日たったかと未請求の金額を自動表示【LibreOfficeで確認】</a></li><li><a href="/payment-due/">請求書の支払期限(月末締め翌月末払いなど)をExcelで自動計算する式|うるう年・年またぎも【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
