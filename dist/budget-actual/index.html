@@ -1,0 +1,249 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="工事ごとの実行予算・原価実績・進捗率から、予算超過と「進捗より原価が先行している工事」をExcelで自動表示する式を解説。完成時の見込原価と予算残も出します。入力ミスも33ケースと500行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/budget-actual/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="工事ごとの実行予算・原価実績・進捗率から、予算超過と「進捗より原価が先行している工事」をExcelで自動表示する式を解説。完成時の見込原価と予算残も出します。入力ミスも33ケースと500行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/budget-actual/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】", "datePublished": "2026-10-28", "dateModified": "2026-10-28", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "工事ごとの実行予算・原価実績・進捗率から、予算超過と「進捗より原価が先行している工事」をExcelで自動表示する式を解説。完成時の見込原価と予算残も出します。入力ミスも33ケースと500行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/budget-actual/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/budget-actual/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/budget-actual/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】</p><article><p class="meta">2026-10-28 ・ Excel関数</p><h1>工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】</h1><p>「工事が終わって精算したら、原価が予算を超えていた」——小さな工務店・リフォーム店で、工事ごとの利益が読めなくなる原因のひとつです。終わってから気づくと手遅れですが、<strong>工事の途中で「予算に対して、いま原価をどれだけ使ったか」を進捗率と並べて見る</strong>だけで、早めに手を打てます。</p>
+<p>この記事では、<strong>実行予算・原価実績・進捗率</strong>を1行ずつ入れるだけで、<strong>「順調／要注意／予算超過」の表示、予算の消化率、予算残、このままいった場合の完成時の見込原価</strong>を出す式を示します。「進捗より何ポイント原価が先行したら要注意とするか」は、自分で決められます。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/budget_actual.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・OR・AND・NOT・ISNUMBER・INT・ROUND・N・COUNTIF・SUMIFという一般的な関数ですが、本番で使う前に、数行を手計算と見比べてください。この記事は表の作り方の説明です。<strong>実行予算の組み方や原価の計上の仕方は、会社の経理のルール(必要なら税理士)に従ってください</strong>。</p>
+<h2 id="_1">先に結論: 「消化率 &gt; 進捗率 + 許容ポイント」なら要注意、「実績 &gt; 予算」なら予算超過</h2>
+<ul>
+<li>消化率 = 原価実績 ÷ 実行予算</li>
+<li>原価実績が実行予算を超えている → <strong>予算超過</strong></li>
+<li>消化率が「進捗率 + 許容ポイント」を超えている → <strong>要注意</strong>(工事の進み具合より、原価が先に出ている)</li>
+<li>それ以外 → 順調</li>
+<li>完成時の見込原価 = 原価実績 ÷ 進捗率(進捗率が0%のときは出さない)</li>
+</ul>
+<h2 id="excel">Excelの式</h2>
+<p>シート名は「予算実績」。2行目から使います。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: K-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>工事名</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>実行予算</td>
+<td>手入力(1以上の整数)。その工事で使ってよい原価の上限</td>
+</tr>
+<tr>
+<td>D</td>
+<td>原価実績</td>
+<td>手入力(0以上の整数)。現時点までに計上した原価の合計</td>
+</tr>
+<tr>
+<td>E</td>
+<td>進捗率</td>
+<td>手入力(0%〜100%)。「50%」と入れるか、0.5と入れる</td>
+</tr>
+<tr>
+<td>F</td>
+<td>状態</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>消化率</td>
+<td>式</td>
+</tr>
+<tr>
+<td>I</td>
+<td>予算残</td>
+<td>式(マイナスは超過額)</td>
+</tr>
+<tr>
+<td>J</td>
+<td>完成時の見込原価</td>
+<td>式</td>
+</tr>
+<tr>
+<td>K</td>
+<td>見込差額</td>
+<td>式(見込原価 − 実行予算。プラスは超過の見込み)</td>
+</tr>
+<tr>
+<td>N2</td>
+<td>許容ポイント</td>
+<td>例: 0.1(10ポイント)。空欄は0として扱う</td>
+</tr>
+</tbody>
+</table>
+<pre><code>F2: =IF(OR(G2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;),&quot;&quot;,IF(D2&gt;C2,&quot;予算超過&quot;,
+      IF(ROUND(D2/C2-E2-N($N$2),6)&gt;0,&quot;要注意&quot;,&quot;順調&quot;)))
+G2: =IF(A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;,&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,
+      IF(COUNTIF($A$2:$A$1000,A2)&gt;1,&quot;工事番号が重複&quot;,
+      IF(C2=&quot;&quot;,&quot;実行予算が空欄&quot;,IF(NOT(ISNUMBER(C2)),&quot;実行予算が数字でない&quot;,
+      IF(OR(C2&lt;1,C2&lt;&gt;INT(C2)),&quot;実行予算は1以上の整数&quot;,
+      IF(D2=&quot;&quot;,&quot;原価実績が空欄&quot;,IF(NOT(ISNUMBER(D2)),&quot;原価実績が数字でない&quot;,
+      IF(OR(D2&lt;0,D2&lt;&gt;INT(D2)),&quot;原価実績は0以上の整数&quot;,
+      IF(E2=&quot;&quot;,&quot;進捗率が空欄&quot;,IF(NOT(ISNUMBER(E2)),&quot;進捗率が数字でない&quot;,
+      IF(OR(E2&lt;0,E2&gt;1),&quot;進捗率は0〜100%&quot;,&quot;&quot;))))))))))))
+H2: =IF(F2=&quot;&quot;,&quot;&quot;,D2/C2)
+I2: =IF(F2=&quot;&quot;,&quot;&quot;,C2-D2)
+J2: =IF(OR(F2=&quot;&quot;,N(E2)=0),&quot;&quot;,D2/E2)
+K2: =IF(J2=&quot;&quot;,&quot;&quot;,J2-C2)
+</code></pre>
+<p>H列は「パーセンテージ」、I・J・K列は「数値(桁区切り)」の表示形式にしてください。J・K列は割り算の結果が小数になるため、表示形式で整数に丸めて見ます(式の中では丸めていません)。<code>ROUND(…,6)</code> は、消化率と進捗率の差がちょうど許容ポイントのときに、計算の誤差で判定がぶれないようにするために入れています。</p>
+<p>集計は右側のセルに置きます(範囲は1000行まで)。</p>
+<pre><code>N5 予算超過の件数:   =COUNTIF($F$2:$F$1000,&quot;予算超過&quot;)
+N6 予算超過の金額:   =-SUMIF($F$2:$F$1000,&quot;予算超過&quot;,$I$2:$I$1000)
+N7 要注意の件数:     =COUNTIF($F$2:$F$1000,&quot;要注意&quot;)
+N8 順調の件数:       =COUNTIF($F$2:$F$1000,&quot;順調&quot;)
+</code></pre>
+<h2 id="_2">実際に計算して確認した結果</h2>
+<p>許容ポイントを0.1(10ポイント)にして、実行予算1,000,000円・進捗50%の工事で原価実績だけを変えた結果です。</p>
+<table>
+<thead>
+<tr>
+<th>原価実績</th>
+<th>消化率</th>
+<th>状態</th>
+<th>予算残</th>
+<th>完成時の見込原価</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>400,000円</td>
+<td>40%</td>
+<td>順調</td>
+<td>600,000円</td>
+<td>800,000円</td>
+</tr>
+<tr>
+<td>600,000円(進捗+10ポイントちょうど)</td>
+<td>60%</td>
+<td>順調</td>
+<td>400,000円</td>
+<td>1,200,000円</td>
+</tr>
+<tr>
+<td>610,000円(10ポイントを超えた)</td>
+<td>61%</td>
+<td>要注意</td>
+<td>390,000円</td>
+<td>1,220,000円</td>
+</tr>
+</tbody>
+</table>
+<p>許容ポイントちょうどまでは順調、1円でも超えたら要注意です(境界の動きも確認済みです)。許容を0にすると、実績500,001円・進捗50%でも要注意になります。</p>
+<p>予算を超えた場合は、進捗率に関わらず「予算超過」になります。実績が1,000,001円で予算1,000,000円なら、予算残は-1円です。</p>
+<p>進捗率が30%なのに実績が1,300,000円(予算1,000,000円)という場合、完成時の見込原価は 1,300,000 ÷ 0.3 ≒ 4,333,333円と出ます。予算の4倍を超える見込みという意味で、「いまの使い方のまま最後まで行くとこうなる」という警告の数字です。</p>
+<p>5件を入れた集計の確認では、予算超過2件(合計の超過額 220,000円)、要注意1件、順調2件と出ました。</p>
+<p>入力ミスの行は、状態を空欄にして、G列にこう出ます。</p>
+<table>
+<thead>
+<tr>
+<th>入力ミス</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工事番号が空欄</td>
+<td>工事番号が空欄</td>
+</tr>
+<tr>
+<td>工事番号が重複(K-001とk-001)</td>
+<td>工事番号が重複</td>
+</tr>
+<tr>
+<td>実行予算が空欄</td>
+<td>実行予算が空欄</td>
+</tr>
+<tr>
+<td>実行予算が「100万」・全角「１，０００，０００」</td>
+<td>実行予算が数字でない</td>
+</tr>
+<tr>
+<td>実行予算が0・小数</td>
+<td>実行予算は1以上の整数</td>
+</tr>
+<tr>
+<td>原価実績が空欄・「40万」</td>
+<td>原価実績が空欄／数字でない</td>
+</tr>
+<tr>
+<td>原価実績がマイナス・小数</td>
+<td>原価実績は0以上の整数</td>
+</tr>
+<tr>
+<td>進捗率が空欄・「半分」</td>
+<td>進捗率が空欄／数字でない</td>
+</tr>
+<tr>
+<td>進捗率を「50」と入れた(5000%になる)・マイナス・1.2</td>
+<td>進捗率は0〜100%</td>
+</tr>
+<tr>
+<td>すべて空欄の行</td>
+<td>(何も出さない)</td>
+</tr>
+</tbody>
+</table>
+<p>「50」と入れてしまう誤操作は多いので、100%(=1)を超える値はチェック列で止めています。</p>
+<p>33ケースすべて、状態・消化率・予算残・見込原価・見込差額・チェック表示と集計が、Pythonで計算した結果と一致しました。さらに、乱数で作った<strong>500行</strong>(工事番号の空欄・重複、実行予算・原価実績・進捗率の文字・0・小数・マイナス・範囲外を約12%混ぜました)でも、<strong>全項目と集計4つが一致</strong>しました。Excelでの確認はしていません。</p>
+<h2 id="_3">つまずきやすい点</h2>
+<ul>
+<li><strong>完成時の見込原価は「進捗に比例して原価が出る」前提の目安</strong>: 工事の初めに材料をまとめて仕入れる場合は、見込みが実際より大きく出ます。逆に、最後に外注費が集中する工事では小さく出ます。見込原価は判断の材料のひとつとして見て、現場の実情と合わせて判断してください。</li>
+<li><strong>進捗率は誰が決めるかを決めておく</strong>: 進捗率を人によって違う感覚で入れると、判定がぶれます。<a href="/progress-billing/">出来高(契約金額×進捗率)から今回の請求額を出す記事</a>でも進捗率を使うので、同じ数字を使うと管理が楽です。</li>
+<li><strong>原価実績の集め方</strong>: 材料・外注・人工(労務費)・経費をどう足すかは、<a href="/job-margin/">工事の原価を材料・外注・経費に分けて粗利を見る記事</a>や、<a href="/daily-labor-by-job/">作業日報から人工と労務費を集計する記事</a>、<a href="/subcontract-balance/">外注先への未払いと発注残を出す記事</a>の表の合計を入れる使い方ができます。</li>
+<li><strong>追加工事で予算が変わったとき</strong>: 実行予算も更新してください。契約金額の変更の扱いは<a href="/contract-change/">追加工事・減額を反映した契約金額の記事</a>にあります。</li>
+<li><strong>許容ポイントは自社で決める</strong>: 0.1(10ポイント)は例です。小さな工事は変動が大きいので広めに、大きな工事は狭めにするなど、運用に合わせてください。</li>
+</ul>
+<h2 id="_4">注意点: この記事ができないこと</h2>
+<ul>
+<li>実行予算の作り方(何をいくらで見込むか)の判断はしません。原価の計上基準(いつ・どの工事に付けるか)も扱いません。</li>
+<li>工事の利益が出るかどうかの保証はしません。表示はあくまで入力した数字からの計算です。</li>
+<li>金額は整数だけを前提にしています。税の取り扱いは扱いません(税抜か税込のどちらかにそろえて入れてください)。</li>
+</ul>
+<h2 id="_5">見積から原価管理までつなげたいとき</h2>
+<p>見積の計算そのものから作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=budget-actual">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「予算と原価実績の比較」機能は、この商品には入っていません</strong>。請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>目標の粗利から売値を逆算するなら、無料の<a href="/tools/margin-markup/">粗利率と上乗せ率の変換ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>実行予算・原価実績・進捗率の3つを工事ごとに入れ、「消化率が進捗率より先行していないか」を見る</li>
+<li>許容ポイントちょうどまでは順調、1円でも超えたら要注意。実績が予算を超えたら予算超過</li>
+<li>完成時の見込原価(実績÷進捗率)は、進捗に比例して原価が出る前提の目安</li>
+<li>進捗率に「50」と入れる、実行予算が0、工事番号の重複などは、状態を出さずチェック列で止める</li>
+<li>33ケースと500行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数行を手計算で見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、33ケース(順調・許容ちょうど・許容を超えた・予算ちょうど・1円の予算超過、着工前、進捗0%で実績あり、許容ポイントの空欄・文字、工事番号の空欄・重複、実行予算の空欄・文字・全角・0・小数、原価実績の空欄・文字・マイナス・小数、進捗率の空欄・文字・50と入力・マイナス・100%超、集計、空行)と、乱数で作った500行(入力ミスを約12%混ぜたデータ)で、状態・消化率・予算残・見込原価・見込差額・チェック表示と、予算超過の件数と金額、要注意・順調の件数が、Pythonで計算した結果と一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/budget_actual.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/billing-missing/">完了した工事の請求漏れをExcelで見つける式|完了日から何日たったかと未請求の金額を自動表示【LibreOfficeで確認】</a></li><li><a href="/progress-billing/">工事の出来高(契約金額×進捗率)と今回請求できる額をExcelで出す式|請求済みを引く【LibreOfficeで確認】</a></li><li><a href="/subcontract-balance/">外注先への発注額・請求額・支払済から未払いと発注残を出すExcelの式|請求が発注額を超えたら要確認【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
