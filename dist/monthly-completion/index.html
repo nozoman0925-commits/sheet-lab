@@ -1,0 +1,352 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>完工月ごとの完工高・粗利・粗利率をExcelで集計する式|進行中の工事と原価の入れ忘れを除いて月別に出す【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="工事台帳の契約金額と原価から、完了日の月ごとに「完工件数・完工高・粗利・粗利率」を12か月分まとめて出すExcelの式を解説。完了日が空欄の進行中の工事は外し、完工済みなのに原価が空欄の行は止めます。30ケースと500行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/monthly-completion/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="完工月ごとの完工高・粗利・粗利率をExcelで集計する式|進行中の工事と原価の入れ忘れを除いて月別に出す【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="工事台帳の契約金額と原価から、完了日の月ごとに「完工件数・完工高・粗利・粗利率」を12か月分まとめて出すExcelの式を解説。完了日が空欄の進行中の工事は外し、完工済みなのに原価が空欄の行は止めます。30ケースと500行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/monthly-completion/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "完工月ごとの完工高・粗利・粗利率をExcelで集計する式|進行中の工事と原価の入れ忘れを除いて月別に出す【LibreOfficeで確認】", "datePublished": "2026-10-29", "dateModified": "2026-10-29", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "工事台帳の契約金額と原価から、完了日の月ごとに「完工件数・完工高・粗利・粗利率」を12か月分まとめて出すExcelの式を解説。完了日が空欄の進行中の工事は外し、完工済みなのに原価が空欄の行は止めます。30ケースと500行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/monthly-completion/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/monthly-completion/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "完工月ごとの完工高・粗利・粗利率をExcelで集計する式|進行中の工事と原価の入れ忘れを除いて月別に出す【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/monthly-completion/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 完工月ごとの完工高・粗利・粗利率をExcelで集計する式|進行中の工事と原価の入れ忘れを除いて月別に出す【LibreOfficeで確認】</p><article><p class="meta">2026-10-29 ・ Excel関数</p><h1>完工月ごとの完工高・粗利・粗利率をExcelで集計する式|進行中の工事と原価の入れ忘れを除いて月別に出す【LibreOfficeで確認】</h1><p>「今月、完工した工事はいくらで、粗利はいくら残ったのか」——工事台帳はあるのに、月が終わってから電卓で足し直している、という工務店・リフォーム店は少なくありません。<strong>完了日の月ごとに「完工件数・完工高・粗利・粗利率」を並べる</strong>と、忙しい月と薄利だった月が見えてきます。</p>
+<p>この記事では、工事ごとに契約金額・原価合計・完了日を1行ずつ入れ、<strong>集計の開始月を1つ決めるだけで、12か月分の月別集計</strong>を出す式を示します。完了日が空欄の工事は「進行中」として集計から外し、完工済みなのに原価が空欄の行は、粗利が実際より大きく出てしまうので<strong>数字を出さずに止めます</strong>。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/monthly_completion.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・OR・NOT・ISNUMBER・INT・COUNTIF・DATE・YEAR・MONTH・EDATE・SUMIFS・SUMPRODUCTという一般的な関数ですが、本番で使う前に、数行を手計算と見比べてください。この記事は表の作り方の説明です。<strong>売上をいつ計上するか(完成基準・進行基準など)や、決算・税務の扱いは、会社の経理のルール(必要なら税理士)に従ってください</strong>。</p>
+<h2 id="sumifs">先に結論: 完了日から「完工月」を作り、SUMIFSで月ごとに足す</h2>
+<ul>
+<li>完了日が入っている行 → <strong>完工</strong>。完了日の「月の1日」を、完工月として別の列に作る</li>
+<li>完了日が空欄の行 → <strong>進行中</strong>。完工高にも粗利にも入れない</li>
+<li>粗利 = 契約金額 − 原価合計、粗利率 = 粗利 ÷ 契約金額</li>
+<li>月別の表は、開始月のセルから12か月分を <code>EDATE</code> で並べ、<code>SUMIFS</code> で完工月が一致する行だけを足す</li>
+</ul>
+<p>完工月を「その月の1日」にそろえるのがコツです。日付そのものを範囲で比べるより、月の1日どうしの一致で数えるほうが、月末日(10/31)と月初(11/1)の取り違えが起きにくくなります。</p>
+<h2 id="excel">Excelの式</h2>
+<p>シート名は「完工」。2行目から使います。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: K-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>工事名</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>C</td>
+<td>契約金額</td>
+<td>手入力(1以上の整数。追加工事を含む現在の金額)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>原価合計</td>
+<td>手入力(0以上の整数。進行中は空欄でもよい)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>完了日</td>
+<td>手入力(日付。完工したら入れる。進行中は空欄)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>区分</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>完工月</td>
+<td>式(月の1日)</td>
+</tr>
+<tr>
+<td>I</td>
+<td>粗利</td>
+<td>式</td>
+</tr>
+<tr>
+<td>J</td>
+<td>粗利率</td>
+<td>式</td>
+</tr>
+<tr>
+<td>S2</td>
+<td>集計の開始月</td>
+<td>日付(例: 2026/04/01。月の途中の日付でもよい)</td>
+</tr>
+</tbody>
+</table>
+<pre><code>G2: =IF(A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;,&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,
+      IF(COUNTIF($A$2:$A$1000,A2)&gt;1,&quot;工事番号が重複&quot;,
+      IF(C2=&quot;&quot;,&quot;契約金額が空欄&quot;,IF(NOT(ISNUMBER(C2)),&quot;契約金額が数字でない&quot;,
+      IF(OR(C2&lt;1,C2&lt;&gt;INT(C2)),&quot;契約金額は1以上の整数&quot;,
+      IF(D2=&quot;&quot;,IF(E2=&quot;&quot;,&quot;&quot;,&quot;原価が空欄&quot;),
+      IF(NOT(ISNUMBER(D2)),&quot;原価が数字でない&quot;,
+      IF(OR(D2&lt;0,D2&lt;&gt;INT(D2)),&quot;原価は0以上の整数&quot;,
+      IF(E2=&quot;&quot;,&quot;&quot;,IF(NOT(ISNUMBER(E2)),&quot;完了日が日付でない&quot;,
+      IF(OR(E2&lt;1,E2&lt;&gt;INT(E2)),&quot;完了日が日付でない&quot;,&quot;&quot;)))))))))))))
+F2: =IF(OR(G2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2&amp;E2=&quot;&quot;),&quot;&quot;,IF(E2=&quot;&quot;,&quot;進行中&quot;,&quot;完工&quot;))
+H2: =IF(F2=&quot;完工&quot;,DATE(YEAR(E2),MONTH(E2),1),&quot;&quot;)
+I2: =IF(F2=&quot;完工&quot;,C2-D2,&quot;&quot;)
+J2: =IF(F2=&quot;完工&quot;,(C2-D2)/C2,&quot;&quot;)
+</code></pre>
+<p>E列とS2は「日付」の表示形式、H列は「yyyy/mm」の表示形式、C・D・I列は「数値(桁区切り)」、J列は「パーセンテージ」にします。</p>
+<p>月別の表は、右側のL〜P列に置きます(範囲は1000行まで)。</p>
+<pre><code>L2:  =IF(ISNUMBER($S$2),DATE(YEAR($S$2),MONTH($S$2),1),&quot;&quot;)
+L3:  =IF(L2=&quot;&quot;,&quot;&quot;,EDATE(L2,1))          (L13まで下にコピー)
+M2:  =IF(L2=&quot;&quot;,&quot;&quot;,COUNTIF($H$2:$H$1000,L2))                    ← 完工件数
+N2:  =IF(L2=&quot;&quot;,&quot;&quot;,SUMIFS($C$2:$C$1000,$H$2:$H$1000,L2))        ← 完工高
+O2:  =IF(L2=&quot;&quot;,&quot;&quot;,SUMIFS($I$2:$I$1000,$H$2:$H$1000,L2))        ← 粗利
+P2:  =IF(L2=&quot;&quot;,&quot;&quot;,IF(N2=0,&quot;&quot;,O2/N2))                           ← 粗利率   (M2〜P2を13行目までコピー)
+M14: =IF(L2=&quot;&quot;,&quot;&quot;,SUM(M2:M13))   N14・O14も同様。  P14: =IF(L2=&quot;&quot;,&quot;&quot;,IF(N14=0,&quot;&quot;,O14/N14))
+M15: =IF(L2=&quot;&quot;,&quot;&quot;,COUNT($H$2:$H$1000)-M14)                     ← 集計期間の外で完工した件数
+M16: =COUNTIF($F$2:$F$1000,&quot;進行中&quot;)                           ← 進行中の件数
+M17: =SUMPRODUCT(--(LEN($G$2:$G$1000)&gt;0))                      ← チェックが出ている行数
+</code></pre>
+<p>合計の粗利率は、月ごとの粗利率を平均せず、<strong>粗利の合計 ÷ 完工高の合計</strong>で出しています(大きな工事の月と小さな工事の月を、同じ重さで平均してしまわないためです)。</p>
+<h2 id="_1">実際に計算して確認した結果</h2>
+<p>集計の開始月を2026/04にして、契約金額100,000円・原価60,000円(粗利40,000円)の工事1件で、完了日だけを変えた結果です。</p>
+<table>
+<thead>
+<tr>
+<th>完了日</th>
+<th>入る月</th>
+<th>備考</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026/10/31(月末)</td>
+<td>2026/10</td>
+<td>10月に入る</td>
+</tr>
+<tr>
+<td>2026/11/01(月初)</td>
+<td>2026/11</td>
+<td>11月に入る</td>
+</tr>
+<tr>
+<td>2026/04/01(期間の最初の日)</td>
+<td>2026/04</td>
+<td>集計に入る</td>
+</tr>
+<tr>
+<td>2026/03/31(期間の前日)</td>
+<td>-</td>
+<td>集計期間の外(M15が1)</td>
+</tr>
+<tr>
+<td>2027/03/31(12か月目の最後の日)</td>
+<td>2027/03</td>
+<td>集計に入る</td>
+</tr>
+<tr>
+<td>2027/04/01(期間の翌日)</td>
+<td>-</td>
+<td>集計期間の外(M15が1)</td>
+</tr>
+<tr>
+<td>2028/02/29(うるう日、開始月は2028/01)</td>
+<td>2028/02</td>
+<td>集計に入る</td>
+</tr>
+</tbody>
+</table>
+<p>開始月のセルに2026/04/15のように月の途中の日付を入れても、4月分として数えます。開始月が空欄や文字のときは、月別の表を空にします(エラーは出しません)。</p>
+<p>6件を入れた集計の確認では、次の結果になりました。</p>
+<table>
+<thead>
+<tr>
+<th>工事</th>
+<th>契約金額</th>
+<th>原価</th>
+<th>完了日</th>
+<th>扱い</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>K-001</td>
+<td>1,000,000</td>
+<td>700,000</td>
+<td>2026/10/05</td>
+<td>10月に入る(粗利300,000)</td>
+</tr>
+<tr>
+<td>K-002</td>
+<td>500,000</td>
+<td>350,000</td>
+<td>2026/10/31</td>
+<td>10月に入る(粗利150,000)</td>
+</tr>
+<tr>
+<td>K-003</td>
+<td>800,000</td>
+<td>560,000</td>
+<td>2026/11/01</td>
+<td>11月に入る(粗利240,000)</td>
+</tr>
+<tr>
+<td>K-004</td>
+<td>900,000</td>
+<td>100,000</td>
+<td>空欄</td>
+<td>進行中(集計に入らない)</td>
+</tr>
+<tr>
+<td>K-005</td>
+<td>300,000</td>
+<td>200,000</td>
+<td>2027/06/01</td>
+<td>集計期間の外(M15が1)</td>
+</tr>
+<tr>
+<td>K-006</td>
+<td>400,000</td>
+<td>空欄</td>
+<td>2026/10/09</td>
+<td>「原価が空欄」で止める</td>
+</tr>
+</tbody>
+</table>
+<table>
+<thead>
+<tr>
+<th>月</th>
+<th>件数</th>
+<th>完工高</th>
+<th>粗利</th>
+<th>粗利率</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2026/10</td>
+<td>2</td>
+<td>1,500,000</td>
+<td>450,000</td>
+<td>30.0%</td>
+</tr>
+<tr>
+<td>2026/11</td>
+<td>1</td>
+<td>800,000</td>
+<td>240,000</td>
+<td>30.0%</td>
+</tr>
+<tr>
+<td>合計</td>
+<td>3</td>
+<td>2,300,000</td>
+<td>690,000</td>
+<td>30.0%</td>
+</tr>
+</tbody>
+</table>
+<p>進行中は1件、チェックが出ている行は1件です。K-006を止めずに計算すると、原価0円の工事として粗利400,000円・粗利率100%が出て、10月の粗利が実際より大きく見えてしまいます。そのため、完工済みで原価が空欄の行は集計に入れません。</p>
+<p>入力ミスの行は、区分・完工月・粗利・粗利率を空欄にして、G列にこう出ます。</p>
+<table>
+<thead>
+<tr>
+<th>入力ミス</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工事番号が空欄</td>
+<td>工事番号が空欄</td>
+</tr>
+<tr>
+<td>工事番号が重複(K-001とk-001)</td>
+<td>工事番号が重複</td>
+</tr>
+<tr>
+<td>契約金額が空欄</td>
+<td>契約金額が空欄</td>
+</tr>
+<tr>
+<td>契約金額が「10万」・全角「１００，０００」</td>
+<td>契約金額が数字でない</td>
+</tr>
+<tr>
+<td>契約金額が0・小数</td>
+<td>契約金額は1以上の整数</td>
+</tr>
+<tr>
+<td>完工済み(完了日あり)で原価が空欄</td>
+<td>原価が空欄</td>
+</tr>
+<tr>
+<td>原価が「6万」</td>
+<td>原価が数字でない</td>
+</tr>
+<tr>
+<td>原価がマイナス・小数</td>
+<td>原価は0以上の整数</td>
+</tr>
+<tr>
+<td>完了日が文字の「10/05」・全角の「２０２６/１０/０５」・0</td>
+<td>完了日が日付でない</td>
+</tr>
+<tr>
+<td>すべて空欄の行</td>
+<td>(何も出さない)</td>
+</tr>
+</tbody>
+</table>
+<p>原価が0円の完工は、粗利が契約金額と同じになりますが、入力としては通します(無償の工事や、原価の記録が別にある場合を想定しています)。原価がまだ入っていないだけなら、空欄のまま完了日も入れず「進行中」にしておくと、粗利が膨らみません。赤字の工事(原価が契約金額より大きい)は、粗利・粗利率がマイナスで出ます。</p>
+<p>30ケースすべて、区分・完工月・粗利・粗利率・チェック表示と月別集計が、Pythonで計算した結果と一致しました。さらに、乱数で作った<strong>500行</strong>(工事番号の空欄・重複、契約金額・原価・完了日の文字・0・小数・マイナスを約12%混ぜ、約2割を進行中にしました)でも、<strong>全項目と月別集計(12か月分・合計・期間外の件数)が一致</strong>しました。Excelでの確認はしていません。</p>
+<h2 id="_2">つまずきやすい点</h2>
+<ul>
+<li><strong>完了日を入れ忘れると進行中のまま</strong>: 工事が終わったのに完了日が空欄だと、完工高に入りません。M16(進行中の件数)が、実際に動いている工事の数と合っているか、月に一度見てください。完了後なのに請求が出ていない工事は、<a href="/billing-missing/">請求漏れを見つける記事</a>の式で拾えます。</li>
+<li><strong>契約金額は「現在の金額」を入れる</strong>: 追加工事や減額があった工事は、変更後の金額を入れます。履歴から現在の契約金額を出す方法は、<a href="/contract-change/">追加工事・減額を反映する記事</a>にあります。</li>
+<li><strong>原価の集め方</strong>: 材料・外注・経費の内訳を分けて粗利を見る方法は<a href="/job-margin/">原価を材料・外注・経費に分ける記事</a>に、日報から労務費を工事ごとに出す方法は<a href="/daily-labor-by-job/">作業日報の記事</a>にあります。この記事では、その合計を原価合計の列に入れる前提です。</li>
+<li><strong>進行中の工事の採算</strong>: 完工前に予算超過を見つけたいときは、<a href="/budget-actual/">実行予算と原価実績を比べる記事</a>が向いています。この記事は、終わった工事の結果を月別に見るものです。</li>
+<li><strong>12か月を超えるとき</strong>: L列の月を13行目より下に増やし、M〜P列の式をコピーします。合計の式の範囲(M2:M13など)も合わせて広げてください。</li>
+<li><strong>期間外の件数</strong>: M15が0でないときは、開始月を見直すか、期間外の工事を別の期間の表で集計してください。</li>
+</ul>
+<h2 id="_3">注意点: この記事ができないこと</h2>
+<ul>
+<li>売上の計上時期の判断や、決算・税務の処理は扱いません。完了日を売上の計上日として扱ってよいかは、会社の経理のルールで決めてください。</li>
+<li>工期が月をまたぐ工事を、月ごとに按分する集計はしません。完了日の月に、全額が入ります。</li>
+<li>金額は整数だけを前提にしています。税の取り扱いは扱いません(契約金額と原価は、税抜か税込のどちらかにそろえて入れてください)。</li>
+<li>値引き・手直し・保証の費用など、完了日より後に発生する原価は、台帳の原価に足さないかぎり粗利に反映されません。</li>
+</ul>
+<h2 id="_4">見積から工事台帳までつなげたいとき</h2>
+<p>見積の計算そのものから作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=monthly-completion">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「完工月ごとの集計」機能は、この商品には入っていません</strong>。工事台帳への転記、請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の合計だけをすぐ確かめたいときは、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>工事ごとに契約金額・原価合計・完了日を入れ、完了日の月の1日を「完工月」にする</li>
+<li>月別の表は、開始月から<code>EDATE</code>で12か月並べ、<code>SUMIFS</code>で完工月が一致する行の契約金額と粗利を足す</li>
+<li>完了日が空欄の工事は進行中として外し、完工済みで原価が空欄の行は、粗利が膨らまないようチェック列で止める</li>
+<li>合計の粗利率は、月の平均ではなく「粗利の合計 ÷ 完工高の合計」で出す</li>
+<li>30ケースと500行の照合はLibreOfficeで一致。Excelでは未確認のため、本番では数行を手計算で見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、30ケース(月末日・月初・期間の最初の日と前日・最後の日と翌日、うるう日、完了日が空欄の進行中、原価0・赤字、契約金額の空欄・文字・全角・0・小数、完工済みで原価が空欄、原価の文字・マイナス・小数、完了日の文字・全角・0、工事番号の空欄・重複、開始月が月の途中・空欄・文字、空行、集計)と、乱数で作った500行(入力ミスを約12%混ぜたデータ)で、区分・完工月・粗利・粗利率・チェック表示と、12か月分の月別集計(件数・完工高・粗利・粗利率・合計・期間外の件数)が、Pythonで計算した結果と一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/monthly_completion.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/quote-to-ledger/">見積書の金額を工事台帳に転記したまま古くならない式|改訂版の最新を自動で引いてズレを表示【LibreOfficeで計算して確認】</a></li><li><a href="/job-margin/">工事の原価を材料・外注・経費に分けて粗利を見る式|目標粗利率に届かない工事に印をつける【LibreOfficeで計算して確認】</a></li><li><a href="/budget-actual/">工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】</a></li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
