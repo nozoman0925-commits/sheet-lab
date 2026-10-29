@@ -1,0 +1,280 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>見積書の改訂版(第2版・第3版)から最新版だけを拾うExcelの式|工事ごとの最新の見積額と初版からの増減【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="見積を出し直すたびに行を足していくと、どれが最新かわからなくなります。工事番号と版を入れるだけで、工事ごとの最新版・旧版を判定し、最新版の合計と初版からの増減を出すExcelの式を解説。入力ミスと提出日の逆転は止めます。30ケースと500行の計算で確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/quote-revision/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="見積書の改訂版(第2版・第3版)から最新版だけを拾うExcelの式|工事ごとの最新の見積額と初版からの増減【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="見積を出し直すたびに行を足していくと、どれが最新かわからなくなります。工事番号と版を入れるだけで、工事ごとの最新版・旧版を判定し、最新版の合計と初版からの増減を出すExcelの式を解説。入力ミスと提出日の逆転は止めます。30ケースと500行の計算で確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/quote-revision/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "見積書の改訂版(第2版・第3版)から最新版だけを拾うExcelの式|工事ごとの最新の見積額と初版からの増減【LibreOfficeで確認】", "datePublished": "2026-10-30", "dateModified": "2026-10-30", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "見積を出し直すたびに行を足していくと、どれが最新かわからなくなります。工事番号と版を入れるだけで、工事ごとの最新版・旧版を判定し、最新版の合計と初版からの増減を出すExcelの式を解説。入力ミスと提出日の逆転は止めます。30ケースと500行の計算で確認しました。", "url": "https://sheet-lab-site.pages.dev/quote-revision/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/quote-revision/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "見積書の改訂版(第2版・第3版)から最新版だけを拾うExcelの式|工事ごとの最新の見積額と初版からの増減【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/quote-revision/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 見積書の改訂版(第2版・第3版)から最新版だけを拾うExcelの式|工事ごとの最新の見積額と初版からの増減【LibreOfficeで確認】</p><article><p class="meta">2026-10-30 ・ Excel関数</p><h1>見積書の改訂版(第2版・第3版)から最新版だけを拾うExcelの式|工事ごとの最新の見積額と初版からの増減【LibreOfficeで確認】</h1><p>施主から「やっぱりこの工事も入れて」「予算に合わせて少し下げて」と言われて、見積を出し直す。そのたびに行を足していくと、半月後には同じ工事の見積が3行あり、<strong>どれが最新で、いくらで契約するのか</strong>がすぐに答えられなくなります。台帳や請求書に転記するときに古い版の金額を拾ってしまうのは、この状態から起きます。</p>
+<p>この記事では、見積の履歴を1行ずつ(工事番号・版・見積額・提出日)入れ、<strong>工事ごとに最新版と旧版を自動で判定</strong>し、最新版だけの件数と合計、初版からの増減を出す式を示します。版の入れ間違いや提出日の逆転は、チェック列で止めます。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/quote_revision.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのはIF・AND・OR・NOT・ISNUMBER・INT・COUNTIF・COUNTIFS・SUMIF・SUMIFS・SUMPRODUCT・MAXIFS・MINIFSという関数で、<strong>MAXIFSとMINIFSはExcel 2019以降(Microsoft 365を含む)の関数</strong>です。Excel 2016以前では使えません。本番で使う前に、数行を手計算と見比べてください。この記事は表の作り方の説明で、<strong>どの版が実際に契約されたかは、この表では決まりません</strong>(契約した版は、契約書や注文書で確認してください)。</p>
+<h2 id="_1">先に結論: 「その工事の中で一番大きい版番号」を探し、自分の版と比べる</h2>
+<ul>
+<li>版は、1, 2, 3 と手で入れる(第1版=1)。見積書に「第2版」と書く運用にそろえる</li>
+<li>同じ工事番号の行のうち、チェックが通った行の版番号の最大値を <code>MAXIFS</code> で出す</li>
+<li>自分の版がその最大値なら <strong>最新版</strong>、そうでなければ <strong>旧版</strong></li>
+<li>最新版の行には、同じ工事の初版からの増減(最新版−初版)を出す</li>
+</ul>
+<p>日付の新しさではなく<strong>版番号で最新を決める</strong>のがコツです。提出日で決めると、同じ日に2版を出した場合や、日付を打ち間違えた場合に最新を取り違えます。その代わり、版番号と提出日が食い違う行(新しい版なのに提出日が前)は、チェック列で止めます。</p>
+<p>見積を出す前の「提出後に返事が来ない案件」の管理は<a href="/quote-followup/">見積提出後の回答待ちの記事</a>に、契約後に見積の明細を台帳に渡す方法は<a href="/quote-to-ledger/">見積の明細から台帳に渡す記事</a>に、契約後の金額の変更の記録は<a href="/contract-change/">契約金額の変更を管理する記事</a>にあります。</p>
+<h2 id="excel">Excelの式</h2>
+<p>シート名は「見積履歴」。2行目から使います。</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事番号</td>
+<td>手入力(例: A-001)</td>
+</tr>
+<tr>
+<td>B</td>
+<td>版</td>
+<td>手入力(1以上の整数。第1版=1)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>見積額</td>
+<td>手入力(1以上の整数。税抜か税込のどちらかにそろえる)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>提出日</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>F</td>
+<td>状態</td>
+<td>式(最新版/旧版)</td>
+</tr>
+<tr>
+<td>G</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>有効な版</td>
+<td>式(チェックが通った行だけ版番号を入れる作業列)</td>
+</tr>
+<tr>
+<td>I</td>
+<td>初版からの増減</td>
+<td>式(最新版の行だけ)</td>
+</tr>
+</tbody>
+</table>
+<pre><code>G2: =IF(A2&amp;B2&amp;C2&amp;D2=&quot;&quot;,&quot;&quot;,IF(A2=&quot;&quot;,&quot;工事番号が空欄&quot;,IF(B2=&quot;&quot;,&quot;版が空欄&quot;,
+      IF(NOT(ISNUMBER(B2)),&quot;版が数字でない&quot;,IF(OR(B2&lt;1,B2&lt;&gt;INT(B2)),&quot;版は1以上の整数&quot;,
+      IF(C2=&quot;&quot;,&quot;見積額が空欄&quot;,IF(NOT(ISNUMBER(C2)),&quot;見積額が数字でない&quot;,
+      IF(OR(C2&lt;1,C2&lt;&gt;INT(C2)),&quot;見積額は1以上の整数&quot;,
+      IF(D2=&quot;&quot;,&quot;提出日が空欄&quot;,IF(NOT(ISNUMBER(D2)),&quot;提出日が日付でない&quot;,
+      IF(D2&lt;&gt;INT(D2),&quot;提出日が日付でない&quot;,
+      IF(COUNTIFS($A$2:$A$1000,A2,$B$2:$B$1000,B2)&gt;1,&quot;同じ工事の同じ版が重複&quot;,
+      IF(COUNTIFS($A$2:$A$1000,A2,$B$2:$B$1000,&quot;&lt;&quot;&amp;B2,$D$2:$D$1000,&quot;&gt;&quot;&amp;D2)&gt;0,
+          &quot;前の版より提出日が前&quot;,&quot;&quot;))))))))))))
+H2: =IF(AND(G2=&quot;&quot;,A2&amp;B2&amp;C2&amp;D2&lt;&gt;&quot;&quot;),B2,&quot;&quot;)
+F2: =IF(OR(G2&lt;&gt;&quot;&quot;,A2&amp;B2&amp;C2&amp;D2=&quot;&quot;),&quot;&quot;,IF(B2=MAXIFS($H$2:$H$1000,$A$2:$A$1000,A2),&quot;最新版&quot;,&quot;旧版&quot;))
+I2: =IF(F2=&quot;最新版&quot;,C2-SUMIFS($C$2:$C$1000,$A$2:$A$1000,A2,$H$2:$H$1000,MINIFS($H$2:$H$1000,$A$2:$A$1000,A2)),&quot;&quot;)
+</code></pre>
+<p>B列は「標準」、C列は「数値(桁区切り)」、D列は「日付」の表示形式にします。F・G・H・I列は2行目の式を1000行目までコピーします。</p>
+<p>まとめの式(K列)です。</p>
+<pre><code>K4: =COUNTIF($F$2:$F$1000,&quot;最新版&quot;)                       ← 最新版の件数(=工事の数)
+K5: =SUMIF($F$2:$F$1000,&quot;最新版&quot;,$C$2:$C$1000)           ← 最新版の見積額の合計
+K6: =COUNTIF($F$2:$F$1000,&quot;旧版&quot;)                         ← 旧版の件数
+K7: =SUM($I$2:$I$1000)                                    ← 初版からの増減の合計
+K8: =SUMPRODUCT(--(LEN($G$2:$G$1000)&gt;0))                  ← チェックが出ている行数
+</code></pre>
+<p><code>MAXIFS</code>・<code>MINIFS</code>は、Excelのファイルに保存されるときは内部で<code>_xlfn.</code>が付いた形になります。Excelで式を入力するときは、そのまま<code>MAXIFS(</code>と打てば使えます。</p>
+<h2 id="_2">実際に計算して確認した結果</h2>
+<p>3つの工事の履歴6行を、わざと順番をばらして入れたときの確認です。</p>
+<table>
+<thead>
+<tr>
+<th>行</th>
+<th>工事番号</th>
+<th>版</th>
+<th>見積額</th>
+<th>提出日</th>
+<th>状態</th>
+<th>初版からの増減</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>2</td>
+<td>A-001</td>
+<td>1</td>
+<td>1,000,000</td>
+<td>10/01</td>
+<td>旧版</td>
+<td></td>
+</tr>
+<tr>
+<td>3</td>
+<td>A-002</td>
+<td>1</td>
+<td>300,000</td>
+<td>10/02</td>
+<td>旧版</td>
+<td></td>
+</tr>
+<tr>
+<td>4</td>
+<td>A-001</td>
+<td>2</td>
+<td>1,150,000</td>
+<td>10/08</td>
+<td>旧版</td>
+<td></td>
+</tr>
+<tr>
+<td>5</td>
+<td>A-002</td>
+<td>2</td>
+<td>280,000</td>
+<td>10/07</td>
+<td>最新版</td>
+<td>-20,000</td>
+</tr>
+<tr>
+<td>6</td>
+<td>A-001</td>
+<td>3</td>
+<td>980,000</td>
+<td>10/13</td>
+<td>最新版</td>
+<td>-20,000</td>
+</tr>
+<tr>
+<td>7</td>
+<td>A-003</td>
+<td>1</td>
+<td>90,000</td>
+<td>10/03</td>
+<td>最新版</td>
+<td>0</td>
+</tr>
+</tbody>
+</table>
+<p>最新版の件数(K4)は3、見積額の合計(K5)は1,350,000円、旧版(K6)は3件、初版からの増減の合計(K7)は-40,000円になりました。<strong>A-001は第2版で1,150,000円まで上がり、第3版で980,000円に下がっています</strong>。行を足しただけの表だと、一番大きい金額や一番下の行を拾ってしまいがちですが、この式は版番号3の行(980,000円)を最新版にします。</p>
+<p>このほか、次のことを確認しています。</p>
+<ul>
+<li>行の順番が逆(第2版が上、第1版が下)でも、最新版は変わらない</li>
+<li>版が飛んでいる(第1版と第3版だけ)ときは、第3版が最新版で、初版は第1版になる</li>
+<li>同じ日に第1版と第2版を出しても、版番号が大きい第2版が最新版になる</li>
+<li>工事番号の大文字と小文字の違い(A-001とa-001)は同じ工事として数える</li>
+<li>1つの工事の入力ミスは、別の工事の判定に影響しない</li>
+</ul>
+<p>入力ミスの行は、状態と増減を空欄にして、G列にこう出ます。</p>
+<table>
+<thead>
+<tr>
+<th>入力ミス</th>
+<th>チェック</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>工事番号が空欄</td>
+<td>工事番号が空欄</td>
+</tr>
+<tr>
+<td>版が空欄</td>
+<td>版が空欄</td>
+</tr>
+<tr>
+<td>版が全角「２」</td>
+<td>版が数字でない</td>
+</tr>
+<tr>
+<td>版が0・1.5・マイナス</td>
+<td>版は1以上の整数</td>
+</tr>
+<tr>
+<td>見積額が空欄</td>
+<td>見積額が空欄</td>
+</tr>
+<tr>
+<td>見積額が「70万」</td>
+<td>見積額が数字でない</td>
+</tr>
+<tr>
+<td>見積額が0・小数</td>
+<td>見積額は1以上の整数</td>
+</tr>
+<tr>
+<td>提出日が空欄</td>
+<td>提出日が空欄</td>
+</tr>
+<tr>
+<td>提出日が全角「２０２６/１０/５」・時刻つき</td>
+<td>提出日が日付でない</td>
+</tr>
+<tr>
+<td>同じ工事の同じ版が2行</td>
+<td>同じ工事の同じ版が重複(2行とも)</td>
+</tr>
+<tr>
+<td>第2版の提出日が第1版より前</td>
+<td>前の版より提出日が前(第2版の行)</td>
+</tr>
+<tr>
+<td>すべて空欄の行</td>
+<td>(何も出さない)</td>
+</tr>
+</tbody>
+</table>
+<p>30ケースすべて、状態・チェック表示・初版からの増減と、最新版の件数・合計、旧版の件数、増減の合計、チェック行数が、Pythonで計算した結果と一致しました。さらに、乱数で作った<strong>500行</strong>(約120工事、版番号・金額・提出日をそろえたうえで、入力ミスや提出日の逆転を約10%混ぜ、行の順番を入れ替えた)でも、<strong>全項目とまとめの数字が一致</strong>しました。Excelでの確認はしていません。</p>
+<h2 id="_3">つまずきやすい点</h2>
+<ul>
+<li><strong>チェックが出ている工事の「最新版」は信用しない</strong>: たとえば第3版の提出日が第2版より前だと、第3版の行がチェックで止まり、<strong>第2版が最新版と表示されます</strong>。表の上では正しく見えるのに、本当の最新は第3版です。K8(チェックが出ている行数)が0でないときは、先にチェック列を直してから最新版を見てください。</li>
+<li><strong>版番号の付け方をそろえる</strong>: 「第2版」「改訂」「R2」など書き方がばらばらだと入力ミスの元です。見積書の右上に「第○版」と入れ、その数字をそのまま入れる運用にします。</li>
+<li><strong>同じ版を直しただけのとき</strong>: 金額の誤字を直して再提出する場合も、版を上げるか、元の行を直して履歴を残さないかを決めておきます(同じ版を2行にすると「重複」で止まります)。</li>
+<li><strong>契約した版がどれか</strong>: 最新版が契約版とは限りません。「最新の見積」と「契約した見積」は別の列(契約した版の番号)で管理し、台帳には契約した版の金額を渡してください。</li>
+<li><strong>工事番号を変えない</strong>: 途中で工事番号を付け替えると、別の工事として数えられ、旧版が見つからなくなります。</li>
+<li><strong>Excel 2016以前</strong>: MAXIFS・MINIFSが使えません。使える環境で確認するか、版の列を並べ替えて一番下の行を最新とする運用にしてください(この記事では確認していません)。</li>
+</ul>
+<h2 id="_4">注意点: この記事ができないこと</h2>
+<ul>
+<li>どの版が契約されたか、施主が承諾したかは扱いません。</li>
+<li>見積額の中身(数量・単価・諸経費)の計算は扱いません。見積額は合計を入れる前提です。</li>
+<li>税の扱い(税抜・税込)は、入力する側でそろえる前提で、式では見ません。</li>
+<li>版を飛ばした入力(第1版と第3版だけ)は、そのまま受け付けます。抜けを見つけたいときは、別に版の連番を確認してください。</li>
+<li>1000行を超える履歴は、式の範囲(<code>$1000</code>)を広げる必要があります。</li>
+</ul>
+<h2 id="_5">見積から工事台帳までつなげたいとき</h2>
+<p>見積の計算そのものから作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=quote-revision">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の「改訂版から最新版を拾う」機能は、この商品には入っていません</strong>。工事台帳への転記、請求書への変換、軽減税率の混在、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の合計だけをすぐ確かめたいときは、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>見積の履歴は、工事番号・版・見積額・提出日を1行ずつ入れ、行を消さずに足していく</li>
+<li>最新版は、同じ工事の「チェックが通った行の最大の版番号」と自分の版が一致する行(<code>MAXIFS</code>)</li>
+<li>最新版の行には、初版からの増減(最新版−初版)を出す。最新版だけの合計も出せる</li>
+<li>版・見積額・提出日の入力ミスと、同じ版の重複、提出日の逆転は、チェック列で止める</li>
+<li>チェックが出ている工事の「最新版」は信用しない。30ケースと500行の照合はLibreOfficeで一致、Excelでは未確認</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、30ケース(1版だけ・2版・3版、行の順番が逆、版が飛ぶ、金額が下がる、2つの工事が混ざる、同じ日に2版、工事番号の大文字小文字違い、工事番号・版・見積額・提出日の空欄・文字・全角・0・小数・負・時刻つき、同じ版の重複、提出日の逆転、空行、集計)と、乱数で作った500行(入力ミスと提出日の逆転を約10%混ぜ、行の順番を入れ替えたデータ)で、状態・チェック表示・初版からの増減と、最新版の件数・合計・旧版の件数・増減の合計・チェック行数が、Pythonで計算した結果と一致することを確認しました。Excelでは未確認です。MAXIFS・MINIFSはExcel 2019以降の関数で、それより前のExcelでは使えません。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/quote_revision.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/quote-to-ledger/">見積書の金額を工事台帳に転記したまま古くならない式|改訂版の最新を自動で引いてズレを表示【LibreOfficeで計算して確認】</a></li><li><a href="/cash-forecast/">請求書の入金予定を月ごとに集計するExcelの式|来月・再来月にいくら入るかを12か月分出す【LibreOfficeで確認】</a></li><li><a href="/budget-actual/">工事の実行予算と原価実績を比べて予算超過を早く見つけるExcelの式|進捗率より原価が先行している工事も表示【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
