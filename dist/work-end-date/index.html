@@ -1,0 +1,187 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工期の完了予定日を休工日を除いて出すExcelの式|WORKDAY.INTLで日曜・お盆を飛ばす【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="着工日と作業日数から、日曜(土曜は作業日)とお盆・年末年始などの休工日を飛ばした完了予定日を出す式を解説。日数ゼロ・小数、日付になっていない開始日などの誤入力チェックも含めて、固定ケースと乱数500行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/work-end-date/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工期の完了予定日を休工日を除いて出すExcelの式|WORKDAY.INTLで日曜・お盆を飛ばす【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="着工日と作業日数から、日曜(土曜は作業日)とお盆・年末年始などの休工日を飛ばした完了予定日を出す式を解説。日数ゼロ・小数、日付になっていない開始日などの誤入力チェックも含めて、固定ケースと乱数500行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/work-end-date/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "工期の完了予定日を休工日を除いて出すExcelの式|WORKDAY.INTLで日曜・お盆を飛ばす【LibreOfficeで確認】", "datePublished": "2026-11-08", "dateModified": "2026-11-08", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "着工日と作業日数から、日曜(土曜は作業日)とお盆・年末年始などの休工日を飛ばした完了予定日を出す式を解説。日数ゼロ・小数、日付になっていない開始日などの誤入力チェックも含めて、固定ケースと乱数500行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/work-end-date/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/work-end-date/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "工期の完了予定日を休工日を除いて出すExcelの式|WORKDAY.INTLで日曜・お盆を飛ばす【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/work-end-date/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 工期の完了予定日を休工日を除いて出すExcelの式|WORKDAY.INTLで日曜・お盆を飛ばす【LibreOfficeで確認】</p><article><p class="meta">2026-11-08 ・ Excel関数</p><h1>工期の完了予定日を休工日を除いて出すExcelの式|WORKDAY.INTLで日曜・お盆を飛ばす【LibreOfficeで確認】</h1><p>「11月4日に着工して作業日数が12日。完了はいつ?」。カレンダーを指で数えると、日曜や、お盆・年末年始の休みを数え間違えがちです。日数をただ足す(<code>着工日+12</code>)と、休みの日まで作業日に数えてしまい、完了予定日が早すぎる日付になります。</p>
+<p>この記事では、<strong>着工日と作業日数</strong>を入れると、<strong>日曜と休工日(お盆・年末年始・施主の都合の休みなど)を飛ばした完了予定日</strong>が出る式を示します。土曜は作業日として数えます。日数に0や小数を入れる、開始日が日付になっていない、といった誤入力は、結果を出す前に止めます。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/work_end_date.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのは <code>WORKDAY.INTL</code> という標準の関数ですが、本番で使う前にカレンダーと数行を見比べてください。なお、<strong>雨で休みになる日の見込みや、工種ごとの必要日数はこの記事では決めません</strong>(自分の現場の数字を入れてください)。</p>
+<h2 id="_1">先に作る表</h2>
+<p>「休工日」シート: A1に見出し、A2から下に休工日を1行1日で入れます(日曜は入れなくて大丈夫です)。例: 祝日、お盆休み、年末年始、施主の立ち会い日など。</p>
+<p>「工期」シート(2行目から。1行目は見出し)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工種</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>開始日</td>
+<td>手入力(日付として入れる)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>作業日数</td>
+<td>手入力(1以上の整数)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>E</td>
+<td>完了予定日</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>I1: =IF(COUNTA(休工日!$A$2:$A$40)&gt;COUNT(休工日!$A$2:$A$40),&quot;休工日に日付でないものがある&quot;,&quot;&quot;)
+D2: =IF(AND(B2=&quot;&quot;,C2=&quot;&quot;),&quot;&quot;,IF(NOT(ISNUMBER(B2)),&quot;開始日が日付でない&quot;,IF(NOT(ISNUMBER(C2)),&quot;作業日数が数字でない&quot;,
+      IF(OR(C2&lt;1,C2&lt;&gt;INT(C2)),&quot;作業日数は1以上の整数&quot;,IF($I$1&lt;&gt;&quot;&quot;,&quot;休工日リストを直す&quot;,&quot;&quot;)))))
+E2: =IF(OR(D2&lt;&gt;&quot;&quot;,AND(B2=&quot;&quot;,C2=&quot;&quot;)),&quot;&quot;,WORKDAY.INTL(B2-1,C2,11,休工日!$A$2:$A$40))
+</code></pre>
+<p>E列は日付の表示形式(例: <code>yyyy/m/d</code>)にします。休工日は40行目まで読む形にしていますが、足りなければ範囲を広げてください。</p>
+<p>考え方は3つです。</p>
+<ul>
+<li><code>WORKDAY.INTL(開始日-1, 作業日数, 11, 休工日)</code> は、「開始日の前日から数えて作業日数番目の作業日」を返します。<strong>開始日そのものを1日目として数える</strong>ためにB2から1を引いています。</li>
+<li>3つ目の <code>11</code> は「日曜だけを休みにする」という指定です(土曜は作業日)。土日を休みにするなら <code>1</code> にします。</li>
+<li>4つ目の範囲に、日曜以外の休工日を並べます。範囲に空欄があっても計算できますが、<strong>文字(「お盆」など)が混ざるとエラーになる</strong>ので、I1で見つけて止めます。</li>
+</ul>
+<h2 id="_2">実際に計算した結果</h2>
+<p>休工日は 2026/11/3、11/23、12/29〜1/2、2027/8/13〜15 としたときの結果です。</p>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>開始日・作業日数</th>
+<th>結果</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>基礎(週の頭から)</td>
+<td>2026/11/2(月)・5日</td>
+<td>11/7(土)</td>
+</tr>
+<tr>
+<td>日曜をまたぐ</td>
+<td>11/4(水)・6日</td>
+<td>11/10(火)</td>
+</tr>
+<tr>
+<td>日曜から開始</td>
+<td>11/8(日)・1日</td>
+<td>11/9(月)</td>
+</tr>
+<tr>
+<td>1日だけ</td>
+<td>11/10・1日</td>
+<td>11/10</td>
+</tr>
+<tr>
+<td>祝日をまたぐ</td>
+<td>11/20(金)・5日</td>
+<td>11/26(木)(11/22日曜と11/23休工日を飛ばす)</td>
+</tr>
+<tr>
+<td>お盆をまたぐ</td>
+<td>2027/8/10・6日</td>
+<td>8/18</td>
+</tr>
+<tr>
+<td>年末年始をまたぐ</td>
+<td>2026/12/26・6日</td>
+<td>2027/1/7</td>
+</tr>
+<tr>
+<td>土曜は作業日</td>
+<td>11/6(金)・2日</td>
+<td>11/7(土)</td>
+</tr>
+<tr>
+<td>30日</td>
+<td>11/2・30日</td>
+<td>12/8</td>
+</tr>
+<tr>
+<td>開始日が文字(「11月2日」)</td>
+<td>文字・5日</td>
+<td>チェック「開始日が日付でない」</td>
+</tr>
+<tr>
+<td>開始日が空欄</td>
+<td>(空欄)・5日</td>
+<td>チェック「開始日が日付でない」</td>
+</tr>
+<tr>
+<td>作業日数が空欄・「5日」</td>
+<td>11/2・空欄/文字</td>
+<td>チェック「作業日数が数字でない」</td>
+</tr>
+<tr>
+<td>作業日数が0・負・2.5</td>
+<td>11/2・0/-3/2.5</td>
+<td>チェック「作業日数は1以上の整数」</td>
+</tr>
+<tr>
+<td>空行</td>
+<td>(なし)</td>
+<td>すべて空欄</td>
+</tr>
+</tbody>
+</table>
+<p>休工日の欄に「お盆」という文字を混ぜたときは、すべての行に「休工日リストを直す」と出ます。休工日を1つも入れない場合は、日曜だけを飛ばして計算されます。</p>
+<p>上の17ケースに加え、開始日・作業日数・休工日を乱数で組み合わせた500行でも、チェック表示と完了予定日が<strong>全件一致</strong>しました(Pythonで日を1日ずつ数えた結果と比較。検証はLibreOfficeのみ。Excelでは未確認)。</p>
+<h2 id="_3">使うときの注意</h2>
+<ul>
+<li><strong>開始日は日付として入れます</strong>。「11月2日」と文字で入れるとチェックで止まります。セルの書式が文字列になっていると、日付を入れても文字扱いになるので、書式を日付にしてください。</li>
+<li><strong>開始日が日曜や休工日のときは、次の作業日が1日目</strong>になります(11/8日曜・1日なら11/9)。</li>
+<li><strong>作業日数は「その工種に作業する日の数」</strong>です。半日や、乾燥・養生のように待つだけの日は、日数に含めるかどうかを自分で決めて入れてください。この式は半日を扱えません。</li>
+<li><strong>雨天の予備日は自動では入りません</strong>。見込む場合は休工日として日付を入れるか、作業日数に足してください。</li>
+<li>工程が前の工程の完了を待つ場合は、<strong>前の工程の完了予定日の翌作業日を次の開始日に</strong>入れる運用になります。自動でつなぐ式は、この記事には入っていません。</li>
+</ul>
+<h2 id="_4">この記事ができないこと</h2>
+<ul>
+<li>工期の日数や、工種の順番の決定はしません。</li>
+<li>祝日の自動判定はしません(休工日に自分で入れます)。</li>
+<li>遅れの判定は別記事の<a href="/schedule-delay/">工程表で遅れている工程を自動で表示する式</a>で扱っています。</li>
+</ul>
+<h2 id="_5">工程や台帳とあわせて管理したいとき</h2>
+<p>遅れている工程の表示は<a href="/schedule-delay/">工程表で遅れている工程を自動で表示する式</a>に、見積から工事台帳への転記は<a href="/quote-to-ledger/">見積から工事台帳への転記</a>にまとめています。見積の計算(数量×単価、諸経費、値引き、消費税)から作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=work-end-date">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の完了予定日の式は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>完了予定日は <code>WORKDAY.INTL(開始日-1, 作業日数, 11, 休工日)</code> で出す。開始日を1日目に数えるため1を引く</li>
+<li>日曜だけを休みにする指定が <code>11</code>。土曜も休みにするなら <code>1</code></li>
+<li>日数0・小数・文字、日付になっていない開始日、休工日リストの文字は、チェックで止めて結果を出さない</li>
+<li>17ケースと乱数500行の照合はLibreOfficeで一致、Excelでは未確認のため、本番ではカレンダーで数行を見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、17ケース(基礎、日曜またぎ、日曜から開始、1日だけ、祝日またぎ、お盆またぎ、年末年始またぎ、土曜が作業日、30日、開始日が文字・空欄、日数が空欄・文字・0・負・小数、空行)と、休工日リストに文字が混ざったケース、休工日が空のケース、乱数500行で、チェック表示と完了予定日がPythonの日数計算と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/work_end_date.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/order-quantity/">材料の発注数をロス率込みで箱単位に切り上げるExcelの式|床材・石こうボードの発注箱数と余りを出す【LibreOfficeで確認】</a></li><li><a href="/quote-revision/">見積書の改訂版(第2版・第3版)から最新版だけを拾うExcelの式|工事ごとの最新の見積額と初版からの増減【LibreOfficeで確認】</a></li><li><a href="/cash-forecast/">請求書の入金予定を月ごとに集計するExcelの式|来月・再来月にいくら入るかを12か月分出す【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
