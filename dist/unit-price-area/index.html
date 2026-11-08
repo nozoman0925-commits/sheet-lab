@@ -1,0 +1,232 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>工事金額と面積から㎡単価・坪単価を出すExcelの式|面積が0・文字・全角数字のときは止める【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="契約金額と施工面積から、㎡単価と坪数・坪単価を出す式を解説。面積が0や空欄、全角数字で入っていた場合の誤入力チェックと、端数の丸め方を決めて、15ケースと乱数500行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/unit-price-area/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="工事金額と面積から㎡単価・坪単価を出すExcelの式|面積が0・文字・全角数字のときは止める【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="契約金額と施工面積から、㎡単価と坪数・坪単価を出す式を解説。面積が0や空欄、全角数字で入っていた場合の誤入力チェックと、端数の丸め方を決めて、15ケースと乱数500行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/unit-price-area/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "工事金額と面積から㎡単価・坪単価を出すExcelの式|面積が0・文字・全角数字のときは止める【LibreOfficeで確認】", "datePublished": "2026-11-09", "dateModified": "2026-11-09", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "契約金額と施工面積から、㎡単価と坪数・坪単価を出す式を解説。面積が0や空欄、全角数字で入っていた場合の誤入力チェックと、端数の丸め方を決めて、15ケースと乱数500行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/unit-price-area/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/unit-price-area/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "工事金額と面積から㎡単価・坪単価を出すExcelの式|面積が0・文字・全角数字のときは止める【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/unit-price-area/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 工事金額と面積から㎡単価・坪単価を出すExcelの式|面積が0・文字・全角数字のときは止める【LibreOfficeで確認】</p><article><p class="meta">2026-11-09 ・ Excel関数</p><h1>工事金額と面積から㎡単価・坪単価を出すExcelの式|面積が0・文字・全角数字のときは止める【LibreOfficeで確認】</h1><p>「あの工事、1坪あたりいくらだったっけ」「この外壁塗装は1㎡いくらで受けた?」。過去の工事を見積の参考にするとき、<strong>契約金額を面積で割った単価</strong>が一覧にあると助かります。電卓で毎回割ると、面積の入力ミスに気づかないまま単価だけが残りがちです。</p>
+<p>この記事では、<strong>契約金額</strong>と<strong>施工面積(㎡)</strong>から、㎡単価・坪数・坪単価を出す式を示します。面積が0、空欄、全角数字(「５０」)のように入っているときは、<strong>単価を出さずにチェックで止めます</strong>。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/unit_price_area.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのは <code>ROUND</code> と四則演算だけですが、本番の前に電卓で数行を見比べてください。なお、<strong>坪単価の「正しい基準」はこの記事では決めません</strong>(何の面積で割るかは次の「注意」を読んでください)。</p>
+<h2 id="_1">先に作る表</h2>
+<p>「単価」シート(2行目から。1行目は見出し)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事名</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>契約金額(円)</td>
+<td>手入力(数字)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>施工面積(㎡)</td>
+<td>手入力(数字)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>E</td>
+<td>㎡単価(円)</td>
+<td>式</td>
+</tr>
+<tr>
+<td>F</td>
+<td>坪数</td>
+<td>式</td>
+</tr>
+<tr>
+<td>G</td>
+<td>坪単価(円)</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>D2: =IF(AND(B2=&quot;&quot;,C2=&quot;&quot;),&quot;&quot;,IF(NOT(ISNUMBER(B2)),&quot;金額が数字でない&quot;,IF(NOT(ISNUMBER(C2)),&quot;面積が数字でない&quot;,
+      IF(B2&lt;0,&quot;金額がマイナス&quot;,IF(C2&lt;=0,&quot;面積は0より大きく&quot;,&quot;&quot;)))))
+E2: =IF(OR(D2&lt;&gt;&quot;&quot;,C2=&quot;&quot;),&quot;&quot;,ROUND(B2/C2,0))
+F2: =IF(OR(D2&lt;&gt;&quot;&quot;,C2=&quot;&quot;),&quot;&quot;,ROUND(C2*121/400,2))
+G2: =IF(OR(D2&lt;&gt;&quot;&quot;,C2=&quot;&quot;),&quot;&quot;,ROUND(B2*400/(C2*121),0))
+</code></pre>
+<p>考え方は3つです。</p>
+<ul>
+<li>1坪は 400÷121 ㎡(約3.3058㎡)です。㎡から坪にするときは <code>×121/400</code> とします。<code>3.3</code> や <code>3.3058</code> と丸めた数字を式に入れると、面積が大きいほど単価がずれるので、分数のまま入れています。</li>
+<li>坪単価は「金額÷坪数」ですが、坪数を一度丸めてから割ると誤差が出ます。<strong>G列は丸める前の面積から直接</strong>(<code>金額×400÷(面積×121)</code>)計算しています。</li>
+<li>割り算の前にD列で、<strong>0で割る形になっていないか・数字か</strong>を見て、おかしい行は単価を空欄にします。数字の見た目で文字が入っていると(全角の「５０」など)、ただの <code>B2/C2</code> では <code>#VALUE!</code> になります。</li>
+</ul>
+<h2 id="_2">実際に計算した結果</h2>
+<table>
+<thead>
+<tr>
+<th>ケース</th>
+<th>金額・面積</th>
+<th>㎡単価</th>
+<th>坪数</th>
+<th>坪単価</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>内装改修</td>
+<td>1,500,000円・50㎡</td>
+<td>30,000円</td>
+<td>15.13</td>
+<td>99,174円</td>
+</tr>
+<tr>
+<td>水まわり</td>
+<td>2,380,000円・12.5㎡</td>
+<td>190,400円</td>
+<td>3.78</td>
+<td>629,421円</td>
+</tr>
+<tr>
+<td>外壁塗装</td>
+<td>1,980,000円・132.6㎡</td>
+<td>14,932円</td>
+<td>40.11</td>
+<td>49,362円</td>
+</tr>
+<tr>
+<td>全面改装</td>
+<td>18,500,000円・99.17㎡</td>
+<td>186,548円</td>
+<td>30.00</td>
+<td>616,689円</td>
+</tr>
+<tr>
+<td>小さな補修</td>
+<td>85,000円・3㎡</td>
+<td>28,333円</td>
+<td>0.91</td>
+<td>93,664円</td>
+</tr>
+<tr>
+<td>端数が出る</td>
+<td>1,000,000円・33㎡</td>
+<td>30,303円</td>
+<td>9.98</td>
+<td>100,175円</td>
+</tr>
+<tr>
+<td>金額が0</td>
+<td>0円・20㎡</td>
+<td>0円</td>
+<td>6.05</td>
+<td>0円</td>
+</tr>
+<tr>
+<td>面積が全角数字</td>
+<td>1,200,000円・「５０」</td>
+<td>チェック「面積が数字でない」</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>金額が文字</td>
+<td>「120万」・50㎡</td>
+<td>チェック「金額が数字でない」</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>面積が0</td>
+<td>500,000円・0</td>
+<td>チェック「面積は0より大きく」</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>面積がマイナス</td>
+<td>500,000円・-5</td>
+<td>チェック「面積は0より大きく」</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>金額がマイナス</td>
+<td>-100,000円・20㎡</td>
+<td>チェック「金額がマイナス」</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>面積が空欄</td>
+<td>500,000円・(空欄)</td>
+<td>チェック「面積が数字でない」</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>金額が空欄</td>
+<td>(空欄)・30㎡</td>
+<td>チェック「金額が数字でない」</td>
+<td></td>
+<td></td>
+</tr>
+<tr>
+<td>空行</td>
+<td>(なし)</td>
+<td>すべて空欄</td>
+<td></td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>上の15ケースに加え、金額・面積を乱数で組み合わせた500行でも、チェック表示と3つの単価が<strong>全件一致</strong>しました(Pythonで分数による厳密な四捨五入と比較。検証はLibreOfficeのみ。Excelでは未確認)。</p>
+<h2 id="_3">使うときの注意</h2>
+<ul>
+<li><strong>何の面積で割るかを先に決めます</strong>。施工した床面積、壁・外壁の面積、建物の延べ床面積では、同じ工事でも単価が変わります。この表は「入れた面積で割る」だけなので、<strong>列の見出しに面積の種類(例: 施工面積)を書いておく</strong>と、後で比べるときに迷いません。</li>
+<li><strong>契約金額が税込か税抜か</strong>も揃えてください。混ぜると単価が約10%ずれます。</li>
+<li>単価は<strong>円未満を四捨五入</strong>しています。切り捨てにしたいときは <code>ROUND</code> を <code>ROUNDDOWN</code> に替えてください。</li>
+<li><strong>全角数字は文字扱い</strong>になるので、チェックで止まります。半角に直せば計算されます。セルの書式が「文字列」になっているときも、同じ表示が出ます。</li>
+<li>単価はあくまで過去の実績の目安です。<strong>次の見積の単価をこの数字だけで決めない</strong>でください(仕様・条件・量で変わります)。</li>
+</ul>
+<h2 id="_4">この記事ができないこと</h2>
+<ul>
+<li>工事の種類ごとの相場や、適正な単価の判断はしません。</li>
+<li>面積の拾い出し(図面からの計算)はしません。</li>
+<li>工事ごとの粗利を見る式は、別記事の<a href="/job-margin/">エクセルで工事ごとの粗利を出す方法</a>にあります。</li>
+</ul>
+<h2 id="_5">見積から工事台帳・請求まで一続きにしたいとき</h2>
+<p>単価の元になる契約金額は、見積から工事台帳へ転記して管理するのが基本です。<a href="/quote-to-ledger/">見積から工事台帳への転記</a>に、手作業でのミスを減らす式をまとめています。見積の計算(数量×単価、諸経費、値引き、消費税)そのものを作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=unit-price-area">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の㎡単価・坪単価の式は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の合計だけをすぐ確かめたいときは、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_6">まとめ</h2>
+<ul>
+<li>㎡単価は <code>ROUND(金額/面積,0)</code>、坪数は <code>面積×121/400</code>、坪単価は丸める前の面積から <code>金額×400/(面積×121)</code></li>
+<li>面積が0・負・空欄・全角数字、金額が文字・マイナスのときは、チェックで止めて単価を出さない</li>
+<li>何の面積で割るか、税込か税抜かを揃えないと、単価は比べられない</li>
+<li>15ケースと乱数500行の照合はLibreOfficeで一致、Excelでは未確認のため、本番では電卓で数行を見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、15ケース(内装・水まわり・外壁・全面改装・小さな補修、金額0、面積が全角数字・金額が文字・面積が0・負・空欄、金額が負、空行、端数が出る場合)と乱数500行で、チェック表示と㎡単価・坪数・坪単価がPython(分数による厳密計算、四捨五入)と全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/unit_price_area.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/quote-revision/">見積書の改訂版(第2版・第3版)から最新版だけを拾うExcelの式|工事ごとの最新の見積額と初版からの増減【LibreOfficeで確認】</a></li><li><a href="/order-quantity/">材料の発注数をロス率込みで箱単位に切り上げるExcelの式|床材・石こうボードの発注箱数と余りを出す【LibreOfficeで確認】</a></li><li><a href="/work-end-date/">工期の完了予定日を休工日を除いて出すExcelの式|WORKDAY.INTLで日曜・お盆を飛ばす【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
