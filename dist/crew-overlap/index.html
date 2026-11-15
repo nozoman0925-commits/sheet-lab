@@ -1,0 +1,222 @@
+<!doctype html><html lang="ja"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>同じ職人が同じ日に2つの現場に入っていないかをExcelで調べる式|日付の逆転・空欄は判定から外す【LibreOfficeで確認】 | シート実務ラボ</title><meta name="description" content="工事ごとに担当の職人と開始日・終了日を並べた表から、同じ人の予定が日付で重なっている工事を自動で見つける式を解説。日付の逆転・文字・担当の空欄を判定から外す方法まで、16ケースと乱数360行の照合をLibreOfficeで確認しました。">
+<link rel="canonical" href="https://sheet-lab-site.pages.dev/crew-overlap/"><link rel="alternate" type="application/rss+xml" href="https://sheet-lab-site.pages.dev/feed.xml"><meta name="google-site-verification" content="LeeOlbm5OD2BSucJkUmXdqCM365DjyVUXocSrnssoo8">
+<meta property="og:title" content="同じ職人が同じ日に2つの現場に入っていないかをExcelで調べる式|日付の逆転・空欄は判定から外す【LibreOfficeで確認】 | シート実務ラボ"><meta property="og:description" content="工事ごとに担当の職人と開始日・終了日を並べた表から、同じ人の予定が日付で重なっている工事を自動で見つける式を解説。日付の逆転・文字・担当の空欄を判定から外す方法まで、16ケースと乱数360行の照合をLibreOfficeで確認しました。"><meta property="og:url" content="https://sheet-lab-site.pages.dev/crew-overlap/"><meta property="og:type" content="article">
+<style>
+:root{--bg:#fff;--fg:#1c2430;--mute:#5b6675;--line:#e3e8ef;--acc:#0b6e4f;--card:#f6f8fb}
+@media(prefers-color-scheme:dark){:root{--bg:#10151c;--fg:#e6ebf2;--mute:#9aa7b8;--line:#263040;--acc:#4cc9a0;--card:#171e28}}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--fg);font:16px/1.85 -apple-system,"Hiragino Sans","Noto Sans JP",Meiryo,sans-serif}
+a{color:var(--acc)}header,main,footer{max-width:760px;margin:0 auto;padding:0 16px}
+header{padding-top:20px;padding-bottom:12px;border-bottom:1px solid var(--line)}
+header a.brand{font-weight:700;font-size:1.15rem;text-decoration:none;color:var(--fg)}header p{margin:2px 0 0;color:var(--mute);font-size:.85rem}
+nav{margin-top:8px;font-size:.9rem}nav a{margin-right:14px}
+main{padding-top:24px;padding-bottom:40px}h1{font-size:1.55rem;line-height:1.4}h2{font-size:1.25rem;margin-top:2.2em;border-left:4px solid var(--acc);padding-left:10px}
+h3{font-size:1.07rem;margin-top:1.6em}table{border-collapse:collapse;width:100%;font-size:.92rem;display:block;overflow-x:auto}
+th,td{border:1px solid var(--line);padding:6px 10px;text-align:left}th{background:var(--card)}
+pre,code{font-family:ui-monospace,Menlo,Consolas,monospace}pre{background:var(--card);padding:12px;overflow-x:auto;border-radius:8px;font-size:.88rem}
+code{background:var(--card);padding:1px 5px;border-radius:4px}pre code{background:none;padding:0}
+.crumbs{margin:0 0 8px}.related ul{padding-left:1.2em}.meta{color:var(--mute);font-size:.85rem}.box{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:12px 14px;margin:1.4em 0;font-size:.92rem}
+.list a.item{display:block;padding:14px 0;border-bottom:1px solid var(--line);text-decoration:none;color:var(--fg)}.list .t{font-weight:600}.list .d{color:var(--mute);font-size:.88rem}
+footer{border-top:1px solid var(--line);padding-top:16px;padding-bottom:30px;color:var(--mute);font-size:.82rem}
+</style><script type="application/ld+json">{"@context": "https://schema.org", "@type": "Article", "headline": "同じ職人が同じ日に2つの現場に入っていないかをExcelで調べる式|日付の逆転・空欄は判定から外す【LibreOfficeで確認】", "datePublished": "2026-11-16", "dateModified": "2026-11-16", "author": {"@type": "Person", "name": "シート実務ラボ編集部"}, "description": "工事ごとに担当の職人と開始日・終了日を並べた表から、同じ人の予定が日付で重なっている工事を自動で見つける式を解説。日付の逆転・文字・担当の空欄を判定から外す方法まで、16ケースと乱数360行の照合をLibreOfficeで確認しました。", "url": "https://sheet-lab-site.pages.dev/crew-overlap/", "mainEntityOfPage": "https://sheet-lab-site.pages.dev/crew-overlap/"}</script><script type="application/ld+json">{"@context": "https://schema.org", "@type": "BreadcrumbList", "itemListElement": [{"@type": "ListItem", "position": 1, "name": "ホーム", "item": "https://sheet-lab-site.pages.dev/"}, {"@type": "ListItem", "position": 2, "name": "同じ職人が同じ日に2つの現場に入っていないかをExcelで調べる式|日付の逆転・空欄は判定から外す【LibreOfficeで確認】", "item": "https://sheet-lab-site.pages.dev/crew-overlap/"}]}</script></head><body>
+<header><a class="brand" href="/">シート実務ラボ</a><p>Excel・スプレッドシートの「動かして確かめた」実務ガイド</p>
+<nav><a href="/">記事一覧</a><a href="/tools/">無料ツール</a><a href="/products/">テンプレート(有料)</a><a href="/about/">運営者情報</a><a href="/contact/">お問い合わせ</a><a href="/privacy/">プライバシーポリシー</a></nav></header>
+<main><p class="meta crumbs"><a href="/">ホーム</a> &gt; 同じ職人が同じ日に2つの現場に入っていないかをExcelで調べる式|日付の逆転・空欄は判定から外す【LibreOfficeで確認】</p><article><p class="meta">2026-11-16 ・ Excel関数</p><h1>同じ職人が同じ日に2つの現場に入っていないかをExcelで調べる式|日付の逆転・空欄は判定から外す【LibreOfficeで確認】</h1><p>「来週、田中さんは2現場に入る予定になっていた」と、前日になって気づく。工程表を現場ごとに作っていると、<strong>同じ人の予定が別の現場と重なっていても目に入りません</strong>。</p>
+<p>この記事では、「工事名・担当・開始日・終了日」を並べた表から、<strong>同じ担当の予定が日付で重なっている工事</strong>に印を付ける式を示します。日付が文字だったり、終了日が開始日より前になっていたりする行は、判定に使わずに理由を表示します。</p>
+<p>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/crew_overlap.py)。外部サイトの説明は参照していません。<strong>Excelでは未確認</strong>です。使うのは <code>COUNTIFS</code> と <code>IF</code> だけですが、本番の前に自分の予定表で数行を見比べてください。</p>
+<h2 id="_1">先に作る表</h2>
+<p>「配置」シート(2行目から。1行目は見出し。ここでは50行目までの範囲で書きます)</p>
+<table>
+<thead>
+<tr>
+<th>列</th>
+<th>内容</th>
+<th>入れるもの</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A</td>
+<td>工事名</td>
+<td>手入力</td>
+</tr>
+<tr>
+<td>B</td>
+<td>担当</td>
+<td>手入力(職人名・班名)</td>
+</tr>
+<tr>
+<td>C</td>
+<td>開始日</td>
+<td>手入力(日付)</td>
+</tr>
+<tr>
+<td>D</td>
+<td>終了日</td>
+<td>手入力(日付。1日だけなら開始日と同じ)</td>
+</tr>
+<tr>
+<td>E</td>
+<td>入力チェック</td>
+<td>式</td>
+</tr>
+<tr>
+<td>F</td>
+<td>有効</td>
+<td>式(判定に使える行なら1)</td>
+</tr>
+<tr>
+<td>G</td>
+<td>重なり数</td>
+<td>式</td>
+</tr>
+<tr>
+<td>H</td>
+<td>判定</td>
+<td>式</td>
+</tr>
+</tbody>
+</table>
+<pre><code>E2: =IF(AND(B2=&quot;&quot;,C2=&quot;&quot;,D2=&quot;&quot;),&quot;&quot;,IF(B2=&quot;&quot;,&quot;担当が空欄&quot;,IF(NOT(ISNUMBER(C2)),&quot;開始日が日付でない&quot;,
+      IF(NOT(ISNUMBER(D2)),&quot;終了日が日付でない&quot;,IF(D2&lt;C2,&quot;終了日が開始日より前&quot;,&quot;&quot;)))))
+F2: =IF(AND(B2&lt;&gt;&quot;&quot;,E2=&quot;&quot;,NOT(AND(B2=&quot;&quot;,C2=&quot;&quot;,D2=&quot;&quot;))),1,0)
+G2: =IF(F2=1,COUNTIFS($B$2:$B$50,B2,$F$2:$F$50,1,$C$2:$C$50,&quot;&lt;=&quot;&amp;D2,$D$2:$D$50,&quot;&gt;=&quot;&amp;C2)-1,&quot;&quot;)
+H2: =IF(E2&lt;&gt;&quot;&quot;,E2,IF(F2=0,&quot;&quot;,IF(G2&gt;0,&quot;重なりあり(&quot;&amp;G2&amp;&quot;件)&quot;,&quot;OK&quot;)))
+</code></pre>
+<p>考え方は2つです。</p>
+<ul>
+<li><strong>2つの期間が重なる条件は「Aの開始日 ≦ Bの終了日」かつ「Aの終了日 ≧ Bの開始日」</strong>です。G列は、同じ担当で、この条件を満たす行を数えています。自分自身も数えてしまうので、最後に1を引いています。</li>
+<li>日付が文字の行や、終了日が開始日より前の行は、数えると結果がずれます。そこでF列で「判定に使える行」だけに1を付け、<strong>G列の数え上げもF列が1の行だけ</strong>にしています。おかしい行が混ざっていても、ほかの行の判定はそのまま正しくなります。</li>
+</ul>
+<h2 id="12">実際に計算した結果(12月の例)</h2>
+<table>
+<thead>
+<tr>
+<th>工事</th>
+<th>担当</th>
+<th>期間</th>
+<th>判定</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>A邸 内装</td>
+<td>田中</td>
+<td>12/1〜12/5</td>
+<td>重なりあり(1件)</td>
+</tr>
+<tr>
+<td>B邸 水まわり</td>
+<td>田中</td>
+<td>12/5〜12/8</td>
+<td>重なりあり(1件)(12/5が重なる)</td>
+</tr>
+<tr>
+<td>C邸 外壁</td>
+<td>田中</td>
+<td>12/9〜12/12</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>D邸 解体</td>
+<td>鈴木</td>
+<td>12/1〜12/3</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>E邸 解体</td>
+<td>鈴木</td>
+<td>12/4〜12/6</td>
+<td>OK(日が隣り合うだけ)</td>
+</tr>
+<tr>
+<td>F邸 大工</td>
+<td>佐藤</td>
+<td>12/1〜12/20</td>
+<td>重なりあり(2件)</td>
+</tr>
+<tr>
+<td>G邸 大工</td>
+<td>佐藤</td>
+<td>12/10〜12/10</td>
+<td>重なりあり(2件)</td>
+</tr>
+<tr>
+<td>H邸 大工</td>
+<td>佐藤</td>
+<td>12/10〜12/11</td>
+<td>重なりあり(2件)</td>
+</tr>
+<tr>
+<td>I邸</td>
+<td>(空欄)</td>
+<td>12/1〜12/2</td>
+<td>担当が空欄</td>
+</tr>
+<tr>
+<td>J邸</td>
+<td>山本</td>
+<td>「12月1日」(文字)〜12/2</td>
+<td>開始日が日付でない</td>
+</tr>
+<tr>
+<td>K邸</td>
+<td>山本</td>
+<td>12/1〜(空欄)</td>
+<td>終了日が日付でない</td>
+</tr>
+<tr>
+<td>L邸</td>
+<td>山本</td>
+<td>12/9〜12/3</td>
+<td>終了日が開始日より前</td>
+</tr>
+<tr>
+<td>M邸</td>
+<td>山本</td>
+<td>12/1〜12/30</td>
+<td>OK(山本さんの有効な行はこの1件だけのため)</td>
+</tr>
+<tr>
+<td>N邸</td>
+<td>田中</td>
+<td>12/20〜12/22</td>
+<td>OK</td>
+</tr>
+<tr>
+<td>O邸</td>
+<td>「田中 」(末尾に空白)</td>
+<td>12/20〜12/21</td>
+<td>OK(別の人として扱われる)</td>
+</tr>
+</tbody>
+</table>
+<p>2件の重なりが出た F・G・H 邸は、F邸の期間(12/1〜12/20)の中に、G邸とH邸が入っているためです。重なりがあった行は、行ごとに「何件と重なるか」が出ます。</p>
+<p>上の16ケース(空行を含む)に加え、乱数で作った360行(10組)でも、判定が<strong>全件一致</strong>しました(Pythonの総当たりと比較。検証はLibreOfficeのみ。Excelでは未確認)。</p>
+<h2 id="_2">使うときの注意</h2>
+<ul>
+<li><strong>「重なり」は日付だけで見ています</strong>。午前と午後で現場を分けている場合も「重なりあり」と出ます。出た行を人が見て判断してください。</li>
+<li><strong>担当名の表記を揃えます</strong>。「田中」と「田中 」(末尾の空白)や「田中」と「田中さん」は別の人として数えられ、重なりを見落とします。担当は選択式にするなど、入力の揺れを減らしてください。名前の揺れをそろえる関数は<a href="/space-remove-zenkaku-hankaku/">SUBSTITUTEとTRIMで不要な文字・スペースを取り除く方法</a>が参考になります。</li>
+<li>土日・休工日は考慮しません。開始日から終了日までの<strong>カレンダーの日付すべて</strong>を対象にしています。</li>
+<li>判定はこの表の中だけです。<strong>表に入れていない予定(別の仕事、休み)とは比べません</strong>。</li>
+<li>範囲を <code>$B$2:$B$50</code> のように固定しているので、行を増やしたときは範囲を広げてください。行を削除すると式が壊れることがあるため、削除ではなく中身を消すほうが安全です。</li>
+<li>日付は日付として入力してください。全角数字や「12月1日」のような文字は、日付と見なされず「日付でない」と出ます。</li>
+</ul>
+<h2 id="_3">この記事ができないこと</h2>
+<ul>
+<li>人員の手配の最適化や、空いている職人の自動提案はしません。</li>
+<li>工程の遅れの判定は、別記事の<a href="/schedule-delay/">工事の工程表で遅れている工程を自動で表示する式</a>にあります。</li>
+<li>労働時間や法令の基準の確認はしません。</li>
+</ul>
+<h2 id="_4">見積から工事台帳・請求まで一続きにしたいとき</h2>
+<p>配置表の工事名は、見積や工事台帳と同じ名前で揃えておくと、後で突き合わせやすくなります。見積から工事台帳への転記の式は<a href="/quote-to-ledger/">見積から工事台帳への転記</a>にまとめています。見積の計算(数量×単価、諸経費、値引き、消費税)そのものを作りたい場合は、運営者が作った<a href="/go/estimate-construction/?from=crew-overlap">工事・リフォーム用 見積書テンプレート(Excel・980円)</a>があります。数量×単価(四捨五入)、諸経費率、値引き、消費税10%(切り捨て)、税込合計を自動計算し、明細は20行、A4縦1枚で印刷できます。<strong>この記事の職人の重なりの判定は、この商品には入っていません</strong>。軽減税率の混在や、インボイス要件の保証もできません。Excelの確認はWindowsデスクトップ版16のみです。(これは運営者の商品の案内です。)</p>
+<p>見積の合計だけをすぐ確かめたいときは、無料の<a href="/tools/estimate-total/">見積の合計計算ツール</a>が使えます(入力は外部に送信されません)。</p>
+<h2 id="_5">まとめ</h2>
+<ul>
+<li>期間の重なりは「Aの開始日≦Bの終了日 かつ Aの終了日≧Bの開始日」。<code>COUNTIFS</code> で同じ担当を数え、自分の分を1引く</li>
+<li>担当の空欄・日付が文字・終了日が前の行は、有効フラグで判定から外し、理由を表示する</li>
+<li>日付だけで判定するため、半日ずつの配置も「重なりあり」と出る。担当名の揺れは重なりの見落としになる</li>
+<li>16ケースと乱数360行の照合はLibreOfficeで一致、Excelでは未確認のため、本番では自分の予定で数行を見比べる</li>
+</ul><div class="box"><b>確認方法:</b> この記事の式は、LibreOffice Calcで実際に再計算し、16ケース(重なる・日が隣り合うだけ・1日だけの工事が長い工事の中にある・3件が重なる・担当が空欄・開始日が文字・終了日が空欄・日付の逆転・空行・名前の末尾に空白)と乱数360行(10組)で、判定結果がPythonの総当たりと全件一致することを確認しました。Excelでは未確認です。</div><h2>参考にした情報</h2><ul><li>出典: 筆者がLibreOfficeで計算して確認(検証スクリプト: site/verify/crew_overlap.py)</li></ul></article><section class="related"><h2>関連</h2><ul><li><a href="/unit-price-area/">工事金額と面積から㎡単価・坪単価を出すExcelの式|面積が0・文字・全角数字のときは止める【LibreOfficeで確認】</a></li><li><a href="/order-quantity/">材料の発注数をロス率込みで箱単位に切り上げるExcelの式|床材・石こうボードの発注箱数と余りを出す【LibreOfficeで確認】</a></li><li><a href="/work-end-date/">工期の完了予定日を休工日を除いて出すExcelの式|WORKDAY.INTLで日曜・お盆を飛ばす【LibreOfficeで確認】</a></li></ul><p><b>関連する商品(運営者のExcelテンプレート・有料)</b></p><ul><li><a href="/products/">工事・リフォーム用 見積書テンプレート</a>(980円)</li></ul></section></main>
+<footer><p><a href="/products/">テンプレート(有料)</a> ・ <a href="/tools/">無料ツール</a> ・ <a href="/contact/">お問い合わせ</a></p><p>本サイトの記事は、AIが調査・下書きを行い、数式や手順は実際に計算ソフトで動かして確認したうえで公開しています。公開後に誤りが見つかった場合は、運営者情報の連絡先からお知らせください。</p><p>© 2026 シート実務ラボ</p></footer></body></html>
