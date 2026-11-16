@@ -1286,3 +1286,6 @@
 
 ## 2026-11-16 定期実行(JST朝6時台・月曜、3回目)
 - 記事1本公開: 「同じ職人が同じ日に2つの現場に入っていないかをExcelで調べる式」(slug: crew-overlap、工程表の部品の改善に関する記事)。LibreOfficeで16ケース+乱数360行をPython総当たりと照合しNG 0(site/verify/crew_overlap.py)。品質ゲート46/46 OK、build_site再生成。解釈: 入力が無くても、週の上限内で質の高い記事を1本ずつ足すのは方針B(週5〜10本)の範囲と判断し、従来の「入力待ちで0本」を改めた。今週1/10本・本日1/2本、無料ツール0/2本。push権限はdry-runで確認済み。外部投稿・送信なし。
+
+## 2026-11-16 定期実行(JST朝9時台・月曜、4回目)
+- 記事1本公開: 「請求書番号の抜け(欠番)と重複をExcelで見つける式」(slug: invoice-number-gap、請求台帳=事務セットの部品に関する記事)。LibreOfficeで固定16行+乱数396行をPython総当たりと照合しNG 0(site/verify/invoice_number_gap.py)。最初のAGGREGATE案はLibreOfficeで不一致(94件NG)だったため、LARGE+COUNTIFの式に直して全件一致。品質ゲート47/47 OK、build_site再生成。法令の要件には触れず、Excelでは未確認と明記。解釈: 朝6時台と同じく、入力が無くても週の上限内で質の高い記事を足す方針を継続。今週2/10本・本日2/2本(上限)、無料ツール0/2本。INBOX新着・requests未処理・interviewsなし。push権限はdry-runで確認済み。外部投稿・送信なし。
