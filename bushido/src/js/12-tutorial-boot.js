@@ -171,20 +171,54 @@ function seedDemo(){
   saveMain();Object.keys(days).forEach(k=>saveDay(k));tab="dojo";
 }
 
+/* 記録の形を整える：古い版・壊れた値があっても、読める所は残して起動する */
+function normState(x){const isO=v=>!!v&&typeof v==="object"&&!Array.isArray(v);
+  const B=blankMain();const M=Object.assign({},B,isO(x&&x.main)?x.main:{});
+  Object.keys(B).forEach(k=>{const b=B[k];if(Array.isArray(b)){if(!Array.isArray(M[k]))M[k]=b}else if(isO(b)){if(!isO(M[k]))M[k]=b}else if(typeof b==="number"){if(typeof M[k]!=="number"||!isFinite(M[k]))M[k]=b}else if(typeof b==="string"&&k!=="displayName"&&k!=="future"){if(typeof M[k]!=="string"||!/^\d{4}-\d\d-\d\d$/.test(M[k])&&k==="created")M[k]=b}});
+  M.tasks=M.tasks.filter(isO).map(t=>{if(!(typeof t.cat==="number"&&CATS[t.cat]))t.cat=1;if(typeof t.name!=="string")t.name=String(t.name==null?"修行":t.name);if(!Array.isArray(t.restDays))t.restDays=[];if(!Array.isArray(t.history))t.history=[];if(typeof t.id!=="string")t.id="t"+Math.random().toString(36).slice(2,8);if(typeof t.start!=="string"||!/^\d{4}-\d\d-\d\d$/.test(t.start))t.start=M.created;return t});
+  ["rankLog","trials","recoveries","edits","abilities","okiteOff"].forEach(k=>{M[k]=M[k].filter(v=>v!=null)});
+  M.rankLog=M.rankLog.filter(r=>isO(r)&&typeof r.rank==="number"&&RANKS[r.rank]);
+  ["trials","recoveries","edits"].forEach(k=>{M[k]=M[k].filter(isO)});["weeklies","habits"].forEach(k=>{Object.keys(M[k]).forEach(w=>{if(!isO(M[k][w]))delete M[k][w]})});
+  Object.keys(M).forEach(k=>{const v=M[k];if(isO(v)&&!B.hasOwnProperty(k)&&Object.keys(v).length&&Object.values(v).every(isO)===false&&Object.values(v).some(isO)){Object.keys(v).forEach(j=>{if(v[j]===null)delete v[j]})}});
+  if(!(typeof M.rankMax==="number"&&RANKS[M.rankMax]))M.rankMax=0;
+  if(M.master!=null&&!(isO(M.master)&&MOTIVES[M.master.motive]))M.master=null;
+  if(M.look!=null&&!isO(M.look))M.look=null;
+  // そのほかの一覧（配列）と表（オブジェクト）：型が違えば外す（使う所で初期値に戻る）
+  ["feats","masterHist","profileLog","quoteSeen","returns"].forEach(k=>{if(M[k]!=null&&!Array.isArray(M[k]))delete M[k];else if(Array.isArray(M[k]))M[k]=M[k].filter(v=>v!=null)});
+  ["bwLevel","hints","oath","powers","tutFlags","life","env","painStop","self0","vow","tutSnap","graduated","quoteDay","lookPrev"].forEach(k=>{if(M[k]!=null&&!isO(M[k]))M[k]=null});
+  ["tutStep","quoteN"].forEach(k=>{if(M[k]!=null&&!(typeof M[k]==="number"&&isFinite(M[k])))M[k]=null});
+  if(M.tutVer!=null&&typeof M.tutVer!=="number")M.tutVer=null;
+  ["onboarded","demo","tutDone","tutLater"].forEach(k=>{if(M[k]!=null&&typeof M[k]!=="boolean")M[k]=!!M[k]&&M[k]!=="false"});
+  if(M.profile!=null&&!isO(M.profile))M.profile=null;
+  if(M.obAns!=null&&!isO(M.obAns))M.obAns=null;
+  if(M.obDraft!=null&&!isO(M.obDraft))M.obDraft=null;
+  if(M.prologue!=null&&!isO(M.prologue))M.prologue=null;
+  const days={};const D=isO(x&&x.days)?x.days:{};
+  Object.keys(D).forEach(k=>{const d=D[k];if(!/^\d{4}-\d\d-\d\d$/.test(k)||!isO(d)||isNaN(Date.parse(k)))return;
+    d.logs=isO(d.logs)?d.logs:{};Object.keys(d.logs).forEach(t=>{if(!isO(d.logs[t]))delete d.logs[t]});
+    d.ritual=isO(d.ritual)?d.ritual:{};Object.keys(d.ritual).forEach(i=>{if(typeof d.ritual[i]!=="string")delete d.ritual[i]});
+    d.temptations=Array.isArray(d.temptations)?d.temptations.filter(isO):[];if(d.urges!=null&&!Array.isArray(d.urges))d.urges=[];
+    if(d.mission!=null&&!(isO(d.mission)&&typeof d.mission.text==="string"))d.mission=null;
+    if(d.mission&&!(typeof d.mission.cat==="number"&&d.mission.cat>=0&&d.mission.cat<CATS.length))d.mission.cat=1;
+    ["reflection","okite","virtue","prep","prepCheck"].forEach(f=>{if(d[f]!=null&&!isO(d[f]))d[f]=null});
+    days[k]=d});
+  return {main:M,days}}
 /* ============ 起動 ============ */
 (async function boot(){
   let done=false;
+  window.__bootExport=()=>{try{const blob=new Blob([JSON.stringify({exportedAt:new Date().toISOString(),main:S.main,days:S.days})],{type:"application/json"});anchorDL("bushido-backup.json",blob)}catch(e){}};
+  const ready=()=>{};
+  const safeRender=()=>{try{render();ready()}catch(e){console.warn(e);(window.__bootErr||[]).push((e&&e.message)||String(e));if(window.__bootFail)window.__bootFail("起動の途中で止まった。")}};
   const fallback=setTimeout(async()=>{if(done)return;done=true;store={kind:"local",saveMain(){},saveDay(){},wipe:async()=>{}};
-    try{const x=JSON.parse(localStorage.getItem("bushido.v1")||"null");S=x||{main:blankMain(),days:{}}}catch(e){S={main:blankMain(),days:{}}}
-    const LK="bushido.v1";store.saveMain=store.saveDay=()=>{try{localStorage.setItem(LK,JSON.stringify(S))}catch(e){}};render()},10000);
+    try{const x=JSON.parse(localStorage.getItem("bushido.v1")||"null");S=normState(x||{})}catch(e){S={main:blankMain(),days:{}}}
+    const LK="bushido.v1";store.saveMain=store.saveDay=()=>{try{localStorage.setItem(LK,JSON.stringify(S))}catch(e){}};safeRender()},10000);
   try{store=await initStore();const data=await store.load();if(done)return;done=true;clearTimeout(fallback);
-    S={main:Object.assign(blankMain(),data.main||{}),days:data.days||{}};
-    Object.keys(S.days).forEach(k=>{const d=S.days[k];d.logs=d.logs||{};d.ritual=d.ritual||{};d.temptations=d.temptations||[]});
+    S=normState(data);
     tutRestore();
     if(!S.main.prologue&&(S.main.onboarded||(S.main.obDraft&&S.main.obDraft.ob&&(S.main.obDraft.step||0)>0)))S.main.prologue={done:true,skipped:"existing"};
     const dr=S.main.obDraft;if(dr&&dr.ob&&(!S.main.onboarded||dr.retake||dr.mflow)){ui.ob=dr.ob;ui.retake=!!dr.retake&&S.main.onboarded;ui.mflow=S.main.onboarded&&dr.mflow||null;ui.obStep=Math.min(dr.step||0,flowX().length-1);if(flowX()[ui.obStep]==="building")ui.obStep++}
-    render();setTimeout(autoBackup,3000);
+    safeRender();setTimeout(autoBackup,3000);
     if(S.main.onboarded&&!ui.retake&&!ui.mflow&&S.main.master&&S.main.tutVer!==3&&!S.main.tutLater)tutStart(S.main.tutStep||0);
-  }catch(e){console.warn(e);if(!done){done=true;clearTimeout(fallback);store={kind:"local",saveMain(){},saveDay(){},wipe:async()=>{}};S={main:blankMain(),days:{}};render()}}
+  }catch(e){console.warn(e);if(!done){done=true;clearTimeout(fallback);store={kind:"local",saveMain(){},saveDay(){},wipe:async()=>{}};S={main:blankMain(),days:{}};safeRender()}else{(window.__bootErr||[]).push((e&&e.message)||String(e));if(window.__bootFail&&document.querySelector("#app .loading"))window.__bootFail("起動の途中で止まった。")}}
 })();
 })();

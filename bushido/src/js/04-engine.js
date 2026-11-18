@@ -180,7 +180,8 @@ async function initStore(){
     const mainRef=db.doc(base+"/main");
     const daysCol=db.collection(base+"/main/days");
     const load=async()=>{
-      const [m,ds]=await Promise.all([mainRef.get(),daysCol.get()]);
+      const get2=async()=>{try{return await Promise.all([mainRef.get(),daysCol.get()])}catch(e){if(e&&e.code==="unavailable"){await new Promise(r=>setTimeout(r,700+Math.random()*600));return Promise.all([mainRef.get(),daysCol.get()])}throw e}};
+      const [m,ds]=await get2();
       const days={};ds.docs.forEach(d=>{if(d.exists)days[d.id]=d.data()});
       return{main:m.exists?m.data():blankMain(),days};
     };
@@ -351,13 +352,13 @@ function render(){applyLook();
   updateSettled();
   $("#tabs").hidden=false;
   const hs=S.main.hints||{};document.querySelectorAll("#tabs button").forEach(b=>{b.setAttribute("aria-current",b.dataset.tab===tab?"page":"false");b.classList.toggle("new",!!(S.main.tutDone&&HINTS[b.dataset.tab]&&!hs[b.dataset.tab]&&b.dataset.tab!==tab))});
-  const body={dojo:renderDojo,keiko:renderKeiko,roku:renderRoku,chikai:renderChikai}[tab]();
+  let body;try{body={dojo:renderDojo,keiko:renderKeiko,roku:renderRoku,chikai:renderChikai}[tab]()}catch(e){console.warn(e);ui.renderErr=(e&&e.message)||String(e);body='<section class="sec" id="sec-renderr"><p class="eyebrow">表示の不具合</p><h2>この画面の一部を表示できなかった。</h2><p class="small muted">記録は消えていない。ほかの間は使える。直らない時は、この文を撮って送ってほしい。</p><p class="small" style="margin-top:6px;overflow-wrap:anywhere">'+esc(ui.renderErr)+'</p><button class="btn wide" data-act="export" style="margin-top:10px">記録を書き出す（控え）</button></section>'}
   const notes=[];
   if(store.kind==="local"&&tab==="chikai")notes.push('<div class="banner small">サインインしていないため、この端末のブラウザ内だけに保存しています。</div>');
   if(S.main.demo)notes.push('<div class="banner small">見本データを表示中です。誓いの間の「データ設定」から消去して本番を始められます。</div>');
   const fade=ui.lastTab!==tab;ui.lastTab=tab;$("#app").classList.toggle("fade",fade&&look().anim==="on");
   $("#app").innerHTML=header()+'<div class="stack">'+notes.join("")+body+'</div>'+(feat("urge")?'<button class="urge-fab" data-act="urge" aria-label="衝動：SNSや動画を見たくなったら押す"><b>衝動</b></button>':'');
-  groupSections();
+  try{groupSections()}catch(e){console.warn(e)}
   if(ui.tut!=null)requestAnimationFrame(tutShow);else maybeHint();
   afterRender();
 }
