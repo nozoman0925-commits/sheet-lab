@@ -51,14 +51,20 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   await p.evaluate(() => document.getElementById('print-root').innerHTML = '');
   // issued doc view
   await p.goto(url + '?splash=off#/docs'); await p.waitForTimeout(500);
-  await p.click('tr[data-href] >> text=原状回復'); await p.waitForTimeout(700);
+  await p.dblclick('tr[data-pick] >> text=原状回復'); await p.waitForTimeout(700);
   await p.screenshot({ path: OUT + '8-issued.png' });
   // stale price doc
   await p.goto(url + '?splash=off#/docs'); await p.waitForTimeout(400);
-  await p.click('tr[data-href] >> text=LED'); await p.waitForTimeout(700);
+  await p.dblclick('tr[data-pick] >> text=LED'); await p.waitForTimeout(700);
   await p.screenshot({ path: OUT + '9-stale.png' });
-  await p.goto(url + '?splash=off#/clients'); await p.waitForTimeout(600);
+  await p.goto(url + '?splash=off#/clients'); await p.waitForTimeout(900);
   await p.screenshot({ path: OUT + '10-clients.png' });
+  // 書類一覧：1件選んでめくるカード（表・裏）
+  await p.goto(url + '?splash=off#/docs'); await p.waitForTimeout(700);
+  await p.click('tr[data-pick] >> text=原状回復'); await p.waitForTimeout(700);
+  await p.screenshot({ path: OUT + '11-docs-card.png' });
+  await p.click('#flip [data-act="flip"]').catch(function () { return p.click('#flip'); }); await p.waitForTimeout(900);
+  await p.screenshot({ path: OUT + '12-docs-card-back.png' });
   for (const t of ['items', 'packages', 'formulas', 'snippets', 'company', 'rules', 'data']) {
     await p.goto(url + '?splash=off#/settings/' + t); await p.waitForTimeout(600);
     await p.screenshot({ path: OUT + '11-settings-' + t + '.png' });
