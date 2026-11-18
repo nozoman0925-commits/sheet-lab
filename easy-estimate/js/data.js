@@ -119,7 +119,7 @@
     ];
 
     s.customers = [
-      { id: 'cus_sample', kind: 'corp', name: '株式会社サンプル不動産', honorific: '御中', contact: '管理部 佐藤様', zip: '160-0022', address: '東京都新宿区新宿3-4-5', tel: '03-9876-5432', email: '' },
+      { id: 'cus_sample', kind: 'corp', name: '株式会社サンプル不動産', honorific: '御中', contact: '管理部 佐藤様', zip: '160-0022', address: '東京都新宿区新宿3-4-5', tel: '03-9876-5432', email: '', memo: '原状回復は退去後10日以内の完了が条件。見積はPDFをメールで' },
       { id: 'cus_yamada', kind: 'person', name: '山田 太郎', honorific: '様', contact: '', zip: '181-0013', address: '東京都三鷹市下連雀6-7-8', tel: '090-0000-1111', email: '' },
       { id: 'cus_midori', kind: 'corp', name: '合同会社みどり建設', honorific: '御中', contact: '', zip: '', address: '', tel: '', email: '' }
     ];
@@ -167,8 +167,44 @@
     e4.lines[2].unitPrice = 15000; // 当時の単価
     e4.adjustments = [{ id: 'adj_e4', type: 'overhead', label: '諸経費', mode: 'rate', rateBp: 500, scope: 'all' }];
 
+    // 過去半年分の案件（ホームの月別グラフ・フロー図・顧客の月別ヒートマップ用のサンプル）
+    var extra = [
+      ['過去A', 'cus_sample', 'サンプル不動産 102号室 クロス張替え', 'naisou', 'mem_sakurai', -150, 'paid', [['itm_m001', 36], ['itm_k001', 36], ['itm_e002', 1]]],
+      ['過去B', 'cus_midori', 'みどり建設 倉庫 外壁塗装', 'tosou', 'mem_tanaka', -128, 'paid', [['itm_ts01', 180], ['itm_ts02', 140], ['itm_ts05', 140], ['itm_ts06', 140], ['itm_ts07', 140], ['itm_ts10', 180]]],
+      ['過去C', 'cus_yamada', '山田様邸 キッチン交換', 'mizumawari', 'mem_aoki', -104, 'invoice', [['itm_mz01', 1], ['itm_mz05', 1], ['itm_mz07', 1], ['itm_mz08', 1]]],
+      ['過去D', 'cus_sample', 'サンプルハイツ 305号室 床張替え', 'naisou', 'mem_sakurai', -76, 'done', [['itm_k002', 13], ['itm_m003', 13], ['itm_k003', 13]]],
+      ['過去E', 'cus_midori', 'みどり建設 事務所 屋根カバー', 'yane', 'mem_tanaka', -55, 'start', [['itm_ts01', 160], ['itm_yn02', 80], ['itm_yn04', 80], ['itm_yn05', 12]]],
+      ['過去F', 'cus_yamada', '山田様邸 浴室交換', 'mizumawari', 'mem_aoki', -33, 'order', [['itm_mz01', 1], ['itm_mz06', 1], ['itm_mz07', 1], ['itm_mz09', 1]]],
+      ['過去G', 'cus_sample', 'サンプルハイツ 駐車場 土間', 'gaikou', 'mem_sakurai', -20, 'estimate', [['itm_gk03', 4], ['itm_gk13', 30], ['itm_gk16', 1]]]
+    ];
+    var extraDocs = [];
+    extra.forEach(function (x, k) {
+      var pid = 'prj_x' + k;
+      var issue = addDays(t, x[5]);
+      var stage = x[6];
+      var pj = { id: pid, customerId: x[1], name: x[2], site: (s.customers.filter(function (c) { return c.id === x[1]; })[0] || {}).address || '', note: '', ownerId: x[4], stage: stage };
+      s.projects.push(pj);
+      var d = newEstimate(s, { customerId: x[1], projectId: pid, ownerId: x[4], title: x[2] + '工事', issueDate: issue, validUntil: addDays(issue, 30), category: x[3] });
+      d.lines = lines(x[7]);
+      d.lines.forEach(function (l) { l.priceDate = issue; });
+      if (stage !== 'estimate') {
+        d.status = 'issued'; d.issuedAt = new Date(issue + 'T11:00:00').toISOString();
+        d.rules = { lineRounding: s.settings.lineRounding, taxRounding: s.settings.taxRounding };
+        pj.acceptedDocId = d.id; pj.orderedOn = addDays(issue, 9);
+        var si = stageIndex(stage);
+        if (si >= stageIndex('start')) pj.startedOn = addDays(issue, 20);
+        if (si >= stageIndex('done')) pj.doneOn = addDays(issue, 34);
+        if (si >= stageIndex('invoice')) pj.invoicedOn = addDays(issue, 36);
+        if (si >= stageIndex('paid')) pj.paidOn = addDays(issue, 66);
+      }
+      extraDocs.push(d);
+    });
+    s.projects.forEach(function (p) { if (!p.stage) p.stage = 'estimate'; });
+    // 発行済みの見積がある既存サンプル案件の段階
+    s.projects.filter(function (p) { return p.id === 'prj_haitsu'; }).forEach(function (p) { p.stage = 'order'; p.acceptedDocId = e1.id; p.orderedOn = addDays(t, -6); });
+
     var calc = root.EE.engine.calc;
-    [e4, e1, e2, e3, e5].forEach(function (d) {
+    [e4, e1, e2, e3, e5].concat(extraDocs).forEach(function (d) {
       d.totals = root.EE.engine.snapshot(calc(d, s.settings));
       d.createdAt = d.updatedAt = new Date(d.issueDate + 'T09:00:00').toISOString();
       s.documents.push(d);
@@ -182,6 +218,17 @@
     e1.history.push({ at: e1.issuedAt, action: '発行確定' });
     return s;
   }
+
+  /** 案件の段階（ホームの案件フロー図）。受注以降は「どの見積で受注したか」と日付を持つ */
+  var STAGES = [
+    { key: 'estimate', label: '見積', next: '送信前チェックを通して、見積を送る' },
+    { key: 'order', label: '受注', next: '着工日と職人の手配を決める' },
+    { key: 'start', label: '着工', next: '工程を確認し、完了予定日を共有する' },
+    { key: 'done', label: '完了', next: '完了報告をして、請求書を出す' },
+    { key: 'invoice', label: '請求', next: '入金予定日を確認する' },
+    { key: 'paid', label: '入金', next: 'アフターフォローの予定を入れる' }
+  ];
+  function stageIndex(k) { for (var i = 0; i < STAGES.length; i++) if (STAGES[i].key === k) return i; return 0; }
 
   function lineFromItem(it, qty) {
     return {
@@ -261,6 +308,7 @@
     Object.keys(d).forEach(function (k) { if (s[k] == null) s[k] = d[k]; });
     Object.keys(d.settings).forEach(function (k) { if (s.settings[k] == null) s.settings[k] = d.settings[k]; });
     ensureMembers(s);
+    (s.projects || []).forEach(function (p) { if (!p.stage) p.stage = 'estimate'; });
     if (s.schema === 1) {
       // v1 → v2：カテゴリー・同義語・テンプレート・計算式・定型文を追加（既存データは上書きしない）
       root.EE.catalog.mergeInto(s, today());
@@ -302,6 +350,6 @@
     KEY: KEY, uid: uid, ymd: ymd, addDays: addDays, today: today,
     defaultState: defaultState, sampleState: sampleState,
     lineFromItem: lineFromItem, nextNumber: nextNumber, peekNumber: peekNumber, newEstimate: newEstimate,
-    load: load, save: save, clear: clear, migrate: migrate, ensureMembers: ensureMembers
+    load: load, save: save, clear: clear, migrate: migrate, ensureMembers: ensureMembers, STAGES: STAGES, stageIndex: stageIndex
   };
 })(this);

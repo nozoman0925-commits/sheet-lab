@@ -2,11 +2,55 @@
 (function (root) {
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
-  var sel = null, q = '';
+  var sel = null, q = '', HM = 'count';   // ヒートマップの色：件数 count / 金額 amount
+
+  /** 月別×工事種別のヒートマップ（直近12か月、書類の発行日で数える。金額は計算エンジンの合計） */
+  function heatData() {
+    var ms = EE.insight.months(12), idx = {};
+    ms.forEach(function (m, i) { idx[m.key] = i; });
+    var cats = (EE.S.categories && EE.S.categories.length ? EE.S.categories : EE.catalog.categories).map(function (c) { return { id: c.id, label: c.name }; });
+    var ci = {}; cats.forEach(function (c, i) { ci[c.id] = i; });
+    var cells = cats.map(function () { return ms.map(function () { return { count: 0, amount: 0 }; }); });
+    EE.S.documents.forEach(function (d) {
+      var mi = idx[(d.issueDate || '').slice(0, 7)]; if (mi == null) return;
+      var r = ci[EE.insight.docCategory(d)]; if (r == null) r = ci.other; if (r == null) return;
+      cells[r][mi].count++; cells[r][mi].amount += U.calcDoc(d).total;
+    });
+    var cols = ms.map(function (m) { return { short: m.short, label: m.y + '年' + m.label }; });
+    return { rows: cats, cols: cols, cells: cells };
+  }
+  function drawHeat() {
+    var el = document.getElementById('c-heat'); if (!el) return;
+    var h = heatData(); EE.charts.heatmap(el, h.rows, h.cols, h.cells, HM);
+    var sum = document.getElementById('c-heat-sum'); if (!sum) return;
+    var tot = h.rows.map(function (r, ri) { var t = { label: r.label, count: 0, amount: 0 }; h.cells[ri].forEach(function (c) { t.count += c.count; t.amount += c.amount; }); return t; })
+      .filter(function (t) { return t.count; }).sort(function (a, b) { return b[HM] - a[HM]; });
+    var max = tot.length ? tot[0][HM] : 0;
+    sum.innerHTML = '<div class="label" style="margin-bottom:10px">工事種別ごとの合計（12か月）</div>' + (tot.length ? tot.map(function (t) {
+      return '<div class="hs-row"><span>' + esc(t.label) + '</span><b class="num">' + (HM === 'count' ? t.count + '件' : U.yen(t.amount)) + '</b>' +
+        '<i style="--w:' + Math.round(t[HM] / max * 100) + '%"></i></div>';
+    }).join('') : '<p class="hint">まだ書類がありません</p>');
+  }
+  function heatPanel() {
+    return '<section class="panel" data-st style="margin-bottom:20px"><div class="panel-h"><h2>月別 × 工事種別</h2><span class="sub">直近12か月・書類の発行日で集計</span><div class="spacer"></div>' +
+      '<div class="seg" id="c-hm">' + [['count', '件数'], ['amount', '金額']].map(function (x) { return '<button class="' + (HM === x[0] ? 'on' : '') + '" data-hm="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
+      '<div class="panel-b heat-wrap"><div id="c-heat"></div><div id="c-heat-sum" class="heat-sum"></div></div><div class="panel-b" style="padding-top:0"><p class="hint" style="margin:8px 0 0">マスにカーソルを合わせると、その月の件数と合計額が出ます。色が濃いほど多い。</p></div></section>';
+  }
+
+  /** 顧客ごとの直近の案件（書類の発行日が新しい順） */
+  function recentProject(c) {
+    var best = null, bd = '';
+    EE.S.projects.forEach(function (p) {
+      if (p.customerId !== c.id) return;
+      var d = EE.S.documents.filter(function (x) { return x.projectId === p.id; }).map(function (x) { return x.issueDate || ''; }).sort().pop() || '';
+      if (!best || d > bd) { best = p; bd = d; }
+    });
+    return best ? { p: best, date: bd } : null;
+  }
 
   function customerForm(c, onSaved) {
     var isNew = !c;
-    c = c || { id: EE.data.uid('cus'), kind: 'corp', name: '', honorific: '御中', contact: '', zip: '', address: '', tel: '', email: '' };
+    c = c || { id: EE.data.uid('cus'), kind: 'corp', name: '', honorific: '御中', contact: '', zip: '', address: '', tel: '', email: '', memo: '' };
     U.modal({
       title: isNew ? '顧客を登録' : '顧客を編集',
       body: '<div class="form-grid">' +
@@ -18,6 +62,7 @@
         '<div class="field c8"><label>住所</label><input class="input" name="address" value="' + esc(c.address) + '"></div>' +
         '<div class="field c6"><label>電話</label><input class="input" name="tel" value="' + esc(c.tel) + '"></div>' +
         '<div class="field c6"><label>メール</label><input class="input" name="email" value="' + esc(c.email) + '"></div>' +
+        '<div class="field c12"><label>メモ（一覧にも出ます）</label><textarea class="input" name="memo" placeholder="例：見積は紙でも郵送希望。支払いは月末締め翌月末">' + esc(c.memo || '') + '</textarea></div>' +
       '</div>',
       foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
       onMount: function (el, api) {
@@ -31,6 +76,7 @@
           if (isNew) EE.S.customers.push(c);
           U.commit();
           api.close();
+          drawHeat();
           EE.fx.toast(isNew ? '顧客を登録しました' : '保存しました');
           if (onSaved) onSaved(c);
         };
@@ -71,8 +117,11 @@
     if (!list.length) return '<div class="empty">' + I.users + '顧客がいません</div>';
     return '<table class="table"><tbody>' + list.map(function (c) {
       var n = EE.S.documents.filter(function (d) { return d.customerId === c.id; }).length;
+      var rp = recentProject(c);
       return '<tr class="clickable' + (sel === c.id ? ' sel' : '') + '" data-cid="' + c.id + '" data-st style="' + (sel === c.id ? 'background:rgba(77,141,255,.1);box-shadow:inset 2px 0 0 var(--accent)' : '') + '">' +
-        '<td>' + esc(c.name) + ' <span class="muted">' + esc(c.honorific) + '</span><span class="cell-sub">' + esc(c.address || '住所未登録') + '</span></td>' +
+        '<td>' + esc(c.name) + ' <span class="muted">' + esc(c.honorific) + '</span><span class="cell-sub">' + esc(c.address || '住所未登録') + '</span>' +
+          (rp ? '<span class="cust-recent">' + I.clock + '直近：' + esc(rp.p.name) + (rp.date ? '<em>' + U.jdate(rp.date) + '</em>' : '') + '</span>' : '') +
+          (c.memo ? '<span class="cust-memo">' + esc(c.memo) + '</span>' : '') + '</td>' +
         '<td class="r"><span class="badge">' + (c.kind === 'corp' ? '法人' : '個人') + '</span></td><td class="r muted num">' + n + '件</td></tr>';
     }).join('') + '</tbody></table>';
   }
@@ -89,7 +138,8 @@
       '<div class="form-grid" style="margin-bottom:18px">' +
         [['担当者', c.contact], ['住所', (c.zip ? '〒' + c.zip + ' ' : '') + c.address], ['電話', c.tel], ['メール', c.email]].map(function (x) {
           return '<div class="field c6"><span class="label">' + x[0] + '</span><span>' + (esc(x[1]) || '<span class="hint">—</span>') + '</span></div>';
-        }).join('') + '</div>' +
+        }).join('') +
+        '<div class="field c12"><span class="label">メモ</span><span style="white-space:pre-wrap">' + (esc(c.memo || '') || '<span class="hint">—（編集から書けます）</span>') + '</span></div></div>' +
       '<div class="panel-h" style="padding:0 0 8px"><h3>案件</h3><div class="spacer"></div><button class="btn sm" data-act="new-p">' + I.plus + '案件を追加</button></div>' +
       (pjs.length ? '<table class="table" style="margin-bottom:18px"><tbody>' + pjs.map(function (p) {
         var pm = U.findMember(p.ownerId);
@@ -106,7 +156,7 @@
 
   function render() {
     if (!sel && EE.S.customers[0]) sel = EE.S.customers[0].id;
-    var html = '<div class="grid" style="grid-template-columns:minmax(280px,380px) minmax(0,1fr)">' +
+    var html = heatPanel() + '<div class="grid" style="grid-template-columns:minmax(280px,380px) minmax(0,1fr)">' +
       '<section class="panel" data-st><div class="panel-h"><h2>顧客</h2><span class="sub">' + EE.S.customers.length + '件</span><div class="spacer"></div>' +
         '<button class="btn sm primary" data-act="new-c">' + I.plus + '登録</button></div>' +
         '<div class="panel-b"><div class="search" style="margin-bottom:10px">' + I.search + '<input class="input" id="c-q" placeholder="名称・住所で検索" value="' + esc(q) + '"></div><div id="c-list">' + listHTML() + '</div></div></section>' +
@@ -122,8 +172,11 @@
   }
 
   function mount(view) {
+    drawHeat();
     view.addEventListener('input', function (e) { if (e.target.id === 'c-q') { q = e.target.value; document.getElementById('c-list').innerHTML = listHTML(); } });
     view.addEventListener('click', async function (e) {
+      var hm = e.target.closest('[data-hm]');
+      if (hm) { HM = hm.dataset.hm; view.querySelectorAll('#c-hm button').forEach(function (b) { b.classList.toggle('on', b === hm); }); drawHeat(); return; }
       var row = e.target.closest('[data-cid]');
       if (row) { sel = row.dataset.cid; refresh(); return; }
       var a = e.target.closest('[data-act]');

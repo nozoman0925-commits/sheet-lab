@@ -7,6 +7,7 @@
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var F = { q: '', status: 'all', from: '', to: '', min: '', max: '', sort: 'issue-desc' };
   var SEL = {};
+  var PICK = null;   // めくるカードに出している書類
   var OWNER = '';   // 担当者で絞り込み（'' = すべて, 'none' = 未割り当て）
 
   function rows() {
@@ -43,7 +44,7 @@
       list.map(function (x) {
         var d = x.d;
         var low = x.r.marginRate != null && x.r.marginRate < EE.S.settings.minMargin;
-        return '<tr class="clickable" data-href="#/edit/' + d.id + '" data-st>' +
+        return '<tr class="clickable' + (PICK === d.id ? ' picked' : '') + '" data-pick="' + d.id + '" tabindex="0" title="クリックでカード表示・ダブルクリックで開く" data-st>' +
           '<td><input type="checkbox" class="d-sel" data-id="' + d.id + '"' + (SEL[d.id] ? ' checked' : '') + '></td>' +
           '<td class="num">' + esc(d.no) + (d.rev ? ' <span class="badge">第' + d.rev + '版</span>' : '') + '</td>' +
           '<td>' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(x.c.name || '宛先未設定') + '</span></td>' +
@@ -64,7 +65,8 @@
 
   function render(status) {
     F.status = status === 'draft' || status === 'issued' ? status : 'all';
-    var html =
+    var html = trendHTML() +
+      '<div class="docs-layout' + (PICK && U.findDoc(PICK) ? '' : ' nocard') + '" id="docs-layout"><div>' +
       '<div class="panel" data-st><div class="panel-b">' +
         '<div class="toolbar">' +
           '<div class="search grow" style="min-width:240px">' + I.search + '<input class="input" id="f-q" placeholder="番号・件名・取引先で検索" value="' + esc(F.q) + '"></div>' +
@@ -84,10 +86,63 @@
           '<button class="btn ghost sm" id="f-clear">条件をクリア</button>' +
         '</div>' +
       '</div>' +
-      '<div id="doc-table" style="padding:0 8px 8px">' + tableHTML() + '</div></div>' +
+      '<div id="doc-table" style="padding:0 8px 8px">' + tableHTML() + '</div></div></div>' +
+      '<aside class="flip-wrap" id="flip-aside">' + (PICK && U.findDoc(PICK) ? cardHTML(U.findDoc(PICK)) : '') + '</aside></div>' +
       '<p class="hint" data-st style="margin-top:12px">発行済みの書類は書き換え・削除ができません（電子帳簿保存法の「訂正削除の防止」）。内容を変えるときは修正見積を作ると、元の版を残したまま新しい版が作られます。</p>';
 
     return { title: '書類一覧', crumb: EE.S.documents.length + '件', html: html, mount: mount };
+  }
+
+  /* ---- 件数の推移（直近12か月） ---- */
+  function trendHTML() {
+    var ms = EE.insight.months(12).map(function (m) { return { key: m.key, label: m.label, value: 0 }; });
+    var idx = {}; ms.forEach(function (m, i) { idx[m.key] = i; });
+    EE.S.documents.forEach(function (d) { var i = idx[(d.issueDate || '').slice(0, 7)]; if (i != null) ms[i].value++; });
+    var cur = ms[ms.length - 1].value, prev = ms[ms.length - 2].value, diff = cur - prev;
+    TREND = ms;
+    return '<section class="panel" data-st style="margin-bottom:18px"><div class="panel-b trend">' +
+      '<div><div class="label">今月の書類</div><div class="big num" data-count="' + cur + '" data-format="int">0</div>' +
+        '<div class="hint">先月 ' + prev + ' 件（' + (diff > 0 ? '+' : diff < 0 ? '−' : '±') + Math.abs(diff) + '）</div></div>' +
+      '<div><div class="label" style="margin-bottom:4px">月ごとの件数（直近12か月）</div><div id="trend-chart"></div></div></div></section>';
+  }
+  var TREND = [];
+
+  /* ---- めくるカード：表＝概要、裏＝明細の要点と履歴 ---- */
+  function cardHTML(d) {
+    var r = U.calcDoc(d), c = U.findCustomer(d.customerId) || {}, m = U.findMember(d.ownerId), pj = U.findProject(d.projectId);
+    var days = U.daysFromToday(d.validUntil);
+    var top = d.lines.map(function (l, i) { return { l: l, a: r.lines[i] ? r.lines[i].amount : 0 }; }).sort(function (a, b) { return b.a - a.a; }).slice(0, 5);
+    var hist = (d.history || []).slice(-6).reverse();
+    return '<div class="flip-tilt" id="flip-tilt"><div class="flip" id="flip" data-doc="' + d.id + '">' +
+      '<div class="flip-face panel"><div class="panel-h">' + U.statusBadge(d) + EE.views.site.patternBadge(d) + '<div class="spacer"></div><span class="hint num">' + esc(d.no) + '</span></div>' +
+        '<div class="panel-b"><div style="font-size:16px;font-weight:650;line-height:1.45">' + esc(d.title || '（件名なし）') + '</div>' +
+          '<div class="hint">' + esc(c.name || '宛先未設定') + ' ' + esc(c.honorific || '') + '</div>' +
+          '<div class="flip-total num" data-count="' + r.total + '" data-format="yen">¥0</div><div class="hint">税込　小計 ' + U.yen(r.subtotal) + '・粗利率 ' + U.pct(r.marginRate) + '</div>' +
+          '<div class="sep"></div>' +
+          '<div class="sum-row"><span>発行日</span><span class="num">' + U.jdate(d.issueDate) + '</span></div>' +
+          '<div class="sum-row"><span>有効期限</span><span>' + (d.status === 'issued' ? '<span class="num">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</span></div>' +
+          '<div class="sum-row"><span>担当</span><span>' + (m ? '<span class="owner-chip">' + U.avatar(m, 20) + esc(m.name) + '</span>' : '<span class="hint">未割り当て</span>') + '</span></div>' +
+          (pj ? '<div class="sum-row"><span>現場</span><a class="site-link" href="#/site/' + pj.id + '">' + esc(pj.name) + '</a></div>' : '') +
+          '<div style="display:flex;gap:8px;margin-top:14px"><a class="btn sm primary" href="#/edit/' + d.id + '">' + I.edit + '開く</a><button class="btn sm" data-act="flip">' + I.refresh + '裏を見る</button></div>' +
+        '</div><div class="flip-hint">カードをクリックすると裏返して、明細の要点と履歴を表示します</div></div>' +
+      '<div class="flip-face flip-back panel"><div class="panel-h"><h3>明細の要点</h3><span class="sub">金額の大きい順</span><div class="spacer"></div><span class="hint">' + d.lines.length + '行</span></div>' +
+        '<div class="panel-b">' + top.map(function (x) {
+          return '<div class="sum-row"><span>' + esc(x.l.name) + '<span class="cell-sub">' + U.num(x.l.qty) + ' ' + esc(x.l.unit) + ' × ' + U.yen(x.l.unitPrice) + '</span></span><span class="num">' + U.yen(x.a) + '</span></div>';
+        }).join('') + (d.lines.length > 5 ? '<div class="hint">ほか ' + (d.lines.length - 5) + ' 行</div>' : '') +
+        r.adjustments.map(function (a) { return '<div class="sum-row sub"><span>' + esc(a.label || a.type) + '</span><span class="num">' + U.yen(a.amount) + '</span></div>'; }).join('') +
+        '<div class="sep"></div><div class="label" style="margin-bottom:6px">履歴</div>' +
+        hist.map(function (h) { return '<div class="sum-row sub" style="padding-left:0"><span>' + esc(h.action) + '</span><span class="num">' + U.jdate((h.at || '').slice(0, 10)) + '</span></div>'; }).join('') +
+        '</div><div class="flip-hint">クリックで表に戻る</div></div>' +
+    '</div></div>';
+  }
+  function showCard(view, id) {
+    PICK = id;
+    view.querySelectorAll('#doc-table tr[data-pick]').forEach(function (tr) { tr.classList.toggle('picked', tr.dataset.pick === id); });
+    var lay = view.querySelector('#docs-layout'), aside = view.querySelector('#flip-aside');
+    lay.classList.remove('nocard');
+    aside.innerHTML = cardHTML(U.findDoc(id));
+    EE.fx.anim(aside.firstChild, [{ opacity: 0, transform: 'translateY(10px) rotateY(-12deg)' }, { opacity: 1, transform: 'none' }], { duration: 380 });
+    EE.fx.countAll(aside);
   }
 
   function refresh() {
@@ -98,6 +153,31 @@
 
   function mount(view) {
     var deb;
+    EE.charts.area(view.querySelector('#trend-chart'), TREND, { title: '月ごとの書類の件数', unit: '件数', height: 90 });
+    EE.fx.countAll(view);
+    // 行：クリックでカード、ダブルクリック・Enter で開く
+    view.addEventListener('click', function (e) {
+      var tr = e.target.closest('tr[data-pick]');
+      if (tr && !e.target.closest('button, a, input')) { if (e.detail >= 2) return; lastClick = { id: tr.dataset.pick, t: Date.now() }; showCard(view, tr.dataset.pick); return; }
+      var flip = e.target.closest('#flip');
+      if (flip && (!e.target.closest('a, button') || e.target.closest('[data-act="flip"]'))) { flip.classList.toggle('flipped'); }
+    });
+    // 1回目のクリックでカードが開いて表が詰まり、2回目が別の行に当たることがあるため、1回目に押した行を開く
+    var lastClick = null;
+    view.addEventListener('dblclick', function (e) {
+      var tr = e.target.closest('tr[data-pick]'); if (!tr || e.target.closest('button, a, input')) return;
+      var id = lastClick && Date.now() - lastClick.t < 800 ? lastClick.id : tr.dataset.pick;
+      location.hash = '#/edit/' + id;
+    });
+    view.addEventListener('keydown', function (e) { var tr = e.target.closest && e.target.closest('tr[data-pick]'); if (tr && e.key === 'Enter') location.hash = '#/edit/' + tr.dataset.pick; if (tr && e.key === ' ') { e.preventDefault(); showCard(view, tr.dataset.pick); } });
+    // カード：ホバーで少し傾く（±5°）
+    view.addEventListener('pointermove', function (e) {
+      var t = e.target.closest && e.target.closest('#flip-tilt'); if (!t || EE.fx.reduce) return;
+      var r = t.getBoundingClientRect(), px = (e.clientX - r.left) / r.width - 0.5, py = (e.clientY - r.top) / r.height - 0.5;
+      t.style.transform = 'rotateX(' + (-py * 10).toFixed(2) + 'deg) rotateY(' + (px * 10).toFixed(2) + 'deg)';
+    });
+    view.addEventListener('pointerout', function (e) { var t = e.target.closest && e.target.closest('#flip-tilt'); if (t && !t.contains(e.relatedTarget)) t.style.transform = ''; });
+    if (PICK && U.findDoc(PICK)) EE.fx.countAll(view.querySelector('#flip-aside'));
     view.addEventListener('input', function (e) {
       var map = { 'f-q': 'q', 'f-from': 'from', 'f-to': 'to', 'f-min': 'min', 'f-max': 'max' };
       if (map[e.target.id]) { F[map[e.target.id]] = e.target.value; clearTimeout(deb); deb = setTimeout(refresh, 120); }
@@ -129,7 +209,7 @@
         EE.app.rerender(); return;
       }
       var a = e.target.closest('[data-act]');
-      if (!a) return;
+      if (!a || a.dataset.act === 'flip') return;   // 裏返しはカード側の処理に任せる
       e.stopPropagation();
       var d = U.findDoc(a.dataset.id);
       if (a.dataset.act === 'dup') EE.app.duplicate(d.id);
