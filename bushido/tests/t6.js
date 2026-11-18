@@ -1,0 +1,24 @@
+const {chromium}=require('playwright');const fs=require('fs');
+(async()=>{const b=await chromium.launch();const p=await b.newPage({viewport:{width:390,height:844}});
+const errs=[];p.on('pageerror',e=>errs.push(e.message));
+let src=fs.readFileSync('bushido.html','utf8');const i=src.lastIndexOf('})();\n</script>');src=src.slice(0,i)+'ui.grpAll=true;ui.noPrologue=true;window.__T={ui,get S(){return S},totalExp};\n'+src.slice(i);
+await p.setContent('<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"></head><body>'+src+'</body></html>');
+await p.waitForTimeout(300);await p.click('[data-act=demo]');await p.waitForTimeout(200);
+await p.click('[data-tut=skip]');await p.click('[data-tut=skip]');
+await p.click('#tabs [data-tab=keiko]');await p.waitForTimeout(300);
+console.log('hint:',await p.textContent('#tut h3'));await p.screenshot({path:'f1.png'});
+while(await p.$('[data-tut=next]')){await p.click('[data-tut=next]');await p.waitForTimeout(150)}
+const e0=await p.evaluate(()=>__T.totalExp());
+await p.click('[data-act=breath]');await p.click('[data-act=breathMode][data-v=box60]');await p.click('#br-go');await p.waitForTimeout(5200);
+await p.screenshot({path:'f2.png'});console.log('label:',await p.textContent('#br-l'),await p.textContent('#br-t'));
+await p.evaluate(()=>{__T.ui.breath.start-=61000});await p.waitForTimeout(400);
+console.log('exp +',await p.evaluate(()=>__T.totalExp())-e0,'sheet closed:',!(await p.$('#sheet .sheet')));
+await p.click('[data-act=bw]');await p.waitForTimeout(200);
+const reps=await p.$$('.bw-reps');await reps[0].fill('30');await reps[4].fill('90');await p.selectOption('[data-bw=push] .bw-lv','1');
+await p.screenshot({path:'f3.png'});
+await p.click('[data-act=saveBw]');await p.waitForTimeout(200);
+console.log('exp +',await p.evaluate(()=>__T.totalExp())-e0);
+await p.click('[data-act=bw]');console.log('last shown:',(await p.textContent('[data-bw=push] p')).slice(0,40));
+await p.click('#sheet .grid2 [data-act=closeSheet]');
+const s=await p.$('#sec-train');await s.scrollIntoViewIfNeeded();await p.screenshot({path:'f4.png'});
+console.log('errors',JSON.stringify(errs));await b.close()})();
