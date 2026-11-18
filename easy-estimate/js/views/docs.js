@@ -6,6 +6,7 @@
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var F = { q: '', status: 'all', from: '', to: '', min: '', max: '', sort: 'issue-desc' };
+  var SEL = {};
 
   function rows() {
     var q = U.norm(F.q).trim();
@@ -36,11 +37,12 @@
     var list = rows();
     if (!list.length) return '<div class="empty">' + I.search + '条件に合う書類がありません</div>';
     var total = list.reduce(function (s, x) { return s + x.r.total; }, 0);
-    return '<div class="table-scroll"><table class="table"><thead><tr><th>見積番号</th><th>件名 / 宛先</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
+    return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {
         var d = x.d;
         var low = x.r.marginRate != null && x.r.marginRate < EE.S.settings.minMargin;
         return '<tr class="clickable" data-href="#/edit/' + d.id + '" data-st>' +
+          '<td><input type="checkbox" class="d-sel" data-id="' + d.id + '"' + (SEL[d.id] ? ' checked' : '') + '></td>' +
           '<td class="num">' + esc(d.no) + (d.rev ? ' <span class="badge">第' + d.rev + '版</span>' : '') + '</td>' +
           '<td>' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(x.c.name || '宛先未設定') + '</span></td>' +
           '<td class="num">' + U.jdate(d.issueDate) + '</td>' +
@@ -54,7 +56,7 @@
               : '<button class="btn ghost icon sm danger" data-act="del" data-id="' + d.id + '" title="削除（下書きのみ）">' + I.trash + '</button>') +
           '</div></td></tr>';
       }).join('') +
-      '</tbody><tfoot><tr><td colspan="4" class="muted" style="padding:12px">' + list.length + ' 件</td><td class="r num" style="padding:12px">' + U.yen(total) + '</td><td colspan="3"></td></tr></tfoot></table></div>';
+      '</tbody><tfoot><tr><td colspan="5" class="muted" style="padding:12px">' + list.length + ' 件</td><td class="r num" style="padding:12px">' + U.yen(total) + '</td><td colspan="3"></td></tr></tfoot></table></div>';
   }
 
   function render() {
@@ -68,6 +70,7 @@
           '<select class="input" id="f-sort" style="width:auto">' +
             U.opt('issue-desc', '発行日が新しい順', F.sort) + U.opt('issue-asc', '発行日が古い順', F.sort) + U.opt('amount-desc', '金額が大きい順', F.sort) + U.opt('valid-asc', '有効期限が近い順', F.sort) +
           '</select>' +
+          '<button class="btn" id="d-print" disabled>' + I.pdf + '選んだ書類をまとめてPDF</button>' +
           '<a class="btn primary" href="#/new">' + I.plus + '新規見積</a>' +
         '</div>' +
         '<div class="toolbar" style="margin-bottom:6px">' +
@@ -94,7 +97,24 @@
       var map = { 'f-q': 'q', 'f-from': 'from', 'f-to': 'to', 'f-min': 'min', 'f-max': 'max' };
       if (map[e.target.id]) { F[map[e.target.id]] = e.target.value; clearTimeout(deb); deb = setTimeout(refresh, 120); }
     });
-    view.addEventListener('change', function (e) { if (e.target.id === 'f-sort') { F.sort = e.target.value; refresh(); } });
+    function selCount() {
+      var n = Object.keys(SEL).filter(function (k) { return SEL[k] && U.findDoc(k); }).length;
+      var b = document.getElementById('d-print'); b.disabled = !n; b.innerHTML = I.pdf + (n ? n + '件をまとめてPDF' : '選んだ書類をまとめてPDF');
+    }
+    selCount();
+    view.addEventListener('change', function (e) {
+      if (e.target.id === 'f-sort') { F.sort = e.target.value; refresh(); }
+      if (e.target.classList.contains('d-sel')) { SEL[e.target.dataset.id] = e.target.checked; selCount(); }
+      if (e.target.id === 'd-all') { view.querySelectorAll('.d-sel').forEach(function (c) { c.checked = e.target.checked; SEL[c.dataset.id] = e.target.checked; }); selCount(); }
+    });
+    view.querySelector('#d-print').onclick = function () {
+      var docs = EE.S.documents.filter(function (d) { return SEL[d.id]; });
+      if (!docs.length) return;
+      var errs = docs.filter(function (d) { return EE.check.summary(U.checkDoc(d)).error; });
+      var go = function () { EE.print.printMany(docs); docs.forEach(function (d) { d.history = (d.history || []).concat([{ at: new Date().toISOString(), action: 'PDF出力（一括）' }]).slice(-50); }); U.commit(); };
+      if (errs.length) U.confirmBox('要修正の指摘がある書類が ' + errs.length + ' 件あります：\n' + errs.map(function (d) { return '・' + (d.title || d.no); }).join('\n') + '\n\nこのまま出力しますか？', 'このまま出力', { danger: true }).then(function (ok) { if (ok) go(); });
+      else go();
+    };
     view.addEventListener('click', async function (e) {
       var s = e.target.closest('#f-status [data-s]');
       if (s) { F.status = s.dataset.s; view.querySelectorAll('#f-status button').forEach(function (b) { b.classList.toggle('on', b === s); }); refresh(); return; }

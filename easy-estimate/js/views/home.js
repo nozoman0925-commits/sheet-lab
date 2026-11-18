@@ -28,13 +28,18 @@
       '<div class="toolbar" data-st style="margin-bottom:22px"><div class="grow"><div style="font-size:22px;font-weight:650">' + esc(S.company.name || '桜ミツ') + '</div>' +
         '<div class="hint">' + U.jdate(EE.data.today()) + '　金額はマスタと固定の計算エンジンだけで決まります（AIは金額を決めません）</div></div>' +
         '<a class="btn" href="#/settings/items">' + I.box + 'マスタ ' + S.items.length + '件</a>' +
-        '<a class="btn primary" href="#/new">' + I.plus + '新しい見積を作る</a></div>' +
+        '<a class="btn primary" href="#/new">' + I.spark + 'かんたん見積もり作成</a></div>' +
       '<div class="grid kpis">' +
         kpi(I.docs, '今月の見積', month.length, 'int', '件（発行日ベース）', month.length / 10) +
         kpi(I.yen, '今月の見積総額', sumTotal, 'yen', '税込の合計', sumTotal / 5000000) +
         kpi(I.chart, '平均粗利率', Math.round(avgMargin * 10) / 10, 'pct', '今月分・税抜ベース', avgMargin / 50) +
         kpi(I.clock, '期限まで7日以内', expiring.length, 'int', '件　フォローの目安', expiring.length / 5) +
       '</div>' +
+      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>かんたん見積もり作成</h2><span class="sub">手入力を減らす7つの入り口。どれから始めても同じ見積書になります</span></div>' +
+        '<div class="panel-b"><div class="quick-row">' +
+        [['text', '文章から'], ['voice', '音声から'], ['pdf', 'PDFから'], ['photo', '写真から'], ['past', '過去の見積から'], ['template', 'テンプレートから'], ['edit', '通常入力']].map(function (m) {
+          return '<a class="pkg" href="#/new/' + m[0] + '">' + (m[0] === 'edit' ? I.plus : I.spark) + m[1] + '</a>';
+        }).join('') + '</div></div></section>' +
       '<div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);margin-top:18px">' +
         '<section class="panel" data-st><div class="panel-h"><h2>最近の書類</h2><div class="spacer"></div><a class="btn ghost sm" href="#/docs">すべて見る</a></div>' +
           '<div class="panel-b" style="padding-top:8px">' + (docs.length ? '<table class="table"><tbody>' + docs.slice(0, 6).map(function (d) {

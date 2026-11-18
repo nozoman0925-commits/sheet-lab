@@ -18,11 +18,20 @@
       var d = U.findDoc(id);
       if (!d) return null;
       ED = { doc: clone(d), dirty: false, isNew: false };
+      if (!ED.doc.adjustments) ED.doc.adjustments = [];
     } else {
       var nd = EE.data.newEstimate(EE.S, { noNumber: true });
       var prefill = EE.app.takePrefill();
-      if (prefill) Object.assign(nd, prefill);
-      ED = { doc: nd, dirty: !!prefill, isNew: true };
+      if (prefill) {
+        var label = prefill.sourceLabel; delete prefill.sourceLabel;
+        Object.keys(prefill).forEach(function (k) { if (prefill[k] !== '' && prefill[k] != null) nd[k] = prefill[k]; });
+        if (label) nd.history.push({ at: new Date().toISOString(), action: label });
+        if (nd.customerId && !nd.projectId) {
+          var pj = EE.S.projects.filter(function (p) { return p.customerId === nd.customerId; });
+          if (pj.length === 1 && !nd.title) nd.title = pj[0].name;
+        }
+      }
+      ED = { doc: nd, dirty: !!prefill, isNew: true, recovery: prefill ? null : readRecovery() };
     }
     return ED;
   }
@@ -34,13 +43,38 @@
     return d;
   }
 
+  var RECOVERY_KEY = 'oumitsu:recovery';
+  function hhmm() { var d = new Date(); return d.getHours() + ':' + ('0' + d.getMinutes()).slice(-2); }
+  function setState(html) { var s = document.getElementById('save-state'); if (s) s.innerHTML = html; }
+
   function markDirty() {
     if (!ED.dirty) {
       ED.dirty = true;
-      var s = document.getElementById('save-state');
-      if (s) s.innerHTML = '<span class="dirty-dot"></span>未保存の変更';
+      setState('<span class="dirty-dot"></span>未保存の変更');
+    }
+    scheduleAutosave();
+  }
+
+  /* 自動保存：保存済みの下書きはそのまま上書き、新規はこの端末に「入力途中」として一時保存 */
+  var asTimer;
+  function scheduleAutosave() {
+    if (EE.S.autoSave === false || !ED || locked()) return;
+    clearTimeout(asTimer);
+    asTimer = setTimeout(autosave, 1500);
+  }
+  function autosave() {
+    if (!ED || !ED.dirty || locked()) return;
+    if (ED.isNew) {
+      try {
+        root.localStorage.setItem(RECOVERY_KEY, JSON.stringify(ED.doc));
+        setState('<span class="saved-mark">入力途中を一時保存 ' + hhmm() + '</span>');
+      } catch (e) { setState('<span style="color:var(--err)">一時保存できませんでした（容量不足の可能性）</span>'); }
+    } else {
+      save(null, { silent: true });
     }
   }
+  function readRecovery() { try { var r = root.localStorage.getItem(RECOVERY_KEY); return r ? JSON.parse(r) : null; } catch (e) { return null; } }
+  function clearRecovery() { try { root.localStorage.removeItem(RECOVERY_KEY); } catch (e) {} }
 
   /* ================= 描画 ================= */
   function render(id) {
@@ -60,6 +94,12 @@
         '<button class="btn primary" data-act="revise">' + I.branch + '修正見積を作成</button></div></div>'
       : '';
 
+    if (ED.recovery && ED.recovery.lines && ED.recovery.lines.length) {
+      banner += '<div class="panel" data-st id="recovery" style="margin-bottom:18px;border-color:rgba(242,189,92,.4)"><div class="panel-b" style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">' +
+        '<span class="kpi-icon" style="color:var(--warn);background:rgba(242,189,92,.12)">' + I.clock + '</span><div style="flex:1;min-width:220px"><b>入力途中の見積があります</b>' +
+        '<div class="hint">「' + esc(ED.recovery.title || '件名なし') + '」' + ED.recovery.lines.length + '行。前回、保存せずに閉じた内容です。</div></div>' +
+        '<button class="btn ghost" data-act="discard-recovery">破棄</button><button class="btn primary" data-act="recover">' + I.refresh + '復元する</button></div></div>';
+    }
     var html = banner + '<div class="editor">' +
       '<div class="grid" style="gap:18px">' +
         /* 基本情報 */
@@ -76,8 +116,8 @@
               [14, 30, 60, 90].map(function (n) { return '<button data-days="' + n + '"' + dis + '>+' + n + '日</button>'; }).join('') + '</div></div>' +
             '<div class="field c4"><label>受渡期日</label><input class="input" data-f="deliveryTerm" value="' + esc(d.deliveryTerm) + '"' + dis + '></div>' +
             '<div class="field c4"><label>受渡場所</label><input class="input" data-f="deliveryPlace" value="' + esc(d.deliveryPlace) + '" placeholder="空欄なら案件の現場住所"' + dis + '></div>' +
-            '<div class="field c4"><label>支払条件</label><input class="input" data-f="paymentTerms" value="' + esc(d.paymentTerms) + '"' + dis + '></div>' +
-            '<div class="field c12"><label>備考（PDFに載ります）</label><textarea class="input" data-f="notes" rows="2"' + dis + '>' + esc(d.notes) + '</textarea></div>' +
+            '<div class="field c4"><label style="display:flex;justify-content:space-between">支払条件' + (lk ? '' : '<a href="#" data-act="snip" data-target="paymentTerms" style="color:var(--accent-2)">定型文</a>') + '</label><input class="input" data-f="paymentTerms" value="' + esc(d.paymentTerms) + '"' + dis + '></div>' +
+            '<div class="field c12"><label style="display:flex;justify-content:space-between">備考・条件（PDFに載ります）' + (lk ? '' : '<a href="#" data-act="snip" data-target="notes" style="color:var(--accent-2)">定型文を挿入</a>') + '</label><textarea class="input" data-f="notes" rows="2"' + dis + '>' + esc(d.notes) + '</textarea></div>' +
           '</div></div></section>' +
         /* 明細 */
         '<section class="panel" data-st id="sec-lines"><div class="panel-h"><h2>明細</h2><span class="sub">マスタから選んで数量を入れるだけ。単価はマスタで管理します</span><div class="spacer"></div>' +
@@ -91,12 +131,26 @@
               '<div class="seg" id="pick-kind">' + [['all', 'すべて']].concat(Object.keys(EE.engine.ITEM_KINDS).map(function (k) { return [k, EE.engine.ITEM_KINDS[k]]; }))
                 .map(function (k) { return '<button data-kind="' + k[0] + '" class="' + (pick.kind === k[0] ? 'on' : '') + '">' + k[1] + '</button>'; }).join('') + '</div>' +
             '</div>' +
-            (S.packages.length ? '<div class="label" style="margin-bottom:8px">標準工事パッケージ（クリックで一括追加）</div><div class="pkg-list" style="margin-bottom:14px">' +
-              S.packages.map(function (p) {
-                return '<button class="pkg" data-pkg="' + p.id + '" title="' + esc(p.note || '') + '">' + I.box + esc(p.name) + '<span class="hint">' + p.lines.length + '行</span></button>';
-              }).join('') + '</div>' : '')) +
-            '<div class="table-scroll"><table class="table lines"><thead><tr><th class="no">#</th><th>品名・規格</th><th class="r">数量</th><th>単位</th><th class="r">単価</th><th class="r">金額</th><th>税</th><th></th></tr></thead>' +
+            '<div class="toolbar" style="margin-bottom:12px">' +
+              '<select class="input" id="tpl-add" style="max-width:360px"><option value="">工事テンプレートから追加…</option>' +
+              (S.categories || []).map(function (c) {
+                var ps = S.packages.filter(function (p) { return p.category === c.id; });
+                return ps.length ? '<optgroup label="' + esc(c.name) + '">' + ps.map(function (p) { return U.opt(p.id, p.name + '（' + p.lines.filter(function (l) { return !l.optional; }).length + '行）', ''); }).join('') + '</optgroup>' : '';
+              }).join('') + S.packages.filter(function (p) { return !(S.categories || []).some(function (c) { return c.id === p.category; }); }).map(function (p) { return U.opt(p.id, p.name, ''); }).join('') + '</select>' +
+              '<div class="grow"></div>' +
+              '<button class="btn sm" data-act="add-adj" data-type="overhead">' + I.plus + '諸経費</button>' +
+              '<button class="btn sm" data-act="add-adj" data-type="discount">' + I.plus + '値引き</button>' +
+              '<button class="btn sm" data-act="add-adj" data-type="roundoff">' + I.plus + '端数調整</button>' +
+            '</div>' +
+            '<div class="toolbar" id="bulk-bar" hidden style="margin-bottom:10px;padding:8px 10px;border:1px solid rgba(77,141,255,.3);border-radius:10px;background:rgba(77,141,255,.07)">' +
+              '<b id="bulk-n">0行を選択</b><div class="grow"></div>' +
+              '<button class="btn sm" data-act="bulk-dup">' + I.copy + '複製</button>' +
+              '<button class="btn sm" data-act="bulk-refresh">' + I.refresh + '最新単価に更新</button>' +
+              '<button class="btn sm" data-act="bulk-discount">選んだ行に値引き</button>' +
+              '<button class="btn sm danger" data-act="bulk-del">' + I.trash + '削除</button></div>') +
+            '<div class="table-scroll"><table class="table lines"><thead><tr><th style="width:28px">' + (lk ? '' : '<input type="checkbox" id="sel-all" title="すべて選択">') + '</th><th class="no">#</th><th>品名・規格</th><th class="r">数量</th><th>単位</th><th class="r">単価</th><th class="r">金額</th><th>税</th><th></th></tr></thead>' +
             '<tbody id="line-body"></tbody></table></div>' +
+            '<div id="adj-list"></div>' +
           '</div></section>' +
       '</div>' +
       /* 右：集計 */
@@ -126,6 +180,7 @@
   function summaryHTML() {
     var lk = locked();
     return '<section class="panel" data-st id="sec-summary"><div class="panel-h"><h2>金額</h2><span class="sub">固定ルールで自動計算</span></div><div class="panel-b">' +
+        '<div id="sum-adj"></div>' +
         '<div class="sum-row"><span>小計（税抜）</span><span class="yen" data-k="subtotal" data-format="yen">¥0</span></div>' +
         '<div id="sum-rates"></div>' +
         '<div class="sum-total"><div class="label">合計（税込）</div><div class="big yen" data-k="total" data-format="yen">¥0</div></div>' +
@@ -149,6 +204,8 @@
       '</div></section>';
   }
 
+  var CALC_ICON = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M8 7h8M8 12h2M14 12h2M8 16h2M14 16h2"/></svg>';
+
   function lineRowHTML(l, i, r) {
     var lk = locked();
     var it = U.findItem(l.itemId);
@@ -157,8 +214,9 @@
     var prof = r.lines[i] ? r.lines[i].profit : 0;
     var tc = l.taxCategory === 'red8' ? '<span class="badge warn">8%</span>' : l.taxCategory === 'std10' ? '<span class="badge">10%</span>' : '<span class="badge">' + esc((EE.engine.TAX_CATEGORIES[l.taxCategory] || {}).label || '') + '</span>';
     return '<tr data-line="' + l.lineId + '"' + (!it ? ' class="hl-err"' : stale ? ' class="hl"' : '') + '>' +
+      '<td>' + (lk ? '' : '<input type="checkbox" class="line-sel"' + (ED.sel && ED.sel[l.lineId] ? ' checked' : '') + '>') + '</td>' +
       '<td class="no num">' + (i + 1) + '</td>' +
-      '<td><span class="code">' + esc(l.code) + '</span> ' + esc(l.name) + (l.spec ? '<span class="cell-sub">' + esc(l.spec) + '</span>' : '') +
+      '<td>' + esc(l.name) + '<span class="cell-sub"><span class="code">' + esc(l.code) + '</span>' + (l.spec ? '　' + esc(l.spec) : '') + '</span>' +
         (stale && !lk ? '<span class="cell-sub" style="color:var(--warn)">マスタ単価 ' + U.yen(it.unitPrice) + ' と違います　<a href="#" data-act="refresh-price" style="color:var(--accent-2)">最新単価に更新</a></span>' : '') +
         (!it ? '<span class="cell-sub" style="color:var(--err)">マスタが削除されています</span>' : '') + '</td>' +
       '<td class="r"><input class="input qty num" type="number" step="0.01" inputmode="decimal" value="' + esc(l.qty) + '"' + (lk ? ' disabled' : '') + '></td>' +
@@ -166,7 +224,7 @@
       '<td class="r price num" title="単価はマスタで管理（ここでは変更できません）">' + I.lock.replace('<svg', '<svg class="lock"') + U.yen(l.unitPrice) + '</td>' +
       '<td class="r num" data-amt>' + U.yen(amt) + '<span class="profit-chip cell-sub' + (prof < 0 ? ' neg' : '') + '" data-prof>粗利 ' + U.yen(prof) + '</span></td>' +
       '<td>' + tc + '</td>' +
-      '<td>' + (lk ? '' : '<div class="row-actions"><button class="btn ghost icon sm" data-act="up" title="上へ">' + I.up + '</button><button class="btn ghost icon sm" data-act="down" title="下へ">' + I.down + '</button><button class="btn ghost icon sm danger" data-act="del" title="削除">' + I.trash + '</button></div>') + '</td>' +
+      '<td>' + (lk ? '' : '<div class="row-actions"><button class="btn ghost icon sm" data-act="calc" title="数量を計算">' + CALC_ICON + '</button><button class="btn ghost icon sm" data-act="up" title="上へ">' + I.up + '</button><button class="btn ghost icon sm" data-act="down" title="下へ">' + I.down + '</button><button class="btn ghost icon sm danger" data-act="del" title="削除">' + I.trash + '</button></div>') + '</td>' +
     '</tr>';
   }
 
@@ -175,7 +233,7 @@
     if (!body) return;
     var r = U.calcDoc(ED.doc);
     if (!ED.doc.lines.length) {
-      body.innerHTML = '<tr><td colspan="8"><div class="empty">' + I.box + '明細がまだありません。<br>上の検索欄に品名やコードを入れるか、標準工事パッケージをクリックしてください。</div></td></tr>';
+      body.innerHTML = '<tr><td colspan="9"><div class="empty">' + I.box + '明細がまだありません。<br>上の検索欄に品名やコードを入れるか、標準工事パッケージをクリックしてください。</div></td></tr>';
     } else {
       body.innerHTML = ED.doc.lines.map(function (l, i) { return lineRowHTML(l, i, r); }).join('');
     }
@@ -186,7 +244,51 @@
       });
     }
     document.getElementById('line-count').textContent = ED.doc.lines.length + '行';
+    renderAdj();
+    updateBulk();
     updateSummary();
+  }
+
+  var ADJ_LABEL = { overhead: '諸経費', discount: '値引き', roundoff: '端数調整' };
+  function renderAdj() {
+    var box = document.getElementById('adj-list');
+    if (!box) return;
+    var adjs = ED.doc.adjustments || [];
+    if (!adjs.length) { box.innerHTML = ''; return; }
+    var lk = locked(), dis = lk ? ' disabled' : '';
+    box.innerHTML = '<div class="label" style="margin:14px 0 8px">諸経費・値引き・端数調整（計算順：諸経費 → 値引き → 端数調整 → 消費税）</div>' +
+      adjs.map(function (a) {
+        var scope = Array.isArray(a.scope) ? '選んだ ' + a.scope.length + ' 行' : '全体';
+        var body;
+        if (a.type === 'roundoff') {
+          body = '<select class="input" data-adj-k="unit" style="width:180px"' + dis + '>' + [[100, '100円未満切り捨て'], [1000, '1,000円未満切り捨て'], [10000, '10,000円未満切り捨て']].map(function (u) { return U.opt(u[0], u[1], a.unit || 1000); }).join('') + '</select>';
+        } else {
+          body = '<input class="input" data-adj-k="label" value="' + esc(a.label || '') + '" style="width:150px"' + dis + '>' +
+            '<select class="input" data-adj-k="mode" style="width:90px"' + dis + '>' + U.opt('rate', '率', a.mode) + U.opt('amount', '金額', a.mode) + '</select>' +
+            (a.mode === 'amount'
+              ? '<input class="input num" type="number" step="1" data-adj-k="amount" value="' + (a.amount || 0) + '" style="width:120px;text-align:right"' + dis + '><span class="hint">円</span>' +
+                '<select class="input" data-adj-k="taxCategory" style="width:120px"' + dis + '>' + U.options(EE.engine.TAX_CATEGORIES, a.taxCategory || 'std10') + '</select>'
+              : '<input class="input num" type="number" step="0.01" data-adj-k="rate" value="' + ((a.rateBp || 0) / 100) + '" style="width:90px;text-align:right"' + dis + '><span class="hint">%　対象：' + scope + '</span>');
+        }
+        return '<div class="adj-row" data-adj="' + a.id + '"><span class="badge ' + (a.type === 'discount' || a.type === 'roundoff' ? 'warn' : 'blue') + '">' + ADJ_LABEL[a.type] + '</span>' + body +
+          '<span class="grow"></span><b class="num" data-adj-amt>—</b>' + (lk ? '' : '<button class="btn ghost icon sm danger" data-act="del-adj" title="削除">' + I.trash + '</button>') + '</div>';
+      }).join('');
+  }
+  function addAdj(type, extra) {
+    var a = Object.assign({ id: EE.data.uid('adj'), type: type, label: ADJ_LABEL[type], mode: 'rate', rateBp: type === 'overhead' ? 500 : 300, amount: 0, taxCategory: 'std10', scope: 'all', unit: 1000 }, extra || {});
+    ED.doc.adjustments = (ED.doc.adjustments || []).concat([a]);
+    markDirty(); renderAdj(); updateSummary();
+    var row = document.querySelector('[data-adj="' + a.id + '"]');
+    if (row) { EE.fx.pop(row); var f = row.querySelector('[data-adj-k="rate"], [data-adj-k="unit"]'); if (f) f.focus(); }
+  }
+  function selectedIds() { return Object.keys(ED.sel || {}).filter(function (k) { return ED.sel[k]; }).filter(function (id) { return ED.doc.lines.some(function (l) { return l.lineId === id; }); }); }
+  function updateBulk() {
+    var bar = document.getElementById('bulk-bar'); if (!bar) return;
+    var n = selectedIds().length;
+    if (n && bar.hidden) { bar.hidden = false; EE.fx.pop(bar); } else if (!n) bar.hidden = true;
+    document.getElementById('bulk-n').textContent = n + '行を選択';
+    var all = document.getElementById('sel-all');
+    if (all) { all.checked = n > 0 && n === ED.doc.lines.length; all.indeterminate = n > 0 && n < ED.doc.lines.length; }
   }
 
   function updateSummary(first) {
@@ -200,6 +302,17 @@
     set('margin', r.marginRate == null ? 0 : Math.round(r.marginRate * 1000) / 10);
 
     var TC = EE.engine.TAX_CATEGORIES;
+    var lineSum = r.lines.reduce(function (s2, x) { return s2 + x.amount; }, 0);
+    document.getElementById('sum-adj').innerHTML = r.adjustments.length ? '<div class="sum-row sub"><span>明細の合計</span><span class="yen">' + U.yen(lineSum) + '</span></div>' +
+      r.adjustments.map(function (a) {
+        var src = (ED.doc.adjustments || []).filter(function (x) { return x.id === a.id; })[0] || {};
+        var lab = (a.label || ADJ_LABEL[a.type]) + (src.mode === 'rate' && a.type !== 'roundoff' ? '（' + (src.rateBp / 100) + '%）' : '');
+        return '<div class="sum-row sub"><span>' + esc(lab) + '</span><span class="yen" style="color:' + (a.amount < 0 ? 'var(--warn)' : 'inherit') + '">' + (a.amount > 0 ? '+' : '') + U.yen(a.amount).replace('¥-', '−¥') + '</span></div>';
+      }).join('') : '';
+    r.adjustments.forEach(function (a) {
+      var el = document.querySelector('[data-adj="' + a.id + '"] [data-adj-amt]');
+      if (el) el.textContent = (a.amount > 0 ? '+' : '') + U.yen(a.amount).replace('¥-', '−¥');
+    });
     document.getElementById('sum-rates').innerHTML = Object.keys(r.byRate).map(function (k) {
       var x = r.byRate[k];
       return '<div class="sum-row sub"><span>' + esc(TC[k].label) + ' 対象 ' + U.yen(x.base) + '</span><span class="yen">' + (TC[k].taxable ? '税 ' + U.yen(x.tax) : '—') + '</span></div>';
@@ -210,7 +323,7 @@
     mm.firstChild.style.width = (mr * 100) + '%';
     mm.classList.toggle('low', r.marginRate != null && r.marginRate < EE.S.settings.minMargin);
 
-    var CT = EE.engine.COST_TYPES, b = r.breakdown, tot = Math.max(1, r.subtotal);
+    var CT = Object.assign({}, EE.engine.COST_TYPES, { discount: '値引き' }), b = r.breakdown, tot = Math.max(1, r.subtotal);
     document.getElementById('breakdown').innerHTML = Object.keys(CT).filter(function (k) { return b[k] || k === 'material' || k === 'labor'; }).map(function (k) {
       return '<span>' + CT[k] + '</span><span class="num">' + U.yen(b[k]) + '</span><div class="bar"><i style="width:' + Math.max(0, b[k] / tot * 100) + '%"></i></div>';
     }).join('');
@@ -365,23 +478,30 @@
   }
 
   /* ================= 操作 ================= */
-  function save(btn) {
+  function save(btn, opts) {
+    opts = opts || {};
     if (locked()) return;
+    clearTimeout(asTimer);
     var d = ED.doc;
     if (!d.no) d.no = EE.data.nextNumber(EE.S, d.issueDate);
     var r = U.calcDoc(d);
     d.totals = EE.engine.snapshot(r);
     d.updatedAt = new Date().toISOString();
-    d.history = (d.history || []).concat([{ at: d.updatedAt, action: '保存' }]).slice(-50);
+    if (!opts.silent) d.history = (d.history || []).concat([{ at: d.updatedAt, action: '保存' }]).slice(-50);
     var i = EE.S.documents.findIndex(function (x) { return x.id === d.id; });
     if (i >= 0) EE.S.documents[i] = clone(d); else EE.S.documents.push(clone(d));
-    U.commit();
+    var ok = U.commit();
+    if (!ok) { setState('<span style="color:var(--err)">保存できませんでした</span>'); return; }
     ED.dirty = false;
     var wasNew = ED.isNew;
     ED.isNew = false;
-    EE.fx.success(btn || document.getElementById('btn-save'), '保存しました');
+    if (wasNew) clearRecovery();
     var s = document.getElementById('save-state');
-    if (s) { s.innerHTML = '<span class="saved-mark">保存済み</span>'; EE.fx.pop(s); }
+    if (opts.silent) { if (s) s.innerHTML = '<span class="saved-mark">自動保存 ' + hhmm() + '</span>'; }
+    else {
+      EE.fx.success(btn || document.getElementById('btn-save'), '保存しました');
+      if (s) { s.innerHTML = '<span class="saved-mark">保存済み ' + hhmm() + '</span>'; EE.fx.pop(s); }
+    }
     var badge = document.querySelector('#sec-header .panel-h .badge');
     if (badge) badge.textContent = d.no;
     document.querySelector('.topbar .crumb').textContent = d.no;
@@ -457,7 +577,8 @@
     var now = new Date().toISOString();
     orig.status = 'issued';
     orig.issuedAt = now;
-    orig.rules = { lineRounding: EE.S.settings.lineRounding, taxRounding: EE.S.settings.taxRounding };
+    orig.rules = { lineRounding: EE.S.settings.lineRounding, taxRounding: EE.S.settings.taxRounding,
+      overheadRounding: EE.S.settings.overheadRounding, discountRounding: EE.S.settings.discountRounding };
     orig.totals = EE.engine.snapshot(EE.engine.calc(orig, orig.rules));
     orig.history.push({ at: now, action: '発行確定' });
     U.commit();
@@ -494,6 +615,18 @@
 
     view.addEventListener('input', function (e) {
       var t = e.target;
+      if (t.dataset.adjK) {
+        var row = t.closest('[data-adj]');
+        var a = ED.doc.adjustments.filter(function (x) { return x.id === row.dataset.adj; })[0];
+        var k = t.dataset.adjK;
+        if (k === 'rate') a.rateBp = Math.round((Number(t.value) || 0) * 100);
+        else if (k === 'amount') a.amount = Math.round(Math.abs(Number(t.value) || 0));
+        else if (k === 'unit') a.unit = Number(t.value);
+        else if (k === 'mode') { a.mode = t.value; markDirty(); renderAdj(); updateSummary(); return; }
+        else a[k] = t.value;
+        markDirty(); updateSummary();
+        return;
+      }
       if (t.dataset.f) {
         ED.doc[t.dataset.f] = t.value;
         markDirty();
@@ -513,6 +646,36 @@
     });
     view.addEventListener('change', function (e) {
       var t = e.target;
+      if (t.id === 'tpl-add' && t.value) {
+        var p = EE.S.packages.filter(function (x) { return x.id === t.value; })[0];
+        t.value = '';
+        if (!p) return;
+        var ids = addItems(p.lines.filter(function (l) { return !l.optional; })) || [];
+        var addedAdj = [];
+        (p.adjustments || []).forEach(function (a) {
+          if (ED.doc.adjustments.some(function (x) { return x.type === a.type && x.label === a.label; })) return;
+          var na = Object.assign({ id: EE.data.uid('adj'), scope: 'all' }, a); ED.doc.adjustments.push(na); addedAdj.push(na.id);
+        });
+        if (!ED.doc.title) { ED.doc.title = p.name; var ti = document.querySelector('[data-f="title"]'); if (ti) ti.value = p.name; }
+        if (!ED.doc.category) ED.doc.category = p.category;
+        renderLines(ids);
+        var opt = p.lines.filter(function (l) { return l.optional; }).length;
+        EE.fx.toast('「' + p.name + '」から ' + ids.length + ' 行を追加しました' + (opt ? '（参考候補 ' + opt + ' 行は追加していません）' : ''), {
+          action: { label: '元に戻す', run: function () {
+            ED.doc.lines = ED.doc.lines.filter(function (l) { return ids.indexOf(l.lineId) < 0; });
+            ED.doc.adjustments = ED.doc.adjustments.filter(function (a) { return addedAdj.indexOf(a.id) < 0; });
+            renderLines();
+          } }
+        });
+        return;
+      }
+      if (t.classList.contains('line-sel')) {
+        ED.sel = ED.sel || {}; ED.sel[t.closest('tr').dataset.line] = t.checked; updateBulk(); return;
+      }
+      if (t.id === 'sel-all') {
+        ED.sel = {}; if (t.checked) ED.doc.lines.forEach(function (l) { ED.sel[l.lineId] = true; });
+        view.querySelectorAll('.line-sel').forEach(function (c) { c.checked = t.checked; }); updateBulk(); return;
+      }
       if (t.dataset.f === 'customerId') {
         var pj = U.findProject(ED.doc.projectId);
         if (pj && pj.customerId !== t.value) ED.doc.projectId = '';
@@ -606,6 +769,12 @@
           L.splice(idx - 1, 0, L.splice(idx, 1)[0]); markDirty(); renderLines(L[idx - 1].lineId);
         } else if (act === 'down' && idx < L.length - 1) {
           L.splice(idx + 1, 0, L.splice(idx, 1)[0]); markDirty(); renderLines(L[idx + 1].lineId);
+        } else if (act === 'calc') {
+          var ln = L[idx];
+          EE.calcTool.open({ unit: ln.unit, onApply: function (q) {
+            ln.qty = q; markDirty(); renderLines(ln.lineId);
+            EE.fx.toast('「' + ln.name + '」の数量を ' + U.num(q) + ' ' + ln.unit + ' にしました');
+          } });
         } else if (act === 'refresh-price') {
           var it = U.findItem(L[idx].itemId);
           if (it) {
@@ -615,6 +784,58 @@
             EE.fx.toast('単価を ' + U.yen(old) + ' → ' + U.yen(it.unitPrice) + ' に更新しました');
           }
         }
+        return;
+      }
+      if (act === 'add-adj') { addAdj(a.dataset.type); return; }
+      if (act === 'del-adj') {
+        var aid = a.closest('[data-adj]').dataset.adj;
+        var removedA = ED.doc.adjustments.filter(function (x) { return x.id === aid; })[0];
+        ED.doc.adjustments = ED.doc.adjustments.filter(function (x) { return x.id !== aid; });
+        markDirty(); renderAdj(); updateSummary();
+        EE.fx.toast('「' + (removedA.label || ADJ_LABEL[removedA.type]) + '」を削除しました', { action: { label: '元に戻す', run: function () { ED.doc.adjustments.push(removedA); renderAdj(); updateSummary(); } } });
+        return;
+      }
+      if (act === 'bulk-del' || act === 'bulk-dup' || act === 'bulk-refresh' || act === 'bulk-discount') {
+        var ids = selectedIds(); if (!ids.length) return;
+        var before = clone(ED.doc.lines), beforeAdj = clone(ED.doc.adjustments || []);
+        var undo = { label: '元に戻す', run: function () { ED.doc.lines = before; ED.doc.adjustments = beforeAdj; renderLines(); } };
+        if (act === 'bulk-del') {
+          ED.doc.lines = ED.doc.lines.filter(function (l) { return ids.indexOf(l.lineId) < 0; });
+          EE.fx.toast(ids.length + ' 行を削除しました', { action: undo });
+          ED.sel = {};
+          markDirty(); renderLines();
+        } else if (act === 'bulk-dup') {
+          var newIds = [];
+          ED.doc.lines = ED.doc.lines.reduce(function (acc, l) {
+            acc.push(l);
+            if (ids.indexOf(l.lineId) >= 0) { var c = clone(l); c.lineId = EE.data.uid('ln'); acc.push(c); newIds.push(c.lineId); }
+            return acc;
+          }, []);
+          EE.fx.toast(ids.length + ' 行を複製しました', { action: undo });
+          markDirty(); renderLines(newIds);
+        } else if (act === 'bulk-refresh') {
+          var n = 0;
+          ED.doc.lines.forEach(function (l) {
+            if (ids.indexOf(l.lineId) < 0) return;
+            var it = U.findItem(l.itemId);
+            if (it && (it.unitPrice !== l.unitPrice || it.unitCost !== l.unitCost)) { l.unitPrice = it.unitPrice; l.unitCost = it.unitCost; l.priceDate = EE.data.today(); l.priceSource = null; n++; }
+          });
+          EE.fx.toast(n ? n + ' 行を最新のマスタ単価に更新しました' : '選んだ行はすべて最新の単価です', n ? { action: undo } : {});
+          if (n) { markDirty(); renderLines(ids); }
+        } else if (act === 'bulk-discount') {
+          addAdj('discount', { label: '値引き（' + ids.length + '行）', scope: ids.slice(), rateBp: 500 });
+        }
+        return;
+      }
+      if (act === 'snip') { e.preventDefault(); openSnippets(a.dataset.target); return; }
+      if (act === 'recover') {
+        var rec = readRecovery(); clearRecovery();
+        if (rec) { ['id', 'no', 'history', 'createdAt', 'updatedAt', 'status', 'totals'].forEach(function (k) { delete rec[k]; }); rec.sourceLabel = '入力途中のデータを復元'; EE.app.newWith(rec); }
+        return;
+      }
+      if (act === 'discard-recovery') {
+        clearRecovery(); var rb = document.getElementById('recovery');
+        if (rb) { var an = EE.fx.anim(rb, [{ opacity: 1 }, { opacity: 0, transform: 'translateY(-6px)' }], { duration: 180, fill: 'forwards' }); if (an) an.onfinish = function () { rb.remove(); }; else rb.remove(); }
         return;
       }
       if (act === 'save') save(a);
@@ -627,6 +848,34 @@
     }
     view.addEventListener('click', onClick);
     document.getElementById('actions').onclick = onClick;
+  }
+
+  /** 定型文の挿入（備考は追記、支払条件は置き換え） */
+  function openSnippets(target) {
+    var K = EE.catalog.SNIPPET_KINDS;
+    var list = (EE.S.snippets || []).filter(function (x) { return target === 'paymentTerms' ? x.kind === 'payment' : true; });
+    U.modal({
+      title: target === 'paymentTerms' ? '支払条件の定型文' : '定型文を挿入',
+      body: list.length ? Object.keys(K).map(function (k) {
+        var xs = list.filter(function (x) { return x.kind === k; });
+        return xs.length ? '<div class="label" style="margin:10px 0 6px">' + K[k] + '</div><div class="checks">' + xs.map(function (x) {
+          return '<button class="check info" data-snip="' + x.id + '" style="grid-template-columns:1fr;text-align:left;cursor:pointer;color:inherit"><div><div class="t">' + esc(x.title) + '</div><div class="d">' + esc(x.body) + '</div></div></button>';
+        }).join('') + '</div>' : '';
+      }).join('') : '<div class="empty">定型文がありません</div>',
+      foot: '<a class="btn ghost" href="#/settings/snippets">定型文を編集</a><div class="spacer"></div><button class="btn primary" data-c>閉じる</button>',
+      onMount: function (el, api) {
+        el.querySelector('[data-c]').onclick = function () { api.close(); };
+        el.addEventListener('click', function (e) {
+          var b = e.target.closest('[data-snip]'); if (!b) return;
+          var x = EE.S.snippets.filter(function (y) { return y.id === b.dataset.snip; })[0];
+          var f = document.querySelector('[data-f="' + target + '"]');
+          if (target === 'notes') ED.doc.notes = (ED.doc.notes ? ED.doc.notes.replace(/\s+$/, '') + '\n' : '') + x.body;
+          else ED.doc[target] = x.body;
+          f.value = ED.doc[target]; markDirty(); EE.fx.pulse(f);
+          if (target !== 'notes') api.close(); else EE.fx.toast('「' + x.title + '」を挿入しました');
+        });
+      }
+    });
   }
 
   /** キーボード：Ctrl+S 保存、Ctrl+P PDF、/ で明細検索 */

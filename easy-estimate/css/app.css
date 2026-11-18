@@ -377,3 +377,14 @@ tr:hover .row-actions { opacity: 1; }
   #print-root { display: block; }
   #print-root .sheet { box-shadow: none !important; width: auto !important; min-height: 0 !important; padding: 0 !important; transform: none !important; }
 }
+
+/* かんたん見積もり作成 */
+.quick-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.quick-card { display: block; color: inherit; cursor: pointer; }
+.quick-card .kpi-icon { width: 34px; height: 34px; border-radius: 10px; }
+.quick-card .kpi-icon svg { width: 18px; height: 18px; }
+code { font-family: ui-monospace, Menlo, monospace; font-size: 12px; color: var(--accent-2); background: rgba(77,141,255,.08); padding: 1px 6px; border-radius: 5px; }
+
+.adj-row { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; padding: 8px 10px; border: 1px solid var(--line); border-radius: 10px; margin-bottom: 6px; background: rgba(6,9,16,.35); }
+.adj-row .input { height: 32px; }
+.adj-row .grow { flex: 1; }

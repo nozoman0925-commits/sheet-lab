@@ -8,7 +8,7 @@
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
     });
   }
-  function yen(n) { return '¥' + Math.round(Number(n) || 0).toLocaleString('ja-JP'); }
+  function yen(n) { var v = Math.round(Number(n) || 0); return (v < 0 ? '−¥' : '¥') + Math.abs(v).toLocaleString('ja-JP'); }
   function num(n) { return (Number(n) || 0).toLocaleString('ja-JP', { maximumFractionDigits: 2 }); }
   function pct(r) { return r == null ? '—' : (r * 100).toFixed(1) + '%'; }
   function jdate(s) { return s ? s.replace(/-/g, '/') : '—'; }

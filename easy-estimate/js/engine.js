@@ -81,7 +81,8 @@
       costTotal: 0,
       grossProfit: 0,
       marginRate: null, // 0〜1。小計0のときは null
-      breakdown: { material: 0, labor: 0, subcontract: 0, expense: 0, other: 0 },
+      breakdown: { material: 0, labor: 0, subcontract: 0, expense: 0, other: 0, discount: 0 },
+      adjustments: [],  // 諸経費・値引き・端数調整の結果 [{ id, type, label, amount, byCat }]
       valid: true
     };
 
@@ -105,6 +106,8 @@
       out.breakdown[ct] += amount;
     });
 
+    applyAdjustments(doc, rules, out);
+
     Object.keys(out.byRate).forEach(function (cat) {
       var r = out.byRate[cat];
       r.tax = TAX_CATEGORIES[cat].taxable ? roundDiv(r.base * r.rate, 100, taxMode) : 0;
@@ -115,6 +118,82 @@
     out.grossProfit = out.subtotal - out.costTotal;
     out.marginRate = out.subtotal !== 0 ? out.grossProfit / out.subtotal : null;
     return out;
+  }
+
+  function ensureCat(out, cat) {
+    if (!out.byRate[cat]) out.byRate[cat] = { base: 0, tax: 0, rate: TAX_CATEGORIES[cat].rate, label: TAX_CATEGORIES[cat].label };
+    return out.byRate[cat];
+  }
+
+  /**
+   * 諸経費・値引き・端数調整（doc.adjustments）
+   * 計算順序（システム全体で固定）：
+   *   ① 明細 → ② 諸経費（率×対象額、税率区分ごと）→ ③ 値引き（率は税率区分ごと／額は指定区分から）
+   *   → ④ 端数調整（税抜合計を 100/1,000/10,000 円未満切り捨て。差額は金額が最大の税率区分から引く）
+   *   → ⑤ 消費税（税率区分ごとに1回）
+   * 率は「万分率」の整数 rateBp（800 = 8.00%）で持ち、浮動小数を使わない。
+   * adj: { id, type:'overhead'|'discount'|'roundoff', label, mode:'rate'|'amount', rateBp, amount, taxCategory, scope:'all'|[lineId], unit }
+   */
+  function applyAdjustments(doc, rules, out) {
+    var adjs = (doc && doc.adjustments) || [];
+    if (!adjs.length) return;
+    var ohMode = rules.overheadRounding || 'floor';
+    var dcMode = rules.discountRounding || 'ceil';
+    var lines = doc.lines || [];
+    // 範囲（scope）に入る明細の、税率区分ごとの合計
+    function baseOf(scope, includeOverheads) {
+      var by = {};
+      lines.forEach(function (ln, i) {
+        if (scope !== 'all' && Array.isArray(scope) && scope.indexOf(ln.lineId) < 0) return;
+        var r = out.lines[i]; if (!r || r.invalid) return;
+        var cat = TAX_CATEGORIES[ln.taxCategory] ? ln.taxCategory : 'std10';
+        by[cat] = (by[cat] || 0) + r.amount;
+      });
+      if (includeOverheads) out.adjustments.forEach(function (a) {
+        if (a.type !== 'overhead') return;
+        Object.keys(a.byCat).forEach(function (c) { by[c] = (by[c] || 0) + a.byCat[c]; });
+      });
+      return by;
+    }
+    function book(a, byCat, sign) {
+      var total = 0;
+      Object.keys(byCat).forEach(function (c) {
+        var v = byCat[c] * sign;
+        ensureCat(out, c).base += v;
+        out.subtotal += v;
+        total += v;
+        byCat[c] = v;
+      });
+      if (a.type === 'overhead') out.breakdown.expense += total;
+      else out.breakdown.discount += total;
+      out.adjustments.push({ id: a.id, type: a.type, label: a.label || '', amount: total, byCat: byCat });
+    }
+    var order = { overhead: 0, discount: 1, roundoff: 2 };
+    adjs.slice().sort(function (x, y) { return order[x.type] - order[y.type]; }).forEach(function (a) {
+      var byCat = {};
+      if (a.type === 'overhead' || a.type === 'discount') {
+        var mode = a.type === 'overhead' ? ohMode : dcMode;
+        if (a.mode === 'amount') {
+          var cat = TAX_CATEGORIES[a.taxCategory] ? a.taxCategory : 'std10';
+          byCat[cat] = Math.round(Math.abs(Number(a.amount) || 0));
+        } else {
+          var bp = Math.round(Number(a.rateBp) || 0);
+          var base = baseOf(a.scope || 'all', a.type === 'discount' && (a.scope || 'all') === 'all');
+          Object.keys(base).forEach(function (c) { byCat[c] = roundDiv(base[c] * bp, 10000, mode); });
+        }
+        book(a, byCat, a.type === 'overhead' ? 1 : -1);
+      } else if (a.type === 'roundoff') {
+        var unit = [100, 1000, 10000].indexOf(Number(a.unit)) >= 0 ? Number(a.unit) : 1000;
+        var cut = out.subtotal > 0 ? out.subtotal % unit : 0;
+        if (cut) {
+          var big = Object.keys(out.byRate).sort(function (x, y) { return out.byRate[y].base - out.byRate[x].base; })[0];
+          byCat[big] = cut;
+          book(a, byCat, -1);
+        } else {
+          out.adjustments.push({ id: a.id, type: a.type, label: a.label || '', amount: 0, byCat: {} });
+        }
+      }
+    });
   }
 
   /** 保存用の合計スナップショット（送信前チェックで再計算と突き合わせる） */

@@ -30,7 +30,7 @@
     var p = (hash || '').replace(/^#\/?/, '').split('/');
     switch (p[0]) {
       case 'docs': return { nav: 1, view: function () { return EE.views.docs.render(); } };
-      case 'new': return { nav: 2, view: function () { return EE.views.editor.render(null); } };
+      case 'new': return { nav: 2, view: function () { return p[1] === 'edit' ? EE.views.editor.render(null) : EE.views.quick.render(p[1]); } };
       case 'edit': return { nav: 1, view: function () { return EE.views.editor.render(p[1]); } };
       case 'clients': return { nav: 3, view: function () { return EE.views.clients.render(); } };
       case 'settings': return { nav: 4, view: function () { return EE.views.settings.render(p[1]); } };
@@ -136,13 +136,13 @@
       return EE.data.lineFromItem(it, l.qty);
     });
     prefill = d;
-    location.hash = '#/new';
+    location.hash = '#/new/edit';
     EE.fx.toast('「' + (src.title || src.no) + '」を複製しました' + (changed ? '（' + changed + '行を最新単価に更新）' : ''));
   }
 
   function newWith(init) {
     prefill = Object.assign({}, init);
-    if (location.hash === '#/new') show(); else location.hash = '#/new';
+    if (location.hash === '#/new/edit') show(); else location.hash = '#/new/edit';
   }
   function takePrefill() { var p = prefill; prefill = null; return p; }
 
@@ -173,7 +173,7 @@
     document.addEventListener('keydown', function (e) {
       if (e.key === 'Escape') { var m = U.topModal(); if (m) { m.close(); return; } }
       if (e.altKey && /^[1-5]$/.test(e.key)) { e.preventDefault(); location.hash = NAV[Number(e.key) - 1].href; return; }
-      if (current && current.mount && EE.views.editor && /^#\/(new|edit)/.test(location.hash)) EE.views.editor.onKey(e);
+      if (current && current.mount && EE.views.editor && /^#\/(new\/edit|edit)/.test(location.hash)) EE.views.editor.onKey(e);
       else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') { /* 一覧画面での印刷はブラウザ既定のまま */ }
     });
     root.addEventListener('beforeunload', function (e) {

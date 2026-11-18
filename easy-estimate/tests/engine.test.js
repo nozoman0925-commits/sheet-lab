@@ -48,7 +48,7 @@ t('粗利・粗利率・建設業法の内訳', () => {
   assert.strictEqual(r.costTotal, 28500);
   assert.strictEqual(r.grossProfit, 17500);
   assert.ok(Math.abs(r.marginRate - 17500 / 46000) < 1e-12);
-  assert.deepStrictEqual(r.breakdown, { material: 12000, labor: 9000, subcontract: 0, expense: 25000, other: 0 });
+  assert.deepStrictEqual(r.breakdown, { material: 12000, labor: 9000, subcontract: 0, expense: 25000, other: 0, discount: 0 });
 });
 
 t('空の書類', () => {
@@ -115,6 +115,46 @@ t('チェックは書類を書き換えない', () => {
 t('建設業法20条：工事なのに材料費・労務費がない', () => {
   const doc = base(); doc.lines[0].costType = 'expense';
   assert.ok(codes(doc).includes('kensetsu-20'));
+});
+
+
+t('諸経費（率・税率区分ごと・切り捨て）', () => {
+  const r = E.calc({ lines: [{ lineId: 'a', qty: 1, unitPrice: 1000005, taxCategory: 'std10' }],
+    adjustments: [{ id: 'o', type: 'overhead', mode: 'rate', rateBp: 800, scope: 'all' }] }, {});
+  assert.strictEqual(r.adjustments[0].amount, 80000);
+  assert.strictEqual(r.subtotal, 1080005);
+  assert.strictEqual(r.breakdown.expense, 80000);
+});
+
+t('定率値引きは税率区分ごと・諸経費込みの額にかかる（切り上げ）', () => {
+  const r = E.calc({ lines: [
+    { lineId: 'a', qty: 1, unitPrice: 10001, taxCategory: 'std10' },
+    { lineId: 'b', qty: 1, unitPrice: 999, taxCategory: 'red8' }],
+    adjustments: [{ id: 'd', type: 'discount', mode: 'rate', rateBp: 500, scope: 'all' }] }, { taxRounding: 'floor' });
+  assert.strictEqual(r.adjustments[0].byCat.std10, -501);   // 500.05 → 501
+  assert.strictEqual(r.adjustments[0].byCat.red8, -50);     // 49.95 → 50
+  assert.strictEqual(r.byRate.std10.base, 9500);
+  assert.strictEqual(r.byRate.red8.base, 949);
+  assert.strictEqual(r.byRate.std10.tax, 950);
+  assert.strictEqual(r.byRate.red8.tax, 75);                // 75.92 → 75
+});
+
+t('選択した明細だけに値引き', () => {
+  const r = E.calc({ lines: [
+    { lineId: 'a', qty: 1, unitPrice: 10000 }, { lineId: 'b', qty: 1, unitPrice: 20000 }],
+    adjustments: [{ id: 'd', type: 'discount', mode: 'rate', rateBp: 1000, scope: ['b'] }] }, {});
+  assert.strictEqual(r.subtotal, 28000);
+});
+
+t('定額値引き・千円未満切り捨て・原価は変わらない', () => {
+  const r = E.calc({ lines: [{ lineId: 'a', qty: 1, unitPrice: 1234567, unitCost: 800000 }],
+    adjustments: [{ id: 'r', type: 'roundoff', unit: 1000 }, { id: 'd', type: 'discount', mode: 'amount', amount: 10000, taxCategory: 'std10' }] }, {});
+  // 値引き → 端数調整 の順（配列の順番に関係なく固定）
+  assert.strictEqual(r.adjustments[0].type, 'discount');
+  assert.strictEqual(r.subtotal, 1224000);
+  assert.strictEqual(r.costTotal, 800000);
+  assert.strictEqual(r.grossProfit, 424000);
+  assert.strictEqual(r.tax, 122400);
 });
 
 console.log(`\n${n} tests passed`);

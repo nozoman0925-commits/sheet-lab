@@ -2,7 +2,9 @@
  * データ構造と保存（ブラウザの localStorage）
  *
  * state = {
- *   schema: 1,
+ *   schema: 2,
+ *   categories: 工事カテゴリー [{ id, name, keywords }]
+ *   formulas: 数量計算式 / snippets: 定型文（catalog.js）
  *   company:  自社情報（適格請求書の記載事項：名称・登録番号・住所など）
  *   settings: 計算ルール（端数処理・粗利下限・有効期限の既定日数・番号の接頭辞）
  *   items:    マスタ（商品・工事単価・人工・仕入材料）
@@ -41,7 +43,7 @@
 
   function defaultState() {
     return {
-      schema: 1,
+      schema: 2,
       company: {
         name: '株式会社サンプル住設',
         invoiceRegNo: 'T1234567890123',
@@ -58,14 +60,20 @@
         taxRounding: 'floor',
         minMargin: 0.15,
         validDays: 30,
-        numberPrefix: 'EST'
+        numberPrefix: 'EST',
+        overheadRounding: 'floor',
+        discountRounding: 'ceil'
       },
       items: [],
       packages: [],
       customers: [],
       projects: [],
       documents: [],
-      seq: { estimate: {} }
+      seq: { estimate: {} },
+      categories: [],
+      formulas: [],
+      snippets: [],
+      autoSave: true
     };
   }
 
@@ -118,6 +126,8 @@
       { id: 'prj_yamada', customerId: 'cus_yamada', name: '山田様邸 1階トイレ改修', site: '東京都三鷹市下連雀6-7-8', note: '' }
     ];
 
+    root.EE.catalog.mergeInto(s, t);
+
     var byId = {};
     s.items.forEach(function (it) { byId[it.id] = it; });
     function lines(arr) {
@@ -134,12 +144,23 @@
     e3.lines = lines([['itm_p001', 12], ['itm_k005', 12], ['itm_l002', 1]]);
     e3.lines[0].unitPrice = 4200; // マスタ改定前の単価のまま → 送信前チェックで指摘される例
 
+    var e4 = newEstimate(s, { customerId: 'cus_yamada', projectId: 'prj_yamada', title: '山田様邸 境界フェンス工事',
+      issueDate: addDays(t, -95), validUntil: addDays(t, -65) });
+    e4.category = 'gaikou';
+    e4.lines = lines([['itm_gk01', 12], ['itm_gk05', 7], ['itm_gk09', 12], ['itm_gk10', 12], ['itm_gk16', 1]]);
+    e4.lines.forEach(function (l) { l.priceDate = addDays(t, -95); });
+    e4.lines[2].unitPrice = 15000; // 当時の単価
+    e4.adjustments = [{ id: 'adj_e4', type: 'overhead', label: '諸経費', mode: 'rate', rateBp: 500, scope: 'all' }];
+
     var calc = root.EE.engine.calc;
-    [e1, e2, e3].forEach(function (d) {
+    [e4, e1, e2, e3].forEach(function (d) {
       d.totals = root.EE.engine.snapshot(calc(d, s.settings));
       d.createdAt = d.updatedAt = new Date(d.issueDate + 'T09:00:00').toISOString();
       s.documents.push(d);
     });
+    e4.status = 'issued';
+    e4.rules = { lineRounding: s.settings.lineRounding, taxRounding: s.settings.taxRounding };
+    e4.issuedAt = new Date(e4.issueDate + 'T10:00:00').toISOString();
     e1.status = 'issued';
     e1.rules = { lineRounding: s.settings.lineRounding, taxRounding: s.settings.taxRounding };
     e1.issuedAt = new Date(e1.issueDate + 'T10:30:00').toISOString();
@@ -155,7 +176,8 @@
       unitPrice: it.unitPrice,
       unitCost: it.unitCost,
       code: it.code, name: it.name, spec: it.spec, unit: it.unit, kind: it.kind,
-      taxCategory: it.taxCategory, costType: it.costType
+      taxCategory: it.taxCategory, costType: it.costType, category: it.category || '',
+      priceDate: today()
     };
   }
 
@@ -197,6 +219,8 @@
       paymentTerms: '工事完了月末締め 翌月末日 銀行振込',
       notes: '',
       lines: [],
+      adjustments: [],
+      category: init.category || '',
       totals: null,
       createdAt: now,
       updatedAt: now,
@@ -210,7 +234,7 @@
       var raw = root.localStorage.getItem(KEY);
       if (raw) {
         var s = JSON.parse(raw);
-        if (s && s.schema === 1) return migrate(s);
+        if (s && (s.schema === 1 || s.schema === 2)) return migrate(s);
       }
     } catch (e) { /* 壊れていたらサンプルで起動 */ }
     return sampleState();
@@ -220,6 +244,12 @@
     var d = defaultState();
     Object.keys(d).forEach(function (k) { if (s[k] == null) s[k] = d[k]; });
     Object.keys(d.settings).forEach(function (k) { if (s.settings[k] == null) s.settings[k] = d.settings[k]; });
+    if (s.schema === 1) {
+      // v1 → v2：カテゴリー・同義語・テンプレート・計算式・定型文を追加（既存データは上書きしない）
+      root.EE.catalog.mergeInto(s, today());
+      s.documents.forEach(function (doc) { if (!doc.adjustments) doc.adjustments = []; });
+      s.schema = 2;
+    }
     return s;
   }
 

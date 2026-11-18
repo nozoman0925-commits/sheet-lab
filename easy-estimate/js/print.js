@@ -30,6 +30,18 @@
         '<td class="c num">' + tl + '</td></tr>';
     }).join('');
 
+    var n0 = doc.lines.length;
+    rows += (r.adjustments || []).filter(function (a) { return a.amount !== 0; }).map(function (a, k) {
+      var src = (doc.adjustments || []).filter(function (x) { return x.id === a.id; })[0] || {};
+      var lab = a.label || (a.type === 'overhead' ? '諸経費' : a.type === 'discount' ? '値引き' : '端数調整');
+      if (src.mode === 'rate' && a.type !== 'roundoff') lab += '（' + (src.rateBp / 100) + '%）';
+      if (a.type === 'roundoff') lab = '端数調整（' + Number(src.unit || 1000).toLocaleString('ja-JP') + '円未満）';
+      var cats = Object.keys(a.byCat);
+      var tl = cats.length === 1 ? (cats[0] === 'std10' ? '10%' : cats[0] === 'red8' ? '8%' : '') : '各税率';
+      return '<tr><td class="c num">' + (n0 + k + 1) + '</td><td>' + esc(lab) + '</td><td class="r num">1</td><td class="c">式</td>' +
+        '<td class="r num"></td><td class="r num">' + yen(a.amount).replace('¥-', '−¥') + '</td><td class="c num">' + tl + '</td></tr>';
+    }).join('');
+
     var rateRows = Object.keys(r.byRate).map(function (k) {
       var x = r.byRate[k];
       if (!TC[k].taxable) return '<tr><th>' + esc(TC[k].label) + ' 対象</th><td class="num">' + yen(x.base) + '</td></tr>';
@@ -130,5 +142,14 @@
     return m;
   }
 
-  EE.print = { sheetHTML: sheetHTML, printDoc: printDoc, preview: preview };
+  /** 複数の書類を1回の印刷（1つのPDF）にまとめる */
+  function printMany(docs) {
+    var pr = document.getElementById('print-root');
+    pr.innerHTML = docs.map(function (d, i) { return '<div style="' + (i ? 'page-break-before:always;break-before:page' : '') + '">' + sheetHTML(d) + '</div>'; }).join('');
+    var oldTitle = document.title;
+    document.title = '見積書_' + docs.length + '件_' + EE.data.today();
+    setTimeout(function () { root.print(); document.title = oldTitle; pr.innerHTML = ''; }, 50);
+  }
+
+  EE.print = { sheetHTML: sheetHTML, printDoc: printDoc, preview: preview, printMany: printMany };
 })(this);

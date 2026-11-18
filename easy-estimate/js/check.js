@@ -122,8 +122,9 @@
       else {
         if (it.active === false) add('warn', 'line-item-inactive', no + 'は使用停止中のマスタです', '', target);
         if (it.unitPrice !== ln.unitPrice) {
+          var src = ln.priceSource && ln.priceSource.type === 'import' ? '（取り込み元の書類の単価）' : ln.priceDate ? '（' + ln.priceDate + ' 時点の単価）' : '';
           add('warn', 'price-changed', no + 'の単価がマスタと違います',
-            '明細 ' + yen(ln.unitPrice) + ' ／ 現在のマスタ ' + yen(it.unitPrice) + '。意図した単価か確認してください（明細の「最新単価に更新」で反映できます）。', target);
+            '明細 ' + yen(ln.unitPrice) + src + ' ／ 現在のマスタ ' + yen(it.unitPrice) + '。意図した単価か確認してください（明細の「最新単価に更新」で反映できます）。', target);
         }
       }
       var q = Number(ln.qty);
@@ -136,7 +137,26 @@
       if (ln.itemId && seen[ln.itemId]) add('info', 'dup-line', no + 'は' + seen[ln.itemId] + '行目と同じ品目です', '重複入力でないか確認してください。', target);
       else if (ln.itemId) seen[ln.itemId] = i + 1;
       if (ln.kind === 'construction' || ln.kind === 'labor') hasConstruction = true;
+      if (ln.unit === '式' && (ln.unitPrice || 0) >= 100000) add('info', 'lump-sum', no + 'は「一式」で' + yen(ln.unitPrice) + 'です', '内訳がない一式の明細は、お客様から内容を聞かれやすい項目です。必要なら内訳の明細に分けてください。', target);
     });
+
+    // ---- 4b. 諸経費・値引き・端数調整 ----
+    Object.keys(result.byRate).forEach(function (k) {
+      if (result.byRate[k].base < 0) add('error', 'negative-base', engine.TAX_CATEGORIES[k].label + ' 対象の金額がマイナスです', '値引きが対象額を超えています。', { area: 'summary' });
+    });
+    (doc.adjustments || []).forEach(function (a) {
+      if (a.type === 'discount' && a.mode === 'rate' && a.rateBp > 3000) add('warn', 'big-discount', '値引き率が' + (a.rateBp / 100) + '%です', '桁の入力間違いがないか確認してください。', { area: 'summary' });
+      if (a.type === 'overhead' && a.mode === 'rate' && a.rateBp > 3000) add('warn', 'big-overhead', '諸経費率が' + (a.rateBp / 100) + '%です', '', { area: 'summary' });
+      if (Array.isArray(a.scope)) {
+        var ids = lines.map(function (l) { return l.lineId; });
+        if (!a.scope.some(function (id) { return ids.indexOf(id) >= 0; })) add('warn', 'adj-empty-scope', '「' + (a.label || '値引き') + '」の対象明細がありません', '対象の行が削除されています。', { area: 'summary' });
+      }
+    });
+    // 取り込んだ書類（PDF等）に書かれていた合計との照合
+    if (doc.importInfo && doc.importInfo.statedSubtotal != null && doc.importInfo.statedSubtotal !== result.subtotal) {
+      add('warn', 'import-mismatch', '取り込み元の小計と一致しません',
+        '元の書類 ' + yen(doc.importInfo.statedSubtotal) + ' ／ 計算 ' + yen(result.subtotal) + '。読み取り漏れや単価の違いがないか、元の書類と見比べてください。', { area: 'lines' });
+    }
 
     // ---- 5. 粗利 ----
     var minMargin = typeof settings.minMargin === 'number' ? settings.minMargin : 0.15;
