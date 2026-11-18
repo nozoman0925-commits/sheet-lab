@@ -29,6 +29,7 @@
 }
 
 * { box-sizing: border-box; }
+[hidden] { display: none !important; }   /* class で display を指定した要素でも hidden 属性で確実に隠す */
 html, body { height: 100%; }
 body {
   margin: 0;

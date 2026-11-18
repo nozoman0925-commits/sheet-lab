@@ -31,13 +31,13 @@
     var n = Math.min(3, papers);
     var paper = '';
     for (var i = 0; i < n; i++) {
-      paper += '<rect class="fold-paper" style="--p:' + i + '" x="' + (20 + i * 6) + '" y="' + (16 - i * 4) + '" width="' + (78 - i * 12) + '" height="56" rx="4" fill="#EEF4FF" opacity="' + (0.95 - i * 0.12) + '"/>';
+      paper += '<rect class="fold-paper" style="--p:' + i + '" x="' + (20 + i * 6) + '" y="' + (16 - i * 4) + '" width="' + (78 - i * 12) + '" height="56" rx="9" fill="#EEF4FF" opacity="' + (0.95 - i * 0.12) + '"/>';
     }
     return '<svg class="fold" viewBox="0 0 120 96" aria-hidden="true">' +
-      '<path d="M8 20a8 8 0 0 1 8-8h26.5a6 6 0 0 1 4.2 1.8l7 7.2H104a8 8 0 0 1 8 8v8H8z" fill="hsl(' + h + ' ' + Math.round(55 * sat) + '% 30%)"/>' +
+      '<path d="M8 24a12 12 0 0 1 12-12h20a10 10 0 0 1 7.6 3.5l2.8 3.3A8 8 0 0 0 56.5 21H100a12 12 0 0 1 12 12v5H8z" fill="hsl(' + h + ' ' + Math.round(55 * sat) + '% 30%)"/>' +
       '<g class="fold-papers">' + paper + '</g>' +
-      '<g class="fold-front"><rect x="6" y="32" width="108" height="58" rx="9" fill="url(#fg-' + h + '-' + (m ? 1 : 0) + ')"/>' +
-      '<rect x="6.5" y="32.5" width="107" height="57" rx="8.5" fill="none" stroke="rgba(255,255,255,.22)"/>' +
+      '<g class="fold-front"><rect x="6" y="32" width="108" height="58" rx="16" fill="url(#fg-' + h + '-' + (m ? 1 : 0) + ')"/>' +
+      '<rect x="6.5" y="32.5" width="107" height="57" rx="15.5" fill="none" stroke="rgba(255,255,255,.22)"/>' +
       '<text x="60" y="70" text-anchor="middle" font-size="24" font-weight="700" fill="#fff" fill-opacity=".92" font-family="Hiragino Sans, Noto Sans JP, sans-serif">' + esc(m ? U.initial(m.name) : '？') + '</text></g>' +
       '<defs><linearGradient id="fg-' + h + '-' + (m ? 1 : 0) + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="hsl(' + h + ' ' + Math.round(90 * sat) + '% 62%)"/><stop offset="1" stop-color="hsl(' + (h + 6) + ' ' + Math.round(80 * sat) + '% 42%)"/></linearGradient></defs>' +
     '</svg>';

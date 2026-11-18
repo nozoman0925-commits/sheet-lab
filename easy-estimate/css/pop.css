@@ -1,0 +1,63 @@
+/*
+ * ポップで丸いシルエット（形だけを丸く。色・透け感・オーロラはそのまま）
+ * アイコンは js/ui.js で太めの線・丸い線端・角丸の図形に描き直し、ここでは部品の角を丸くそろえる
+ */
+:root { --radius: 22px; --radius-s: 14px; }
+
+/* ステーション（すりガラスのパネル） */
+.panel { border-radius: 22px; }
+.modal { border-radius: 26px; }
+.sum-total { border-radius: 18px; }
+
+/* ボタン：まるいカプセル、アイコンだけのボタンはまんまる */
+.btn { border-radius: 999px; padding: 0 16px; }
+.btn.sm { border-radius: 999px; padding: 0 12px; }
+.btn.icon, .btn.sm.icon { border-radius: 50%; padding: 0; width: 36px; }
+.btn.sm.icon { width: 30px; }
+.btn svg { width: 17px; height: 17px; }
+
+/* アイコンの箱：まるいボタン型に */
+.kpi-icon { border-radius: 50%; width: 30px; height: 30px; }
+.kpi-icon svg { width: 16px; height: 16px; }
+.quick-card .kpi-icon { border-radius: 50%; width: 38px; height: 38px; }
+.quick-card .kpi-icon svg { width: 19px; height: 19px; }
+
+/* 入力欄・切り替え・チップ */
+.input, select.input { border-radius: 14px; }
+textarea.input { border-radius: 16px; }
+.seg { border-radius: 999px; padding: 4px; }
+.seg button { border-radius: 999px; padding: 5px 14px; }
+.pkg { border-radius: 999px; padding: 8px 14px; }
+.badge { border-radius: 999px; }
+kbd { border-radius: 7px; }
+
+/* リスト・カード類 */
+.check { border-radius: 16px; }
+.picker-pop { border-radius: 20px; padding: 8px; }
+.picker-opt { border-radius: 12px; }
+.adj-row { border-radius: 16px; }
+.toast { border-radius: 999px; padding: 10px 16px 10px 10px; }
+.toast .ck { width: 26px; height: 26px; }
+.drop { border-radius: 24px; }
+.preview-wrap, .imp-viewer, .ie-stage { border-radius: 18px; }
+.sk { border-radius: 14px; }
+.table tbody tr td:first-child { border-top-left-radius: 12px; border-bottom-left-radius: 12px; }
+.table tbody tr td:last-child { border-top-right-radius: 12px; border-bottom-right-radius: 12px; }
+
+/* サイドバー */
+.nav-item { border-radius: 16px; }
+.nav-item.active::before { border-radius: 999px; left: 3px; top: 12px; bottom: 12px; width: 4px; }
+.nav-toggle { border-radius: 50%; }
+.nav-child { border-radius: 999px; }
+.side-user-btn { border-radius: 999px; }
+.user-pop { border-radius: 22px; padding: 8px; }
+.user-pop [role=menuitem] { border-radius: 14px; }
+
+/* 担当者のファイル */
+.folder-tile { border-radius: 24px; }
+.fold-add { border-radius: 50%; }
+.folder-stats > div { border-radius: 18px; }
+.hue-pick .avatar { border-radius: 50%; }
+
+/* アイコンの線は丸くそろえる（外部から差し込まれた SVG も含めて） */
+svg.ico { stroke-linecap: round; stroke-linejoin: round; }
