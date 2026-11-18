@@ -159,7 +159,7 @@
     opts = opts || {};
     EE.S = EE.data.load();
     renderNav();
-    document.getElementById('brand-crest').innerHTML = EE.crest.svg({ id: 'brand', className: 'brand-crest' });
+    document.getElementById('brand-crest').innerHTML = EE.crest.svg({ id: 'brand', className: 'brand-crest', fieldR: 106 });
     if (!location.hash) replaceRoute('#/home');
     show(false);
     if (!opts.deferIntro) intro();

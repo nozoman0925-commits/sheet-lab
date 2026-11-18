@@ -40,17 +40,19 @@
           '<circle class="c-ring-draw" r="' + D.ringR + '" fill="none" stroke="#fff" stroke-width="' + (D.ringW + 9) +
           '" transform="rotate(-90)" style="--len:' + C.toFixed(2) + '" stroke-dasharray="' + C.toFixed(2) + '"/>' +
         '</mask>' +
-        '<radialGradient id="' + id + '-glow"><stop offset="0" stop-color="#FFF6E2" stop-opacity=".55"/><stop offset=".45" stop-color="#D4BD8C" stop-opacity=".18"/><stop offset="1" stop-color="#D4BD8C" stop-opacity="0"/></radialGradient>' +
-        '<linearGradient id="' + id + '-sheen" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#FFF7E6" stop-opacity=".55"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
+        '<radialGradient id="' + id + '-glow"><stop offset="0" stop-color="#FFF6E2" stop-opacity=".42"/><stop offset=".45" stop-color="#D4BD8C" stop-opacity=".12"/><stop offset="1" stop-color="#D4BD8C" stop-opacity="0"/></radialGradient>' +
+        '<linearGradient id="' + id + '-sheen" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset=".5" stop-color="#FFF7E6" stop-opacity=".24"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>' +
         '<mask id="' + id + '-shape" maskUnits="userSpaceOnUse" x="-100" y="-100" width="200" height="200" style="mask-type:alpha"><use href="#' + id + '-art"/></mask>' +
       '</defs>' +
-      '<circle class="c-glow" cx="' + D.coreCenter[0] + '" cy="' + D.coreCenter[1] + '" r="60" fill="url(#' + id + '-glow)"/>' +
+      // 原本と同じ見え方（明るい地に濃い家紋）にするための円形の地。円環の外側にも原本同様の余白を残す
+      '<circle class="c-field" r="' + (opts.fieldR || 112) + '"/>' +
       '<g id="' + id + '-art" class="c-art">' +
         '<path class="c-ring" fill-rule="evenodd" d="' + D.ring + '" mask="url(#' + id + '-ring-mask)"/>' +
         '<g class="c-petals">' + petals + sepals + '</g>' +
         '<path class="c-core" d="' + D.core + '"/>' +
       '</g>' +
       '<g class="c-rayfills">' + rayfill + '</g>' +
+      '<circle class="c-glow" cx="' + D.coreCenter[0] + '" cy="' + D.coreCenter[1] + '" r="60" fill="url(#' + id + '-glow)"/>' +
       '<g mask="url(#' + id + '-shape)"><rect class="c-sheen" x="-150" y="-110" width="70" height="220" fill="url(#' + id + '-sheen)" transform="skewX(-18)"/></g>' +
     '</svg>';
   }

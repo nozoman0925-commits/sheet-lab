@@ -9,7 +9,8 @@
   --gold: #D4BD8C;
   --ink: #FFFFFF;
   --sub: #A8ADB5;
-  --crest: #EEEAE1;
+  --crest: #171B24;             /* 家紋の色：原本の黒にあたる（背景と同じ紺） */
+  --field: #EEEAE1;             /* 家紋の地：原本の生地にあたる明るい色 */
   --ease: cubic-bezier(.45, 0, .2, 1);
   --t: 1s;                      /* 2回目以降の短縮版では全体の時間を縮める */
   position: fixed; inset: 0; z-index: 200;
@@ -29,8 +30,10 @@
 
 .splash-stage { position: relative; display: flex; flex-direction: column; align-items: center; padding: 24px; text-align: center; }
 
-.splash .crest { width: min(34vmin, 210px); height: auto; overflow: visible; }
+.splash .crest { width: min(30vmin, 186px); height: auto; overflow: visible; margin: 12px; } /* 地の余白ぶん小さめに */
 .splash .c-art { fill: var(--crest); stroke: none; }
+/* STEP 1 背景と一緒に家紋の地がほのかに現れる */
+.splash .c-field { fill: var(--field); opacity: 0; animation: sp-fade calc(.4 * var(--t)) var(--ease) calc(.1 * var(--t)) forwards; }
 
 /* STEP 2 円環：時計回りに描画（開始と終了に緩急） */
 .splash .c-ring-draw { stroke-dashoffset: var(--len); animation: sp-draw calc(.6 * var(--t)) cubic-bezier(.65, 0, .35, 1) calc(.4 * var(--t)) forwards; }
@@ -111,10 +114,12 @@
 .splash.static::before, .splash.static .c-petal, .splash.static .c-sepal, .splash.static .c-core,
 .splash.static .splash-title, .splash.static .splash-en, .splash.static .splash-sub, .splash.static .splash-msg, .splash.static .splash-skip { opacity: 1; transform: none; }
 .splash.static .c-ring-draw { stroke-dashoffset: 0; }
+.splash.static .c-field { opacity: 1; }
 .splash.static .c-glow, .splash.static .c-sheen, .splash.static .c-rayfill { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .splash { transition-duration: .2s; } }
 
 /* サイドバーの小さな家紋 */
-.brand-crest { width: 32px; height: 32px; flex: none; filter: drop-shadow(0 0 10px rgba(212, 189, 140, .25)); }
-.brand-crest .c-art { fill: #EEEAE1; }
+.brand-crest { width: 30px; height: 30px; margin: 2px; flex: none; overflow: visible; filter: drop-shadow(0 0 10px rgba(212, 189, 140, .25)); }
+.brand-crest .c-field { fill: #EEEAE1; }
+.brand-crest .c-art { fill: #171B24; }
 .brand-crest .c-glow, .brand-crest .c-sheen, .brand-crest .c-rayfills { display: none; }
