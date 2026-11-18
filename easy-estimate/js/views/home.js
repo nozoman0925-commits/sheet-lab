@@ -35,6 +35,7 @@
         kpi(I.chart, '平均粗利率', Math.round(avgMargin * 10) / 10, 'pct', '今月分・税抜ベース', avgMargin / 50) +
         kpi(I.clock, '期限まで7日以内', expiring.length, 'int', '件　フォローの目安', expiring.length / 5) +
       '</div>' +
+      EE.views.folders.homeSection() +
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>かんたん見積もり作成</h2><span class="sub">手入力を減らす7つの入り口。どれから始めても同じ見積書になります</span></div>' +
         '<div class="panel-b"><div class="quick-row">' +
         [['text', '文章から'], ['voice', '音声から'], ['pdf', 'PDFから'], ['photo', '写真から'], ['past', '過去の見積から'], ['template', 'テンプレートから'], ['edit', '通常入力']].map(function (m) {

@@ -3,7 +3,7 @@
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var K = EE.engine.ITEM_KINDS, TC = EE.engine.TAX_CATEGORIES, CT = EE.engine.COST_TYPES;
-  var TABS = [['items', '工事項目・単価マスター'], ['packages', '工事テンプレート'], ['formulas', '計算式'], ['snippets', '定型文'], ['company', '自社情報'], ['rules', '計算ルール'], ['data', 'データ・拡張']];
+  var TABS = [['members', '担当者'], ['items', '工事項目・単価マスター'], ['packages', '工事テンプレート'], ['formulas', '計算式'], ['snippets', '定型文'], ['company', '自社情報'], ['rules', '計算ルール'], ['data', 'データ・拡張']];
   var mf = { kind: 'all', q: '', cat: '', showInactive: true };
 
   /* ---------- マスタ ---------- */
@@ -244,7 +244,7 @@
   function render(tab) {
     tab = tab || 'items';
     var X = EE.settingsExtra;
-    var body = { items: itemsTab, packages: X.templatesTab, formulas: X.formulasTab, snippets: X.snippetsTab, company: companyTab, rules: rulesTab, data: dataTab }[tab] || itemsTab;
+    var body = { members: EE.views.folders.membersTab, items: itemsTab, packages: X.templatesTab, formulas: X.formulasTab, snippets: X.snippetsTab, company: companyTab, rules: rulesTab, data: dataTab }[tab] || itemsTab;
     var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + TABS.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
@@ -268,6 +268,8 @@
         case 'new-item': itemForm(null); break;
         case 'edit-item': itemForm(U.findItem(a.dataset.id)); break;
         case 'csv-out': csvOut(); break;
+        case 'new-member': EE.views.folders.memberForm(null, function () { EE.app.rerender(); }); break;
+        case 'edit-member': EE.views.folders.memberForm(U.findMember(a.dataset.id), function () { EE.app.rerender(); }); break;
         case 'new-pkg': case 'edit-pkg': case 'cats': case 'new-f': case 'edit-f': case 'new-snip': case 'edit-snip':
           EE.settingsExtra.handle(a.dataset.act, a); break;
         case 'save-co':

@@ -110,7 +110,8 @@
             '<div class="field c6"><label class="req">宛先（顧客）</label><div style="display:flex;gap:8px"><select class="input" data-f="customerId"' + dis + '>' + custOpts + '</select>' +
               (lk ? '' : '<button class="btn icon" data-act="quick-customer" title="顧客を新規登録">' + I.plus + '</button>') + '</div></div>' +
             '<div class="field c6"><label>案件</label><select class="input" data-f="projectId"' + dis + '>' + projectOptions() + '</select></div>' +
-            '<div class="field c12"><label class="req">件名</label><input class="input" data-f="title" value="' + esc(d.title) + '" placeholder="例：〇〇様邸 浴室改修工事"' + dis + '></div>' +
+            '<div class="field c4"><label>担当者</label><select class="input" data-f="ownerId"' + dis + '>' + U.memberOptions(d.ownerId || '', '（未割り当て）') + '</select></div>' +
+            '<div class="field c8"><label class="req">件名</label><input class="input" data-f="title" value="' + esc(d.title) + '" placeholder="例：〇〇様邸 浴室改修工事"' + dis + '></div>' +
             '<div class="field c3"><label class="req">発行日</label><input class="input" type="date" data-f="issueDate" value="' + esc(d.issueDate) + '"' + dis + '></div>' +
             '<div class="field c3"><label class="req">有効期限</label><input class="input" type="date" data-f="validUntil" value="' + esc(d.validUntil) + '"' + dis + '></div>' +
             '<div class="field c6"><label>有効期限（発行日から）</label><div class="seg" id="valid-quick">' +

@@ -70,6 +70,8 @@
       projects: [],
       documents: [],
       seq: { estimate: {} },
+      members: [],
+      currentMemberId: '',
       categories: [],
       formulas: [],
       snippets: [],
@@ -121,9 +123,16 @@
       { id: 'cus_yamada', kind: 'person', name: '山田 太郎', honorific: '様', contact: '', zip: '181-0013', address: '東京都三鷹市下連雀6-7-8', tel: '090-0000-1111', email: '' },
       { id: 'cus_midori', kind: 'corp', name: '合同会社みどり建設', honorific: '御中', contact: '', zip: '', address: '', tel: '', email: '' }
     ];
+    s.members = [
+      { id: 'mem_aoki', name: '青木 誠', role: '管理者', hue: 217 },
+      { id: 'mem_sakurai', name: '桜井 美和', role: '営業', hue: 199 },
+      { id: 'mem_tanaka', name: '田中 健', role: '現場管理', hue: 232 }
+    ];
+    s.currentMemberId = 'mem_aoki';
     s.projects = [
-      { id: 'prj_haitsu', customerId: 'cus_sample', name: 'サンプルハイツ 203号室 原状回復', site: '東京都新宿区新宿3-10-1', note: '' },
-      { id: 'prj_yamada', customerId: 'cus_yamada', name: '山田様邸 1階トイレ改修', site: '東京都三鷹市下連雀6-7-8', note: '' }
+      { id: 'prj_haitsu', customerId: 'cus_sample', name: 'サンプルハイツ 203号室 原状回復', site: '東京都新宿区新宿3-10-1', note: '', ownerId: 'mem_sakurai' },
+      { id: 'prj_yamada', customerId: 'cus_yamada', name: '山田様邸 1階トイレ改修', site: '東京都三鷹市下連雀6-7-8', note: '', ownerId: 'mem_aoki' },
+      { id: 'prj_midori', customerId: 'cus_midori', name: 'みどり建設 事務所 照明LED化', site: '東京都杉並区高円寺南2-1-5', note: '', ownerId: 'mem_tanaka' }
     ];
 
     root.EE.catalog.mergeInto(s, t);
@@ -133,13 +142,13 @@
     function lines(arr) {
       return arr.map(function (x) { return lineFromItem(byId[x[0]], x[1]); });
     }
-    var e1 = newEstimate(s, { customerId: 'cus_sample', projectId: 'prj_haitsu', title: 'サンプルハイツ 203号室 原状回復工事',
+    var e1 = newEstimate(s, { customerId: 'cus_sample', projectId: 'prj_haitsu', ownerId: 'mem_sakurai', title: 'サンプルハイツ 203号室 原状回復工事',
       issueDate: addDays(t, -12), validUntil: addDays(t, 18) });
     e1.lines = lines([['itm_m001', 42], ['itm_k001', 42], ['itm_k002', 13], ['itm_m003', 13], ['itm_k003', 13], ['itm_l001', 1], ['itm_e001', 1], ['itm_e002', 1]]);
     var e2 = newEstimate(s, { customerId: 'cus_yamada', projectId: 'prj_yamada', title: '1階トイレ改修工事',
       issueDate: addDays(t, -3), validUntil: addDays(t, 4) });
     e2.lines = lines([['itm_p002', 1], ['itm_k004', 1], ['itm_m004', 2], ['itm_l003', 0.5], ['itm_e001', 1]]);
-    var e3 = newEstimate(s, { customerId: 'cus_midori', projectId: '', title: '事務所 照明LED化',
+    var e3 = newEstimate(s, { customerId: 'cus_midori', projectId: 'prj_midori', ownerId: 'mem_tanaka', title: '事務所 照明LED化',
       issueDate: addDays(t, -40), validUntil: addDays(t, -10) });
     e3.lines = lines([['itm_p001', 12], ['itm_k005', 12], ['itm_l002', 1]]);
     e3.lines[0].unitPrice = 4200; // マスタ改定前の単価のまま → 送信前チェックで指摘される例
@@ -221,6 +230,7 @@
       lines: [],
       adjustments: [],
       category: init.category || '',
+      ownerId: init.ownerId != null ? init.ownerId : (state.currentMemberId || ''),   // 担当者（作成者）
       totals: null,
       createdAt: now,
       updatedAt: now,
@@ -244,12 +254,33 @@
     var d = defaultState();
     Object.keys(d).forEach(function (k) { if (s[k] == null) s[k] = d[k]; });
     Object.keys(d.settings).forEach(function (k) { if (s.settings[k] == null) s.settings[k] = d.settings[k]; });
+    ensureMembers(s);
     if (s.schema === 1) {
       // v1 → v2：カテゴリー・同義語・テンプレート・計算式・定型文を追加（既存データは上書きしない）
       root.EE.catalog.mergeInto(s, today());
       s.documents.forEach(function (doc) { if (!doc.adjustments) doc.adjustments = []; });
       s.schema = 2;
     }
+    return s;
+  }
+
+  /**
+   * 担当者（作成者）の名簿。以前の版の「利用者1人」のデータは、その人を最初の担当者にして
+   * 担当者の無い書類・案件をその人に割り当てる（既存データは消さない）
+   */
+  function ensureMembers(s) {
+    if (Array.isArray(s.members) && s.members.length) {
+      if (!s.members.some(function (m) { return m.id === s.currentMemberId; })) s.currentMemberId = s.members[0].id;
+      return s;
+    }
+    var u = s.user || {};
+    var rep = String((s.company || {}).rep || '').replace(/^(代表取締役|取締役|代表|社長)\s*/, '').trim();
+    var m = { id: uid('mem'), name: u.name || rep || '利用者', role: u.role || '管理者', hue: u.hue || 217 };
+    s.members = [m];
+    s.currentMemberId = m.id;
+    (s.documents || []).forEach(function (d) { if (d.ownerId == null) d.ownerId = m.id; });
+    (s.projects || []).forEach(function (p) { if (p.ownerId == null) p.ownerId = m.id; });
+    delete s.user;
     return s;
   }
 
@@ -265,6 +296,6 @@
     KEY: KEY, uid: uid, ymd: ymd, addDays: addDays, today: today,
     defaultState: defaultState, sampleState: sampleState,
     lineFromItem: lineFromItem, nextNumber: nextNumber, peekNumber: peekNumber, newEstimate: newEstimate,
-    load: load, save: save, clear: clear, migrate: migrate
+    load: load, save: save, clear: clear, migrate: migrate, ensureMembers: ensureMembers
   };
 })(this);

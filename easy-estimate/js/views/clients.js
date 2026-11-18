@@ -40,12 +40,13 @@
 
   function projectForm(p, customerId, onSaved) {
     var isNew = !p;
-    p = p || { id: EE.data.uid('prj'), customerId: customerId || '', name: '', site: '', note: '' };
+    p = p || { id: EE.data.uid('prj'), customerId: customerId || '', name: '', site: '', note: '', ownerId: EE.S.currentMemberId || '' };
     U.modal({
       title: isNew ? '案件を登録' : '案件を編集',
       body: '<div class="form-grid">' +
         '<div class="field c12"><label class="req">顧客</label><select class="input" name="customerId">' + EE.S.customers.map(function (c) { return U.opt(c.id, c.name, p.customerId); }).join('') + '</select></div>' +
         '<div class="field c12"><label class="req">案件名</label><input class="input" name="name" value="' + esc(p.name) + '" autofocus></div>' +
+        '<div class="field c12"><label>担当者（この現場の担当）</label><select class="input" name="ownerId">' + U.memberOptions(p.ownerId || '', '（未割り当て）') + '</select></div>' +
         '<div class="field c12"><label>現場住所（工事場所）</label><input class="input" name="site" value="' + esc(p.site) + '"></div>' +
         '<div class="field c12"><label>メモ</label><textarea class="input" name="note">' + esc(p.note) + '</textarea></div></div>',
       foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
@@ -91,7 +92,8 @@
         }).join('') + '</div>' +
       '<div class="panel-h" style="padding:0 0 8px"><h3>案件</h3><div class="spacer"></div><button class="btn sm" data-act="new-p">' + I.plus + '案件を追加</button></div>' +
       (pjs.length ? '<table class="table" style="margin-bottom:18px"><tbody>' + pjs.map(function (p) {
-        return '<tr data-st><td>' + esc(p.name) + '<span class="cell-sub">' + esc(p.site || '') + '</span></td><td class="r"><div class="row-actions">' +
+        var pm = U.findMember(p.ownerId);
+        return '<tr data-st><td>' + esc(p.name) + '<span class="cell-sub">' + esc(p.site || '') + (pm ? '　担当：' + esc(pm.name) : '') + '</span></td><td class="r"><div class="row-actions">' +
           '<button class="btn ghost sm" data-act="p-doc" data-pid="' + p.id + '">' + I.plus + '見積</button>' +
           '<button class="btn ghost icon sm" data-act="edit-p" data-pid="' + p.id + '">' + I.edit + '</button></div></td></tr>';
       }).join('') + '</tbody></table>' : '<p class="hint" style="margin:0 0 18px">案件はまだありません</p>') +

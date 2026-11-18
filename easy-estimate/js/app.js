@@ -26,7 +26,7 @@
       ['#/new/photo', '写真から'], ['#/new/past', '過去の見積から'], ['#/new/template', 'テンプレートから'], ['#/new/edit', '通常入力']] },
     { key: 'clients', label: '顧客・案件', icon: I.users, href: '#/clients' },
     { key: 'settings', label: '設定・マスタ', icon: I.gear, href: '#/settings/items', children: [
-      ['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'],
+      ['#/settings/members', '担当者'], ['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'],
       ['#/settings/snippets', '定型文'], ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/settings/data', 'データ・拡張']] }
   ];
   var CHEV = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg>';
@@ -41,6 +41,7 @@
       case 'new': return { nav: 2, view: function () { return p[1] === 'edit' ? EE.views.editor.render(null) : EE.views.quick.render(p[1]); } };
       case 'edit': return { nav: 1, view: function () { return EE.views.editor.render(p[1]); } };
       case 'clients': return { nav: 3, view: function () { return EE.views.clients.render(); } };
+      case 'folder': return { nav: 0, view: function () { return EE.views.folders.render(p[1]); } };
       case 'settings': return { nav: 4, view: function () { return EE.views.settings.render(p[1]); } };
       default: return { nav: 0, view: function () { return EE.views.home.render(); } };
     }
@@ -96,25 +97,28 @@
     void best;
   }
 
-  /* サイドバー下部のユーザー表示 */
+  /* サイドバー下部のユーザー表示（いま使っている担当者） */
   function renderUser() {
-    var u = EE.S.user || {};
-    var name = u.name || '利用者';
+    var u = U.me();
     var el = document.getElementById('side-user');
-    el.innerHTML = '<button class="side-user-btn" type="button" id="user-btn" aria-haspopup="menu" title="' + U.esc(name) + '">' +
-        '<span class="avatar" style="--hue:' + (u.hue != null ? u.hue : 215) + '">' + U.esc(initial(name)) + '<i class="presence"></i></span>' +
-        '<span class="who"><b>' + U.esc(name) + '</b><small>' + U.esc(u.role || '管理者') + '</small></span>' +
+    var others = U.members().filter(function (m) { return m.id !== u.id; });
+    el.innerHTML = '<button class="side-user-btn" type="button" id="user-btn" aria-haspopup="menu" title="' + U.esc(u.name) + '">' +
+        U.avatar(u).replace('</span>', '<i class="presence"></i></span>') +
+        '<span class="who"><b>' + U.esc(u.name) + '</b><small>' + U.esc(u.role || '') + '</small></span>' +
         '<span class="more">' + CHEV + '</span></button>' +
       '<div class="user-pop" id="user-pop" hidden role="menu">' +
         '<div class="user-pop-h"><span class="dot"></span>このPCに保存中<br><span id="foot-count"></span></div>' +
+        '<a role="menuitem" href="#/folder/' + u.id + '">' + I.docs + '自分のファイル</a>' +
         '<button role="menuitem" data-u="profile">' + I.edit + 'プロフィールを編集</button>' +
-        '<a role="menuitem" href="#/settings/company">' + I.stamp + '自社情報</a>' +
+        (others.length ? '<div class="user-pop-label">担当者を切り替え</div>' + others.map(function (m) {
+          return '<button role="menuitem" data-u="switch" data-id="' + m.id + '">' + U.avatar(m, 20) + U.esc(m.name) + '<small>' + U.esc(m.role || '') + '</small></button>';
+        }).join('') : '') +
+        '<a role="menuitem" href="#/settings/members">' + I.users + '担当者を管理</a>' +
         '<a role="menuitem" href="#/settings/data">' + I.download + 'バックアップ</a>' +
         '<button role="menuitem" data-u="splash">' + I.spark + '起動アニメーションを見る</button>' +
       '</div>';
     updateCount();
   }
-  function initial(name) { var t = String(name).trim().replace(/\s+/g, ''); return t ? t[0] : '？'; }
   function updateCount() {
     var f = document.getElementById('foot-count');
     if (f) f.textContent = 'マスタ ' + EE.S.items.length + '・顧客 ' + EE.S.customers.length + '・書類 ' + EE.S.documents.length;
@@ -124,7 +128,14 @@
       var pop = document.getElementById('user-pop');
       if (e.target.closest('#user-btn')) { toggleUserPop(!pop.hidden ? false : true); return; }
       var b = e.target.closest('[data-u]');
-      if (b && b.dataset.u === 'profile') { toggleUserPop(false); editProfile(); }
+      if (b && b.dataset.u === 'profile') { toggleUserPop(false); EE.views.folders.memberForm(U.me(), function () { renderUser(); EE.fx.pop(document.querySelector('#side-user .avatar')); }); }
+      if (b && b.dataset.u === 'switch') {
+        toggleUserPop(false);
+        EE.S.currentMemberId = b.dataset.id; U.commit(); renderUser();
+        EE.fx.pop(document.querySelector('#side-user .avatar'));
+        EE.fx.toast(U.me().name + ' として使います（新しく作る見積の担当者になります）');
+        if (/^#\/(home)?$/.test(location.hash || '#/home')) show();
+      }
       if (b && b.dataset.u === 'splash') { toggleUserPop(false); EE.splash.play({ force: 'full' }); }
       if (e.target.closest('a[role=menuitem]')) toggleUserPop(false);
     });
@@ -136,30 +147,6 @@
     document.getElementById('side-user').classList.toggle('on', show);
     if (show) { pop.hidden = false; updateCount(); EE.fx.anim(pop, [{ opacity: 0, transform: 'translateY(6px) scale(.98)' }, { opacity: 1, transform: 'none' }], { duration: 200 }); }
     else pop.hidden = true;
-  }
-  function editProfile() {
-    var u = EE.S.user || {};
-    var HUES = [215, 195, 235, 175, 255];
-    U.modal({
-      title: 'プロフィール',
-      body: '<div class="form-grid"><div class="field c6"><label class="req">表示名</label><input class="input" name="name" value="' + U.esc(u.name || '') + '" autofocus></div>' +
-        '<div class="field c6"><label>役割</label><input class="input" name="role" value="' + U.esc(u.role || '管理者') + '" placeholder="例：営業、事務、現場管理"></div>' +
-        '<div class="field c12"><label>アイコンの色</label><div style="display:flex;gap:10px">' + HUES.map(function (h) {
-          return '<label class="hue-pick"><input type="radio" name="hue" value="' + h + '"' + ((u.hue || 215) === h ? ' checked' : '') + '><span class="avatar" style="--hue:' + h + '">' + U.esc(initial(u.name || '？')) + '</span></label>'; }).join('') + '</div></div></div>' +
-        '<p class="hint" style="margin-top:12px">この版はログインのない1台用です。表示名はこのPCの中だけで使います（複数人での利用・権限は設計書の範囲です）。</p>',
-      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
-      onMount: function (el, api) {
-        el.querySelector('[data-c]').onclick = function () { api.close(); };
-        el.querySelector('[data-s]').onclick = function () {
-          var name = el.querySelector('[name=name]').value.trim();
-          if (!name) { var f = el.querySelector('[name=name]'); f.classList.add('flag-err'); EE.fx.shake(f); return; }
-          var hue = el.querySelector('[name=hue]:checked');
-          EE.S.user = { name: name, role: el.querySelector('[name=role]').value.trim() || '管理者', hue: hue ? Number(hue.value) : 215 };
-          U.commit(); renderUser(); api.close(); EE.fx.toast('プロフィールを保存しました');
-          EE.fx.pop(document.querySelector('#side-user .avatar'));
-        };
-      }
-    });
   }
 
   function show(animate) {
@@ -239,7 +226,7 @@
   /** 複製：新しい番号・今日の日付で、単価は最新のマスタに合わせた下書きにする */
   function duplicate(id) {
     var src = U.findDoc(id);
-    var d = EE.data.newEstimate(EE.S, { noNumber: true, customerId: src.customerId, projectId: src.projectId, title: src.title });
+    var d = EE.data.newEstimate(EE.S, { noNumber: true, customerId: src.customerId, projectId: src.projectId, title: src.title, ownerId: src.ownerId });
     ['deliveryPlace', 'deliveryTerm', 'paymentTerms', 'notes'].forEach(function (k) { d[k] = src[k]; });
     var changed = 0;
     d.lines = src.lines.map(function (l) {
@@ -293,14 +280,11 @@
     root.addEventListener('beforeunload', function (e) {
       if (EE.views.editor.isDirty()) { e.preventDefault(); e.returnValue = ''; }
     });
-    if (!EE.S.user) {
-      var rep = String((EE.S.company || {}).rep || '').replace(/^(代表取締役|取締役|代表|社長)\s*/, '').trim();
-      EE.S.user = { name: rep || '利用者', role: '管理者', hue: 215 };
-    }
+    U.members();
     renderUser(); bindUser();
     U.onCommit(updateCount);
   }
 
-  EE.app = { boot: boot, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
+  EE.app = { renderUser: function () { renderUser(); }, boot: boot, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
     duplicate: duplicate, newWith: newWith, takePrefill: takePrefill };
 })(this);

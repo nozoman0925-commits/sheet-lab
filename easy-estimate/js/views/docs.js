@@ -7,6 +7,7 @@
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var F = { q: '', status: 'all', from: '', to: '', min: '', max: '', sort: 'issue-desc' };
   var SEL = {};
+  var OWNER = '';   // 担当者で絞り込み（'' = すべて, 'none' = 未割り当て）
 
   function rows() {
     var q = U.norm(F.q).trim();
@@ -17,6 +18,7 @@
     }).filter(function (x) {
       var d = x.d;
       if (F.status !== 'all' && d.status !== F.status) return false;
+      if (OWNER) { var oid = d.ownerId && U.findMember(d.ownerId) ? d.ownerId : 'none'; if (oid !== OWNER) return false; }
       if (F.from && d.issueDate < F.from) return false;
       if (F.to && d.issueDate > F.to) return false;
       if (F.min !== '' && x.r.total < Number(F.min)) return false;
@@ -37,7 +39,7 @@
     var list = rows();
     if (!list.length) return '<div class="empty">' + I.search + '条件に合う書類がありません</div>';
     var total = list.reduce(function (s, x) { return s + x.r.total; }, 0);
-    return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
+    return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>担当</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {
         var d = x.d;
         var low = x.r.marginRate != null && x.r.marginRate < EE.S.settings.minMargin;
@@ -45,6 +47,7 @@
           '<td><input type="checkbox" class="d-sel" data-id="' + d.id + '"' + (SEL[d.id] ? ' checked' : '') + '></td>' +
           '<td class="num">' + esc(d.no) + (d.rev ? ' <span class="badge">第' + d.rev + '版</span>' : '') + '</td>' +
           '<td>' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(x.c.name || '宛先未設定') + '</span></td>' +
+          '<td>' + (function () { var m = U.findMember(d.ownerId); return m ? '<span class="owner-chip">' + U.avatar(m, 22) + esc(m.name.split(/\s+/)[0]) + '</span>' : '<span class="hint">未割り当て</span>'; })() + '</td>' +
           '<td class="num">' + U.jdate(d.issueDate) + '</td>' +
           '<td class="num">' + (d.status === 'issued' ? '<span class="muted">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</td>' +
           '<td class="r num">' + U.yen(x.r.total) + '</td>' +
@@ -56,7 +59,7 @@
               : '<button class="btn ghost icon sm danger" data-act="del" data-id="' + d.id + '" title="削除（下書きのみ）">' + I.trash + '</button>') +
           '</div></td></tr>';
       }).join('') +
-      '</tbody><tfoot><tr><td colspan="5" class="muted" style="padding:12px">' + list.length + ' 件</td><td class="r num" style="padding:12px">' + U.yen(total) + '</td><td colspan="3"></td></tr></tfoot></table></div>';
+      '</tbody><tfoot><tr><td colspan="6" class="muted" style="padding:12px">' + list.length + ' 件</td><td class="r num" style="padding:12px">' + U.yen(total) + '</td><td colspan="3"></td></tr></tfoot></table></div>';
   }
 
   function render(status) {
@@ -68,6 +71,7 @@
           '<div class="seg" id="f-status">' + [['all', 'すべて'], ['draft', '下書き'], ['issued', '発行済み']].map(function (s) {
             return '<button data-s="' + s[0] + '" class="' + (F.status === s[0] ? 'on' : '') + '">' + s[1] + '</button>';
           }).join('') + '</div>' +
+          '<select class="input" id="f-owner" style="width:auto">' + U.opt('', '担当：すべて', OWNER) + U.members().map(function (m) { return U.opt(m.id, '担当：' + m.name, OWNER); }).join('') + U.opt('none', '担当：未割り当て', OWNER) + '</select>' +
           '<select class="input" id="f-sort" style="width:auto">' +
             U.opt('issue-desc', '発行日が新しい順', F.sort) + U.opt('issue-asc', '発行日が古い順', F.sort) + U.opt('amount-desc', '金額が大きい順', F.sort) + U.opt('valid-asc', '有効期限が近い順', F.sort) +
           '</select>' +
@@ -105,6 +109,7 @@
     selCount();
     view.addEventListener('change', function (e) {
       if (e.target.id === 'f-sort') { F.sort = e.target.value; refresh(); }
+      if (e.target.id === 'f-owner') { OWNER = e.target.value; refresh(); }
       if (e.target.classList.contains('d-sel')) { SEL[e.target.dataset.id] = e.target.checked; selCount(); }
       if (e.target.id === 'd-all') { view.querySelectorAll('.d-sel').forEach(function (c) { c.checked = e.target.checked; SEL[c.dataset.id] = e.target.checked; }); selCount(); }
     });
@@ -120,7 +125,7 @@
       var s = e.target.closest('#f-status [data-s]');
       if (s) { location.hash = s.dataset.s === 'all' ? '#/docs' : '#/docs/' + s.dataset.s; return; }
       if (e.target.closest('#f-clear')) {
-        F = { q: '', status: 'all', from: '', to: '', min: '', max: '', sort: F.sort };
+        F = { q: '', status: 'all', from: '', to: '', min: '', max: '', sort: F.sort }; OWNER = '';
         EE.app.rerender(); return;
       }
       var a = e.target.closest('[data-act]');
@@ -147,5 +152,5 @@
   }
 
   EE.views = EE.views || {};
-  EE.views.docs = { render: render };
+  EE.views.docs = { render: render, setOwner: function (id) { OWNER = id || ''; } };
 })(this);

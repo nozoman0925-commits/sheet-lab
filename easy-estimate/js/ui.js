@@ -63,6 +63,19 @@
   function findItem(id) { return EE.S.items.filter(function (x) { return x.id === id; })[0]; }
   function findCustomer(id) { return EE.S.customers.filter(function (x) { return x.id === id; })[0]; }
   function findProject(id) { return EE.S.projects.filter(function (x) { return x.id === id; })[0]; }
+  /* 担当者 */
+  function members() { if (!EE.S.members || !EE.S.members.length) EE.data.ensureMembers(EE.S); return EE.S.members; }
+  function me() { var ms = members(); return ms.filter(function (m) { return m.id === EE.S.currentMemberId; })[0] || ms[0]; }
+  function findMember(id) { return members().filter(function (m) { return m.id === id; })[0]; }
+  function initial(name) { var t = String(name || '').trim().replace(/\s+/g, ''); return t ? t[0] : '？'; }
+  function avatar(m, size) {
+    m = m || { name: '？', hue: 220 };
+    return '<span class="avatar" style="--hue:' + (m.hue != null ? m.hue : 217) + (size ? ';width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * 0.42) + 'px' : '') + '">' + esc(initial(m.name)) + '</span>';
+  }
+  function memberOptions(sel, emptyLabel) {
+    return (emptyLabel != null ? opt('', emptyLabel, sel) : '') + members().map(function (m) { return opt(m.id, m.name + '（' + (m.role || '') + '）', sel); }).join('');
+  }
+
   function findDoc(id) { return EE.S.documents.filter(function (x) { return x.id === id; })[0]; }
 
   /** 計算ルール：発行済みは発行時のルールで固定、下書きは現在の設定 */
@@ -162,7 +175,7 @@
   }
 
   EE.ui = { esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
-    commit: commit, onCommit: onCommit, findItem: findItem, findCustomer: findCustomer, findProject: findProject, findDoc: findDoc,
+    commit: commit, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, findProject: findProject, findDoc: findDoc,
     rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
     readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge };
 })(this);
