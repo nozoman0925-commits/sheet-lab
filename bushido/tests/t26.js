@@ -14,7 +14,7 @@ await p.evaluate(()=>{const T=__T;const M=T.S.main;M.demo=false;M.master={motive
   M.obAns={b1:"1",b4:"1",b5:"1",b9:["4"],b10:"1",wake:"07:00",sleep:"23:30",m1:"0",m2:"0",m6:"2",g1:["0"],g2:"1",g3:"1",tone:"gen"};T.day(T.todayKey()).mission=null;T.render()});
 // 道場の並び（一太刀が主役、次に三層の稽古）
 const ord=await p.evaluate(()=>[...document.querySelectorAll('#app>.stack>section')].map(e=>e.id).filter(Boolean));
-ok("道場：一太刀が「今日の稽古」より上にある",ord.indexOf("sec-mission")>=0&&ord.indexOf("sec-mission")<ord.indexOf("sec-todo"),ord.join(" > "));
+{const o2=ord.filter(x=>x!=="sec-week1");ok("道場：今日の帯が一番上（入門の七日の案内を除く）、すぐ下に一太刀、次に毎日の修行",o2[0]==="sec-todo"&&o2[1]==="sec-mission"&&o2[2]==="sec-quest",ord.join(" > "))}
 const tiers=await p.evaluate(()=>[...document.querySelectorAll('#sec-todo .tier .tl')].map(e=>e.textContent).join(","));ok("今日の稽古は必須・推奨・任意の三層",tiers.startsWith("必須")&&tiers.includes("推奨")&&tiers.includes("任意"),tiers);
 ok("必須は一太刀だけ",(await p.$$('#sec-todo .tier.t1')).length===1&&(await p.textContent('#sec-todo .tier.t1')).includes("一太刀"));
 await (await p.$('#sec-mission')).scrollIntoViewIfNeeded();await p.screenshot({path:B+'/W1.png'});
