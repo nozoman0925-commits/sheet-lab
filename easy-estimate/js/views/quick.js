@@ -382,5 +382,5 @@
   }
 
   EE.views = EE.views || {};
-  EE.views.quick = { render: render, openDraft: openDraft };
+  EE.views.quick = { render: render, openDraft: openDraft, setText: function (t) { lastText = t; R = null; } };
 })(this);

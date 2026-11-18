@@ -187,7 +187,7 @@
     function rowFor(itemId) { return rows.filter(function (r) { return r.itemId === itemId; })[0]; }
     found.forEach(function (f) {
       var it = f.item;
-      var r = { itemId: it.id, qty: null, source: 'text', include: true, phrase: f.phrase, notes: [],
+      var r = { itemId: it.id, qty: null, source: 'text', include: true, phrase: f.phrase, notes: [], termLen: f.term,
         alternatives: f.ambiguous ? f.candidates.map(function (c) { return c.id; }) : [] };
       if (f.qty != null) {
         var q = convert(f.qty, f.unit || it.unit, it.unit);

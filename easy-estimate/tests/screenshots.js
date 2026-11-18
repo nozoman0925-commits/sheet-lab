@@ -16,6 +16,12 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   await p.screenshot({ path: OUT + '2-docs.png' });
   // new estimate
   await p.click('a[href="#/new"].nav-item'); await p.waitForTimeout(600);
+  await p.screenshot({ path: OUT + '3a-quick-hub.png' });
+  await p.goto(url + '?splash=off#/new/text'); await p.waitForTimeout(500);
+  await p.click('[data-ex="0"]'); await p.waitForTimeout(600);
+  await p.screenshot({ path: OUT + '3b-quick-text.png' });
+  await p.goto(url + '?splash=off#/new/edit'); await p.waitForTimeout(600);
+  if (await p.$('.overlay [data-ok]')) { await p.click('.overlay [data-ok]'); await p.waitForTimeout(500); }
   await p.selectOption('[data-f="customerId"]', 'cus_yamada');
   await p.selectOption('[data-f="projectId"]', 'prj_yamada');
   await p.fill('#pick', 'クロス'); await p.waitForTimeout(200);
@@ -23,7 +29,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   await p.keyboard.press('Enter');
   await p.keyboard.type('25'); await p.keyboard.press('Enter');
   await p.fill('#pick', 'k-001'); await p.keyboard.press('Enter'); await p.keyboard.type('25');
-  await p.click('[data-pkg="pkg_toilet"]'); await p.waitForTimeout(700);
+  await p.selectOption('#tpl-add', 'pkg_toilet'); await p.waitForTimeout(700);
   await p.screenshot({ path: OUT + '4-editor.png', fullPage: false });
   await p.keyboard.press('Control+s'); await p.waitForTimeout(400);
   console.log('hash after save', await p.evaluate(() => location.hash));
@@ -53,7 +59,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   await p.screenshot({ path: OUT + '9-stale.png' });
   await p.goto(url + '?splash=off#/clients'); await p.waitForTimeout(600);
   await p.screenshot({ path: OUT + '10-clients.png' });
-  for (const t of ['items', 'packages', 'company', 'rules', 'data']) {
+  for (const t of ['items', 'packages', 'formulas', 'snippets', 'company', 'rules', 'data']) {
     await p.goto(url + '?splash=off#/settings/' + t); await p.waitForTimeout(600);
     await p.screenshot({ path: OUT + '11-settings-' + t + '.png' });
   }
@@ -61,7 +67,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   await p.screenshot({ path: OUT + '12-midanim.png' });
   // mobile
   await p.setViewportSize({ width: 390, height: 844 });
-  await p.goto(url + '?splash=off#/new'); await p.waitForTimeout(700);
+  await p.goto(url + '?splash=off#/new/edit'); await p.waitForTimeout(700);
   await p.screenshot({ path: OUT + '13-mobile.png' });
   console.log('ERRORS:', errs.length ? errs.join('\n') : 'none');
   await b.close();

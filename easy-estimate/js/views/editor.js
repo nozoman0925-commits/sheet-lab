@@ -104,6 +104,7 @@
       '<div class="grid" style="gap:18px">' +
         /* 基本情報 */
         '<section class="panel" data-st id="sec-header"><div class="panel-h"><h2>基本情報</h2><span class="sub">宛先・日付・条件</span><div class="spacer"></div>' +
+          (d.importInfo && d.importInfo.importId ? '<a href="#" class="badge blue" data-act="open-original" title="取り込み元の原本を開く">' + I.file + esc(d.importInfo.fileName || '原本') + '</a>' : '') +
           '<span class="badge num">' + esc(d.no || EE.data.peekNumber(S, d.issueDate) + '（保存時に採番）') + '</span></div>' +
           '<div class="panel-b"><div class="form-grid">' +
             '<div class="field c6"><label class="req">宛先（顧客）</label><div style="display:flex;gap:8px"><select class="input" data-f="customerId"' + dis + '>' + custOpts + '</select>' +
@@ -496,6 +497,11 @@
     var wasNew = ED.isNew;
     ED.isNew = false;
     if (wasNew) clearRecovery();
+    if (d.importInfo && d.importInfo.importId && !d.importInfo.linked && EE.filestore) {
+      d.importInfo.linked = true;
+      var saved = EE.S.documents.filter(function (x) { return x.id === d.id; })[0]; if (saved) saved.importInfo.linked = true;
+      EE.filestore.linkDoc(d.importInfo.importId, d.id).catch(function () {});
+    }
     var s = document.getElementById('save-state');
     if (opts.silent) { if (s) s.innerHTML = '<span class="saved-mark">自動保存 ' + hhmm() + '</span>'; }
     else {
@@ -786,6 +792,7 @@
         }
         return;
       }
+      if (act === 'open-original') { e.preventDefault(); EE.filestore.openOriginal(ED.doc.importInfo.importId).catch(function (err) { EE.fx.toast(err.message, { warn: true }); }); return; }
       if (act === 'add-adj') { addAdj(a.dataset.type); return; }
       if (act === 'del-adj') {
         var aid = a.closest('[data-adj]').dataset.adj;
