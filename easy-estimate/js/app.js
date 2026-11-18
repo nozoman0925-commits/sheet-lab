@@ -137,7 +137,7 @@
         EE.fx.toast(U.me().name + ' として使います（新しく作る見積の担当者になります）');
         if (/^#\/(home)?$/.test(location.hash || '#/home')) show();
       }
-      if (b && b.dataset.u === 'splash') { toggleUserPop(false); EE.splash.play({ force: 'full' }); }
+      if (b && b.dataset.u === 'splash') { toggleUserPop(false); EE.splash.play({ replay: true, onReveal: intro }); }
       if (e.target.closest('a[role=menuitem]')) toggleUserPop(false);
     });
     document.addEventListener('mousedown', function (e) { if (!e.target.closest('#side-user')) toggleUserPop(false); });
@@ -252,7 +252,9 @@
   function takePrefill() { var p = prefill; prefill = null; return p; }
 
   /** 画面の展開（時間差で順番に出す・数字のカウントアップ） */
+  var booted = false, introWaiting = false;
   function intro() {
+    if (!booted) { introWaiting = true; return; }   // まだ読み込み中：終わったらすぐ展開する（それまではスケルトン）
     var v = document.getElementById('view');
     EE.fx.pageIn(v.firstChild, 1);
     EE.fx.stagger(v);
@@ -265,10 +267,12 @@
     opts = opts || {};
     EE.S = EE.data.load();
     renderNav();
-    document.getElementById('brand-crest').innerHTML = EE.crest.svg({ id: 'brand', className: 'brand-crest', fieldR: 106 });
+    var slot = document.getElementById('brand-crest');
+    if (!slot.firstChild) slot.innerHTML = EE.crest.svg({ id: 'brand', className: 'brand-crest', fieldR: 106 });
     if (!location.hash) replaceRoute('#/home');
     show(false);
-    if (!opts.deferIntro) intro();
+    booted = true;
+    if (!opts.deferIntro || introWaiting) { introWaiting = false; intro(); }
 
     root.addEventListener('hashchange', onHash);
     document.addEventListener('pointerdown', EE.fx.ripple);

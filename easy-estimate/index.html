@@ -18,7 +18,7 @@
   <aside class="sidebar">
     <div class="brand">
       <span id="brand-crest"></span>
-      <div><div class="brand-name">桜ミツ</div><div class="brand-sub">OUMITSU</div></div>
+      <div class="brand-text"><div class="brand-name">桜ミツ</div><div class="brand-sub">OUMITSU</div></div>
     </div>
     <nav class="nav" id="nav" aria-label="メインメニュー"></nav>
     <div class="side-user" id="side-user"></div>
@@ -70,9 +70,14 @@
 <script src="js/views/settings.js"></script>
 <script src="js/app.js"></script>
 <script>
-  // 起動アニメーションの裏でアプリを起動し、終わったらホームの展開アニメーションを始める
-  EE.app.boot({ deferIntro: true });
-  EE.splash.play({ onDone: function () { EE.app.intro(); } });
+  // 起動シーケンスを先に走らせ、アプリの起動（データの読み込み・描画）はその裏で行う。
+  // ロゴが定位置へ動き始めたら、メイン画面の展開（メニュー・カードの時間差表示）を始める
+  // 起動処理は「一拍置く」静止中（0.6秒〜）に行い、動いている間に重い処理が重ならないようにする。
+  // スキップされたらその場で起動する。
+  var started = false;
+  function bootNow() { if (started) return; started = true; EE.app.boot({ deferIntro: true }); }
+  EE.splash.play({ onReveal: function () { bootNow(); EE.app.intro(); } });
+  setTimeout(bootNow, 600);
 </script>
 </body>
 </html>

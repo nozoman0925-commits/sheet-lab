@@ -234,7 +234,7 @@
         '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="sample">' + I.refresh + 'サンプルに戻す</button><button class="btn danger" data-act="wipe">' + I.trash + 'すべて削除</button></div></div></section>' +
       '<section class="panel" data-st><div class="panel-h"><h2>起動アニメーション</h2></div><div class="panel-b">' +
         '<p class="hint" style="margin-top:0">初回はフル演出、2回目以降は短縮版で表示します。どこかをクリックするか、キーを押すと飛ばせます。</p>' +
-        '<button class="btn" data-act="replay-splash">' + I.spark + 'フル演出をもう一度見る</button></div></section>' +
+        '<button class="btn" data-act="replay-splash">' + I.spark + '起動アニメーションをもう一度見る</button></div></section>' +
       '<section class="panel" data-st><div class="panel-h"><span class="kpi-icon">' + I.spark + '</span><h2>入力補助オプション</h2><div class="spacer"></div><span class="badge">未導入</span></div><div class="panel-b">' +
         '<p class="hint" style="margin-top:0">音声入力・写真読取などは後から追加できる有料オプションの枠です。導入しても、AIが出すのは「どのマスタを何個使うか」の候補だけで、<b style="color:var(--text-2)">金額は必ずマスタと計算エンジンが決めます</b>。</p>' +
         '<div class="hint">登録済みの拡張：' + (EE.plugins.inputAssist.length ? EE.plugins.inputAssist.map(function (p) { return esc(p.name); }).join('、') : 'なし') + '</div></div></section>' +
@@ -285,7 +285,7 @@
           Object.assign(S.settings, { lineRounding: on('lineRounding'), taxRounding: on('taxRounding'), overheadRounding: on('overheadRounding'), discountRounding: on('discountRounding'), minMargin: m / 100, validDays: Math.round(d),
             numberPrefix: document.getElementById('r-prefix').value.trim() || 'EST' });
           U.commit(); EE.fx.success(a); break;
-        case 'replay-splash': EE.splash.play({ force: 'full' }); break;
+        case 'replay-splash': EE.splash.play({ replay: true, onReveal: EE.app.intro }); break;
         case 'export':
           U.download('easy-estimate_backup_' + EE.data.today() + '.json', JSON.stringify(S, null, 2));
           EE.fx.success(a, '書き出しました'); break;

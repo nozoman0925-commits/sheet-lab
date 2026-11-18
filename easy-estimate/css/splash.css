@@ -1,125 +1,19 @@
 /*
- * 起動アニメーション（家紋は js/crest.js：原本からトレース）「静かに目覚める家紋」
- * 0.0–0.4 背景 / 0.4–1.0 円環を時計回りに描く / 1.0–1.8 花びら5枚 / 1.8–2.1 中央・放射線・光
- * 2.1–2.4 光の反射 / 2.3–2.7 桜ミツ / 2.6–3.0 OUMITSU・サブタイトル / → クロスフェードでホーム
- * 動かすのは opacity / transform / stroke-dashoffset だけ（GPU負荷を抑える）
+ * 起動シーケンス（js/splash.js）
+ * 背景はアプリのダーク基調の一色。ロゴ（家紋＋桜ミツ）は「サイドバーの定位置に置いた複製」を
+ * transform で中央に見せ、変形を外してサイドバーへ着地させる。動かすのは transform と opacity だけ。
  */
-.splash {
-  --navy: #171B24;
-  --gold: #D4BD8C;
-  --ink: #FFFFFF;
-  --sub: #A8ADB5;
-  --crest: #171B24;             /* 家紋の色：原本の黒にあたる（背景と同じ紺） */
-  --field: #EEEAE1;             /* 家紋の地：原本の生地にあたる明るい色 */
-  --ease: cubic-bezier(.45, 0, .2, 1);
-  --t: 1s;                      /* 2回目以降の短縮版では全体の時間を縮める */
-  position: fixed; inset: 0; z-index: 200;
-  display: grid; place-items: center;
-  background: var(--navy);
-  color: var(--ink);
-  overflow: hidden;
-  transition: opacity .38s ease;
-  cursor: default;
-}
-.splash::before { /* 中央にわずかな明るさ */
-  content: ""; position: absolute; inset: 0; pointer-events: none;
-  background: radial-gradient(ellipse 55% 45% at 50% 44%, rgba(120, 140, 175, .16), transparent 70%);
-  opacity: 0; animation: sp-fade calc(.4 * var(--t)) var(--ease) forwards;
-}
-.splash.out { opacity: 0; pointer-events: none; }
+.boot { position: fixed; inset: 0; z-index: 200; cursor: default; }
+.boot.passive { pointer-events: none; }                 /* 移動が始まったら下の画面を操作できる */
+.boot-bg { position: absolute; inset: 0; background: var(--bg, #06080e); }
+.boot-fly { position: fixed; margin: 0 !important; transform-origin: 50% 50%; opacity: 0; will-change: transform, opacity; pointer-events: none; }
+.boot .brand-text { white-space: nowrap; }
+.brand.boot-hide #brand-crest, .brand.boot-hide .brand-text { visibility: hidden; }   /* 着地するまで本物は隠す */
 
-.splash-stage { position: relative; display: flex; flex-direction: column; align-items: center; padding: 24px; text-align: center; }
-
-.splash .crest { width: min(30vmin, 186px); height: auto; overflow: visible; margin: 12px; } /* 地の余白ぶん小さめに */
-.splash .c-art { fill: var(--crest); stroke: none; }
-/* STEP 1 背景と一緒に家紋の地がほのかに現れる */
-.splash .c-field { fill: var(--field); opacity: 0; animation: sp-fade calc(.4 * var(--t)) var(--ease) calc(.1 * var(--t)) forwards; }
-
-/* STEP 2 円環：時計回りに描画（開始と終了に緩急） */
-.splash .c-ring-draw { stroke-dashoffset: var(--len); animation: sp-draw calc(.6 * var(--t)) cubic-bezier(.65, 0, .35, 1) calc(.4 * var(--t)) forwards; }
-
-/* STEP 3 花びら：中心側からわずかに外へ、0→100%、わずかな拡大率の変化、本来の位置で静止（萼は直前の花びらと一緒に） */
-.splash .c-petal, .splash .c-sepal, .splash .c-rayfill {
-  opacity: 0;
-  transform-box: view-box; transform-origin: 0 0;
-  transform: translate(calc(var(--tx) * 1px), calc(var(--ty) * 1px)) scale(.94);
-  animation: sp-petal calc(.42 * var(--t)) var(--ease) calc((1.0 + var(--i) * .095) * var(--t)) forwards;
-}
-.splash .c-sepal { animation-delay: calc((1.05 + var(--i) * .095) * var(--t)); }
-.splash .c-rayfills { fill: var(--crest); }
-
-/* STEP 4 中央の円が現れ、花びらの切り込み（放射状の線）が浮かび上がる。控えめな光を一度だけ */
-.splash .c-core { opacity: 0; animation: sp-fade calc(.3 * var(--t)) var(--ease) calc(1.8 * var(--t)) forwards; }
-.splash .c-rayfill { animation: sp-petal calc(.42 * var(--t)) var(--ease) calc((1.0 + var(--i) * .095) * var(--t)) forwards,
-  sp-out calc(.26 * var(--t)) var(--ease) calc(1.84 * var(--t)) forwards; }
-.splash .c-glow { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(.5);
-  animation: sp-glow calc(.6 * var(--t)) ease-out calc(1.85 * var(--t)) forwards; }
-
-/* STEP 5 光の反射：細く柔らかく一度だけ横切る */
-.splash .c-sheen { opacity: 0; animation: sp-sheen calc(.32 * var(--t)) ease-in-out calc(2.1 * var(--t)) forwards; }
-
-/* STEP 6–7 ブランド名 */
-.splash-title {
-  margin-top: clamp(18px, 4.2vmin, 34px);
-  font-family: "Hiragino Mincho ProN", "Yu Mincho", "YuMincho", "Noto Serif JP", "BIZ UDPMincho", serif;
-  font-weight: 500; font-size: clamp(30px, 7.4vmin, 50px); letter-spacing: .22em; line-height: 1.2;
-  padding-left: .22em; /* letter-spacing の右余白を打ち消して中央に */
-}
-.splash-en {
-  margin-top: clamp(8px, 1.6vmin, 12px);
-  font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-weight: 500;
-  font-size: clamp(12px, 2.3vmin, 15px); letter-spacing: .52em; padding-left: .52em; color: var(--gold);
-}
-.splash-sub {
-  margin-top: clamp(14px, 2.6vmin, 20px);
-  font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-size: clamp(9.5px, 1.55vmin, 11px);
-  letter-spacing: .32em; padding-left: .32em; color: var(--sub); white-space: nowrap;
-}
-.splash-msg {
-  margin-top: 6px;
-  font-family: "Inter", "Helvetica Neue", Arial, sans-serif; font-size: clamp(9px, 1.4vmin, 10px);
-  letter-spacing: .3em; padding-left: .3em; color: rgba(168, 173, 181, .62); white-space: nowrap;
-}
-.splash-title, .splash-en, .splash-sub, .splash-msg { opacity: 0; transform: translateY(6px); }
-.splash-title { animation: sp-rise calc(.45 * var(--t)) var(--ease) calc(2.3 * var(--t)) forwards; }
-.splash-en    { animation: sp-rise calc(.4 * var(--t)) var(--ease) calc(2.58 * var(--t)) forwards; }
-.splash-sub   { animation: sp-rise calc(.4 * var(--t)) var(--ease) calc(2.72 * var(--t)) forwards; }
-.splash-msg   { animation: sp-rise calc(.4 * var(--t)) var(--ease) calc(2.84 * var(--t)) forwards; }
-
-.splash-skip {
-  position: absolute; right: clamp(14px, 3vw, 28px); bottom: clamp(14px, 3vw, 26px);
-  font: 500 11px/1 "Inter", system-ui, sans-serif; letter-spacing: .18em; color: rgba(168, 173, 181, .7);
-  background: none; border: 1px solid rgba(168, 173, 181, .22); border-radius: 999px; padding: 8px 14px; cursor: pointer;
-  opacity: 0; animation: sp-fade .3s ease .5s forwards; transition: color .2s, border-color .2s;
-}
-.splash-skip:hover { color: var(--ink); border-color: rgba(212, 189, 140, .55); }
-.splash-skip:focus-visible { outline: 1px solid var(--gold); outline-offset: 3px; }
-
-.splash-badge { /* 仮の家紋であることの表示（原本差し替え後は出ない） */
-  position: absolute; left: 50%; top: clamp(14px, 3vw, 24px); transform: translateX(-50%);
-  font: 500 10.5px/1.4 system-ui, sans-serif; letter-spacing: .08em; color: rgba(212, 189, 140, .7);
-  border: 1px dashed rgba(212, 189, 140, .35); border-radius: 6px; padding: 4px 10px; white-space: nowrap;
-}
-
-@keyframes sp-fade { to { opacity: 1; } }
-@keyframes sp-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: none; } }
-@keyframes sp-draw { to { stroke-dashoffset: 0; } }
-@keyframes sp-petal { to { opacity: 1; transform: none; } }
-@keyframes sp-glow { 0% { opacity: 0; transform: scale(.5); } 35% { opacity: .9; } 100% { opacity: 0; transform: scale(1.35); } }
-@keyframes sp-sheen { 0% { opacity: 0; transform: skewX(-18deg) translateX(0); } 20% { opacity: 1; } 80% { opacity: 1; } 100% { opacity: 0; transform: skewX(-18deg) translateX(250px); } }
-@keyframes sp-rise { to { opacity: 1; transform: none; } }
-
-/* 動きを止める設定・静止表示：完成したロゴとブランド名をそのまま表示 */
-.splash.static *, .splash.static::before { animation: none !important; }
-.splash.static::before, .splash.static .c-petal, .splash.static .c-sepal, .splash.static .c-core,
-.splash.static .splash-title, .splash.static .splash-en, .splash.static .splash-sub, .splash.static .splash-msg, .splash.static .splash-skip { opacity: 1; transform: none; }
-.splash.static .c-ring-draw { stroke-dashoffset: 0; }
-.splash.static .c-field { opacity: 1; }
-.splash.static .c-glow, .splash.static .c-sheen, .splash.static .c-rayfill { opacity: 0; }
-@media (prefers-reduced-motion: reduce) { .splash { transition-duration: .2s; } }
-
-/* サイドバーの小さな家紋 */
-.brand-crest { width: 30px; height: 30px; margin: 2px; flex: none; overflow: visible; filter: drop-shadow(0 0 10px rgba(212, 189, 140, .25)); }
+/* サイドバーの家紋（着地点）：アイコン 34px、左 22px・上 20px */
+.brand-crest { width: 34px; height: 34px; margin: 0; flex: none; display: block; overflow: visible; filter: drop-shadow(0 0 10px rgba(212, 189, 140, .25)); }
 .brand-crest .c-field { fill: #EEEAE1; }
 .brand-crest .c-art { fill: #171B24; }
 .brand-crest .c-glow, .brand-crest .c-sheen, .brand-crest .c-rayfills { display: none; }
+#brand-crest { display: block; flex: none; line-height: 0; }
+.brand { margin-top: -2px; }
