@@ -70,133 +70,144 @@ a { color: inherit; text-decoration: none; }
 .app { position: relative; z-index: 1; display: grid; grid-template-columns: var(--sidebar) 1fr; height: 100vh; }
 
 /* ===== サイドバー：ガラス質感・メインエリア側を大きく丸めたカーブの帯 ===== */
-:root { --sidebar: 268px; --side-gap: 12px; --side-r-in: 16px; --side-r-out: 34px; }
-.side-aura { /* ガラスの向こうに見える青い光だまり（ぼかしの効果が見えるように） */
-  position: fixed; left: -80px; top: 0; bottom: 0; width: 420px; z-index: 0; pointer-events: none;
-  background:
-    radial-gradient(220px 260px at 70% 18%, rgba(77,141,255,.20), transparent 70%),
-    radial-gradient(260px 300px at 40% 78%, rgba(42,91,215,.22), transparent 70%),
-    radial-gradient(160px 160px at 85% 55%, rgba(138,184,255,.10), transparent 70%);
-  filter: blur(6px);
+:root {
+  --sidebar: 252px;              /* 展開時の幅（240〜260px） */
+  --side-r: 28px;                /* メインエリア側の上下の角 */
+  --side-blue: #3B82F6;          /* アクセント青 */
+  --side-blue-2: #60A5FA;
+  --side-bg: rgba(13, 20, 38, 0.72);
+  --side-ease: cubic-bezier(.16, 1, .3, 1);   /* ease-out */
 }
+.side-aura { /* ガラスの向こうに見える青い光（ぼけて透けていることが分かるように） */
+  position: fixed; left: -60px; top: 0; bottom: 0; width: 380px; z-index: 0; pointer-events: none;
+  background:
+    radial-gradient(200px 240px at 60% 16%, rgba(59,130,246,.22), transparent 70%),
+    radial-gradient(240px 280px at 35% 80%, rgba(37,99,235,.20), transparent 70%),
+    radial-gradient(140px 140px at 85% 52%, rgba(96,165,250,.12), transparent 70%);
+}
+
+/* ===== サイドバー：画面左端に固定した縦帯・ガラス質・右側の上下の角を丸める ===== */
 .sidebar {
-  position: relative; z-index: 2;
-  display: flex; flex-direction: column; gap: 6px;
-  margin: var(--side-gap) 0 var(--side-gap) var(--side-gap);
-  height: calc(100vh - var(--side-gap) * 2);
-  padding: 20px 14px 14px;
-  border-radius: var(--side-r-in) var(--side-r-out) var(--side-r-out) var(--side-r-in);
-  background:
-    linear-gradient(160deg, rgba(40,56,92,.42), rgba(16,22,38,.38) 45%, rgba(10,14,26,.50)),
-    rgba(14,19,32,.28);
-  -webkit-backdrop-filter: blur(22px) saturate(150%);
-  backdrop-filter: blur(22px) saturate(150%);
-  border: 1px solid rgba(138,184,255,.14);
+  position: sticky; top: 0; z-index: 2;
+  display: flex; flex-direction: column;
+  height: 100vh; margin: 0;
+  padding: 22px 14px 14px;
+  border-radius: 0 var(--side-r) var(--side-r) 0;
+  background: var(--side-bg);
+  -webkit-backdrop-filter: blur(18px) saturate(140%);
+  backdrop-filter: blur(18px) saturate(140%);
+  border: 0;
+  border-right: 1px solid rgba(191, 219, 254, 0.22);   /* 右端の細い境界線（半透明の青白） */
   box-shadow:
-    inset 1px 1px 0 rgba(255,255,255,.07),
-    inset -1px 0 0 rgba(138,184,255,.06),
-    0 30px 60px -28px rgba(0,0,0,.85),
-    0 0 40px -18px rgba(77,141,255,.35);
-  overflow: hidden;
+    inset 0 1px 0 rgba(255,255,255,.06),            /* 内側のハイライト（上） */
+    inset -1px 0 0 rgba(147,197,253,.06),            /* 内側のハイライト（右） */
+    12px 0 40px -24px rgba(0,0,0,.75),               /* うっすらした影 */
+    6px 0 30px -22px rgba(59,130,246,.35);           /* 青の控えめな発光 */
 }
-.sidebar::before { /* ガラスの反射：上からの淡い光 */
-  content: ""; position: absolute; inset: 0 0 auto 0; height: 140px; pointer-events: none;
-  background: linear-gradient(180deg, rgba(255,255,255,.06), transparent);
+.sidebar::before { /* 上からの淡い反射 */
+  content: ""; position: absolute; inset: 0 0 auto 0; height: 120px; pointer-events: none;
+  background: linear-gradient(180deg, rgba(255,255,255,.05), transparent);
   border-radius: inherit;
 }
-.sidebar::after { /* メインエリア側のカーブに沿う細い光のライン */
-  content: ""; position: absolute; top: 18px; bottom: 18px; right: 0; width: 1px; pointer-events: none;
-  background: linear-gradient(180deg, transparent, rgba(138,184,255,.45) 30%, rgba(77,141,255,.25) 70%, transparent);
-}
-.brand { position: relative; display: flex; align-items: center; gap: 10px; padding: 2px 8px 18px; }
+.sidebar::after { content: none; }
+.brand { position: relative; display: flex; align-items: center; gap: 10px; padding: 0 8px 20px; }
 .brand-mark { display: none; }
 .brand-name { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-weight: 600; letter-spacing: .18em; font-size: 16px; line-height: 1.2; }
 .brand-sub { font-size: 9.5px; color: #D4BD8C; letter-spacing: .38em; opacity: .85; }
 
-.nav { position: relative; display: flex; flex-direction: column; gap: 3px; overflow-y: auto; overflow-x: hidden; margin: 0 -6px; padding: 0 6px; flex: 1; min-height: 0; scrollbar-width: thin; }
+/* ===== メニュー：アイコン＋文字・均等な間隔 ===== */
+.nav { position: relative; display: flex; flex-direction: column; gap: 4px; overflow-y: auto; overflow-x: hidden; margin: 0 -6px; padding: 0 6px; flex: 1; min-height: 0; scrollbar-width: thin; }
 .nav-group { position: relative; }
 .nav-row { position: relative; display: flex; align-items: center; }
 .nav-item {
-  position: relative; flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0;
-  padding: 10px 12px; border-radius: 12px; border: 1px solid transparent;
+  position: relative; flex: 1; display: flex; align-items: center; gap: 12px; min-width: 0; height: 42px;
+  padding: 0 12px; border-radius: 11px; border: 0;
   color: var(--text-2); background: transparent; cursor: pointer; text-align: left; text-decoration: none;
-  transition: color var(--t) var(--ease), background var(--t) var(--ease), transform var(--t) var(--ease), border-color var(--t), box-shadow var(--t);
+  transition: color .2s ease-out, background-color .2s ease-out, transform .12s ease-out;
 }
 .nav-item span { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.nav-item svg { width: 18px; height: 18px; flex: none; opacity: .72; transition: opacity var(--t), transform var(--t) var(--ease), color var(--t); }
-.nav-item::after { /* ホバーで左から差し込む淡い光 */
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0;
-  background: linear-gradient(90deg, rgba(77,141,255,.16), rgba(77,141,255,0) 70%);
-  transition: opacity var(--t) var(--ease);
-}
-.nav-item:hover { color: var(--text); transform: translateX(3px); border-color: rgba(138,184,255,.10); }
-.nav-item:hover::after { opacity: 1; }
-.nav-item:hover svg { opacity: 1; transform: scale(1.08); color: var(--accent-2); }
-.nav-item:active { transform: translateX(3px) scale(.98); transition-duration: .08s; }
+.nav-item svg { width: 18px; height: 18px; flex: none; opacity: .75; }
+.nav-item svg, .nav-item span { transition: transform .2s ease-out, opacity .2s ease-out, color .2s ease-out; }
+.nav-item::after { content: none; }
+/* ホバー：背景が淡く青く、アイコンと文字がわずかに右へ（3px）・0.2秒 */
+.nav-item:hover { color: var(--text); background-color: rgba(59,130,246,.10); }
+.nav-item:hover svg, .nav-item:hover span { transform: translateX(3px); }
+.nav-item:hover svg { opacity: 1; color: var(--side-blue-2); }
+/* クリック：一瞬だけ沈む */
+.nav-item:active { transform: scale(.98); }
+/* 開いている親：色で分かるように */
+.nav-group.open > .nav-row > .nav-item { color: #BFDBFE; }
+.nav-group.open > .nav-row > .nav-item svg { color: var(--side-blue-2); opacity: 1; }
+/* 現在の画面：左端の青い縦バー＋淡い青の背景 */
 .nav-item.active {
-  color: #fff; border-color: rgba(77,141,255,.28);
-  background: linear-gradient(90deg, rgba(77,141,255,.24), rgba(77,141,255,.06));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.06), 0 8px 22px -14px rgba(77,141,255,.8);
+  color: #fff; background-color: rgba(59,130,246,.16);
+  box-shadow: inset 0 0 0 1px rgba(96,165,250,.16);
 }
-.nav-item.active svg { opacity: 1; color: var(--accent-2); }
+.nav-item.active svg { opacity: 1; color: var(--side-blue-2); }
 .nav-item.active::before {
-  content: ""; position: absolute; left: -7px; top: 10px; bottom: 10px; width: 3px; border-radius: 3px;
-  background: var(--accent); box-shadow: 0 0 10px rgba(77,141,255,.8);
+  content: ""; position: absolute; left: 0; top: 9px; bottom: 9px; width: 3px; border-radius: 0 3px 3px 0;
+  background: var(--side-blue); box-shadow: 0 0 8px rgba(59,130,246,.65);
 }
 .nav-toggle {
   position: absolute; right: 6px; top: 50%; transform: translateY(-50%);
   width: 26px; height: 26px; display: grid; place-items: center; border-radius: 8px; border: 0;
   background: transparent; color: var(--muted); cursor: pointer;
-  transition: background var(--t), color var(--t);
+  transition: background-color .2s ease-out, color .2s ease-out;
 }
-.nav-toggle svg { width: 14px; height: 14px; transition: transform .3s var(--ease); }
-.nav-toggle:hover { background: rgba(138,184,255,.10); color: var(--text); }
+.nav-toggle svg { width: 14px; height: 14px; transition: transform .3s var(--side-ease); }
+.nav-toggle:hover { background: rgba(59,130,246,.14); color: var(--text); }
+.nav-group.open .nav-toggle { color: var(--side-blue-2); }
 .nav-group.open .nav-toggle svg { transform: rotate(180deg); }
-.nav-item.active ~ .nav-toggle { color: var(--accent-2); }
 
-/* 子メニュー：高さを 0 → 自動 へ滑らかに展開 */
-.nav-sub { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .32s var(--ease); }
+/* 子メニュー：スライド＋フェードで展開（0.3秒・ease-out） */
+.nav-sub { display: grid; grid-template-rows: 0fr; transition: grid-template-rows .3s var(--side-ease); }
 .nav-group.open .nav-sub { grid-template-rows: 1fr; }
-.nav-sub-inner { overflow: hidden; min-height: 0; position: relative; margin-left: 21px; padding-left: 12px; }
+.nav-sub-inner {
+  overflow: hidden; min-height: 0; position: relative; margin-left: 21px; padding-left: 12px;
+  opacity: 0; transform: translateY(-6px);
+  transition: opacity .3s ease-out, transform .3s var(--side-ease);
+}
+.nav-group.open .nav-sub-inner { opacity: 1; transform: none; }
 .nav-sub-inner::before { /* 入れ子を示す縦のガイド線 */
   content: ""; position: absolute; left: 0; top: 4px; bottom: 8px; width: 1px;
-  background: linear-gradient(180deg, rgba(138,184,255,.30), rgba(138,184,255,.06));
+  background: linear-gradient(180deg, rgba(147,197,253,.35), rgba(147,197,253,.06));
 }
 .nav-child {
-  position: relative; display: flex; align-items: center; gap: 9px; padding: 6px 10px; margin: 1px 0; border-radius: 9px;
+  position: relative; display: flex; align-items: center; gap: 9px; height: 32px; padding: 0 10px; margin: 2px 0; border-radius: 8px;
   color: var(--muted); font-size: 13px; text-decoration: none;
-  opacity: 0; transform: translateX(-6px);
-  transition: color var(--t), background var(--t), transform .28s var(--ease), opacity .28s var(--ease);
+  transition: color .2s ease-out, background-color .2s ease-out, transform .12s ease-out;
 }
-.nav-group.open .nav-child { opacity: 1; transform: none; transition-delay: calc(var(--k) * 28ms + 60ms), calc(var(--k) * 28ms + 60ms), 0s, 0s; }
-.nav-group.open .nav-child { transition-property: opacity, transform, color, background; }
-.nav-group:not(.open) .nav-child { visibility: hidden; transition: opacity .2s, transform .2s, visibility 0s .32s; }  /* 閉じている間はキーボードでも選べないように */
-.nav-child i { width: 5px; height: 5px; border-radius: 50%; background: rgba(138,184,255,.35); flex: none; transition: transform var(--t) var(--ease), background var(--t), box-shadow var(--t); }
-.nav-child:hover { color: var(--text); background: rgba(77,141,255,.08); transform: translateX(2px); }
-.nav-child:hover i { transform: scale(1.4); background: var(--accent-2); }
-.nav-child.active { color: #fff; background: rgba(77,141,255,.14); }
-.nav-child.active i { background: var(--accent); box-shadow: 0 0 8px rgba(77,141,255,.9); transform: scale(1.3); }
+.nav-child i { width: 5px; height: 5px; border-radius: 50%; background: rgba(147,197,253,.35); flex: none; }
+.nav-child i, .nav-child span { transition: transform .2s ease-out, background-color .2s ease-out; }
+.nav-child:hover { color: var(--text); background-color: rgba(59,130,246,.10); }
+.nav-child:hover i, .nav-child:hover span { transform: translateX(3px); }
+.nav-child:hover i { background: var(--side-blue-2); }
+.nav-child:active { transform: scale(.98); }
+.nav-child.active { color: #fff; background-color: rgba(59,130,246,.14); }
+.nav-child.active i { background: var(--side-blue); box-shadow: 0 0 6px rgba(59,130,246,.8); }
+.nav-group:not(.open) .nav-child { visibility: hidden; transition: visibility 0s .3s; }  /* 閉じている間はキーボードでも選べないように */
 
-/* ===== サイドバー下部：ユーザー表示 ===== */
-.side-user { position: relative; margin-top: 8px; padding-top: 10px; border-top: 1px solid rgba(138,184,255,.10); }
+/* ===== 帯の一番下：丸いアバター＋名前＋役職（上に細い区切り線） ===== */
+.side-user { position: relative; margin-top: 10px; padding-top: 12px; border-top: 1px solid rgba(191,219,254,.12); }
 .side-user-btn {
-  width: 100%; display: flex; align-items: center; gap: 10px; padding: 8px; border-radius: 14px; cursor: pointer;
-  background: rgba(255,255,255,.03); border: 1px solid rgba(138,184,255,.10); color: inherit; text-align: left;
-  transition: background var(--t), border-color var(--t), transform var(--t) var(--ease);
+  width: 100%; display: flex; align-items: center; gap: 10px; padding: 6px 8px; border-radius: 12px; cursor: pointer;
+  background: transparent; border: 0; color: inherit; text-align: left;
+  transition: background-color .2s ease-out, transform .12s ease-out;
 }
-.side-user-btn:hover { background: rgba(77,141,255,.10); border-color: rgba(138,184,255,.24); transform: translateY(-1px); }
-.side-user.on .side-user-btn { border-color: rgba(77,141,255,.4); background: rgba(77,141,255,.12); }
+.side-user-btn:hover { background-color: rgba(59,130,246,.10); }
+.side-user-btn:active { transform: scale(.98); }
+.side-user.on .side-user-btn { background-color: rgba(59,130,246,.14); }
 .avatar {
-  --hue: 215; position: relative; flex: none; width: 36px; height: 36px; border-radius: 12px; display: grid; place-items: center;
-  font-weight: 700; font-size: 15px; color: #fff;
-  background: linear-gradient(140deg, hsl(var(--hue) 85% 62%), hsl(calc(var(--hue) + 18) 70% 38%));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 6px 16px -8px hsl(var(--hue) 90% 55%);
+  --hue: 217; position: relative; flex: none; width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center;
+  font-weight: 700; font-size: 14px; color: #fff;
+  background: linear-gradient(140deg, hsl(var(--hue) 91% 64%), hsl(calc(var(--hue) + 6) 83% 45%));
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 4px 12px -6px rgba(59,130,246,.8);
 }
-.avatar .presence { position: absolute; right: -2px; bottom: -2px; width: 10px; height: 10px; border-radius: 50%; background: var(--ok); border: 2px solid #121a2c; }
-.side-user .who { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.3; }
-.side-user .who b { font-size: 13px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.avatar .presence { position: absolute; right: -1px; bottom: -1px; width: 10px; height: 10px; border-radius: 50%; background: var(--ok); border: 2px solid #111a2e; }
+.side-user .who { flex: 1; min-width: 0; display: flex; flex-direction: column; line-height: 1.35; }
+.side-user .who b { font-size: 12.5px; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .side-user .who small { font-size: 11px; color: var(--muted); }
-.side-user .more { color: var(--muted); display: grid; transition: transform .3s var(--ease); }
+.side-user .more { color: var(--muted); display: grid; transition: transform .3s var(--side-ease); }
 .side-user .more svg { width: 14px; height: 14px; transform: rotate(180deg); }
 .side-user.on .more { transform: rotate(180deg); }
 .user-pop {
@@ -456,14 +467,15 @@ tr:hover .row-actions { opacity: 1; }
   .summary { position: static; }
 }
 @media (max-width: 760px) {
-  :root { --sidebar: 72px; --side-gap: 8px; --side-r-out: 26px; }
+  :root { --sidebar: 72px; --side-r: 22px; }
   .nav-toggle, .nav-sub, .side-user .who, .side-user .more { display: none !important; }
   .side-user-btn { justify-content: center; padding: 6px; }
   .user-pop { left: 0; right: auto; width: 220px; }
   .brand > div, .nav-item span, .nav-item kbd, .sidebar-foot { display: none; }
   .sidebar { padding: 14px 8px 10px; overflow: visible; }
-  .nav-item { justify-content: center; padding: 10px; }
-  .nav-item.active::before { left: -5px; }
+  .nav-item { justify-content: center; padding: 0; }
+  .nav-item:hover svg { transform: none; }
+  .nav-item.active::before { left: 0; }
   .view { padding: 18px 14px 50px; }
   .topbar { padding: 12px 14px; }
   .form-grid > * { grid-column: span 12 !important; }

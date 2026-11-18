@@ -264,7 +264,7 @@
     var v = document.getElementById('view');
     EE.fx.pageIn(v.firstChild, 1);
     EE.fx.stagger(v);
-    EE.fx.stagger(document.getElementById('nav'), { step: 45 });
+    EE.fx.stagger(document.getElementById('nav'), { step: 40 });   // メニューを上から 0.04 秒ずつ
     EE.fx.anim(document.getElementById('side-user'), [{ opacity: 0, transform: 'translateY(8px)' }, { opacity: 1, transform: 'none' }], { duration: 340, delay: 260 });
     EE.fx.countAll(v);
   }

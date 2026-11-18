@@ -63,8 +63,8 @@
 <script src="js/app.js"></script>
 <script>
   // 起動アニメーションの裏でアプリを起動し、終わったらホームの展開アニメーションを始める
-  var sp = EE.splash.play({ onDone: function () { EE.app.intro(); } });
   EE.app.boot({ deferIntro: true });
+  EE.splash.play({ onDone: function () { EE.app.intro(); } });
 </script>
 </body>
 </html>
