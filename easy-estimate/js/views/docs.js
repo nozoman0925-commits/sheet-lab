@@ -59,7 +59,8 @@
       '</tbody><tfoot><tr><td colspan="5" class="muted" style="padding:12px">' + list.length + ' 件</td><td class="r num" style="padding:12px">' + U.yen(total) + '</td><td colspan="3"></td></tr></tfoot></table></div>';
   }
 
-  function render() {
+  function render(status) {
+    F.status = status === 'draft' || status === 'issued' ? status : 'all';
     var html =
       '<div class="panel" data-st><div class="panel-b">' +
         '<div class="toolbar">' +
@@ -117,7 +118,7 @@
     };
     view.addEventListener('click', async function (e) {
       var s = e.target.closest('#f-status [data-s]');
-      if (s) { F.status = s.dataset.s; view.querySelectorAll('#f-status button').forEach(function (b) { b.classList.toggle('on', b === s); }); refresh(); return; }
+      if (s) { location.hash = s.dataset.s === 'all' ? '#/docs' : '#/docs/' + s.dataset.s; return; }
       if (e.target.closest('#f-clear')) {
         F = { q: '', status: 'all', from: '', to: '', min: '', max: '', sort: F.sort };
         EE.app.rerender(); return;

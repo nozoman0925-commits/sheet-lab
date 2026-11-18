@@ -65,6 +65,13 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   }
   await p.click('a[href="#/home"]'); await p.waitForTimeout(150);
   await p.screenshot({ path: OUT + '12-midanim.png' });
+  // サイドバー：子メニューを開いた状態とユーザーメニュー
+  await p.goto(url + '?splash=off#/settings/formulas'); await p.waitForTimeout(600);
+  if (!(await p.$('.nav-group[data-g="new"].open'))) { await p.click('[data-toggle="new"]'); await p.waitForTimeout(400); }
+  await p.screenshot({ path: OUT + '14-sidebar-open.png' });
+  await p.click('#user-btn'); await p.waitForTimeout(300);
+  await p.screenshot({ path: OUT + '15-sidebar-user.png' });
+  await p.click('#user-btn'); await p.waitForTimeout(200);
   // mobile
   await p.setViewportSize({ width: 390, height: 844 });
   await p.goto(url + '?splash=off#/new/edit'); await p.waitForTimeout(700);
