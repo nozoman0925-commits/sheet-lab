@@ -17,12 +17,13 @@ ok("今日の帯に、同じ項目の大きな行を二度描かない",await p.
 await p.click('#sec-todo .tier.t3');await p.waitForTimeout(300);ok("「ほか」を押すと、ほかの稽古が開く",await p.evaluate(()=>document.querySelector('#app details.grp').open));
 ok("端末保存の案内は道場に出さない",await p.evaluate(()=>!/ブラウザ内だけ/.test(document.querySelector('#app').textContent)));
 // 背景
-const sc=await p.evaluate(()=>{const s=document.querySelector('#scene');const c=getComputedStyle(document.querySelector('#sec-mission'));return {on:!!s&&getComputedStyle(s).display!=="none",bf:c.backdropFilter||c.webkitBackdropFilter,bg:c.backgroundColor,rain:getComputedStyle(document.querySelector('.sc-rain')).animationName}});
-ok("初期は雨の森の背景",sc.on&&sc.rain.includes("scRain"),JSON.stringify(sc));
+const sc=await p.evaluate(()=>{const s=document.querySelector('#scene');const c=getComputedStyle(document.querySelector('#sec-mission'));const ph=getComputedStyle(document.querySelector('.sc-photo'));const anims=[...document.querySelectorAll('#scene, #scene *')].filter(e=>getComputedStyle(e).animationName!=="none").length;return {on:!!s&&getComputedStyle(s).display!=="none",photo:ph.display==="block"&&/webp/.test(ph.backgroundImage),anims,bf:c.backdropFilter||c.webkitBackdropFilter,bg:c.backgroundColor}});
+ok("初期は写真（雨の縁側）の背景",sc.on&&sc.photo,JSON.stringify({on:sc.on,photo:sc.photo}));
+ok("背景は静止画（動きなし）",sc.anims===0,sc.anims+"個が動いている");
 ok("区画はすりガラスで背景が透ける",/blur/.test(sc.bf)&&/rgba\(.*0\.[0-9]+\)/.test(sc.bg),sc.bf+" / "+sc.bg);
 await p.screenshot({path:B+'/Z_rain.png'});
 const set=async v=>{await p.evaluate(v=>{const T=__T;T.S.main.look=Object.assign({},T.S.main.look,{bg:v});T.render()},v);await p.waitForTimeout(200)};
-await set("calm");ok("静かな森：雨を止め、景色は残す",await p.evaluate(()=>getComputedStyle(document.querySelector('.sc-rain')).display==="none"&&getComputedStyle(document.querySelector('#scene')).display!=="none"));
+await set("calm");ok("絵（雨の森）：写真の代わりに絵を出す",await p.evaluate(()=>getComputedStyle(document.querySelector('.sc-photo')).display==="none"&&getComputedStyle(document.querySelector('.sc-land')).display!=="none"));
 await set("none");ok("無地：背景を消し、区画も不透明に戻す",await p.evaluate(()=>getComputedStyle(document.querySelector('#scene')).display==="none"&&!/blur/.test(getComputedStyle(document.querySelector('#sec-mission')).backdropFilter||"")));
 await set("rain");
 await p.evaluate(()=>{const T=__T;T.S.main.look=Object.assign({},T.S.main.look,{anim:"off"});T.render()});
@@ -30,7 +31,7 @@ ok("アニメーションOFFでは雨も波紋も止まる",await p.evaluate(()=
 await p.evaluate(()=>{const T=__T;T.S.main.look=Object.assign({},T.S.main.look,{anim:"on"});T.render()});
 // 設定の画面
 await p.click('#tabs [data-tab=chikai]');await p.waitForTimeout(300);await p.evaluate(()=>{document.querySelectorAll('details.grp').forEach(d=>d.open=true)});
-ok("外観の設定に「背景」（雨の森・静かな森・無地）",await p.evaluate(()=>["rain","calm","none"].every(v=>!!document.querySelector('[data-act=look][data-k=bg][data-v='+v+']'))));
+ok("外観の設定に「背景」（写真・絵・無地）",await p.evaluate(()=>["rain","calm","none"].every(v=>!!document.querySelector('[data-act=look][data-k=bg][data-v='+v+']'))));
 await p.click('[data-act=look][data-k=bg][data-v=calm]');await p.waitForTimeout(200);
 ok("背景の選択は保存され、開き直しても残る",await p.evaluate(()=>JSON.parse(localStorage.getItem("bushido.look")).bg==="calm"&&document.documentElement.dataset.bg==="calm"));
 // 3つの外観で読みやすさ（文字と区画の背景の明るさの差）

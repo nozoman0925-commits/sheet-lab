@@ -761,7 +761,7 @@ function renderChikai(){
    row("文字サイズ",seg("fs",[["m","標準"],["l","大きめ"],["xl","最大"]]))+
    row("演出",seg("fx",[["std","標準"],["low","控えめ"],["min","最小限"]]))+
    row("アニメーション",seg("anim",[["on","ON"],["off","OFF"]]))+
-   row("背景",seg("bg",[["rain","雨の森"],["calm","静かな森"],["none","無地"]]))+
+   row("背景",seg("bg",[["rain","写真（雨の縁側）"],["calm","絵（雨の森）"],["none","無地"]]))+
    row("背景の質感",seg("tex",[["on","ON"],["off","OFF"]]))+
    row("師範の登場",seg("mfx",[["std","標準"],["low","控えめ"],["min","最小限"]]))+
    '<p class="small muted" style="margin:8px 0">演出の「最小限」では昇格の儀を短い知らせにし、達成の印も押さない。師範の登場の「控えめ」は、復帰・連続達成・週の振り返り・未達成・卒業の時だけ現れる。</p><button class="btn ghost wide sm" data-act="lookReset">外観だけを初期状態に戻す</button></section>')}

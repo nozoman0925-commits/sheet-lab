@@ -278,8 +278,8 @@ const A={
   importOpen:()=>{const inp=document.createElement("input");inp.type="file";inp.accept="application/json,.json";inp.hidden=true;document.body.appendChild(inp);
     inp.addEventListener("change",async()=>{const f=inp.files&&inp.files[0];inp.remove();if(!f)return;try{const x=JSON.parse(await f.text());importPreview(x)}catch(e){toast("読み込めませんでした","武士道で書き出したJSONを選んでください")}});inp.click()},
   restoreLocal:()=>{try{const b=JSON.parse(localStorage.getItem("bushido.backup")||"null");if(!b){toast("この端末に控えはありません");return}importPreview(b.data)}catch(e){toast("控えを読み込めませんでした")}},
-  importYes:async()=>{const x=ui.importData;if(!x)return;const M=Object.assign(blankMain(),x.main);M.onboarded=true;M.obDraft=null;M.tutSnap=null;
-    S={main:M,days:x.days||{}};Object.keys(S.days).forEach(k=>{const d=S.days[k];d.logs=d.logs||{};d.ritual=d.ritual||{};d.temptations=d.temptations||[]});
+  importYes:async()=>{const x=ui.importData;if(!x)return;const N=normState(x);const M=N.main;M.onboarded=true;M.obDraft=null;M.tutSnap=null;
+    S={main:M,days:N.days};
     const old=ui.importOld||[];try{await store.saveMain(S.main);for(const k of Object.keys(S.days))await store.saveDay(k,S.days[k]);for(const k of old)if(!S.days[k]){S.days[k]={logs:{},mission:null,ritual:{},reflection:null,temptations:[]};await store.saveDay(k,S.days[k])}}catch(e){warn(e)}
     ui.importData=null;closeSheet();tab="dojo";render();toast("復元した",Object.keys(S.days).length+"日分の記録")},
   resetNo:()=>{ui.confirmReset=false;render()},
