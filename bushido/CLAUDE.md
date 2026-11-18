@@ -54,6 +54,7 @@
 
 ## 起動の決まり（「読み込み中」で止めない）
 
+- claude.ai の保存領域の `data()` は**凍結されている**。読んだら必ず写し（`clone`）を作ってから変更する。
 - 読み込んだ記録は必ず `normState()` を通してから使う（起動・控えからの復元とも）。新しい項目を `S.main` に足したら、`blankMain()` に初期値を書く（型の整え直しに使われる）。
 - 起動の描画は `safeRender()` を通す。失敗したら `__bootFail()` が原因と次の手を見せる。見張りのスクリプトは `src/markup.html` の先頭（`</style>` の後）にある。
 - 起動を変えたら `node tests/boot10k.js bushido.html tests/fixtures/seed_user.json 10000 8` で1万回起動を確かめる（約15分）。

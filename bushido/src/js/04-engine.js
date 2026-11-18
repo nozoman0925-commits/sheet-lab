@@ -182,8 +182,9 @@ async function initStore(){
     const load=async()=>{
       const get2=async()=>{try{return await Promise.all([mainRef.get(),daysCol.get()])}catch(e){if(e&&e.code==="unavailable"){await new Promise(r=>setTimeout(r,700+Math.random()*600));return Promise.all([mainRef.get(),daysCol.get()])}throw e}};
       const [m,ds]=await get2();
-      const days={};ds.docs.forEach(d=>{if(d.exists)days[d.id]=d.data()});
-      return{main:m.exists?m.data():blankMain(),days};
+      // 保存領域から届く data() は凍結されている（変更できない）。必ず写しを作ってから使う
+      const days={};ds.docs.forEach(d=>{if(d.exists)days[d.id]=clone(d.data())});
+      return{main:m.exists?clone(m.data()):blankMain(),days};
     };
     const withRetry=async f=>{try{await f()}catch(e){if(e&&e.code==="unavailable"){await new Promise(r=>setTimeout(r,600+Math.random()*600));try{await f()}catch(e2){warn(e2)}}else warn(e)}};
     const photoCol=db.collection(base+"/main/photos");

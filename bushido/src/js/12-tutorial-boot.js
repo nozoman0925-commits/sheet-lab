@@ -173,6 +173,7 @@ function seedDemo(){
 
 /* 記録の形を整える：古い版・壊れた値があっても、読める所は残して起動する */
 function normState(x){const isO=v=>!!v&&typeof v==="object"&&!Array.isArray(v);
+  try{x=JSON.parse(JSON.stringify(x||{}))}catch(e){x={}}   // 凍結された記録でも直せるよう、写しを作る
   const B=blankMain();const M=Object.assign({},B,isO(x&&x.main)?x.main:{});
   Object.keys(B).forEach(k=>{const b=B[k];if(Array.isArray(b)){if(!Array.isArray(M[k]))M[k]=b}else if(isO(b)){if(!isO(M[k]))M[k]=b}else if(typeof b==="number"){if(typeof M[k]!=="number"||!isFinite(M[k]))M[k]=b}else if(typeof b==="string"&&k!=="displayName"&&k!=="future"){if(typeof M[k]!=="string"||!/^\d{4}-\d\d-\d\d$/.test(M[k])&&k==="created")M[k]=b}});
   M.tasks=M.tasks.filter(isO).map(t=>{if(!(typeof t.cat==="number"&&CATS[t.cat]))t.cat=1;if(typeof t.name!=="string")t.name=String(t.name==null?"修行":t.name);if(!Array.isArray(t.restDays))t.restDays=[];if(!Array.isArray(t.history))t.history=[];if(typeof t.id!=="string")t.id="t"+Math.random().toString(36).slice(2,8);if(typeof t.start!=="string"||!/^\d{4}-\d\d-\d\d$/.test(t.start))t.start=M.created;return t});
