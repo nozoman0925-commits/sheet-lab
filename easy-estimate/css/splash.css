@@ -1,5 +1,5 @@
 /*
- * 起動アニメーション「静かに目覚める家紋」
+ * 起動アニメーション（家紋は js/crest.js：原本からトレース）「静かに目覚める家紋」
  * 0.0–0.4 背景 / 0.4–1.0 円環を時計回りに描く / 1.0–1.8 花びら5枚 / 1.8–2.1 中央・放射線・光
  * 2.1–2.4 光の反射 / 2.3–2.7 桜ミツ / 2.6–3.0 OUMITSU・サブタイトル / → クロスフェードでホーム
  * 動かすのは opacity / transform / stroke-dashoffset だけ（GPU負荷を抑える）
@@ -31,23 +31,25 @@
 
 .splash .crest { width: min(34vmin, 210px); height: auto; overflow: visible; }
 .splash .c-art { fill: var(--crest); stroke: none; }
-.splash .c-rays line { stroke: var(--crest); stroke-width: 2.2; stroke-linecap: round; }
 
 /* STEP 2 円環：時計回りに描画（開始と終了に緩急） */
 .splash .c-ring-draw { stroke-dashoffset: var(--len); animation: sp-draw calc(.6 * var(--t)) cubic-bezier(.65, 0, .35, 1) calc(.4 * var(--t)) forwards; }
 
-/* STEP 3 花びら：中心側からわずかに外へ、0→100%、わずかな拡大率の変化、本来の位置で静止 */
-.splash .c-petal {
+/* STEP 3 花びら：中心側からわずかに外へ、0→100%、わずかな拡大率の変化、本来の位置で静止（萼は直前の花びらと一緒に） */
+.splash .c-petal, .splash .c-sepal, .splash .c-rayfill {
   opacity: 0;
   transform-box: view-box; transform-origin: 0 0;
-  transform: translateY(calc(var(--dy) * 1px)) scale(.94);
+  transform: translate(calc(var(--tx) * 1px), calc(var(--ty) * 1px)) scale(.94);
   animation: sp-petal calc(.42 * var(--t)) var(--ease) calc((1.0 + var(--i) * .095) * var(--t)) forwards;
 }
+.splash .c-sepal { animation-delay: calc((1.05 + var(--i) * .095) * var(--t)); }
+.splash .c-rayfills { fill: var(--crest); }
 
-/* STEP 4 中央の円と放射線、控えめな光を一度だけ */
-.splash .c-core, .splash .c-rays { opacity: 0; animation: sp-fade calc(.3 * var(--t)) var(--ease) calc(1.8 * var(--t)) forwards; }
-.splash .c-rays { animation-delay: calc(1.86 * var(--t)); }
-.splash .c-glow { opacity: 0; transform-box: view-box; transform-origin: 0 0; transform: scale(.5);
+/* STEP 4 中央の円が現れ、花びらの切り込み（放射状の線）が浮かび上がる。控えめな光を一度だけ */
+.splash .c-core { opacity: 0; animation: sp-fade calc(.3 * var(--t)) var(--ease) calc(1.8 * var(--t)) forwards; }
+.splash .c-rayfill { animation: sp-petal calc(.42 * var(--t)) var(--ease) calc((1.0 + var(--i) * .095) * var(--t)) forwards,
+  sp-out calc(.26 * var(--t)) var(--ease) calc(1.84 * var(--t)) forwards; }
+.splash .c-glow { opacity: 0; transform-box: fill-box; transform-origin: center; transform: scale(.5);
   animation: sp-glow calc(.6 * var(--t)) ease-out calc(1.85 * var(--t)) forwards; }
 
 /* STEP 5 光の反射：細く柔らかく一度だけ横切る */
@@ -97,6 +99,7 @@
 }
 
 @keyframes sp-fade { to { opacity: 1; } }
+@keyframes sp-out { from { opacity: 1; transform: none; } to { opacity: 0; transform: none; } }
 @keyframes sp-draw { to { stroke-dashoffset: 0; } }
 @keyframes sp-petal { to { opacity: 1; transform: none; } }
 @keyframes sp-glow { 0% { opacity: 0; transform: scale(.5); } 35% { opacity: .9; } 100% { opacity: 0; transform: scale(1.35); } }
@@ -105,14 +108,13 @@
 
 /* 動きを止める設定・静止表示：完成したロゴとブランド名をそのまま表示 */
 .splash.static *, .splash.static::before { animation: none !important; }
-.splash.static::before, .splash.static .c-petal, .splash.static .c-core, .splash.static .c-rays,
+.splash.static::before, .splash.static .c-petal, .splash.static .c-sepal, .splash.static .c-core,
 .splash.static .splash-title, .splash.static .splash-en, .splash.static .splash-sub, .splash.static .splash-msg, .splash.static .splash-skip { opacity: 1; transform: none; }
 .splash.static .c-ring-draw { stroke-dashoffset: 0; }
-.splash.static .c-glow, .splash.static .c-sheen { opacity: 0; }
+.splash.static .c-glow, .splash.static .c-sheen, .splash.static .c-rayfill { opacity: 0; }
 @media (prefers-reduced-motion: reduce) { .splash { transition-duration: .2s; } }
 
 /* サイドバーの小さな家紋 */
 .brand-crest { width: 32px; height: 32px; flex: none; filter: drop-shadow(0 0 10px rgba(212, 189, 140, .25)); }
 .brand-crest .c-art { fill: #EEEAE1; }
-.brand-crest .c-rays line { stroke: #EEEAE1; stroke-width: 2.6; stroke-linecap: round; }
-.brand-crest .c-glow, .brand-crest .c-sheen { display: none; }
+.brand-crest .c-glow, .brand-crest .c-sheen, .brand-crest .c-rayfills { display: none; }
