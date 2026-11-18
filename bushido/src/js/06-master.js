@@ -127,14 +127,14 @@ function adviceBody(){const tp=typeOf(S.main.profile);const a=adviceActs();
     else out+='<p class="small muted" style="margin-top:8px">選べ</p><ul class="plan-list"><li>今すぐやる</li><li>時刻を決めて、その時にやる</li></ul>'}
   return out}
 function masterCard(){const M=S.main;const m=M.master;
-  if(!m)return '<section class="sec" id="sec-master" style="border-color:var(--gold)"><p class="eyebrow">己の師範</p><h2>師範を迎えよ。</h2><p class="small muted" style="margin-bottom:10px">お前が変わる理由となる人物を一人選び、師範として迎える。稽古の結果に応じて、師範が言葉をかける。今の記録・EXP・段位はそのまま残る。</p><button class="btn gold wide" data-act="mflowStart">師範を選ぶ</button></section>';
+  if(!m)return '<section class="sec fold" id="sec-master"><p class="eyebrow">己の師範</p><h2>師範を迎えよ。</h2><p class="small muted" style="margin-bottom:10px">お前が変わる理由となる人物を一人選び、師範として迎える。稽古の結果に応じて、師範が言葉をかける。今の記録・EXP・段位はそのまま残る。</p><button class="btn gold wide" data-act="mflowStart">師範を選ぶ</button></section>';
   const k=todayKey();const d=day(k);const h=new Date().getHours();const mm=d.mission;let line;
   const tn=tenure();
   if(gapInfo(k))line=mLine("ret");else if(needsRecovery())line=mLine("stall");
   else if(tn>=2&&tn<=7&&!mm)line=WEEK_M[tn];
   else if(mm&&mm.result==="done")line=mLine("done");else if(mm&&mm.result==="part")line=mLine("part");else if(mm&&mm.result==="miss")line=mLine("miss");
   else{const st=streak();const rl=S.main.rankLog||[];const lr=rl[rl.length-1];if(lr&&lr.date&&diffDays(lr.date,k)<=1)line=mLine("rankup",{r:RANKS[lr.rank].n});else if(mm&&mm.result&&STREAK_MS.includes(st))line=mLine("streak",{s:st})}
-  return '<section class="sec" id="sec-master" style="--mc:'+MOTIVES[m.motive].c+'"><div class="mcard">'+mPic(m)+'<div class="grow" style="min-width:0"><p class="eyebrow" style="margin:0">師範 ・ '+esc(m.name)+(m.rel?'（'+esc(m.rel)+'）':'')+'</p>'+(line?'<p class="mline">「'+esc(line)+'」</p>':'<p class="small muted" style="margin:4px 0 8px">迷ったら、助言を聞け。</p>')+'<button class="btn sm" data-act="masterAdvice">助言を聞く</button></div></div></section>'}
+  return '<section class="sec'+(line?'':' fold')+'" id="sec-master" style="--mc:'+MOTIVES[m.motive].c+'"><div class="mcard">'+mPic(m)+'<div class="grow" style="min-width:0"><p class="eyebrow" style="margin:0">師範 ・ '+esc(m.name)+(m.rel?'（'+esc(m.rel)+'）':'')+'</p>'+(line?'<p class="mline">「'+esc(line)+'」</p>':'<p class="small muted" style="margin:4px 0 8px">迷ったら、助言を聞け。</p>')+'<button class="btn sm" data-act="masterAdvice">助言を聞く</button></div></div></section>'}
 function masterAdviceSheet(){const m=S.main.master;if(!m)return;const tp=typeOf(S.main.profile);
   openSheet('<div class="mcard">'+mPic(m)+'<div class="grow"><p class="eyebrow" style="margin:0">師範の助言 ・ '+esc(m.name)+'</p><p class="mline">「'+esc(mLine("advice"))+'」</p></div></div><div class="note gold" style="margin:10px 0">'+adviceBody()+'</div>'+
   (m.words?'<p class="small" style="margin-bottom:8px">「'+esc(m.words)+'」</p>':'')+
