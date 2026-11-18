@@ -1,0 +1,58 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>EASY ESTIMATE</title>
+<link rel="stylesheet" href="css/app.css">
+<link rel="stylesheet" href="css/sheet.css">
+</head>
+<body>
+<div class="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">EE</div>
+      <div><div class="brand-name">EASY ESTIMATE</div><div class="brand-sub">見積・請求</div></div>
+    </div>
+    <nav class="nav" id="nav"></nav>
+    <div class="sidebar-foot">
+      <div><span class="dot"></span>このPCに保存中</div>
+      <div id="foot-count"></div>
+      <div style="margin-top:6px">Phase 1：見積</div>
+    </div>
+  </aside>
+  <main class="main">
+    <header class="topbar">
+      <div><h1 id="title"></h1><div class="crumb" id="crumb"></div></div>
+      <div class="spacer"></div>
+      <div id="actions" style="display:flex;gap:10px;align-items:center"></div>
+    </header>
+    <div class="view" id="view">
+      <div class="view-inner">
+        <div class="grid kpis">
+          <div class="sk" style="height:118px"></div><div class="sk" style="height:118px"></div>
+          <div class="sk" style="height:118px"></div><div class="sk" style="height:118px"></div>
+        </div>
+        <div class="sk" style="height:300px;margin-top:18px"></div>
+      </div>
+    </div>
+  </main>
+</div>
+<div class="toasts"></div>
+<div id="print-root"></div>
+
+<script src="js/engine.js"></script>
+<script src="js/check.js"></script>
+<script src="js/data.js"></script>
+<script src="js/fx.js"></script>
+<script src="js/ui.js"></script>
+<script src="js/print.js"></script>
+<script src="js/views/home.js"></script>
+<script src="js/views/docs.js"></script>
+<script src="js/views/editor.js"></script>
+<script src="js/views/clients.js"></script>
+<script src="js/views/settings.js"></script>
+<script src="js/app.js"></script>
+<script>EE.app.boot();</script>
+</body>
+</html>

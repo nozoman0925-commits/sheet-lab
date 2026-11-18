@@ -1,0 +1,52 @@
+/* 見積書（A4）レイアウト：プレビューと印刷で共通 */
+.sheet {
+  width: 210mm; min-height: 297mm; padding: 14mm 14mm 16mm; background: #fff; color: #1a1f2b;
+  font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-size: 10pt; line-height: 1.55;
+  -webkit-print-color-adjust: exact; print-color-adjust: exact;
+}
+.sheet .sans, .sheet table, .sheet .num { font-family: "Hiragino Sans", "Noto Sans JP", "Yu Gothic", "Meiryo", sans-serif; }
+.sheet .num { font-variant-numeric: tabular-nums; }
+.sheet h1 { text-align: center; font-size: 20pt; letter-spacing: .6em; margin: 0 0 6mm; padding-bottom: 2mm; border-bottom: 2px solid #1f3f8f; font-weight: 600; }
+.sheet .meta { position: absolute; right: 0; top: 0; text-align: right; font-size: 9pt; }
+.sheet .head { position: relative; display: grid; grid-template-columns: 1fr 74mm; gap: 8mm; }
+.sheet .to { font-size: 14pt; border-bottom: 1px solid #1a1f2b; padding-bottom: 1mm; margin: 0 0 2mm; }
+.sheet .to small { font-size: 11pt; margin-left: 3mm; }
+.sheet .to-sub { font-size: 9pt; color: #444; }
+.sheet .lead { margin: 4mm 0 3mm; font-size: 9.5pt; }
+.sheet .grand { display: flex; align-items: baseline; gap: 6mm; border: 1.5px solid #1f3f8f; padding: 2.5mm 4mm; margin-bottom: 3mm; }
+.sheet .grand .l { font-size: 10pt; letter-spacing: .2em; }
+.sheet .grand .v { font-size: 18pt; font-weight: 700; margin-left: auto; }
+.sheet .grand .t { font-size: 8.5pt; color: #444; }
+.sheet .kv { width: 100%; border-collapse: collapse; font-size: 9pt; }
+.sheet .kv th { text-align: left; font-weight: 500; color: #444; width: 22mm; padding: .6mm 0; vertical-align: top; }
+.sheet .kv td { padding: .6mm 0; }
+.sheet .from { font-size: 9pt; line-height: 1.6; }
+.sheet .from .co { font-size: 11.5pt; font-weight: 600; margin-bottom: 1mm; }
+.sheet .from .reg { display: inline-block; margin-top: 1mm; padding: .4mm 2mm; border: 1px solid #1f3f8f; color: #1f3f8f; font-size: 8.5pt; }
+.sheet .stamps { display: flex; justify-content: flex-end; gap: 0; margin-top: 3mm; }
+.sheet .stamps div { width: 16mm; height: 16mm; border: 1px solid #999; font-size: 7pt; color: #666; text-align: center; padding-top: .5mm; }
+.sheet .stamps div + div { border-left: 0; }
+
+.sheet table.items { width: 100%; border-collapse: collapse; margin-top: 5mm; font-size: 8.8pt; }
+.sheet table.items thead { display: table-header-group; }
+.sheet table.items th { background: #1f3f8f; color: #fff; font-weight: 500; padding: 1.6mm 2mm; text-align: center; }
+.sheet table.items td { border-bottom: 1px solid #d5dae5; padding: 1.5mm 2mm; vertical-align: top; }
+.sheet table.items tr { page-break-inside: avoid; }
+.sheet table.items tbody tr:nth-child(even) td { background: #f5f7fb; }
+.sheet table.items .r { text-align: right; white-space: nowrap; }
+.sheet table.items .c { text-align: center; white-space: nowrap; }
+.sheet table.items .spec { color: #555; font-size: 8pt; }
+.sheet table.items .mark { color: #1f3f8f; }
+.sheet .bottom { display: grid; grid-template-columns: 1fr 72mm; gap: 8mm; margin-top: 4mm; page-break-inside: avoid; }
+.sheet table.tot { width: 100%; border-collapse: collapse; font-size: 9pt; }
+.sheet table.tot th { text-align: left; font-weight: 500; padding: 1.2mm 2mm; border-bottom: 1px solid #d5dae5; }
+.sheet table.tot td { text-align: right; padding: 1.2mm 2mm; border-bottom: 1px solid #d5dae5; white-space: nowrap; }
+.sheet table.tot tr.g th, .sheet table.tot tr.g td { font-weight: 700; font-size: 10.5pt; border-top: 1.5px solid #1f3f8f; border-bottom: 1.5px solid #1f3f8f; }
+.sheet .box { border: 1px solid #c9cfdc; padding: 2.5mm 3mm; font-size: 8.8pt; margin-bottom: 3mm; page-break-inside: avoid; }
+.sheet .box h4 { margin: 0 0 1.5mm; font-size: 8.8pt; color: #1f3f8f; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; }
+.sheet .box table { width: 100%; border-collapse: collapse; }
+.sheet .box td { padding: .4mm 0; }
+.sheet .box td.r { text-align: right; }
+.sheet .notes { white-space: pre-wrap; }
+.sheet .foot { margin-top: 5mm; font-size: 7.5pt; color: #777; display: flex; justify-content: space-between; }
+.sheet .draft-mark { position: absolute; right: 0; top: 10mm; font-size: 9pt; color: #b33; border: 1px solid #b33; padding: .5mm 2mm; }
