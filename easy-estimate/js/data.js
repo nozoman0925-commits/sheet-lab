@@ -43,7 +43,7 @@
     return {
       schema: 1,
       company: {
-        name: '株式会社イージー住設',
+        name: '株式会社サンプル住設',
         invoiceRegNo: 'T1234567890123',
         zip: '150-0001',
         address: '東京都渋谷区神宮前1-2-3 EEビル4F',
@@ -51,7 +51,7 @@
         email: 'info@example.jp',
         rep: '代表取締役 青木 誠',
         license: '東京都知事許可（般-6）第000000号',
-        bank: '○○銀行 渋谷支店 普通 1234567 カ）イージージュウセツ'
+        bank: '○○銀行 渋谷支店 普通 1234567 カ）サンプルジュウセツ'
       },
       settings: {
         lineRounding: 'round',

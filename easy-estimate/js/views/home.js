@@ -25,7 +25,7 @@
     var flow = [['見積', 1], ['修正見積', 1], ['注文書', 0], ['契約書', 0], ['納品・完了報告', 0], ['請求', 0], ['領収書', 0]];
 
     var html =
-      '<div class="toolbar" data-st style="margin-bottom:22px"><div class="grow"><div style="font-size:22px;font-weight:650">' + esc(S.company.name || 'EASY ESTIMATE') + '</div>' +
+      '<div class="toolbar" data-st style="margin-bottom:22px"><div class="grow"><div style="font-size:22px;font-weight:650">' + esc(S.company.name || '桜ミツ') + '</div>' +
         '<div class="hint">' + U.jdate(EE.data.today()) + '　金額はマスタと固定の計算エンジンだけで決まります（AIは金額を決めません）</div></div>' +
         '<a class="btn" href="#/settings/items">' + I.box + 'マスタ ' + S.items.length + '件</a>' +
         '<a class="btn primary" href="#/new">' + I.plus + '新しい見積を作る</a></div>' +

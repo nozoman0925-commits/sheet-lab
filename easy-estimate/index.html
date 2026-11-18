@@ -3,16 +3,17 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>EASY ESTIMATE</title>
+<title>桜ミツ OUMITSU</title>
 <link rel="stylesheet" href="css/app.css">
 <link rel="stylesheet" href="css/sheet.css">
+<link rel="stylesheet" href="css/splash.css">
 </head>
 <body>
 <div class="app">
   <aside class="sidebar">
     <div class="brand">
-      <div class="brand-mark">EE</div>
-      <div><div class="brand-name">EASY ESTIMATE</div><div class="brand-sub">見積・請求</div></div>
+      <span id="brand-crest"></span>
+      <div><div class="brand-name">桜ミツ</div><div class="brand-sub">OUMITSU</div></div>
     </div>
     <nav class="nav" id="nav"></nav>
     <div class="sidebar-foot">
@@ -41,6 +42,8 @@
 <div class="toasts"></div>
 <div id="print-root"></div>
 
+<script src="js/crest.js"></script>
+<script src="js/splash.js"></script>
 <script src="js/engine.js"></script>
 <script src="js/check.js"></script>
 <script src="js/data.js"></script>
@@ -53,6 +56,10 @@
 <script src="js/views/clients.js"></script>
 <script src="js/views/settings.js"></script>
 <script src="js/app.js"></script>
-<script>EE.app.boot();</script>
+<script>
+  // 起動アニメーションの裏でアプリを起動し、終わったらホームの展開アニメーションを始める
+  var sp = EE.splash.play({ onDone: function () { EE.app.intro(); } });
+  EE.app.boot({ deferIntro: true });
+</script>
 </body>
 </html>

@@ -60,7 +60,7 @@
       document.getElementById('title').textContent = current.title;
       document.getElementById('crumb').textContent = current.crumb || '';
       document.getElementById('actions').innerHTML = current.actions || '';
-      document.title = current.title + ' — EASY ESTIMATE';
+      document.title = current.title + ' — 桜ミツ';
       // 画面ごとにリスナーを付け直すため、view 要素ごと差し替える
       var fresh = view.cloneNode(false);
       fresh.innerHTML = '<div class="view-inner">' + current.html + '</div>';
@@ -146,14 +146,23 @@
   }
   function takePrefill() { var p = prefill; prefill = null; return p; }
 
-  function boot() {
+  /** 画面の展開（時間差で順番に出す・数字のカウントアップ） */
+  function intro() {
+    var v = document.getElementById('view');
+    EE.fx.pageIn(v.firstChild, 1);
+    EE.fx.stagger(v);
+    EE.fx.stagger(document.getElementById('nav'), { step: 40 });
+    EE.fx.countAll(v);
+  }
+
+  function boot(opts) {
+    opts = opts || {};
     EE.S = EE.data.load();
     renderNav();
+    document.getElementById('brand-crest').innerHTML = EE.crest.svg({ id: 'brand', className: 'brand-crest' });
     if (!location.hash) replaceRoute('#/home');
-    // 起動時はシマーを一瞬見せてから描画
     show(false);
-    EE.fx.stagger(document.getElementById('view'));
-    EE.fx.stagger(document.getElementById('nav'), { step: 40 });
+    if (!opts.deferIntro) intro();
 
     root.addEventListener('hashchange', onHash);
     document.addEventListener('pointerdown', EE.fx.ripple);
@@ -175,6 +184,6 @@
     upd(); U.onCommit(upd);
   }
 
-  EE.app = { boot: boot, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
+  EE.app = { boot: boot, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
     duplicate: duplicate, newWith: newWith, takePrefill: takePrefill };
 })(this);
