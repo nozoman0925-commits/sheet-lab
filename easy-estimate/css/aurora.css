@@ -1,0 +1,130 @@
+/*
+ * 背景のオーロラ（ネオン配色・とてもゆっくりうねる）と、すりガラスのステーション（パネル）
+ * - 動かすのは transform だけ。1周 78〜220 秒の超スロー
+ * - CSS アニメーション（transform）だけで動かし、描画専用の処理（コンポジター）に任せる。
+ *   画面より大きな回転レイヤーや JS での毎フレーム更新は、すりガラスの再計算で重くなるので使わない
+ * - パネルは半透明＋背景ぼかしで、後ろのオーロラがぼやけて透ける
+ * - 「視差効果を減らす」設定ではオーロラを止める
+ */
+:root {
+  --neon-cyan: #00E5FF;
+  --neon-blue: #3B82F6;
+  --neon-violet: #8B5CF6;
+  --neon-pink: #FF2BD6;
+  --neon-mint: #2BFFB8;
+  --glass: rgba(12, 18, 34, 0.46);
+  --glass-hi: rgba(20, 30, 56, 0.55);
+  --glass-line: rgba(186, 230, 253, 0.14);
+}
+
+/* 以前の背景（光だまり・グリッド）はオーロラに置き換える */
+body::before, body::after { display: none; }
+body { background: #04060d; }
+
+.aurora { position: fixed; inset: 0; z-index: 0; overflow: hidden; pointer-events: none; background: radial-gradient(120% 90% at 50% 0%, #0a1024 0%, #04060d 70%); }
+.aurora i {
+  position: absolute; display: block; border-radius: 50%;
+  will-change: transform; mix-blend-mode: screen; opacity: .78;
+}
+/* 帯状のオーロラ（細長い光の帯がゆっくり身をくねらせる） */
+.aurora .a1 { width: 120vw; height: 46vh; left: -20vw; top: -6vh;
+  background: radial-gradient(closest-side, rgba(0,229,255,.62), rgba(0,229,255,.2) 45%, transparent 72%);
+  animation: aur-1 78s ease-in-out infinite alternate; }
+.aurora .a2 { width: 100vw; height: 52vh; right: -30vw; top: 22vh;
+  background: radial-gradient(closest-side, rgba(139,92,246,.6), rgba(139,92,246,.18) 50%, transparent 74%);
+  animation: aur-2 96s ease-in-out infinite alternate; }
+.aurora .a3 { width: 90vw; height: 44vh; left: -10vw; bottom: -14vh;
+  background: radial-gradient(closest-side, rgba(255,43,214,.5), rgba(255,43,214,.15) 50%, transparent 74%);
+  animation: aur-3 118s ease-in-out infinite alternate; }
+.aurora .a4 { width: 70vw; height: 40vh; left: 25vw; top: 38vh;
+  background: radial-gradient(closest-side, rgba(43,255,184,.4), rgba(43,255,184,.1) 55%, transparent 76%);
+  animation: aur-4 140s ease-in-out infinite alternate; }
+.aurora .a5 { width: 80vw; height: 38vh; left: 10vw; top: 6vh;
+  background: radial-gradient(closest-side, rgba(59,130,246,.50), rgba(59,130,246,.14) 50%, transparent 74%);
+  animation: aur-5 104s ease-in-out infinite alternate; }
+/* 細長いカーテン状の帯（オーロラの筋）。斜めに伸びた光がゆっくり揺れる */
+.aurora .a6 { width: 140vw; height: 18vh; left: -20vw; top: 30vh; border-radius: 50%;
+  background: radial-gradient(closest-side, rgba(0,229,255,.38), rgba(139,92,246,.16) 55%, transparent 76%);
+  animation: aur-6 88s ease-in-out infinite alternate; }
+/* 粒子感を少しだけ（のっぺりしないように） */
+.aurora::after { content: ""; position: absolute; inset: 0; opacity: .05;
+  background-image: radial-gradient(rgba(255,255,255,.9) 1px, transparent 1px); background-size: 3px 3px; }
+
+@keyframes aur-1 { 0% { transform: translate(0,0) rotate(-8deg) scale(1,1); } 33% { transform: translate(8vw,6vh) rotate(4deg) scale(1.15,.8); } 66% { transform: translate(-6vw,10vh) rotate(-14deg) scale(.9,1.2); } 100% { transform: translate(10vw,-2vh) rotate(10deg) scale(1.2,.9); } }
+@keyframes aur-2 { 0% { transform: translate(0,0) rotate(12deg) scale(1); } 40% { transform: translate(-14vw,-8vh) rotate(-6deg) scale(1.2,.85); } 100% { transform: translate(-4vw,10vh) rotate(20deg) scale(.9,1.15); } }
+@keyframes aur-3 { 0% { transform: translate(0,0) rotate(-4deg) scale(1); } 50% { transform: translate(16vw,-10vh) rotate(10deg) scale(1.25,.8); } 100% { transform: translate(30vw,2vh) rotate(-12deg) scale(.95,1.1); } }
+@keyframes aur-4 { 0% { transform: translate(0,0) scale(1); } 50% { transform: translate(-20vw,-14vh) scale(1.3,.9); } 100% { transform: translate(-6vw,8vh) scale(.85,1.2); } }
+@keyframes aur-5 { 0% { transform: translate(0,0) rotate(6deg) scale(1); } 45% { transform: translate(-10vw,12vh) rotate(-10deg) scale(1.1,1.25); } 100% { transform: translate(12vw,4vh) rotate(14deg) scale(1.2,.85); } }
+@keyframes aur-6 { 0% { transform: translate(0,0) rotate(-18deg) scale(1,1); } 50% { transform: translate(6vw,-8vh) rotate(-6deg) scale(1.1,1.6); } 100% { transform: translate(-4vw,10vh) rotate(-24deg) scale(.95,1.2); } }
+
+/* ===== すりガラスのステーション ===== */
+.panel {
+  background: linear-gradient(160deg, rgba(255,255,255,.055), rgba(255,255,255,.01) 40%), var(--glass);
+  -webkit-backdrop-filter: blur(24px) saturate(165%);
+  backdrop-filter: blur(24px) saturate(165%);
+  border: 1px solid var(--glass-line);
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 0 1px rgba(255,255,255,.015), 0 24px 50px -26px rgba(0,0,0,.75);
+  transition: border-color .25s ease-out, box-shadow .25s ease-out, transform .25s ease-out;
+}
+/* カーソルの位置に合わせて、ガラスの中をネオンの光が追いかける */
+.panel::after {   /* パネルは backdrop-filter で重なりの基準になるので、z-index:-1 で文字の下・背景の上に置ける */
+  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; z-index: -1;
+  background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(0,229,255,.10), rgba(139,92,246,.06) 40%, transparent 70%);
+  transition: opacity .3s ease-out;
+}
+.panel.lit::after { opacity: 1; }
+.panel.lit { border-color: rgba(125, 249, 255, .26); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 1px rgba(0,229,255,.05), 0 24px 50px -26px rgba(0,0,0,.75), 0 0 34px -18px rgba(0,229,255,.55); }
+.modal { background: rgba(10,15,30,.82); }
+.topbar { background: rgba(6,9,18,.35); -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); }
+.table th { background: rgba(10,16,32,.72); }
+.input, select.input, textarea.input { background: rgba(4,8,18,.55); }
+
+/* ===== カーソルを合わせたときのアクション ===== */
+/* ボタン：浮き上がり＋ネオンの縁取り、アイコンが跳ねる */
+.btn:hover { box-shadow: 0 0 0 1px rgba(0,229,255,.25), 0 8px 24px -10px rgba(0,229,255,.55); }
+.btn.primary { background: linear-gradient(120deg, #3B82F6, #06B6D4 55%, #8B5CF6); background-size: 200% 100%; background-position: 0% 50%; transition: background-position .5s ease-out, transform .12s, box-shadow .25s; }
+.btn.primary:hover { background-position: 100% 50%; box-shadow: 0 1px 0 rgba(255,255,255,.3) inset, 0 10px 30px -8px rgba(0,229,255,.75), 0 0 0 1px rgba(125,249,255,.35); }
+.btn:hover svg, .pkg:hover svg, .nav-item:hover svg, .quick-card:hover .kpi-icon svg, .kpi:hover .kpi-icon svg, a.badge:hover svg { animation: icon-hop .45s cubic-bezier(.3,1.6,.5,1); }
+@keyframes icon-hop { 0% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-3px) rotate(-10deg) scale(1.15); } 70% { transform: translateY(1px) rotate(4deg); } 100% { transform: none; } }
+.nav-item:hover svg { animation-name: icon-hop-x; }
+@keyframes icon-hop-x { 0% { transform: translateX(3px); } 40% { transform: translateX(3px) translateY(-3px) rotate(-10deg) scale(1.15); } 100% { transform: translateX(3px); } }
+/* アイコンの箱：くるっと回って光る */
+.kpi-icon { transition: transform .35s cubic-bezier(.3,1.5,.5,1), box-shadow .3s, background-color .3s; }
+.kpi:hover .kpi-icon, .quick-card:hover .kpi-icon, .site-card:hover .kpi-icon { transform: rotate(-8deg) scale(1.12); background: rgba(0,229,255,.14); color: var(--neon-cyan); box-shadow: 0 0 18px -4px rgba(0,229,255,.7); }
+/* カード：ふわっと浮いて少し傾く */
+.kpi, .quick-card, .site-card { transition: transform .3s cubic-bezier(.2,.9,.3,1), border-color .25s, box-shadow .25s; transform-style: preserve-3d; }
+.kpi:hover, .quick-card:hover { transform: translateY(-4px) perspective(800px) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); }
+/* 数字：ネオンににじむ */
+.kpi:hover .kpi-value { text-shadow: 0 0 22px rgba(0,229,255,.45); }
+/* 表の行：左からネオンのラインが走る */
+.table tbody tr { background-image: linear-gradient(90deg, rgba(0,229,255,.10), rgba(139,92,246,.06) 40%, transparent 70%); background-size: 0% 100%; background-repeat: no-repeat; transition: background-size .35s ease-out, box-shadow .25s; }
+.table tbody tr:hover { background-size: 100% 100%; box-shadow: inset 2px 0 0 var(--neon-cyan); }
+/* バッジ・チップ */
+.badge { transition: transform .2s ease-out, box-shadow .2s; }
+.badge:hover { transform: translateY(-1px) scale(1.05); box-shadow: 0 0 12px -3px currentColor; }
+.pkg:hover { border-color: rgba(0,229,255,.5); box-shadow: 0 10px 20px -12px rgba(0,229,255,.8); }
+/* フォルダ：ネオンの影 */
+.folder-tile:hover .fold { filter: drop-shadow(0 10px 14px rgba(0,0,0,.45)) drop-shadow(0 0 16px rgba(0,229,255,.35)); }
+/* チェック一覧・アバター・入力欄 */
+.check:hover { border-color: rgba(0,229,255,.28); }
+.avatar { transition: transform .3s cubic-bezier(.3,1.6,.5,1), box-shadow .3s; }
+.side-user-btn:hover .avatar, .hue-pick:hover .avatar, .owner-chip:hover .avatar { transform: scale(1.1) rotate(-6deg); box-shadow: 0 0 16px -2px hsl(var(--hue) 95% 60%); }
+.input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 0 3px rgba(0,229,255,.16), 0 0 22px rgba(0,229,255,.28); }
+.nav-item.active::before { background: linear-gradient(180deg, var(--neon-cyan), var(--neon-blue)); box-shadow: 0 0 10px rgba(0,229,255,.8); }
+
+/* ===== クリックしたときのアクション：波紋＋ネオンの粒 ===== */
+.click-ring { position: fixed; z-index: 300; pointer-events: none; width: 10px; height: 10px; margin: -5px 0 0 -5px; border-radius: 50%;
+  border: 2px solid var(--c, #00E5FF); box-shadow: 0 0 12px var(--c, #00E5FF); }
+.click-dot { position: fixed; z-index: 300; pointer-events: none; width: 7px; height: 7px; margin: -3.5px 0 0 -3.5px; border-radius: 50%;
+  background: var(--c, #00E5FF); box-shadow: 0 0 8px var(--c, #00E5FF); }
+.btn .ripple { background: radial-gradient(circle, rgba(125,249,255,.55), rgba(139,92,246,.25) 60%, transparent 70%); }
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora i { animation: none !important; }
+}
+
+@media print { .aurora, .click-ring, .click-dot { display: none !important; } }
+
+/* オーロラの上に直接載る文字は、影を付けて読みやすく */
+.view-inner > .toolbar, .view-inner > .hint, .topbar h1, .topbar .crumb, .view-inner > div > .toolbar { text-shadow: 0 1px 10px rgba(0,0,0,.85), 0 0 2px rgba(0,0,0,.6); }
+.view-inner > .toolbar .hint, .topbar .crumb { color: #a7b3c9; }

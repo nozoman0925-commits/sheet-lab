@@ -767,8 +767,9 @@
           var removed = L.splice(idx, 1)[0];
           markDirty();
           var anim = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(12px)' }], { duration: 160, fill: 'forwards' });
-          var after = function () { renderLines(); };
-          if (anim) anim.onfinish = after; else after();
+          // 動きの終わりを待ちつつ、描画が重いときも 0.22 秒後には必ず表を描き直す
+          var doneDel = false, after = function () { if (doneDel) return; doneDel = true; renderLines(); };
+          if (anim) { anim.onfinish = after; setTimeout(after, 220); } else after();
           EE.fx.toast('「' + removed.name + '」を削除しました', { action: { label: '元に戻す', run: function () {
             L.splice(Math.min(idx, L.length), 0, removed); renderLines(removed.lineId);
           } } });

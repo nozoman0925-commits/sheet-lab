@@ -149,11 +149,15 @@
     else pop.hidden = true;
   }
 
+  var navSeq = 0;
   function show(animate) {
     var r = parse(location.hash);
     var dir = r.nav >= currentNav ? 1 : -1;
     var view = document.getElementById('view');
+    var token = ++navSeq;
     var go = function () {
+      if (token !== navSeq) return;          // 続けて切り替えたときは最後の画面だけ表示する
+      view = document.getElementById('view'); // 切り替えの途中で差し替わっていても今の要素を使う
       current = r.view();
       currentNav = r.nav;
       setActive(r.nav);
@@ -267,6 +271,7 @@
 
     root.addEventListener('hashchange', onHash);
     document.addEventListener('pointerdown', EE.fx.ripple);
+    EE.fx.bindAmbient();   // カーソルを追う光・カードの傾き・クリックの波紋と粒
     document.addEventListener('click', function (e) {
       var tr = e.target.closest('[data-href]');
       if (tr && !e.target.closest('button, a, input, select')) location.hash = tr.dataset.href;

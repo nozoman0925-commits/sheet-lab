@@ -142,8 +142,8 @@
         U.commit();
         var tr = a.closest('tr');
         var an = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(14px)' }], { duration: 180, fill: 'forwards' });
-        var done = function () { document.getElementById('doc-table').innerHTML = tableHTML(); };
-        if (an) an.onfinish = done; else done();
+        var fired = false, done = function () { if (fired) return; fired = true; var t = document.getElementById('doc-table'); if (t) t.innerHTML = tableHTML(); };
+        if (an) { an.onfinish = done; setTimeout(done, 240); } else done();
         EE.fx.toast('削除しました', { action: { label: '元に戻す', run: function () {
           EE.S.documents.splice(idx, 0, d); U.commit(); refresh();
         } } });

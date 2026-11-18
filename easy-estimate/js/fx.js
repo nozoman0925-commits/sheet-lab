@@ -39,7 +39,9 @@
   function pageOut(el, done) {
     if (reduce || !el.animate) return done();
     var a = el.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(-6px)' }], { duration: 110, easing: 'ease-in', fill: 'forwards' });
-    a.onfinish = function () { a.cancel(); done(); };
+    var called = false, fin = function () { if (called) return; called = true; done(); };
+    a.onfinish = function () { a.cancel(); fin(); };
+    setTimeout(fin, 180);   // 描画が重い瞬間でも切り替えが止まらないように
   }
 
   /** 数字のカウントアップ（data-count / data-format="yen|int|pct"） */
@@ -140,7 +142,69 @@
     }
   }
 
+  /* ===== カーソル・クリックのアクション ===== */
+  var NEON = ['#00E5FF', '#8B5CF6', '#FF2BD6', '#2BFFB8', '#3B82F6'];
+  var CLICKABLE = 'button, a[href], .clickable, [data-href], .folder-tile, .pkg, .nav-child, .check[data-doc], .check[data-tpl], label.btn, [role=menuitem], input[type=checkbox], .seg button';
+
+  /** クリック：押した場所からネオンの輪と粒が弾ける＋押したものが小さく弾む */
+  function burst(e) {
+    if (reduce || e.button > 0) return;
+    var t = e.target.closest(CLICKABLE);
+    if (!t || t.disabled) return;
+    var x = e.clientX, y = e.clientY, c = NEON[(Math.random() * NEON.length) | 0];
+    var ring = document.createElement('span');
+    ring.className = 'click-ring'; ring.style.cssText = 'left:' + x + 'px;top:' + y + 'px;--c:' + c;
+    document.body.appendChild(ring);
+    ring.animate([{ transform: 'scale(.4)', opacity: 1 }, { transform: 'scale(5.5)', opacity: 0 }], { duration: 480, easing: 'cubic-bezier(.2,.8,.3,1)' }).onfinish = function () { ring.remove(); };
+    var n = t.matches('.btn.primary, .folder-tile, .quick-card') ? 12 : 8;
+    for (var i = 0; i < n; i++) {
+      var d = document.createElement('span');
+      var col = NEON[(i + (Math.random() * 2 | 0)) % NEON.length];
+      d.className = 'click-dot'; d.style.cssText = 'left:' + x + 'px;top:' + y + 'px;--c:' + col;
+      document.body.appendChild(d);
+      var ang = (i / n) * Math.PI * 2 + Math.random() * 0.5, dist = 30 + Math.random() * 34;
+      d.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + Math.cos(ang) * dist + 'px,' + Math.sin(ang) * dist + 'px) scale(.2)', opacity: 0 }],
+        { duration: 520 + Math.random() * 180, easing: 'cubic-bezier(.15,.8,.3,1)' }).onfinish = (function (el) { return function () { el.remove(); }; })(d);
+    }
+    // 押したものが一瞬沈んで弾む（ボタンは CSS の :active で沈む）
+    var target = t.closest('.folder-tile, .quick-card, .pkg, .kpi, .nav-child, .check, .badge, .avatar, .seg button') || (t.matches('.btn') ? null : null);
+    if (target && target.animate) target.animate([{ transform: 'scale(1)' }, { transform: 'scale(.95)' }, { transform: 'scale(1.03)' }, { transform: 'scale(1)' }], { duration: 380, easing: 'ease-out' });
+  }
+
+  /** ガラスのパネル：カーソルの位置を光が追いかける／カードは少し傾く */
+  var lit = null, tiltEl = null, raf = 0, lastEv = null;
+  function track(e) {
+    lastEv = e;
+    if (raf) return;
+    raf = requestAnimationFrame(function () {
+      raf = 0;
+      var ev = lastEv, p = ev.target.closest && ev.target.closest('.panel');
+      if (lit && lit !== p) lit.classList.remove('lit');
+      if (p) {
+        var r = p.getBoundingClientRect();
+        p.style.setProperty('--mx', (ev.clientX - r.left) + 'px');
+        p.style.setProperty('--my', (ev.clientY - r.top) + 'px');
+        if (!p.classList.contains('lit')) p.classList.add('lit');
+      }
+      lit = p;
+      var c = !reduce && ev.target.closest && ev.target.closest('.kpi, .quick-card');
+      if (tiltEl && tiltEl !== c) { tiltEl.style.removeProperty('--tx'); tiltEl.style.removeProperty('--ty'); }
+      if (c) {
+        var rc = c.getBoundingClientRect();
+        var px = (ev.clientX - rc.left) / rc.width - 0.5, py = (ev.clientY - rc.top) / rc.height - 0.5;
+        c.style.setProperty('--ty', (px * 6).toFixed(2) + 'deg');
+        c.style.setProperty('--tx', (-py * 6).toFixed(2) + 'deg');
+      }
+      tiltEl = c || null;
+    });
+  }
+  function bindAmbient() {
+    document.addEventListener('pointerdown', burst);
+    document.addEventListener('pointermove', track, { passive: true });
+    document.addEventListener('pointerleave', function () { if (lit) lit.classList.remove('lit'); lit = null; });
+  }
+
   root.EE = root.EE || {};
-  root.EE.fx = { anim: anim, stagger: stagger, pageIn: pageIn, pageOut: pageOut, countUp: countUp, countAll: countAll,
+  root.EE.fx = { bindAmbient: bindAmbient, burst: burst, anim: anim, stagger: stagger, pageIn: pageIn, pageOut: pageOut, countUp: countUp, countAll: countAll,
     retarget: retarget, ripple: ripple, success: success, pop: pop, shake: shake, pulse: pulse, toast: toast, fmt: fmt, reduce: reduce };
 })(this);
