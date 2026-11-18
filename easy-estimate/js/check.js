@@ -181,6 +181,12 @@
       }
     }
 
+    // ---- 6b. 同じ現場のパターン ----
+    if (doc.projectId && doc.patternLabel) {
+      var same = (ctx.documents || []).filter(function (d) { return d.id !== doc.id && d.projectId === doc.projectId && d.patternLabel === doc.patternLabel; });
+      if (same.length) add('info', 'dup-pattern', '同じ現場に「' + doc.patternLabel + '」が ' + (same.length + 1) + ' 件あります', 'お客様に送るときに見分けが付くよう、パターン名を変えるとわかりやすくなります。', { area: 'header', field: 'patternLabel' });
+    }
+
     // ---- 7. 書類番号 ----
     if (!doc.no) add('error', 'no-number', '見積番号がありません', '', { area: 'header' });
     else {

@@ -46,7 +46,7 @@
         return '<tr class="clickable" data-href="#/edit/' + d.id + '" data-st>' +
           '<td><input type="checkbox" class="d-sel" data-id="' + d.id + '"' + (SEL[d.id] ? ' checked' : '') + '></td>' +
           '<td class="num">' + esc(d.no) + (d.rev ? ' <span class="badge">第' + d.rev + '版</span>' : '') + '</td>' +
-          '<td>' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(x.c.name || '宛先未設定') + '</span></td>' +
+          '<td>' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(x.c.name || '宛先未設定') + '</span></td>' +
           '<td>' + (function () { var m = U.findMember(d.ownerId); return m ? '<span class="owner-chip">' + U.avatar(m, 22) + esc(m.name.split(/\s+/)[0]) + '</span>' : '<span class="hint">未割り当て</span>'; })() + '</td>' +
           '<td class="num">' + U.jdate(d.issueDate) + '</td>' +
           '<td class="num">' + (d.status === 'issued' ? '<span class="muted">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</td>' +

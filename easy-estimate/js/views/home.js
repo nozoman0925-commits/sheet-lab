@@ -46,7 +46,7 @@
           '<div class="panel-b" style="padding-top:8px">' + (docs.length ? '<table class="table"><tbody>' + docs.slice(0, 6).map(function (d) {
             var c = U.findCustomer(d.customerId) || {};
             return '<tr class="clickable" data-href="#/edit/' + d.id + '" data-st><td><span class="num">' + esc(d.no) + '</span><span class="cell-sub">' + U.jdate(d.issueDate) + '</span></td>' +
-              '<td>' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(c.name || '宛先未設定') + '</span></td>' +
+              '<td>' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(c.name || '宛先未設定') + '</span></td>' +
               '<td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td></tr>';
           }).join('') + '</tbody></table>' : '<div class="empty">' + I.docs + 'まだ書類がありません</div>') + '</div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>送る前に確認が必要</h2><span class="sub">下書きの送信前チェック</span></div>' +

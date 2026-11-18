@@ -112,6 +112,9 @@
             '<div class="field c6"><label>案件</label><select class="input" data-f="projectId"' + dis + '>' + projectOptions() + '</select></div>' +
             '<div class="field c4"><label>担当者</label><select class="input" data-f="ownerId"' + dis + '>' + U.memberOptions(d.ownerId || '', '（未割り当て）') + '</select></div>' +
             '<div class="field c8"><label class="req">件名</label><input class="input" data-f="title" value="' + esc(d.title) + '" placeholder="例：〇〇様邸 浴室改修工事"' + dis + '></div>' +
+            '<div class="field c4"><label>パターン名（同じ現場の別案）</label><input class="input" data-f="patternLabel" list="pattern-list" value="' + esc(d.patternLabel || '') + '" placeholder="例：A案、グレードアップ案"' + dis + '>' +
+              '<datalist id="pattern-list"><option>A案</option><option>B案</option><option>C案</option><option>標準プラン</option><option>グレードアップ案</option><option>お値打ち案</option></datalist></div>' +
+            '<div class="field c8"><label>この現場の見積</label><div id="site-hint" class="site-hint"></div></div>' +
             '<div class="field c3"><label class="req">発行日</label><input class="input" type="date" data-f="issueDate" value="' + esc(d.issueDate) + '"' + dis + '></div>' +
             '<div class="field c3"><label class="req">有効期限</label><input class="input" type="date" data-f="validUntil" value="' + esc(d.validUntil) + '"' + dis + '></div>' +
             '<div class="field c6"><label>有効期限（発行日から）</label><div class="seg" id="valid-quick">' +
@@ -171,6 +174,19 @@
       guard: function () { return ED && ED.dirty; },
       discard: function () { ED = null; }
     };
+  }
+
+  /** 同じ現場（案件）の見積とパターンを表示し、別パターン作成・比較へつなぐ */
+  function renderSiteHint() {
+    var el = document.getElementById('site-hint'); if (!el) return;
+    var d = ED.doc;
+    if (!d.projectId || !U.findProject(d.projectId)) { el.innerHTML = '<span class="hint">案件（現場）を選ぶと、同じ現場の見積がここに並びます</span>'; return; }
+    var sib = EE.views.site.docsOf(d.projectId).filter(function (x) { return x.id !== d.id; });
+    var saved = !!U.findDoc(d.id);
+    el.innerHTML = '<span class="site-chips">' + (sib.length ? sib.map(function (x) {
+        return '<a class="badge pattern" href="#/edit/' + x.id + '" title="' + esc(x.no + ' ' + (x.title || '')) + '">' + esc(x.patternLabel || x.no) + '</a>'; }).join('') : '<span class="hint">ほかの見積はありません</span>') + '</span>' +
+      '<a class="btn ghost sm" href="#/site/' + d.projectId + '">' + I.docs + '現場ページで比較</a>' +
+      '<button class="btn sm" data-act="new-pattern"' + (saved ? '' : ' disabled title="一度保存すると、この見積をもとに別パターンを作れます"') + '>' + I.copy + 'この見積をもとに別パターン</button>';
   }
 
   function projectOptions() {
@@ -513,6 +529,7 @@
     if (badge) badge.textContent = d.no;
     document.querySelector('.topbar .crumb').textContent = d.no;
     if (wasNew) EE.app.replaceRoute('#/edit/' + d.id);
+    renderSiteHint();
     updateChecks();
   }
 
@@ -619,6 +636,7 @@
   function mount(view) {
     renderLines();
     updateSummary(true);
+    renderSiteHint();
 
     view.addEventListener('input', function (e) {
       var t = e.target;
@@ -683,6 +701,7 @@
         ED.sel = {}; if (t.checked) ED.doc.lines.forEach(function (l) { ED.sel[l.lineId] = true; });
         view.querySelectorAll('.line-sel').forEach(function (c) { c.checked = t.checked; }); updateBulk(); return;
       }
+      if (t.dataset.f === 'projectId') setTimeout(renderSiteHint, 0);
       if (t.dataset.f === 'customerId') {
         var pj = U.findProject(ED.doc.projectId);
         if (pj && pj.customerId !== t.value) ED.doc.projectId = '';
@@ -795,6 +814,10 @@
         return;
       }
       if (act === 'open-original') { e.preventDefault(); EE.filestore.openOriginal(ED.doc.importInfo.importId).catch(function (err) { EE.fx.toast(err.message, { warn: true }); }); return; }
+      if (act === 'new-pattern') {
+        if (ED.dirty) save();
+        EE.views.site.newPattern(ED.doc.id); return;
+      }
       if (act === 'add-adj') { addAdj(a.dataset.type); return; }
       if (act === 'del-adj') {
         var aid = a.closest('[data-adj]').dataset.adj;

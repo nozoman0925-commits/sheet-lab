@@ -76,7 +76,7 @@
     function docRows(list) {
       return list.sort(function (a, b) { return (b.issueDate || '').localeCompare(a.issueDate || ''); }).map(function (d) {
         return '<tr class="clickable" data-href="#/edit/' + d.id + '"><td class="num">' + esc(d.no) + '<span class="cell-sub">' + U.jdate(d.issueDate) + '</span></td>' +
-          '<td>' + esc(d.title || '（件名なし）') + '</td><td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td></tr>';
+          '<td>' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '</td><td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td></tr>';
       }).join('');
     }
     var cards = projects.map(function (p) {
@@ -84,7 +84,7 @@
       var list = docsBy[p.id] || [];
       var pOwner = p.ownerId && U.findMember(p.ownerId);
       var note = pOwner && pOwner.id !== id ? '<span class="badge">現場の担当：' + esc(pOwner.name) + '</span>' : '';
-      return '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.home + '</span><h3>' + esc(p.name) + '</h3><div class="spacer"></div>' + note + '</div>' +
+      return '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.home + '</span><h3><a href="#/site/' + p.id + '" class="site-link">' + esc(p.name) + '</a></h3><div class="spacer"></div>' + note + '<a class="btn ghost sm" href="#/site/' + p.id + '">現場ページ</a></div>' +
         '<div class="panel-b"><div class="hint" style="margin-bottom:10px">' + esc(c.name || '') + ' ' + esc(c.honorific || '') + (p.site ? '　現場：' + esc(p.site) : '') + '</div>' +
         (list.length ? '<table class="table"><tbody>' + docRows(list) + '</tbody></table>' : '<p class="hint">まだ書類はありません</p>') +
         '<div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn sm" data-new-site="' + p.id + '">' + I.plus + 'この現場で見積を作る</button></div></div></section>';

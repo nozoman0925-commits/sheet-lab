@@ -54,7 +54,7 @@
       return '<tr><td>' + CT[k] + '</td><td class="r num">' + yen(b[k]) + '</td></tr>';
     }).join('');
 
-    var title = doc.rev ? '御見積書（第' + doc.rev + '版）' : '御見積書';
+    var title = '御見積書' + (doc.patternLabel ? '（' + doc.patternLabel + '）' : '') + (doc.rev ? '（第' + doc.rev + '版）' : '');
     return '<div class="sheet">' +
       '<div class="head" style="grid-template-columns:1fr"><h1>' + esc(title) + '</h1>' +
       '<div class="meta sans num">No. ' + esc(doc.no) + '<br>発行日 ' + U.jdate(doc.issueDate) + '</div></div>' +

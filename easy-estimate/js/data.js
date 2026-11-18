@@ -148,6 +148,12 @@
     var e2 = newEstimate(s, { customerId: 'cus_yamada', projectId: 'prj_yamada', title: '1階トイレ改修工事',
       issueDate: addDays(t, -3), validUntil: addDays(t, 4) });
     e2.lines = lines([['itm_p002', 1], ['itm_k004', 1], ['itm_m004', 2], ['itm_l003', 0.5], ['itm_e001', 1]]);
+    e2.patternLabel = 'A案';
+    // 同じ現場の別パターン（床の張替えなし・最小限の工事）
+    var e5 = newEstimate(s, { customerId: 'cus_yamada', projectId: 'prj_yamada', title: '1階トイレ改修工事',
+      issueDate: addDays(t, -2), validUntil: addDays(t, 28) });
+    e5.lines = lines([['itm_p002', 1], ['itm_k004', 1], ['itm_e001', 1]]);
+    e5.patternLabel = 'B案（床はそのまま）';
     var e3 = newEstimate(s, { customerId: 'cus_midori', projectId: 'prj_midori', ownerId: 'mem_tanaka', title: '事務所 照明LED化',
       issueDate: addDays(t, -40), validUntil: addDays(t, -10) });
     e3.lines = lines([['itm_p001', 12], ['itm_k005', 12], ['itm_l002', 1]]);
@@ -162,7 +168,7 @@
     e4.adjustments = [{ id: 'adj_e4', type: 'overhead', label: '諸経費', mode: 'rate', rateBp: 500, scope: 'all' }];
 
     var calc = root.EE.engine.calc;
-    [e4, e1, e2, e3].forEach(function (d) {
+    [e4, e1, e2, e3, e5].forEach(function (d) {
       d.totals = root.EE.engine.snapshot(calc(d, s.settings));
       d.createdAt = d.updatedAt = new Date(d.issueDate + 'T09:00:00').toISOString();
       s.documents.push(d);

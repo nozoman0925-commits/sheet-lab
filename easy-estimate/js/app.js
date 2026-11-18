@@ -41,6 +41,7 @@
       case 'new': return { nav: 2, view: function () { return p[1] === 'edit' ? EE.views.editor.render(null) : EE.views.quick.render(p[1]); } };
       case 'edit': return { nav: 1, view: function () { return EE.views.editor.render(p[1]); } };
       case 'clients': return { nav: 3, view: function () { return EE.views.clients.render(); } };
+      case 'site': return { nav: 3, view: function () { return EE.views.site.render(p[1]); } };
       case 'folder': return { nav: 0, view: function () { return EE.views.folders.render(p[1]); } };
       case 'settings': return { nav: 4, view: function () { return EE.views.settings.render(p[1]); } };
       default: return { nav: 0, view: function () { return EE.views.home.render(); } };

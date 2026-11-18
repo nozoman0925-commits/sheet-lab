@@ -93,7 +93,8 @@
       '<div class="panel-h" style="padding:0 0 8px"><h3>案件</h3><div class="spacer"></div><button class="btn sm" data-act="new-p">' + I.plus + '案件を追加</button></div>' +
       (pjs.length ? '<table class="table" style="margin-bottom:18px"><tbody>' + pjs.map(function (p) {
         var pm = U.findMember(p.ownerId);
-        return '<tr data-st><td>' + esc(p.name) + '<span class="cell-sub">' + esc(p.site || '') + (pm ? '　担当：' + esc(pm.name) : '') + '</span></td><td class="r"><div class="row-actions">' +
+        var pc = EE.views.site.docsOf(p.id).length;
+        return '<tr class="clickable" data-href="#/site/' + p.id + '" data-st><td>' + esc(p.name) + (pc ? ' <span class="badge">見積 ' + pc + '件</span>' : '') + '<span class="cell-sub">' + esc(p.site || '') + (pm ? '　担当：' + esc(pm.name) : '') + '</span></td><td class="r"><div class="row-actions">' +
           '<button class="btn ghost sm" data-act="p-doc" data-pid="' + p.id + '">' + I.plus + '見積</button>' +
           '<button class="btn ghost icon sm" data-act="edit-p" data-pid="' + p.id + '">' + I.edit + '</button></div></td></tr>';
       }).join('') + '</tbody></table>' : '<p class="hint" style="margin:0 0 18px">案件はまだありません</p>') +
