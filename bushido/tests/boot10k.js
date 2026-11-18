@@ -23,7 +23,7 @@ function makeState(i){const r=rng(i*7919+13);const pick=a=>a[Math.floor(r()*a.le
 const KINDS=["新規","項目の欠け","壊れた値","壊れた値2","1年分","外観・師範の異常","分野の番号の異常","一時的な失敗","ブラウザ保存なし","入門途中"];
 const MOCK=(st,mode)=>`<script>(function(){const MODE=${JSON.stringify(mode)};const ST=${JSON.stringify(st)};const store=new Map();let failed=0;
 if(ST){store.set("data/users/u1/main",ST.main);Object.keys(ST.days||{}).forEach(k=>store.set("data/users/u1/main/days/"+k,ST.days[k]))}
-const wait=ms=>new Promise(r=>setTimeout(r,ms));const snap=(p,v)=>({id:p.split("/").pop(),exists:v!==undefined,data:()=>v===undefined?undefined:JSON.parse(JSON.stringify(v))});
+const deepFreeze=o=>{if(o&&typeof o==="object"){Object.values(o).forEach(deepFreeze);Object.freeze(o)}return o};const wait=ms=>new Promise(r=>setTimeout(r,ms));const snap=(p,v)=>({id:p.split("/").pop(),exists:v!==undefined,data:()=>v===undefined?undefined:deepFreeze(JSON.parse(JSON.stringify(v)))});
 const doc=p=>({id:p.split("/").pop(),path:p,get:async()=>{if(MODE.unavailOnce&&!failed++)throw Object.assign(new Error("一時的"),{code:"unavailable"});await wait(MODE.lat);return snap(p,store.get(p))},
  set:async v=>{await wait(3);store.set(p,JSON.parse(JSON.stringify(v)))},delete:async()=>{store.delete(p)},collection:c=>col(p+"/"+c)});
 const col=p=>({path:p,doc:id=>doc(p+"/"+id),get:async()=>{await wait(MODE.lat);const docs=[];for(const [k,v] of store)if(k.startsWith(p+"/")&&k.slice(p.length+1).indexOf("/")<0)docs.push(snap(k,v));return {docs,size:docs.length}}});
