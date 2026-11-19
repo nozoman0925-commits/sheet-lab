@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>サインイン切替カード</title>
+<link rel="stylesheet" href="auth-card.css">
+<style>
+  html, body { margin: 0; min-height: 100%; }
+  body { background: var(--ac-page); color: var(--ac-fg); font-family: "Hiragino Sans", "Noto Sans JP", system-ui, sans-serif; }
+  .demo { min-height: 100vh; display: grid; place-items: center; padding: 56px 16px 40px; box-sizing: border-box; }
+  .demo-bar { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); display: flex; gap: 6px; padding: 4px; border: 1px solid var(--ac-line); border-radius: 999px; background: var(--ac-card); z-index: 5; }
+  .demo-bar button { height: 32px; padding: 0 14px; white-space: nowrap; border: 0; border-radius: 999px; background: transparent; color: var(--ac-mute); font: inherit; font-size: 13px; cursor: pointer; }
+  @media (max-width: 400px) { .demo-bar button { padding: 0 10px; font-size: 12px; } }
+  .demo-bar button[aria-pressed="true"] { background: var(--ac-accent); color: var(--ac-accent-ink); }
+</style>
+</head>
+<body class="ac-theme" data-theme="estimate">
+<div class="demo-bar" role="group" aria-label="配色の見本">
+  <button type="button" data-theme-set="estimate" aria-pressed="true">EASY ESTIMATE</button>
+  <button type="button" data-theme-set="golden" aria-pressed="false">GOLDEN ORDER</button>
+</div>
+
+<main class="demo">
+  <section class="ac-card" aria-label="アカウント"
+    data-signup-panel='{"h":"おかえりなさい","p":"すでにアカウントをお持ちの方は、こちらからサインインできます。","b":"サインイン"}'>
+    <div class="ac-forms">
+      <!-- サインイン -->
+      <form class="ac-form" data-form="signin" data-active="true" autocomplete="on">
+        <h1 class="ac-title">サインイン</h1>
+        <p class="ac-sub">登録したメールアドレスとパスワードを入力してください。</p>
+        <div class="ac-field">
+          <label for="si-email">メールアドレス<span class="ac-req">必須</span></label>
+          <input class="ac-input" id="si-email" name="email" type="email" autocomplete="email" required aria-describedby="si-email-e" placeholder="name@example.com">
+          <p class="ac-err" id="si-email-e"></p>
+        </div>
+        <div class="ac-field">
+          <label for="si-pass">パスワード<span class="ac-req">必須</span></label>
+          <input class="ac-input" id="si-pass" name="password" type="password" autocomplete="current-password" required minlength="8" aria-describedby="si-pass-e">
+          <p class="ac-err" id="si-pass-e"></p>
+        </div>
+        <div class="ac-row">
+          <label class="ac-check"><input type="checkbox" name="remember" value="1"> ログイン状態を保持</label>
+          <a class="ac-link" href="#">パスワードを忘れた方</a>
+        </div>
+        <button class="ac-submit" type="submit">サインイン</button>
+        <p class="ac-alert" role="status" aria-live="polite"></p>
+      </form>
+
+      <!-- 新規登録 -->
+      <form class="ac-form" data-form="signup" data-active="false" autocomplete="on">
+        <h1 class="ac-title">新規登録</h1>
+        <p class="ac-sub">必要事項を入力して、アカウントを作成してください。</p>
+        <div class="ac-field">
+          <label for="su-name">お名前<span class="ac-req">必須</span></label>
+          <input class="ac-input" id="su-name" name="name" type="text" autocomplete="name" required aria-describedby="su-name-e">
+          <p class="ac-err" id="su-name-e"></p>
+        </div>
+        <div class="ac-field">
+          <label for="su-email">メールアドレス<span class="ac-req">必須</span></label>
+          <input class="ac-input" id="su-email" name="email" type="email" autocomplete="email" required aria-describedby="su-email-e" placeholder="name@example.com">
+          <p class="ac-err" id="su-email-e"></p>
+        </div>
+        <div class="ac-field">
+          <label for="su-pass">パスワード<span class="ac-req">必須・8文字以上</span></label>
+          <input class="ac-input" id="su-pass" name="password" type="password" autocomplete="new-password" required minlength="8" aria-describedby="su-pass-e">
+          <p class="ac-err" id="su-pass-e"></p>
+        </div>
+        <div class="ac-field">
+          <label for="su-pass2">パスワード（確認）<span class="ac-req">必須</span></label>
+          <input class="ac-input" id="su-pass2" name="password_confirm" type="password" autocomplete="new-password" required data-match="password" aria-describedby="su-pass2-e">
+          <p class="ac-err" id="su-pass2-e"></p>
+        </div>
+        <div class="ac-field">
+          <label class="ac-check"><input type="checkbox" name="agree" value="1" required aria-describedby="su-agree-e"> <span>利用規約に同意する</span></label>
+          <p class="ac-err" id="su-agree-e"></p>
+        </div>
+        <button class="ac-submit" type="submit">登録する</button>
+        <p class="ac-alert" role="status" aria-live="polite"></p>
+      </form>
+    </div>
+
+    <div class="ac-slot" aria-hidden="true"></div>
+
+    <!-- 濃色パネル（ブレード） -->
+    <div class="ac-blade">
+      <div class="ac-blade-inner">
+        <h2>はじめての方へ</h2>
+        <p>アカウントを作ると、見積もりの保存や履歴の確認ができます。</p>
+        <button class="ac-toggle" type="button" aria-label="新規登録の画面に切り替える">新規登録</button>
+      </div>
+    </div>
+    <p class="ac-live ac-sr" aria-live="polite"></p>
+  </section>
+</main>
+
+<script src="auth-card.js"></script>
+<script>
+  // 見本：送信先が無いので、見本の処理で成功にする。既存の認証に組み込む時は onSignIn / onSignUp に置き換える
+  window.authCard = AuthCard.mount(document.querySelector(".ac-card"), {});
+  document.querySelectorAll("[data-theme-set]").forEach(b => b.addEventListener("click", () => {
+    document.body.dataset.theme = b.dataset.themeSet;
+    document.querySelectorAll("[data-theme-set]").forEach(x => x.setAttribute("aria-pressed", String(x === b)));
+  }));
+</script>
+</body>
+</html>
