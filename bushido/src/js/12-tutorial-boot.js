@@ -36,7 +36,9 @@ const TUT=[
  {ch:6,tab:"dojo",center:true,t:"師範から一言",b:"「今日からが本当の始まりだ。」",next:"次へ"},
  {ch:7,tab:"dojo",center:true,reward:true,m:"よし。基本は教えた。これからは自分の意思で稽古を続けろ。",t:"入門の儀、完了。",b:"道場を開く・一振りを選ぶ・記録する・稽古場・武道録・助言。すべて体験した。",next:"道場へ進む"}
 ];
-function tutChStart(i){const c=TUT[i]&&TUT[i].ch;if(c==null||c===0)return 0;if(c===7)return TUT.length-1;const ch=c===3?2:c;return TUT.findIndex(s=>s.ch===ch)}
+// 第35版：師範の手順（第六章・師範を指す手順）は全編から外す
+const TUT_FULL=TUT.filter(s=>!(s.ch===6||/師範/.test(s.t||"")||/sec-master/.test(s.sel||"")));
+function tutChStart(i){const T=TUT_FULL;const c=T[i]&&T[i].ch;if(c==null||c===0)return 0;if(c===7)return T.length-1;const ch=c===3?2:c;return Math.max(0,T.findIndex(s=>s.ch===ch))}
 function tutSandbox(){if(S.main.tutSnap)return;const k=todayKey();const M=S.main;
   M.tutSnap={key:k,day:S.days[k]?clone(S.days[k]):null,tasks:clone(M.tasks),rankMax:M.rankMax,rankLog:clone(M.rankLog),weeklies:clone(M.weeklies),returns:clone(M.returns||[]),recoveries:clone(M.recoveries||[])};
   S.days[k]={logs:{},mission:null,ritual:{},reflection:null,temptations:[]};saveDay(k);saveMain();ui.shownExp=null}
@@ -49,8 +51,8 @@ const TUT_FIRST=[
  {ch:2,tab:"dojo",sel:"#sec-mission .hero-how",t:"やり方は、ここにある",b:"目安の時間と、できない日の軽い版が書いてある。くわしい手順は「やり方をくわしく」から。",next:"次へ"},
  {ch:3,tab:"dojo",sel:"#sec-mission [data-act=mres][data-v=done]",press:true,t:"終わったら「やり切った」",b:"練習だ。押してみろ。本番の記録には残らない。",done:()=>!!(day(todayKey()).mission||{}).result},
  {ch:7,tab:"dojo",center:true,reward:true,m:"よし。あとは毎日、これ一つからだ。",t:"入門の儀、完了。",b:"ほかの機能は、初めて開いた時にその場で案内する。すべての使い方は、誓いの間の「データ管理」からいつでも見直せる。",next:"道場へ進む"}];
-function tutStart(from,full){closeSheet();$("#ceremony").hidden=true;tutRestore();tutSandbox();const steps=(full||S.main.tutFull)?TUT:TUT_FIRST;if(full)S.main.tutFull=true;ui.tutSteps=steps;ui.tutKind="main";
-  ui.tut=from!=null?from:(S.main.tutStep||0);if(!(ui.tut>=0&&ui.tut<steps.length))ui.tut=0;if(steps===TUT)ui.tut=tutChStart(ui.tut);ui.tutSkip=false;ui.tutHelp=false;tab=steps[ui.tut].tab||"dojo";
+function tutStart(from,full){closeSheet();$("#ceremony").hidden=true;tutRestore();tutSandbox();const steps=(full||S.main.tutFull)?TUT_FULL:TUT_FIRST;if(full)S.main.tutFull=true;ui.tutSteps=steps;ui.tutKind="main";
+  ui.tut=from!=null?from:(S.main.tutStep||0);if(!(ui.tut>=0&&ui.tut<steps.length))ui.tut=0;if(steps===TUT_FULL)ui.tut=tutChStart(ui.tut);ui.tutSkip=false;ui.tutHelp=false;tab=steps[ui.tut].tab||"dojo";
   S.main.tutLater=false;S.main.tutStep=ui.tut;S.main.tutFlags=S.main.tutFlags||{};saveMain();render();window.scrollTo(0,0)}
 const HINTS={
  keiko:[{sel:"#sec-pick",t:"稽古場",b:"今日やると良い稽古を一つだけ出している。ほかの稽古は、下の分類（心を整える・身体を鍛える など）を開くと出てくる。",next:"わかった"}],
@@ -68,7 +70,7 @@ function tutEnd(later){const kind=ui.tutKind;ui.tut=null;ui.tutSteps=null;$("#tu
 function tutStep(){return ui.tut==null||!ui.tutSteps?null:ui.tutSteps[ui.tut]}
 function tutAdvance(){const prev=ui.tutSteps[ui.tut];if(ui.tutKind==="main"&&prev&&prev.flag){S.main.tutFlags=S.main.tutFlags||{};S.main.tutFlags[prev.flag]=1}
   ui.tut++;ui.tutScrolled=false;ui.tutHelp=false;ui.tutMiss=0;if(ui.tut>=ui.tutSteps.length){tutEnd();return}
-  if(ui.tutKind==="main"){S.main.tutStep=ui.tutSteps===TUT?tutChStart(ui.tut):ui.tut;saveMain()}tutShow()}
+  if(ui.tutKind==="main"){S.main.tutStep=ui.tutSteps===TUT_FULL?tutChStart(ui.tut):ui.tut;saveMain()}tutShow()}
 function tutBackIdx(){const cur=ui.tutSteps[ui.tut];if(!cur||cur.reward)return -1;for(let i=ui.tut-1;i>=0;i--){const s=ui.tutSteps[i];if(s.ch!==cur.ch)return -1;if(s.chap)return -1;if(!s.done&&!s.allow&&(s.tab||"dojo")===tab)return i}return -1}
 function tutCheck(){
   const s=tutStep();if(!s)return;

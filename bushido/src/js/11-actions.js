@@ -1,6 +1,6 @@
 const A={
   closeSheet:(el,ev)=>{if(ev.target===el||el.tagName==="BUTTON")closeSheet()},
-  obNext:()=>{{const cf=$("#cf-sign");if(cf){const v=cf.value.trim();if(!v){cf.focus();toast("呼び名を記せ","道場や達成証に出る名前");return}ui.ob.sign=v}}if(ui.ob&&ui.ob.retConfirm&&(flowX()[ui.obStep]==="self"||flowX()[ui.obStep]==="m_photo")){ui.ob.retConfirm=false;ui.obStep=flowX().indexOf("confirm");obAfter();return}ui.obStep=Math.min(flowX().length-1,ui.obStep+1);if(flowX()[ui.obStep]==="env2")ui.obStep++;obAfter()},
+  obNext:()=>{if(!S.main.onboarded&&!ui.mflow&&!ui.retake&&flowX()[ui.obStep+1]==="qdone"){A.obQuickDone();return}{const cf=$("#cf-sign");if(cf){const v=cf.value.trim();if(!v){cf.focus();toast("呼び名を記せ","道場や達成証に出る名前");return}ui.ob.sign=v}}if(ui.ob&&ui.ob.retConfirm&&(flowX()[ui.obStep]==="self"||flowX()[ui.obStep]==="m_photo")){ui.ob.retConfirm=false;ui.obStep=flowX().indexOf("confirm");obAfter();return}ui.obStep=Math.min(flowX().length-1,ui.obStep+1);if(flowX()[ui.obStep]==="env2")ui.obStep++;obAfter()},
   envHas:el=>{const e=envTarget();e.has=el.dataset.v;envRefresh()},
   envApp:el=>{const e=envTarget();const a=e.apps=e.apps||[];const i=a.indexOf(el.dataset.v);i<0?a.push(el.dataset.v):a.splice(i,1);e.checks=(e.checks||[]).filter(c=>!/を消した$/.test(c)||a.some(x=>c===x+" を消した"));envRefresh()},
   envChoice:el=>{const e=envTarget();e.choice=el.dataset.v;e.checks=[];e.slot=null;envRefresh()},
@@ -116,6 +116,11 @@ const A={
   mChange:()=>{ui.ob.retConfirm=flowX().includes("confirm");ui.obStep=flowX().indexOf("m_pick");obAfter()},
   mflowStart:()=>{const M=S.main;ui.mflow=M.master?"edit":"new";ui.ob={m:Object.assign({},M.master||{}),sign:M.displayName||""};if(!M.master)ui.ob.self={pk:(M.self0&&M.self0.key)||null};ui.obStep=0;obDraft();render();window.scrollTo(0,0)},
   mEditDone:()=>{mCommit(ui.ob);ui.mflow=null;ui.ob={};ui.obStep=0;S.main.obDraft=null;saveMain();tab="chikai";render();window.scrollTo(0,0);toast("師範を改めた","稽古の記録はそのまま");setTimeout(()=>mSay("advice"),600)},
+  obQuickDone:()=>{const ob=ui.ob||{};const k=todayKey();const M=S.main;const pl=planFrom(ob);const t=pl.task;
+    M.onboarded=true;M.viewDefault=M.viewDefault||"min";M.displayName=M.displayName||"";M.features=pl.features;M.notif=pl.notif;applyProfile(pl,true);M.created=M.created||k;
+    if(t&&!M.tasks.some(x=>x.focus))M.tasks.push({id:uid(),cat:t.c,name:t.p.n,minimum:t.p.m||"",unit:t.p.u||"",restDays:t.p.r||[],status:"進行中",focus:true,start:k,settledOn:null,history:[{date:k,change:"開始"}]});
+    M.obAns=obAnsOf(ob);M.tutVer=3;M.tutDone=true;M.tutStep=null;M.firstDay=k;M.prologue=Object.assign({},M.prologue||{},{done:true});
+    ui.mflow=null;M.obDraft=null;ui.ob={};ui.obStep=0;saveMain();tab="dojo";render();window.scrollTo(0,0)},
   vowGo:()=>{const ob=ui.ob;const k=todayKey();const M=S.main;const first=!M.onboarded;const sign=ob.sign||M.displayName||"無名";
     if(first){const pl=planFrom(ob);const t=pl.task;
       M.onboarded=true;M.viewDefault=M.viewDefault||"min";M.displayName=sign;M.features=pl.features;M.notif=pl.notif;applyProfile(pl,true);

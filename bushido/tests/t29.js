@@ -13,7 +13,7 @@ const h=await p.evaluate(()=>document.documentElement.scrollHeight);ok("道場�
 const grp=await p.evaluate(()=>[...document.querySelectorAll('#app details.grp')].map(d=>d.querySelector('.gt').textContent+":"+d.open));
 ok("ほかはすべて「その他の稽古・記録」にたたんで残す（機能は消さない）",grp.join(",")==="その他の稽古・記録:false",grp.join(","));
 ok("SNSの関門なども「その他」の中にある",await p.evaluate(()=>!!document.querySelector('details.grp #sec-env')));
-ok("何のアプリかが見出しに書いてある",(await p.textContent('.brand small')).includes("鍛える"));
+ok("見出しは決定版のタグライン",(await p.textContent('.brand small')).includes("己に勝て。言い訳を断て。昨日の己を超えろ。"));
 await p.click('#app details.grp summary');await p.waitForTimeout(300);ok("「その他の稽古・記録」を押すと開く",await p.evaluate(()=>document.querySelector('#app details.grp').open));
 ok("端末保存の案内は道場に出さない",await p.evaluate(()=>!/ブラウザ内だけ/.test(document.querySelector('#app').textContent)));
 // 背景

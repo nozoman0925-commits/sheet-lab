@@ -6,8 +6,8 @@ const ctx=await b.newContext({viewport:{width:390,height:844}});const p=await ct
 await p.goto('http://localhost:8765/index.html');await p.evaluate(()=>localStorage.clear());await p.reload();await p.waitForTimeout(400);
 // 初回の問い
 const fq=await p.evaluate(()=>{const T=__T;T.ui.ob={};const f=T.flowX();return {n:f.filter(x=>/^[a-z]\d+$/.test(x)).length,temp:f.includes("t1"),type:f.includes("type"),ids:f.filter(x=>/^[a-z]\d+$/.test(x)).join(",")}});
-ok("初回の問いは安全・目標・時間の5問に絞る（16タイプ・生活は後で）",fq.n===5&&!fq.temp&&!fq.type,fq.n+"問："+fq.ids);
-ok("安全の問い（けが・医師・気分）と目標・使える時間は必ず聞く",["b9","b10","m1","g1","g2"].every(x=>fq.ids.split(",").includes(x)));
+ok("初回の問いは安全の3問に絞る（目標・時間・16タイプ・生活は後で）",fq.n===3&&!fq.temp&&!fq.type,fq.n+"問："+fq.ids);
+ok("安全の問い（けが・医師・気分）は必ず聞く",["b9","b10","m1"].every(x=>fq.ids.split(",").includes(x)));
 // 見本で道場へ
 await p.click('[data-act=demo]');await p.waitForTimeout(300);await p.click('[data-tut=skip]');await p.click('[data-tut=skip]');await p.waitForTimeout(300);
 await p.evaluate(()=>{const T=__T;const M=T.S.main;M.demo=false;M.master={motive:"respect",name:"先生",gender:"male",date:T.todayKey()};M.tutVer=3;M.tutDone=true;M.hints={keiko:1,roku:1,chikai:1};

@@ -30,7 +30,7 @@ function plReduced(){try{return look().anim==="off"||matchMedia("(prefers-reduce
 function plD(n){return plReduced()?0:n}
 function plMount(){if($("#prologue"))return;const el=document.createElement("div");el.id="prologue";el.setAttribute("role","dialog");el.setAttribute("aria-label","入門の序章");
   el.innerHTML='<div class="pl-aurora" aria-hidden="true"><i></i><i></i><i></i></div><div class="pl-scenes">'+plScenes()+'</div><div class="pl-grain" aria-hidden="true"></div><div class="pl-vignette"></div>'+
-   '<div class="pl-top"><button class="pl-btn" data-pl="back" aria-label="前の幕へ戻る">‹</button><div class="pl-dots" aria-hidden="true">'+PROLOGUE.map(()=>'<i></i>').join("")+'</div><button class="pl-btn" data-pl="skip">スキップ</button></div>'+
+   '<div class="pl-top"><button class="pl-btn" data-pl="back" aria-label="前の幕へ戻る">‹</button><div class="pl-dots" aria-hidden="true">'+PROLOGUE.map(()=>'<i></i>').join("")+'</div><button class="pl-btn" data-pl="skip">スキップ</button><button class="pl-btn pl-again" data-pl="again">はじめから見る</button></div>'+
    '<div class="pl-center"><div class="pl-glass"><p class="pl-ch" aria-hidden="true"></p><div class="pl-text" aria-live="polite"></div></div></div>'+
    '<p class="pl-hint" aria-hidden="true">タップして進む</p>'+
    '<div class="pl-cta"><button class="pl-enter" data-pl="enter">入門する</button><button class="pl-demo" data-pl="demo">先に見本で中を見る</button></div>';
@@ -38,7 +38,8 @@ function plMount(){if($("#prologue"))return;const el=document.createElement("div
   el.addEventListener("click",plTap);
   // ガラスに映る淡い光（指やマウスの位置）
   el.addEventListener("pointermove",ev=>{const g=el.querySelector(".pl-glass");if(!g)return;const r=g.getBoundingClientRect();g.style.setProperty("--mx",(ev.clientX-r.left)+"px");g.style.setProperty("--my",(ev.clientY-r.top)+"px")},{passive:true});ui.pl={act:-1,beat:-1,busy:false,t:0};
-  const a=Math.max(0,Math.min(PROLOGUE.length-1,(S.main.prologue&&S.main.prologue.act)||0));plShowAct(a)}
+  const pa=S.main.prologue&&S.main.prologue.act;if(pa==null)ui.pl.quickAll=true; // 初めては最後の一画面を一度に見せる
+  const a=Math.max(0,Math.min(PROLOGUE.length-1,pa!=null?pa:PROLOGUE.length-1));plShowAct(a)} // 第35版：序章は最後の一画面から（全編は「はじめから見る」）
 function plUnmount(){const el=$("#prologue");if(el)el.remove();document.documentElement.classList.remove("pl-lock");ui.pl=null}
 function plFmt(t){return esc(t).replace(/&lt;g&gt;/g,'<span class="g">').replace(/&lt;\/g&gt;/g,'</span>').replace(/\n/g,"<br>").replace(/\|/g,"<wbr>")} // 「|」は文節の区切り（ここでだけ折り返す）
 function plShowAct(i){const el=$("#prologue");if(!el)return;const P=ui.pl;P.act=i;P.beat=-1;P.busy=true;P.leaving=false;const seq=P.seq=(P.seq||0)+1;
@@ -48,7 +49,7 @@ function plShowAct(i){const el=$("#prologue");if(!el)return;const P=ui.pl;P.act=
   el.querySelector(".pl-hint").classList.remove("on");el.querySelector(".pl-cta").classList.remove("on");
   const tx=el.querySelector(".pl-text");tx.className="pl-text";tx.innerHTML="";const g=el.querySelector(".pl-glass");g.classList.remove("on");
   S.main.prologue={act:i,done:false};saveMain();
-  setTimeout(()=>{if(!ui.pl||ui.pl.seq!==seq)return;g.classList.add("on");setTimeout(()=>{if(ui.pl&&ui.pl.seq===seq)plBeat(0)},plD(400))},plD(PL_T.swap))}
+  setTimeout(()=>{if(!ui.pl||ui.pl.seq!==seq)return;g.classList.add("on");setTimeout(()=>{if(!ui.pl||ui.pl.seq!==seq)return;if(P.quickAll&&i===PROLOGUE.length-1){P.quickAll=false;PROLOGUE[i].b.forEach((_,j)=>setTimeout(()=>{if(ui.pl&&ui.pl.seq===seq)plBeat(j)},j*plD(380)))}else plBeat(0)},plD(400))},plD(PL_T.swap))}
 function plBeat(j){const el=$("#prologue");if(!el||!ui.pl)return;const P=ui.pl;const seq=P.seq;const A=PROLOGUE[P.act];const B=A.b[j];P.beat=j;P.busy=true;
   el.querySelector(".pl-hint").classList.remove("on");
   const tx=el.querySelector(".pl-text");if(B.c==="big")tx.classList.add("focus");
@@ -66,9 +67,9 @@ function plTap(ev){const P=ui.pl;if(!P)return;const b=ev.target.closest("[data-p
   if(b){ev.stopPropagation();const v=b.dataset.pl;
     if(v==="enter")return plEnter(false);if(v==="demo")return plEnter(true);
     if(v==="skip"){if(P.act<PROLOGUE.length-1)plGo(PROLOGUE.length-1);return}
-    if(v==="back"){if(P.act>0)plGo(P.act-1);return}return}
+    if(v==="back"){if(P.act>0)plGo(P.act-1);return}if(v==="again"){plGo(0);return}return}
   if(P.busy||Date.now()-P.t<250)return; // 連続タップで飛ばさない
   const A=PROLOGUE[P.act];if(P.beat<A.b.length-1)plBeat(P.beat+1);else if(P.act<PROLOGUE.length-1)plGo(P.act+1)}
 function plEnter(demo){const el=$("#prologue");if(!el)return;S.main.prologue={done:true,date:todayKey()};saveMain();
-  el.classList.add("leave");setTimeout(()=>{plUnmount();if(demo){A.demo();return}ui.ob=ui.ob||{};ui.obStep=Math.max(0,flowX().indexOf("m_pick"));obAfter()},plD(PL_T.swap))}
+  el.classList.add("leave");setTimeout(()=>{plUnmount();if(demo){A.demo();return}ui.ob=ui.ob||{};const f=flowX();ui.obStep=Math.max(0,f.findIndex(x=>/^[a-z]\d+$/.test(x)));obAfter()},plD(PL_T.swap))}
 document.addEventListener("keydown",ev=>{if(!ui.pl||!$("#prologue"))return;if(ev.key===" "||ev.key==="Enter"||ev.key==="ArrowRight"){if(ev.target&&ev.target.closest&&ev.target.closest("[data-pl]"))return;ev.preventDefault();plTap({target:$("#prologue .pl-center")})}else if(ev.key==="ArrowLeft"&&ui.pl.act>0)plGo(ui.pl.act-1)});

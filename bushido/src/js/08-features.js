@@ -42,9 +42,8 @@ const GROUPS={
   {t:"分析",s:"六つの能力・生活の基盤・言い訳・過去の自分",ids:["sec-status","sec-base","sec-excuse"],ey:["VS "]},
   {t:"これまでの記録",s:"省察・EXP・再起",ids:["sec-refl-list"],ey:["EXP履歴","再起履歴"]}],
  chikai:[{t:"自分の誓い",s:"起請文・未来之書・七徳の心得",ey:["起請文","未来之書","七徳の心得"]},
-  {t:"師範",s:"師範・言葉づかい・師範への誓い",ids:["sec-mset","sec-tone","sec-vow"]},
   {t:"自分の成長",s:"段位・刀・卒業・武士の型・見つめ直し",ids:["sec-grad-m","sec-self0","sec-type","sec-myprofile"],ey:["刀の成長","段位","離 ","卒業 ・ ","見つめ直し"]},
-  {t:"表示と通知",s:"表示の量・外観・通知・使う機能",ids:["sec-look","sec-features"],ey:["通知設定"]},
+  {t:"表示と通知",s:"表示の量・外観・言葉の厳しさ・通知・使う機能",ids:["sec-look","sec-tone","sec-features"],ey:["通知設定"]},
   {t:"データ管理",s:"書き出し・読み込み・全消去・使い方",ey:["データ設定","用語集"]}]};
 function groupSections(){const G=GROUPS[tab];const st=$("#app .stack");if(!G||!st)return;ui.grpOpen=ui.grpOpen||{};
   G.forEach((g,gi)=>{let els;const kids=[...st.children].filter(e=>e.tagName==="SECTION");
