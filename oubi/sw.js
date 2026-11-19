@@ -1,7 +1,7 @@
 /* 電波がなくても画面を開けるようにする。記録そのものは supa.js が端末に控えを置く。
    画面のファイルは「まず最新を取りに行き、だめなら控え」。更新したら VERSION を上げる。 */
-const VERSION='oubi-v24';
-const FILES=['./','index.html','config.js','supa.js','sales.js','health.js','features.js','manifest.webmanifest','logo.jpg','logo-s.jpg','icon-180.png','icon-192.png','icon-512.png',
+const VERSION='oubi-v25';
+const FILES=['./','index.html','config.js','supa.js','sales.js','health.js','features.js','mitsu.js','mitsu.css','mitsu-bridge.js','mitsu-host.css','manifest.webmanifest','logo.jpg','logo-s.jpg','icon-180.png','icon-192.png','icon-512.png',
   'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js',
   'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>Promise.all(FILES.map(f=>c.add(f).catch(()=>{})))).then(()=>self.skipWaiting()))});

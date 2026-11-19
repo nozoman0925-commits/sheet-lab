@@ -899,6 +899,8 @@ main{gap:var(--sp5)}
  .home2 .tdb-sh{display:none}.home2 .tdb-sites{padding-top:6px}.home2 .ft-hsearch,.home2 .sl-ribbon,.home2 .sl-todo{order:1}}
 .toast{font-size:1rem;padding:var(--sp3) var(--sp4)}
 </style>
+<link rel="stylesheet" href="mitsu.css">
+<link rel="stylesheet" href="mitsu-host.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" crossorigin="anonymous"></script>
 <script src="config.js"></script>
 <script src="supa.js"></script>
@@ -931,6 +933,17 @@ main{gap:var(--sp5)}
   </div>
 </header>
 <main class="gut" id="main"><p class="sub">読み込み中…</p></main>
+<!-- 見積（桜ミツ）の画面。#/… のアドレスのときだけ出す（mitsu-bridge.js） -->
+<section class="ee ee-host gut" id="ee-host" hidden aria-labelledby="title">
+  <div class="ee-top"><div class="ee-ttl"><h1 id="title"></h1><div class="crumb" id="crumb"></div></div>
+    <div class="ee-acts" id="actions"></div>
+    <button class="btn ghost topbar-search" id="open-palette" type="button" title="すべての機能を検索（Ctrl+K）" aria-label="すべての機能を検索"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>検索</span></button></div>
+  <nav class="ee-sub" id="ee-sub" aria-label="見積のメニュー"></nav>
+  <div class="view" id="view"></div>
+  <div hidden><nav id="nav"></nav><div id="side-user"></div><span id="brand-crest"></span><span id="foot-count"></span></div>
+</section>
+<div class="ee ee-layer" id="ee-layer"><div class="toasts" aria-live="polite"></div></div>
+<div class="ee ee-print" id="ee-print"><div id="print-root"></div></div>
 <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 <div class="picker" id="picker" hidden></div>
 <div class="sheet" id="sheet" hidden></div>
@@ -949,6 +962,16 @@ main{gap:var(--sp5)}
   </div>
 </div>
 
+<script src="mitsu.js" defer></script>
+<script src="mitsu-bridge.js" defer></script>
+<script>
+/* 業務管理の document 全体の操作の受け取り（クリック・入力など）は、見積の画面（.ee の中）では動かさない。
+   桜ミツの同じ名前の印（data-open など）に反応して、別の画面が開いてしまわないように */
+window.OUBI_ADD=document.addEventListener;
+document.addEventListener=function(type,fn,opt){
+  if(typeof fn==='function'&&/^(click|input|change|keydown|keyup|submit|focusout|pointerdown)$/.test(type)){const f=fn;fn=function(e){const t=e.target;if(t&&t.closest&&t.closest('.ee'))return;return f.apply(this,arguments)}}
+  return window.OUBI_ADD.call(document,type,fn,opt)};
+</script>
 <script src="health.js"></script>
 <script src="sales.js"></script>
 <script src="features.js"></script>
@@ -1120,7 +1143,7 @@ function noteEdit(c){
   if(l&&l.by===me.id&&l.sec===sec&&Date.now()-new Date(l.at)<15*60e3){l.at=nowIso();return}
   (c.log=c.log||[]).unshift({at:nowIso(),by:me.id,text:`「${nm}」を編集`,sec}); if(c.log.length>300)c.log.length=300;
 }
-function touch(c){c.updatedAt=nowIso();c.updatedBy=me.id;dirty.add(c.id);setSaveBadge('保存中…');clearTimeout(timers[c.id]);timers[c.id]=setTimeout(()=>flush(c.id),700)}
+function touch(c){if(window.OUBI_HOST)OUBI_HOST.casesChanged();c.updatedAt=nowIso();c.updatedBy=me.id;dirty.add(c.id);setSaveBadge('保存中…');clearTimeout(timers[c.id]);timers[c.id]=setTimeout(()=>flush(c.id),700)}
 async function flush(id){
   if(writing.has(id)){again.add(id);return}
   const c=cases.find(x=>x.id===id); if(!c)return;
@@ -1202,7 +1225,7 @@ function reqMissing(c,kind){
   const m=[],x=calc(c),o=c[kind]||{};
   if(kind==='quote'){ if(!x.planSales||!x.planCost)m.push('事業収支書（予定見積金額と原価）が未入力です'); if(!N(o.amount))m.push('見積金額が未入力です'); }
   if(kind==='contract'){ if((c.result||{}).status!=='won')m.push('「契約になったか」で契約を記録していません'); if(!N(o.amount))m.push('契約金額が未入力です'); }
-  if(!(o.files||[]).length)m.push(`${APPR_LABEL[kind]}のPDFがアップロードされていません`);
+  if(!(o.files||[]).length&&!(kind==='quote'&&o.mitsuIssued))m.push(`${APPR_LABEL[kind]}のPDFがアップロードされていません`);
   return m;
 }
 
@@ -1231,7 +1254,10 @@ function lockOf(c,i){
 }
 
 /* ===================== 画面: 共通 ===================== */
-function setTab(t){view.tab=t; if(t!=='case'){view.caseId=null;C=null} render(); window.scrollTo(0,0)}
+function setTab(t){
+  if(t==='mitsu'){if(window.OUBI_HOST)OUBI_HOST.open('#/docs');else toast('見積の画面を読み込んでいます。少し待ってからもう一度押してください');return}
+  if(window.OUBI_HOST&&OUBI_HOST.active()){OUBI_HOST.leaveTo(()=>setTab(t));return}
+  view.tab=t; if(t!=='case'){view.caseId=null;C=null} render(); window.scrollTo(0,0)}
 function renderTabs(){
   const I={
    home:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/>',
@@ -1240,14 +1266,15 @@ function renderTabs(){
    wb:'<rect x="3" y="4" width="18" height="13" rx="1.5"/><path d="M7 8h6M7 11h10M8 21l2-4M16 21l-2-4"/>',
    cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
    dash:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',
+   mitsu:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h2M13 11h2M9 15h2M13 15h2M9 18.5h6"/>',
    staff:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3 3 0 0 1 0 6M18 14c2 .7 3 2.8 3 6"/>',
    settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>'};
   const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
   const nav=$('#tabs'); nav.hidden=['setup','pickme','pin'].includes(view.tab); if(nav.hidden){nav.innerHTML='';return}
   if(view.tab==='sales'){nav.innerHTML=slNav();return} // 営業モードの間は、下のボタンが営業用に変わる
   // 下のボタンは5つ：ホーム・タイムライン・ホワイトボード・予定・経営（経営状況は1回で開ける）
-  const t=[['home','ホーム'],['list','既存<wbr>工事'],['wb','ホワイト<wbr>ボード'],['cal','予定'],['dash','経営'],['settings','設定',1]]; // 社員一覧は右上の人のマークから
-  const cur=k=>view.tab===k||(k==='home'&&view.tab==='quick')||(k==='list'&&(view.tab==='case'||view.tab==='docs'))||(k==='wb'&&view.tab==='board')||(k==='dash'&&view.tab==='person')||(k==='staff'&&view.tab==='profile');
+  const t=[['home','ホーム'],['list','既存<wbr>工事'],['mitsu','見積'],['wb','ホワイト<wbr>ボード'],['cal','予定'],['dash','経営'],['settings','設定',1]]; // 社員一覧は右上の人のマークから
+  const cur=k=>view.ee?k==='mitsu':view.tab===k||(k==='home'&&view.tab==='quick')||(k==='list'&&(view.tab==='case'||view.tab==='docs'))||(k==='wb'&&view.tab==='board')||(k==='dash'&&view.tab==='person')||(k==='staff'&&view.tab==='profile');
   const un=view.tab!=='board'?boardUnread():0, wn=(view.tab!=='wb'?wbUnread():0)+un; // ホワイトボードの印に、タイムラインの新着も足す
   nav.innerHTML=t.map(([k,l,wide])=>`<button type="button" data-tab="${k}" class="${wide?'wide-only':''}" ${cur(k)?'aria-current="page"':''}>${ic(k)}<span>${l}</span>${k==='board'&&un?`<span class="cnt" aria-label="新しい投稿 ${un} 件">${un}</span>`:''}${k==='wb'&&wn?`<span class="cnt" aria-label="新しい予定 ${wn} 件">${wn}</span>`:''}</button>`).join('');
 }/* スマホの「その他」：経営状況・社員・設定をまとめた下からのメニュー */
@@ -1386,7 +1413,8 @@ function renderHome(){
     ${S.btn}
     <button type="button" class="launch-btn add" data-new><span class="lb-ic">${ico('plus')}</span><span class="lb-tx"><b>新規工事の追加</b><small>問い合わせが来たら</small></span></button>
     <button type="button" class="launch-btn" data-tab="list"><span class="lb-ic">${ico('list')}</span><span class="lb-tx"><b>既存工事の確認</b><small>進行中 ${n} 件</small></span></button>
-   </div>${S.top}${slHomeTodo()}${a2hsHint()}</div>`;
+   </div>${S.top}${slHomeTodo()}${a2hsHint()}</div>
+   <div class="ee ee-widgets" id="ee-widgets" aria-label="ウィジェット"></div>`;
 }
 /* ===== 今日のボード（ホームの上）：あいさつ・天気・今日の予定の数。押すと今日のカレンダーが開く ===== */
 const WX_CODE=c=>c==null?['','']:c<=1?['☀️','晴れ']:c<=3?['⛅','くもり']:c<=48?['🌫️','きり']:c<=57?['🌦️','小雨']:c<=67||(c>=80&&c<=82)?['☔','雨']:c<=77||(c>=85&&c<=86)?['❄️','雪']:['⛈️','雷雨'];
@@ -1494,7 +1522,9 @@ function render(){
   else if(view.tab==='sales') m.innerHTML=renderSales();
   else if(view.tab==='person') m.innerHTML=renderPerson(view.personId);
   else if(view.tab==='profile'||view.tab==='setup') m.innerHTML=renderProfile(view.staffId||me.id,view.tab==='setup');
-  else m.innerHTML=renderHome();
+  else{const keepW=$('#ee-widgets');m.innerHTML=renderHome();const slot=$('#ee-widgets');
+    if(slot&&window.OUBI_HOST){if(keepW&&keepW.childNodes.length&&OUBI_HOST.ready())slot.replaceWith(keepW);else OUBI_HOST.mountHome()}}
+  if(booted&&window.OUBI_HOST)OUBI_HOST.booted();
   renderWho();
   fillNames();
   slAfterRender();
@@ -2505,6 +2535,23 @@ async function makeDoc(kind,btn){
   }catch(e){toast(navigator.onLine?`${label}を作れませんでした。もう一度押してください`:`電波がないため${label}を作れませんでした。電波のよい場所でもう一度押してください`)}
   finally{box.remove();if(btn){btn.disabled=false;btn.textContent=`${label}を画像にする（保存・LINEで送る）`}}
 }
+/* ② 見積書：桜ミツの見積で作る。明細・金額・日付・番号は、見積を保存すると自動でここに入る */
+function mitsuQuoteBox(){
+  const H=window.OUBI_HOST, q=C.quote||{}, ready=H.ready(), docs=ready?H.docsOf(C.id):[];
+  const st=d=>d.status==='issued'?'<span class="chip ok">確定</span>':'<span class="chip">下書き</span>';
+  const rows=docs.slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))).map(d=>{const r=H.calc(d);
+    return `<div class="mq-row${q.mitsuDocId===d.id?' main':''}"><div class="mq-tx"><b>${esc(d.no||'（番号は確定時）')}${d.patternLabel?' '+esc(d.patternLabel):''}</b> ${st(d)}${q.mitsuDocId===d.id?' <span class="chip sk">この工事の見積</span>':''}
+      <span class="sub">${esc(d.title||'')}　税抜 ${yen(r.subtotal)}・税込 ${yen(r.total)}・粗利率 ${r.marginRate==null?'—':(r.marginRate*100).toFixed(1)+'%'}</span></div>
+      <button type="button" class="btn sm" data-mopen="#/edit/${esc(d.id)}">開く</button></div>`}).join('');
+  const amt=docAmount(C,'quote');
+  return `<div class="grp"><h3>② 見積書</h3>
+   <div class="note">見積は「見積」の画面（品目マスタ・原価・松竹梅・確定）で作ります。保存すると、明細・金額・見積番号・日付がこの工事に入り、上の収支書にも見積の金額と原価が入ります。</div>
+   ${!ready?'<p class="sub">見積を読み込んでいます…</p>':rows?`<div class="mq-list">${rows}</div>`:`<p class="sub">この工事の見積はまだありません。${((q.items||[]).length)?'前に入れた明細は、「見積を作る」で読み込みます。':''}</p>`}
+   <div class="row"><button type="button" class="btn pri" data-mnew>＋ ${docs.length?'別の見積を作る':'見積を作る'}</button>${docs.length?'<button type="button" class="btn" data-mopen="#/docs">見積の一覧へ</button>':''}</div>
+   ${amt?`<div class="calc"><div><span>小計（税抜）</span><b>${yen(amt)}</b></div><div><span>消費税（10%）</span><b>${yen(Math.floor(amt*0.1))}</b></div><div class="ok"><span>合計（税込）</span><b>${yen(amt+Math.floor(amt*0.1))}</b></div></div>
+     <div class="sub">見積番号 ${esc(q.no||'—')}・見積日 ${esc(q.date||'—')}・有効期限 ${esc(q.validUntil||'—')}${q.mitsuIssued?'・<b>確定済み</b>（見積書のPDFは「見積」の画面から出せます）':''}</div>`:''}
+   <details><summary class="sub">ほかの資料をつける（PDF・写真）</summary><div class="row sb" style="margin-top:8px"><span class="sub">関連資料</span>${upBtn('quote.files','資料を追加')}</div>${fileList('quote.files')}</details></div>
+`}
 function calcBox(){const x=calc(C);
   // 円グラフ：売上に占める原価と粗利益
   const R=48,Cf=2*Math.PI*R, cr=x.planSales>0?Math.min(1,Math.max(0,x.planCost/x.planSales)):0, lv=rateLv(x.planRate);
@@ -2547,7 +2594,7 @@ function secHTML(k){
     return `<div class="grp"><h3>① 事業収支書（見積の前に作成）</h3><div class="note">金額はすべて税抜です。入力するとすぐに粗利益と利益率を計算します。見積金額を変えると収支も再計算されます。</div>
      <div class="fields">${inp('plan.estimate','予定見積金額',{type:'number'})}${inp('plan.discount','値引予定額',{type:'number'})}</div>
      <div class="fields">${COSTS.map(([c,l])=>inp('plan.'+c,l,{type:'number'})).join('')}</div>${calcBox()}</div>
-     <div class="grp"><h3>② 見積書</h3><div class="fields">${inp('quote.date','見積作成日',{type:'date',re:1})}${inp('quote.validUntil','見積有効期限',{type:'date',re:1})}${whoSel('quote.who','見積担当者')}${inp('quote.no','見積番号',{ph:'空欄なら案件番号',re:1})}</div>
+     ${window.OUBI_HOST?mitsuQuoteBox():`<div class="grp"><h3>② 見積書</h3><div class="fields">${inp('quote.date','見積作成日',{type:'date',re:1})}${inp('quote.validUntil','見積有効期限',{type:'date',re:1})}${whoSel('quote.who','見積担当者')}${inp('quote.no','見積番号',{ph:'空欄なら案件番号',re:1})}</div>
      <h3>明細（品名・数量・単価）</h3><div class="sub">前に使った品名を選ぶと、単位と単価が自動で入ります。</div>${slItemList()}
      ${listRows('quote.items','明細',(p,i)=>{const r=((C.quote||{}).items||[])[i]||{};return `${inp(p+'.name','品名・内容',{wide:1,ph:'例: 外壁塗装（シリコン）',re:1,list:'qitems'})}${inp(p+'.qty','数量',{type:'number',re:1})}${inp(p+'.unit','単位',{ph:'例: ㎡・式・m',re:1})}${inp(p+'.price','単価（税抜）',{type:'number',re:1})}<div class="fld"><span>金額</span><b class="num" style="padding:10px 0">${yen(Math.round(N(r.qty||1)*N(r.price)))}</b></div>${area(p+'.note','この明細の備考（書類ではこの行のすぐ下に載ります）',{re:1})}${r.note?sel(p+'.noteFont','備考の文字の種類',Object.keys(NOTE_FONT),{noBlank:1,re:1})+sel(p+'.noteSize','備考の文字の大きさ',Object.keys(NOTE_SIZE),{noBlank:1,re:1}):''}`},'明細を1行足す')}
      ${((C.quote||{}).items||[]).length?'':inp('quote.amount','明細を使わないときの見積金額（税抜）',{type:'number',re:1})}
@@ -2555,7 +2602,7 @@ function secHTML(k){
      ${docAmount(C,'quote')<0?`<div class="warn-line" role="alert">⚠ 見積の合計がマイナスになっています。値引きの行（マイナスの単価）は入れられますが、合計がマイナスの見積書はふつうありません。金額を確かめてください。</div>`:''}
      ${area('quote.note','備考（書類に載ります）',{re:1})}${(C.quote||{}).note?`<div class="fields">${noteOpts('quote')}</div>`:''}
      ${docAmount(C,'quote')&&calc(C).planSales&&docAmount(C,'quote')!==calc(C).planSales?`<div class="note">見積の合計 ${yen(docAmount(C,'quote'))} と、上の収支書の予定売上 ${yen(calc(C).planSales)} が違います。利益を正しく見るには収支書も合わせてください。</div>`:''}
-     <details><summary class="sub">ほかの資料をつける（PDF・写真）</summary><div class="row sb" style="margin-top:8px"><span class="sub">関連資料</span>${upBtn('quote.files','資料を追加')}</div>${fileList('quote.files')}</details></div>
+     <details><summary class="sub">ほかの資料をつける（PDF・写真）</summary><div class="row sb" style="margin-top:8px"><span class="sub">関連資料</span>${upBtn('quote.files','資料を追加')}</div>${fileList('quote.files')}</details></div>`}
      ${reqBox('quote')}`;
   case 'result':{const r=C.result||{};
     return wrap(`<div class="grp"><h3>お客様の返事は？</h3>
@@ -2707,7 +2754,7 @@ function setResult(v){
   const msg=v==='won'?'契約になったと記録しました。下の「次へ」で工事日程に進めます':v==='lost'?'見送りと記録しました。見送りの理由を選んでください':'「まだ決まっていない」に戻しました';
   toast(msg,()=>{const c=cases.find(x=>x.id===cid);if(!c)return;const o=JSON.parse(before);Object.keys(c).forEach(k=>delete c[k]);Object.assign(c,o);touch(c);if(wonPost)wonPost.then(slUnpost);if(C&&C.id===cid){const y=window.scrollY;$('#main').innerHTML=renderCase();fillNames();window.scrollTo(0,y)}toast('元に戻しました')});
 }
-function openCase(id,sec){const c=cases.find(x=>x.id===id);if(!c)return;C=c;if(fixResult(c))touch(c);pushRecent(id);view.tab='case';view.caseId=id;view.sec=sec||defaultSec(c);render();window.scrollTo(0,0)}
+function openCase(id,sec){if(window.OUBI_HOST&&OUBI_HOST.active()){OUBI_HOST.leaveTo(()=>openCase(id,sec));return}const c=cases.find(x=>x.id===id);if(!c)return;C=c;if(fixResult(c))touch(c);pushRecent(id);view.tab='case';view.caseId=id;view.sec=sec||defaultSec(c);render();window.scrollTo(0,0)}
 
 /* ===================== 操作 ===================== */
 function makeCase(pre={}){
@@ -2853,6 +2900,8 @@ document.addEventListener('click',e=>{
   if(d.wbpost!==undefined){busyRun('wb',t,postWB);return}
   if(d.wbdel){delWB(d.wbdel);return}
   if(d.wbmore!==undefined){view.wbLim=(view.wbLim||10)+10;const y=window.scrollY;render();window.scrollTo(0,y);return}
+  if(d.mnew!==undefined&&C){if(window.OUBI_HOST)OUBI_HOST.newForCase(C.id);return}
+  if(d.mopen){if(window.OUBI_HOST)OUBI_HOST.open(d.mopen);return}
   if(d.saveco!==undefined){saveCompany();return}
   if(d.jump){const el=document.getElementById(d.jump);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(d.tdall!==undefined){view.tdAll=true;const y=window.scrollY;render();window.scrollTo(0,y);return}
@@ -3007,6 +3056,7 @@ function applySnapshot(list){
   {const lim=new Date(Date.now()-120000).toISOString();cases.forEach(c=>{if(!map.has(c.id)&&!GONE.has(c.id)&&(c.updatedAt||c.createdAt||'')>lim)map.set(c.id,c)})}
   cases=[...map.values()]; cases.forEach(fixResult); // 前の版の「契約になった」の保存のまちがいを、表示のときに直す
   if(C){const n=cases.find(x=>x.id===C.id);if(n)C=n}
+  if(window.OUBI_HOST)OUBI_HOST.casesChanged();
   if(!applySnapshot.once){applySnapshot.once=true;resendUnsent()}
   if(!booted){booted=true;const y=window.scrollY;render();window.scrollTo(0,y);return}
   softRender();
@@ -3031,7 +3081,7 @@ async function init(){
   const [d,u,a]=await Promise.all([use('db'),use('user'),use('assets')]);
   if(!d){ // 共有データベースが使えないとき：この端末だけの試用モード
     cases=lsGet(LS.cases,[]); cases.forEach(fixResult); dec=lsGet(LS.dec,{}); settings=lsGet(LS.set,{targetRate:25}); staff=lsGet(LS.staff,{}); roles=lsGet(LS.roles,{}); posts=lsGet(LS.board,[]); members=lsGet(LS.members,{}); replies=lsGet(LS.replies,[]); likes=lsGet(LS.likes,[]); wbs=lsGet('oubi.wb.v1',[]);
-    slInit(null); booted=true; render(); return}
+    slInit(null); booted=true; render(); startMitsu(); return}
   db=d; userCap=u; assets=ftWrapAssets(a); mode='db'; cases=[]; dec={}; settings={targetRate:25}; staff={}; roles={};
   hlVitals(); // 実際のスマホでの速さを測り始める（写真は送る前に小さくする：ftWrapAssets）
   if(u){const m=await u.me(); me={id:m.id||(window.OUBI_SUPA?'':'anon'),isOwner:m.isOwner,name:m.name}; if(m.id)names[m.id]=m.name||'あなた';}
@@ -3060,8 +3110,22 @@ async function init(){
   db.collection('cases').onSnapshot(s=>applySnapshot(s.docs.map(x=>({...JSON.parse(JSON.stringify(x.data())),id:x.id}))),()=>toast('案件データの受信が止まりました。再読み込みしてください。'));
   db.collection('decisions').onSnapshot(s=>{dec={};s.docs.forEach(x=>dec[x.id]=x.data());const a=document.activeElement;if(!(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))){const y=window.scrollY;render();window.scrollTo(0,y)}else pendingRender=true},()=>{});
   slInit(db); // 営業の訪問記録
+  startMitsu();
   db.doc('settings/main').onSnapshot(s=>{if(s.exists)settings={targetRate:25,...s.data()}},()=>{});
 }
+/* ===================== 見積（桜ミツ）とのつなぎ：mitsu-bridge.js が使う ===================== */
+function startMitsu(){if(window.OUBI_HOST)OUBI_HOST.start();else window.OUBI_WANT=true}
+window.OUBI={
+  cases:()=>cases, me:()=>me, mode:()=>mode, db:()=>db, assets:()=>assets, settings:()=>settings, booted:()=>booted,
+  people:()=>peopleList(), whoName:id=>whoName(id), canon:id=>canon(id), calc:c=>calc(c), approved:(c,k)=>approved(c,k),
+  touch:c=>touch(c), addLog:(c,t)=>addLog(c,t), makeCase:pre=>makeCase(pre), openCase:(id,sec)=>openCase(id,sec), setTab:t=>setTab(t),
+  toast:m=>toast(m), softRender:()=>softRender(),
+  markTab:on=>{view.ee=!!on;renderTabs();setNavH()},
+  // 自社情報：見積の画面で直した名前・住所・電話などを、業務管理の設定にも入れる（空のものでは消さない）
+  async setCompany(co){const n={...(settings.company||{})};Object.keys(co).forEach(k=>{if(co[k])n[k]=co[k]});
+    if(JSON.stringify(n)===JSON.stringify(settings.company||{}))return;
+    try{await store.setSettings({...settings,company:n});settings.company=n}catch(e){toast('会社の情報を業務管理の設定に保存できませんでした（社長の合言葉で入った端末で直してください）')}}
+};
 init();
 /* スマホでは下のボタンを、上の帯（スクロールしても上に残る header）の外に出す。
    iPhone の Safari では、上に残る部品の中に「画面の下に固定」の部品があると、スクロールで一緒に動いてしまうため */
@@ -3078,4 +3142,5 @@ init();
 // アプリとして入れたとき、電波がなくても画面が開くようにする
 if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
 </script>
+<script>document.addEventListener=window.OUBI_ADD;</script>
 </body></html>

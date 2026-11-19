@@ -183,7 +183,7 @@
       document.getElementById('title').textContent = current.title;
       document.getElementById('crumb').textContent = current.crumb || '';
       document.getElementById('actions').innerHTML = current.actions || '';
-      document.title = current.title + ' — 桜ミツ';
+      document.title = current.title + (EE.host ? ' — 桜美建設' : ' — 桜ミツ');
       // 画面ごとにリスナーを付け直すため、view 要素ごと差し替える
       var fresh = view.cloneNode(false);
       fresh.innerHTML = '<div class="view-inner">' + current.html + '</div>';
@@ -328,14 +328,17 @@
     renderNav();
     var slot = document.getElementById('brand-crest');
     if (!slot.firstChild) slot.innerHTML = EE.crest.svg({ id: 'brand', className: 'brand-crest', fieldR: 106 });
-    if (!location.hash) replaceRoute('#/home');
-    show(false);
+    // 業務管理の中で動くとき（EE.host）：画面の切り替えは業務管理側（mitsu-bridge.js）が route() を呼ぶ
+    if (!opts.host) {
+      if (!location.hash) replaceRoute('#/home');
+      show(false);
+    }
     booted = true;
-    if (!opts.deferIntro || introWaiting) { introWaiting = false; intro(); }
+    if (!opts.host && (!opts.deferIntro || introWaiting)) { introWaiting = false; intro(); }
 
-    root.addEventListener('hashchange', onHash);
+    if (!opts.host) root.addEventListener('hashchange', onHash);
     document.addEventListener('pointerdown', EE.fx.ripple);
-    EE.fx.bindAmbient();   // カーソルを追う光・カードの傾き・クリックの波紋と粒
+    if (!opts.host) EE.fx.bindAmbient();   // カーソルを追う光・カードの傾き・クリックの波紋と粒
     document.addEventListener('click', function (e) {
       var tr = e.target.closest('[data-href]');
       if (tr && !e.target.closest('button, a, input, select')) location.hash = tr.dataset.href;
@@ -357,9 +360,9 @@
     U.members();
     renderUser(); bindUser();
     document.getElementById('open-palette').addEventListener('click', function () { EE.palette.open(); });
-    EE.a11y && EE.a11y.enhance(document.querySelector('.sidebar'));
+    if (EE.a11y && document.querySelector('.sidebar')) EE.a11y.enhance(document.querySelector('.sidebar'));
     // 別のタブで保存されたら、この画面からは保存せず再読み込みを促す（上書きで相手の変更を消さない）
-    root.addEventListener('storage', function (e) {
+    if (!opts.host) root.addEventListener('storage', function (e) {
       if (e.key !== EE.data.KEY || !EE.data.markStale(e.newValue)) return;
       if (document.getElementById('stale-box')) return;
       U.modal({ title: '別のタブで更新されました', body: '<p id="stale-box" style="margin:0;color:var(--text-2)">このアプリを別のタブ（またはウィンドウ）でも開いていて、そちらで内容が保存されました。<br>この画面のまま保存すると、そちらの変更を消してしまうため、ここからは保存しません。再読み込みして最新の内容を開いてください。</p>',
@@ -375,5 +378,8 @@
   }
 
   EE.app = { renderNav: function () { var nav = document.getElementById('nav'); var fresh = nav.cloneNode(false); nav.parentNode.replaceChild(fresh, nav); renderNav(); setActive(currentNav); }, renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
-    duplicate: duplicate, finalizeDoc: finalizeDoc, newWith: newWith, takePrefill: takePrefill };
+    duplicate: duplicate, finalizeDoc: finalizeDoc, newWith: newWith, takePrefill: takePrefill,
+    // 業務管理の中で動くときに使う
+    route: function (force) { if (!force && lastHash === location.hash && current) return; onHash(); }, lastHash: function () { return lastHash; },
+    discardCurrent: function () { if (current && current.discard) current.discard(); if (current) current.guard = null; } };
 })(this);

@@ -68,6 +68,13 @@
 
   /* ---- 状態 ---- */
   var listeners = [];
+  /** 画面の上に重ねるもの（確認の窓・知らせ）を入れる場所。業務管理の中では、桜ミツの見た目が効く #ee-layer */
+  /** 確認の窓の背面（操作・フォーカスできなくするもの）。業務管理の中では、重ねる場所（#ee-layer）以外の画面全体 */
+  function backdrop() {
+    if (!EE.host) { var a = document.querySelector('.app'); return a ? [a] : []; }
+    return Array.prototype.filter.call(document.body.children, function (x) { return !x.classList.contains('ee-layer') && !/^(SCRIPT|STYLE|LINK)$/.test(x.tagName); });
+  }
+  function layer() { return (EE.host && document.getElementById('ee-layer')) || document.body; }
   function commit() {
     var ok = EE.data.save(EE.S);
     if (!ok && EE.data.isStale()) EE.fx.toast('別のタブで内容が更新されたため、この画面からは保存していません。再読み込みしてください', { warn: true, ms: 6000 });
@@ -118,7 +125,7 @@
       '<button class="btn ghost icon sm" data-x title="閉じる (Esc)" aria-label="閉じる">' + I.x + '</button></div>' +
       '<div class="panel-b">' + (o.body || '') + '</div>' +
       (o.foot ? '<div class="modal-f">' + o.foot + '</div>' : '') + '</div>';
-    document.body.appendChild(ov);
+    layer().appendChild(ov);
     var m = ov.firstChild;
     EE.fx.anim(ov, [{ opacity: 0 }, { opacity: 1 }], { duration: 180 });
     EE.fx.anim(m, [{ opacity: 0, transform: 'translateY(12px) scale(.98)' }, { opacity: 1, transform: 'none' }], { duration: 260 });
@@ -127,7 +134,7 @@
       close: function (v) {
         var i = stack.indexOf(api); if (i >= 0) stack.splice(i, 1);
         if (o.onClose) o.onClose(v);
-        if (!stack.length) { var app = document.querySelector('.app'); if (app) app.inert = false; }
+        if (!stack.length) backdrop().forEach(function (x) { x.inert = false; });
         if (opener && opener.isConnected && opener.focus) setTimeout(function () { opener.focus({ preventScroll: true }); }, 0);
         if (EE.fx.reduce || !ov.animate) return ov.remove();
         var a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: 'forwards' });
@@ -135,7 +142,7 @@
       }
     };
     stack.push(api);
-    var appEl = document.querySelector('.app'); if (appEl) appEl.inert = true;   // 背面を操作・フォーカスできなくする
+    backdrop().forEach(function (x) { x.inert = true; });   // 背面を操作・フォーカスできなくする
     // Tab をダイアログの中で回す
     m.addEventListener('keydown', function (e) {
       if (e.key !== 'Tab') return;
@@ -208,7 +215,7 @@
   }
 
   EE.ui = { esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
-    commit: commit, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
+    commit: commit, layer: layer, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
     rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
     readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge };
 })(this);
