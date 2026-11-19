@@ -467,7 +467,7 @@ function renderTodo(k,d){
   const row=x=>'<button class="tier step '+x.cls+(x.ok?" ok":"")+'" '+x.act+'><span class="sn" aria-hidden="true">'+(x.ok?"✓":x.n)+'</span><span class="st"><span class="tt">'+x.t+'</span><span class="ss"><em>'+x.w+'</em> ・ '+x.sub+'</span></span><span class="tl">'+x.lab+'</span></button>';
   const w1=(()=>{const M=S.main;if(!M.onboarded||M.demo||!M.created)return "";const n=diffDays(M.created,k)+1;if(n<1||n>7||!WEEK1[n-1])return "";return '<p class="w1line">入門'+n+'日目のコツ：<b>'+WEEK1[n-1][0]+'</b></p>'})();
   return '<section class="sec todo" id="sec-todo">'+intro+'<div class="today-head"><p class="eyebrow">今日の稽古</p><span class="today-n num">'+doneN+' / '+steps.length+'</span>'+stk+'</div>'+
-   '<div class="today-bar" aria-hidden="true">'+steps.map(x=>'<i class="'+(x.ok?"on":"")+'"></i>').join("")+'</div>'+
+   (()=>{const ev=expEvents();const tE=ev.filter(e=>e.k===k).reduce((a,e)=>a+e.exp,0);const tot=ev.reduce((a,e)=>a+e.exp,0);const r=computeRank(tot);const nx=RANKS[r+1];return '<p class="today-exp">今日 <b>+'+tE+' EXP</b>'+(nx?' ・ 次の段位「'+nx.n+'」まで あと<b>'+Math.max(0,nx.exp-tot).toLocaleString()+'</b> EXP'+(tot>=nx.exp?'（条件：'+nx.cond+'）':''):'')+'</p>'})()+'<div class="today-bar" aria-hidden="true">'+steps.map(x=>'<i class="'+(x.ok?"on":"")+'"></i>').join("")+'</div>'+
    '<p class="todo-next">'+now+'</p>'+w1+'<div class="tiers steps">'+steps.map(row).join("")+
    (bad?'':'<button class="tier t3 more" data-act="openGrp"><span class="tl">任意</span><span class="tt">ほかの稽古 <small>掟・朝の型・心得</small></span><span class="chev" aria-hidden="true">›</span></button>')+'</div></section>';
 }
