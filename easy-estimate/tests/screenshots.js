@@ -80,7 +80,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   await p.screenshot({ path: OUT + '17-folder-open.png' });
   // サイドバー：子メニューを開いた状態とユーザーメニュー
   await p.goto(url + '?splash=off#/settings/formulas'); await p.waitForTimeout(600);
-  if (!(await p.$('.nav-group[data-g="new"].open'))) { await p.click('[data-toggle="new"]'); await p.waitForTimeout(400); }
+  if (!(await p.$('.nav-group[data-g="estimate"].open'))) { await p.click('[data-toggle="estimate"]'); await p.waitForTimeout(400); }
   await p.screenshot({ path: OUT + '14-sidebar-open.png' });
   await p.click('#user-btn'); await p.waitForTimeout(300);
   await p.screenshot({ path: OUT + '15-sidebar-user.png' });

@@ -16,35 +16,41 @@
     }
   };
 
-  /* メニュー：5つの親メニュー。子メニューは開くと滑らかに展開する */
-  var NAV = [
-    { key: 'home', label: 'ホーム', icon: I.home, href: '#/home' },
-    { key: 'docs', label: '書類一覧', icon: I.docs, href: '#/docs', children: [
-      ['#/docs', 'すべて'], ['#/docs/draft', '下書き'], ['#/docs/issued', '発行済み']] },
-    { key: 'new', label: '新規作成', icon: I.plus, href: '#/new', children: [
-      ['#/new', 'かんたん作成'], ['#/new/text', '文章から'], ['#/new/voice', '音声から'], ['#/new/pdf', 'PDFから'],
-      ['#/new/photo', '写真から'], ['#/new/past', '過去の見積から'], ['#/new/template', 'テンプレートから'], ['#/new/edit', '通常入力']] },
-    { key: 'clients', label: '顧客・案件', icon: I.users, href: '#/clients' },
-    { key: 'settings', label: '設定・マスタ', icon: I.gear, href: '#/settings/items', children: [
-      ['#/settings/members', '担当者'], ['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'],
-      ['#/settings/snippets', '定型文'], ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/settings/data', 'データ・拡張']] }
-  ];
+  /* メニュー：業務の目的別（js/features.js の SECTIONS）。準備中・利用者が隠したものは出さない。子メニューは開くと滑らかに展開する */
+  var CHILDREN = {
+    estimate: [['#/new', 'かんたん作成'], ['#/new/text', '文章から'], ['#/new/voice', '音声から'], ['#/new/pdf', 'PDFから'],
+      ['#/new/photo', '写真から'], ['#/new/past', '過去の見積から'], ['#/new/template', 'テンプレートから'], ['#/new/edit', '通常入力']],
+    docs: [['#/docs', 'すべて'], ['#/docs/draft', '下書き'], ['#/docs/issued', '確定済み']],
+    settings: [['#/settings/members', '担当者'], ['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'],
+      ['#/settings/snippets', '定型文'], ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/settings/features', '機能ライブラリ'], ['#/settings/data', 'データ・拡張']]
+  };
+  var NAV = [];
+  function buildNav() {
+    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: CHILDREN[s.key] }; });
+    return NAV;
+  }
+  function navOrder(key) { var i = -1; EE.features.SECTIONS.forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
   var CHEV = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m7 9.8 5 4.8 5-4.8"/></svg>';
   var OPEN_KEY = 'oumitsu:nav-open';
 
-  var current = null, currentNav = -1, skipNext = false, lastHash = '', prefill = null;
+  var current = null, currentNav = 'home', skipNext = false, lastHash = '', prefill = null;
 
   function parse(hash) {
-    var p = (hash || '').replace(/^#\/?/, '').split('/');
+    var p = (hash || '').replace(/^#\/?/, '').split('?')[0].split('/');
     switch (p[0]) {
-      case 'docs': return { nav: 1, view: function () { return EE.views.docs.render(p[1]); } };
-      case 'new': return { nav: 2, view: function () { return p[1] === 'edit' ? EE.views.editor.render(null) : EE.views.quick.render(p[1]); } };
-      case 'edit': return { nav: 1, view: function () { return EE.views.editor.render(p[1]); } };
-      case 'clients': return { nav: 3, view: function () { return EE.views.clients.render(); } };
-      case 'site': return { nav: 3, view: function () { return EE.views.site.render(p[1]); } };
-      case 'folder': return { nav: 0, view: function () { return EE.views.folders.render(p[1]); } };
-      case 'settings': return { nav: 4, view: function () { return EE.views.settings.render(p[1]); } };
-      default: return { nav: 0, view: function () { return EE.views.home.render(); } };
+      case 'docs': return { nav: 'docs', view: function () { return EE.views.docs.render(p[1]); } };
+      case 'new': return { nav: 'estimate', view: function () { return p[1] === 'edit' ? EE.views.editor.render(null) : EE.views.quick.render(p[1]); } };
+      case 'edit': return { nav: 'docs', view: function () { return EE.views.editor.render(p[1]); } };
+      case 'clients': return { nav: 'clients', view: function () { return EE.views.clients.render(); } };
+      case 'sites': return { nav: 'sites', view: function () { return EE.views.sites.render(); } };
+      case 'site': return { nav: 'sites', view: function () { return EE.views.site.render(p[1], p[2]); } };
+      case 'schedule': return { nav: 'schedule', view: function () { return EE.views.schedule.render(); } };
+      case 'finance': return { nav: 'finance', view: function () { return EE.views.finance.render(); } };
+      case 'analysis': return { nav: 'analysis', view: function () { return EE.views.analysis.render(); } };
+      case 'procure': return { nav: 'home', view: function () { return EE.views.planned.render('procure'); } };
+      case 'folder': return { nav: 'home', view: function () { return EE.views.folders.render(p[1]); } };
+      case 'settings': return { nav: 'settings', view: function () { return EE.views.settings.render(p[1]); } };
+      default: return { nav: 'home', view: function () { return EE.views.control.render(); } };
     }
   }
 
@@ -54,11 +60,12 @@
   function renderNav() {
     var nav = document.getElementById('nav');
     var open = readOpen();
+    buildNav();
     nav.innerHTML = NAV.map(function (n, i) {
       var kids = n.children || [];
       return '<div class="nav-group' + (kids.length && open[n.key] ? ' open' : '') + '" data-g="' + n.key + '" data-st>' +
         '<div class="nav-row">' +
-          '<a class="nav-item" href="' + n.href + '" data-nav="' + i + '" title="' + n.label + '（Alt+' + (i + 1) + '）">' + n.icon + '<span>' + n.label + '</span></a>' +
+          '<a class="nav-item" href="' + n.href + '" data-nav="' + n.key + '" title="' + n.label + (i < 9 ? '（Alt+' + (i + 1) + '）' : '') + '">' + n.icon + '<span>' + n.label + '</span></a>' +
           (kids.length ? '<button class="nav-toggle" type="button" data-toggle="' + n.key + '" aria-expanded="' + (open[n.key] ? 'true' : 'false') + '" aria-label="' + n.label + 'のメニューを開く">' + CHEV + '</button>' : '') +
         '</div>' +
         (kids.length ? '<div class="nav-sub"><div class="nav-sub-inner">' + kids.map(function (c, k) {
@@ -84,7 +91,7 @@
   }
 
   function setActive(i) {
-    document.querySelectorAll('.nav-item').forEach(function (a) { var on = Number(a.dataset.nav) === i; a.classList.toggle('active', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    document.querySelectorAll('.nav-item').forEach(function (a) { var on = a.dataset.nav === i; a.classList.toggle('active', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     var h = location.hash || '#/home';
     var best = null;
     document.querySelectorAll('.nav-child').forEach(function (c) {
@@ -94,7 +101,8 @@
       if (hit) best = c;
     });
     // 今いる画面の親メニューは開いておく
-    if (NAV[i] && NAV[i].children) toggleGroup(NAV[i].key, true);
+    var nv = NAV.filter(function (n) { return n.key === i; })[0];
+    if (nv && nv.children) toggleGroup(nv.key, true);
     void best;
   }
 
@@ -162,11 +170,12 @@
   var navSeq = 0;
   function show(animate) {
     var r = parse(location.hash);
-    var dir = r.nav >= currentNav ? 1 : -1;
+    var dir = navOrder(r.nav) >= navOrder(currentNav) ? 1 : -1;
     var view = document.getElementById('view');
     var token = ++navSeq;
     var go = function () {
       if (token !== navSeq) return;          // 続けて切り替えたときは最後の画面だけ表示する
+      if (EE.views.control) EE.views.control.track(location.hash);   // よく使う機能（ホームのウィジェット）
       view = document.getElementById('view'); // 切り替えの途中で差し替わっていても今の要素を使う
       current = r.view();
       currentNav = r.nav;
@@ -337,8 +346,8 @@
         var up = document.getElementById('user-pop'); if (up && !up.hidden) { toggleUserPop(false); var ub2 = document.getElementById('user-btn'); if (ub2) ub2.focus(); return; }
       }
       // Alt（Mac は Option）＋1〜5。Mac では e.key が記号になるので e.code で見る。入力中は横取りしない
-      var dg = /^Digit([1-5])$/.exec(e.code || '');
-      if (e.altKey && dg && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); location.hash = NAV[Number(dg[1]) - 1].href; return; }
+      var dg = /^Digit([1-9])$/.exec(e.code || '');
+      if (e.altKey && dg && NAV[Number(dg[1]) - 1] && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); location.hash = NAV[Number(dg[1]) - 1].href; return; }
       if (current && current.mount && EE.views.editor && /^#\/(new\/edit|edit)/.test(location.hash)) EE.views.editor.onKey(e);
       else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') { /* 一覧画面での印刷はブラウザ既定のまま */ }
     });
@@ -347,6 +356,7 @@
     });
     U.members();
     renderUser(); bindUser();
+    document.getElementById('open-palette').addEventListener('click', function () { EE.palette.open(); });
     EE.a11y && EE.a11y.enhance(document.querySelector('.sidebar'));
     // 別のタブで保存されたら、この画面からは保存せず再読み込みを促す（上書きで相手の変更を消さない）
     root.addEventListener('storage', function (e) {
@@ -364,6 +374,6 @@
     U.onCommit(updateCount);
   }
 
-  EE.app = { renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
+  EE.app = { renderNav: function () { var nav = document.getElementById('nav'); var fresh = nav.cloneNode(false); nav.parentNode.replaceChild(fresh, nav); renderNav(); setActive(currentNav); }, renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
     duplicate: duplicate, finalizeDoc: finalizeDoc, newWith: newWith, takePrefill: takePrefill };
 })(this);

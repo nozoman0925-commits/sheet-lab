@@ -1,18 +1,15 @@
 /*
- * ホーム（Voyage型の構成）
- * 1. 中央に大きな「案件フロー図」：見積 → 受注 → 着工 → 完了 → 請求 → 入金。線が左から右へ流れ、
- *    進行中の案件が今どこにいるかを点で示す。上のフィルター（期間・工事種別・段階）で絞り込み、
- *    1件選ぶとその案件だけが拡大・強調され、右に詳細（金額・期限・次の行動）が出る
- * 2. KPI と円形ゲージ（入金率・粗利率・未入金割合）
- * 3. 月別の見積額・受注額・入金額の比較（月順・金額順・粗利順・件数順で並び替え）
- * 4. 担当者のファイル・かんたん見積もり作成・最近の書類・送る前の確認（既存）
- * 分析機能（ファネル・コホートなど）は作らない。
+ * 現場（案件フロー＋現場一覧）
+ *  - 上：案件フロー図（見積 → 受注 → 着工 → 完了 → 請求 → 入金）。点＝案件、色＝担当者。
+ *    期間・工事種別・段階で絞り込み、1件選ぶとその案件だけが強調され、右に金額・期限・次の行動が出る
+ *  - 下：現場一覧（現場名・担当・状態・次の期限だけ）。開くと現場ワークスペース（js/views/site.js）
+ * 一覧は判断する場所、ワークスペースは作業する場所（構想 3-④）
  */
 (function (root) {
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var F = { period: '6m', cat: '', stage: '' };
-  var selId = null, sortKey = 'month';
+  var selId = null;
 
   /* ---------- 案件フロー図 ---------- */
   var VB_W = 1000, VB_H = 360, NODE_Y = 180;
@@ -125,112 +122,42 @@
     EE.app.rerender();
   }
 
-  /* ---------- 月別比較 ---------- */
-  function sortedGroups() {
-    var ms = EE.insight.monthly(6).map(function (m) { return { key: m.key, label: m.label, values: m.values, count: m.count, profit: m.profit, note: '見積 ' + m.count + '件・粗利 ' + U.yen(m.profit) }; });
-    if (sortKey === 'amount') ms.sort(function (a, b) { return b.values.estimate - a.values.estimate; });
-    if (sortKey === 'profit') ms.sort(function (a, b) { return b.profit - a.profit; });
-    if (sortKey === 'count') ms.sort(function (a, b) { return b.count - a.count; });
-    return ms;
-  }
-  function drawBars(el) {
-    EE.charts.bars(el, { title: '月別の見積額・受注額・入金額', groups: sortedGroups(),
-      series: [{ key: 'estimate', label: '見積額' }, { key: 'order', label: '受注額' }, { key: 'paid', label: '入金額' }], height: 220 });
-  }
-
   /* ---------- 画面 ---------- */
   function render() {
     var S = EE.S;
-    var ym = EE.data.today().slice(0, 7);
-    var docs = S.documents.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); });
-    var month = docs.filter(function (d) { return (d.issueDate || '').slice(0, 7) === ym; });
-    var sumTotal = 0, sumSub = 0, sumProfit = 0;
-    month.forEach(function (d) { var r = U.calcDoc(d); sumTotal += r.total; sumSub += r.subtotal; sumProfit += r.grossProfit; });
-    var avgMargin = sumSub ? sumProfit / sumSub * 100 : 0;
-    var drafts = docs.filter(function (d) { return d.status === 'draft'; });
-    var expiring = drafts.filter(function (d) { var x = U.daysFromToday(d.validUntil); return x != null && x >= 0 && x <= 7; });
-    var attention = drafts.map(function (d) { return { d: d, s: EE.check.summary(U.checkDoc(d)) }; }).filter(function (x) { return x.s.error || x.s.warn; });
-    var R = EE.insight.rates();
     var list = filteredCases();
     if (selId && !list.some(function (c) { return c.id === selId; })) selId = null;
 
-    function kpi(icon, label, value, fmt, foot) {
-      return '<div class="panel kpi" data-st><div class="kpi-label"><span class="kpi-icon">' + icon + '</span>' + label + '</div>' +
-        '<div class="kpi-value num" data-count="' + value + '" data-format="' + fmt + '">0</div><div class="kpi-foot">' + foot + '</div></div>';
-    }
     var periods = [['3m', '3か月'], ['6m', '6か月'], ['year', '今年'], ['all', 'すべて']];
-    /* はじめに：自社情報・顧客・最初の見積がそろうまで、やることを順に出す */
-    function setupHTML() {
-      var steps = [
-        [!!(S.company.name && S.company.address), '自社情報（会社名・住所・登録番号）を入れる', '#/settings/company', '見積書に載ります'],
-        [S.customers.length > 0, '顧客を登録する', '#/clients', '宛先として選べるようになります'],
-        [S.documents.length > 0, '最初の見積を作る', '#/new', '文章からでも、マスタから選んでも作れます']
-      ];
-      if (steps.every(function (x) { return x[0]; })) return '';
-      return '<section class="panel setup" data-st style="margin-bottom:18px"><div class="panel-h"><h2>はじめに</h2><span class="sub">3つそろえると見積を送れます</span></div><div class="panel-b"><ol class="setup-list">' +
-        steps.map(function (x) {
-          return '<li class="' + (x[0] ? 'done' : '') + '"><span class="setup-mark" aria-hidden="true">' + (x[0] ? I.check : '') + '</span>' +
-            (x[0] ? '<span>' + x[1] + '<span class="sr-only">（済み）</span></span>' : '<a href="' + x[2] + '">' + x[1] + '</a>') + '<span class="hint">' + x[3] + '</span></li>';
-        }).join('') + '</ol></div></section>';
-    }
-
+    var sites = list.filter(function (c) { return c.project.id; }).sort(function (a, b) { return (b.lastDate || '').localeCompare(a.lastDate || ''); });
+    var ST = EE.data.STAGES;
     var html =
-      '<div class="toolbar" data-st style="margin-bottom:18px"><div class="grow"><div style="font-size:22px;font-weight:650">' + esc(S.company.name || '桜ミツ') + '</div>' +
-        '<div class="hint">' + U.jdate(EE.data.today()) + '　金額はマスタと固定の計算エンジンだけで決まります（AIは金額を決めません）</div></div>' +
-        '<a class="btn" href="#/settings/items">' + I.box + 'マスタ ' + S.items.length + '件</a>' +
+      '<div class="toolbar" data-st style="margin-bottom:14px"><div class="grow"><div class="hint">案件の今の段階と次の行動。現場を開くと、見積・写真・書類・原価・メモがまとまっています</div></div>' +
+        '<button class="btn" data-act="new-site">' + I.plus + '現場を登録</button>' +
         '<a class="btn primary" href="#/new">' + I.spark + 'かんたん見積もり作成</a></div>' +
-      setupHTML() +
-      /* 1. 案件フロー */
       '<div class="flow-filters" data-st>' +
         '<div class="seg" id="f-period">' + periods.map(function (p) { return '<button data-v="' + p[0] + '" class="' + (F.period === p[0] ? 'on' : '') + '">' + p[1] + '</button>'; }).join('') + '</div>' +
         '<select class="input" id="f-cat" style="width:auto">' + U.opt('', '工事種別：すべて', F.cat) + (S.categories || []).map(function (c) { return U.opt(c.id, c.name, F.cat); }).join('') + '</select>' +
-        '<select class="input" id="f-stage" style="width:auto">' + U.opt('', '段階：すべて', F.stage) + EE.data.STAGES.map(function (s, i) { return U.opt(String(i), s.label, F.stage); }).join('') + '</select>' +
+        '<select class="input" id="f-stage" style="width:auto">' + U.opt('', '段階：すべて', F.stage) + ST.map(function (s, i) { return U.opt(String(i), s.label, F.stage); }).join('') + '</select>' +
         '<span class="hint" style="margin-left:auto">' + list.length + ' 件の案件</span></div>' +
       '<div class="flow-grid">' +
         '<section class="panel flow-panel" data-st><div class="panel-h"><h2>案件フロー</h2><span class="sub">見積 → 受注 → 着工 → 完了 → 請求 → 入金</span></div>' +
           '<div class="panel-b"><div id="flow-wrap">' + flowSVG(list) + '</div></div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>詳細</h2></div><div class="panel-b" id="flow-detail">' + detailHTML(list) + '</div></section>' +
       '</div>' +
-      /* 2. KPI ＋ 円形ゲージ ＋ 月別比較 */
-      '<div class="grid kpis" style="margin-top:18px">' +
-        kpi(I.docs, '今月の見積', month.length, 'int', '件（発行日ベース）') +
-        kpi(I.yen, '今月の見積総額', sumTotal, 'yen', '税込の合計') +
-        kpi(I.chart, '今月の平均粗利率', Math.round(avgMargin * 10) / 10, 'pct', '税抜ベース') +
-        kpi(I.clock, '期限まで7日以内', expiring.length, 'int', '件の下書き　フォローの目安') +
-      '</div>' +
-      '<div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);margin-top:18px">' +
-        '<section class="panel" data-st><div class="panel-h"><h2>入金と粗利</h2><span class="sub">受注した案件の金額から計算</span></div><div class="panel-b"><div class="rings">' +
-          EE.charts.ring(R.paid, '入金率', U.yen(R.paidAmt) + ' / ' + U.yen(R.orderedAmt), '#3987e5') +
-          EE.charts.ring(R.margin, '粗利率', 'すべての見積（税抜）', '#199e70') +
-          EE.charts.ring(R.unpaid, '未入金の割合', '請求済みのうち ' + U.yen(R.unpaidAmt), '#9085e9') +
-        '</div></div></section>' +
-        '<section class="panel" data-st><div class="panel-h"><h2>月別の比較</h2><span class="sub">直近6か月</span><div class="spacer"></div>' +
-          '<div class="seg" id="bar-sort">' + [['month', '月順'], ['amount', '金額順'], ['profit', '粗利順'], ['count', '件数順']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (sortKey === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div></div>' +
-          '<div class="panel-b"><div id="bars"></div></div></section>' +
-      '</div>' +
-      EE.views.folders.homeSection() +
-      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>かんたん見積もり作成</h2><span class="sub">手入力を減らす7つの入り口。どれから始めても同じ見積書になります</span></div>' +
-        '<div class="panel-b"><div class="quick-row">' +
-        [['text', '文章から'], ['voice', '音声から'], ['pdf', 'PDFから'], ['photo', '写真から'], ['past', '過去の見積から'], ['template', 'テンプレートから'], ['edit', '通常入力']].map(function (m) {
-          return '<a class="pkg" href="#/new/' + m[0] + '">' + (m[0] === 'edit' ? I.plus : I.spark) + m[1] + '</a>';
-        }).join('') + '</div></div></section>' +
-      '<div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);margin-top:18px">' +
-        '<section class="panel" data-st><div class="panel-h"><h2>最近の書類</h2><div class="spacer"></div><a class="btn ghost sm" href="#/docs">すべて見る</a></div>' +
-          '<div class="panel-b" style="padding-top:8px">' + (docs.length ? '<table class="table"><tbody>' + docs.slice(0, 6).map(function (d) {
-            var c = U.docCustomer(d);
-            return '<tr class="clickable" data-href="#/edit/' + d.id + '"><td><span class="num">' + esc(d.no) + '</span><span class="cell-sub">' + U.jdate(d.issueDate) + '</span></td>' +
-              '<td>' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(c.name || '宛先未設定') + '</span></td>' +
-              '<td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td></tr>';
-          }).join('') + '</tbody></table>' : '<div class="empty">' + I.docs + 'まだ書類がありません</div>') + '</div></section>' +
-        '<section class="panel" data-st><div class="panel-h"><h2>送る前に確認が必要</h2><span class="sub">下書きの送信前チェック</span></div>' +
-          '<div class="panel-b"><div class="checks">' + (attention.length ? attention.map(function (x) {
-            return '<a class="check ' + (x.s.error ? 'error' : 'warn') + '" href="#/edit/' + x.d.id + '" style="text-decoration:none;color:inherit">' +
-              '<span class="ic">!</span><div><div class="t">' + esc(x.d.title || x.d.no) + '</div><div class="d">' +
-              (x.s.error ? '要修正 ' + x.s.error + ' 件　' : '') + (x.s.warn ? '注意 ' + x.s.warn + ' 件' : '') + '</div></div><span class="hint">開く →</span></a>';
-          }).join('') : '<div class="check-ok">' + I.check + '<div>下書きはすべてチェックを通過しています</div></div>') + '</div></div></section>' +
-      '</div>';
+      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>現場一覧</h2><span class="sub">' + sites.length + ' 件</span></div>' +
+        '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>現場名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
+          sites.map(function (c) {
+            var p = c.project, cu = U.findCustomer(p.customerId) || {};
+            var due = c.stage === 0 && c.valid ? (c.days < 0 ? '<span class="badge err">期限切れ</span>' : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
+            return '<tr class="clickable" data-href="#/site/' + p.id + '"><td>' + esc(p.name) + '<span class="cell-sub">' + esc(cu.name || '') + '</span></td>' +
+              '<td>' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 20) + esc(c.owner.name) + '</span>' : '<span class="hint">未割り当て</span>') + '</td>' +
+              '<td><span class="badge blue">' + esc(ST[c.stage].label) + '</span></td>' +
+              '<td>' + due + '<span class="cell-sub' + (c.warn ? ' warn-text' : '') + '">' + esc(c.next || '') + '</span></td>' +
+              '<td class="r num">' + U.yen(c.amount) + '</td></tr>';
+          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.site + 'まだ現場がありません。「現場を登録」か、見積を作るときに案件を選ぶと現場ができます</div>') + '</div></section>';
 
-    return { title: 'ホーム', crumb: 'ダッシュボード', html: html, mount: mount };
+    return { title: '現場', crumb: '調査・施工・検査', html: html, mount: mount };
   }
 
   function select(view, id) {
@@ -249,20 +176,14 @@
 
   function mount(view) {
     EE.fx.countAll(view);
-    drawBars(view.querySelector('#bars'));
-    view.querySelectorAll('.ring').forEach(function (r, i) {
-      var v = r.querySelector('.ring-val');
-      EE.fx.anim(v, [{ strokeDashoffset: r.style.getPropertyValue('--len') }, { strokeDashoffset: r.style.getPropertyValue('--off') }], { duration: 900, delay: 150 + i * 80, fill: 'both' });
-    });
     if (selId) { var keep = selId; selId = null; select(view, keep); }
     view.addEventListener('click', function (e) {
       var cs = e.target.closest('.flow-case'); if (cs) { select(view, cs.dataset.case); return; }
       var a = e.target.closest('[data-act]');
       if (a && a.dataset.act === 'flow-clear') { select(view, selId); return; }
       if (a && a.dataset.act === 'flow-advance') { advance(a.dataset.id); return; }
+      if (a && a.dataset.act === 'new-site') { EE.views.clients.projectForm(null, '', function (p) { location.hash = '#/site/' + p.id; }); return; }
       var pb = e.target.closest('#f-period [data-v]'); if (pb) { F.period = pb.dataset.v; EE.app.rerender(); return; }
-      var sb = e.target.closest('#bar-sort [data-v]');
-      if (sb) { sortKey = sb.dataset.v; sb.parentNode.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b === sb); }); drawBars(view.querySelector('#bars')); }
     });
     view.addEventListener('keydown', function (e) { var cs = e.target.closest && e.target.closest('.flow-case'); if (cs && (e.key === 'Enter' || e.key === ' ')) { e.preventDefault(); select(view, cs.dataset.case); } });
     view.addEventListener('change', function (e) {
@@ -281,5 +202,7 @@
   }
 
   EE.views = EE.views || {};
-  EE.views.home = { render: render, advance: advance };
+  /** 外から選んで開く（ホームのウィジェットから） */
+  function openCase(id) { selId = id; location.hash = '#/sites'; }
+  EE.views.sites = { render: render, advance: advance, flowSVG: flowSVG, filteredCases: filteredCases, openCase: openCase };
 })(this);

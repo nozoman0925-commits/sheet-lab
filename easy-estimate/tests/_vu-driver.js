@@ -151,7 +151,7 @@
 
   /* 社長：ホームの案件フローで段階を進める */
   T.advance = async function (u, R) {
-    await go('#/home'); var dots = await waitFor(function () { return $$('.flow-case').length && $$('.flow-case'); }); if (!dots) throw new Error('フロー図に案件が無い');
+    await go('#/sites'); var dots = await waitFor(function () { return $$('.flow-case').length && $$('.flow-case'); }); if (!dots) throw new Error('フロー図に案件が無い');
     var cand = []; for (var i = 0; i < dots.length; i++) cand.push(dots[i]);
     var d = cand[Math.floor(R() * cand.length)]; var id = d.dataset.case; click(d); await sleep(60);
     var btn = await waitFor(function () { return $('[data-act="flow-advance"]'); }, 1200);
@@ -167,7 +167,7 @@
   T.pattern = async function (u, R) {
     var ps = EE.S.projects.filter(function (p) { return EE.S.documents.some(function (d) { return d.projectId === p.id; }); });
     var p = ps[Math.floor(R() * ps.length)]; var n0 = EE.S.documents.filter(function (d) { return d.projectId === p.id; }).length;
-    await go('#/site/' + p.id); var b = await waitFor(function () { return $('[data-act="pattern-from"]'); }); if (!b) throw new Error('別パターンのボタンが無い');
+    await go('#/site/' + p.id + '/estimate'); var b = await waitFor(function () { return $('[data-act="pattern-from"]'); }); if (!b) throw new Error('別パターンのボタンが無い');
     click(b);
     var save = await waitFor(function () { return /#\/(new\/edit|edit)/.test(location.hash) && ($('[data-act="save"]') || $('#btn-save')); }, 2500);
     if (!save) throw new Error('別パターンの編集画面が開かない');
