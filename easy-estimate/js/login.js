@@ -33,6 +33,9 @@
     return '<div class="auth" id="auth">' +
       '<div class="auth-card ' + mode + '" id="auth-card" role="region" aria-label="サインイン">' +
         '<div class="auth-slot">' +
+          // 狭い画面ではサイドバーが隠れるので、起動のロゴはここに着地する（広い画面では出さない）
+          '<div class="auth-brand" aria-hidden="true">' + EE.crest.svg({ id: 'authcrest', className: 'brand-crest', fieldR: 106 }) +
+            '<div class="brand-text"><div class="brand-name">桜ミツ</div><div class="brand-sub">OUMITSU</div></div></div>' +
           '<form class="auth-form" id="f-signin" novalidate' + (mode === 'signin' ? '' : ' hidden') + '>' +
             '<h1 class="auth-title">サインイン</h1><p class="auth-lead">続けるには、サインインしてください</p>' +
             '<div class="auth-alert" role="alert"></div>' +
@@ -68,13 +71,20 @@
    * @param {function} onDone
    */
   function require(onDone) {
+    var g = gate(onDone); if (g) g.reveal();
+  }
+  /**
+   * ログイン画面を組み立てる（まだ見せない）。起動シーケンスがロゴの着地点を測れるように先に置き、
+   * 起動の「画面が開く」タイミングで reveal() する。サインイン済みなら onDone を呼んで null を返す
+   */
+  function gate(onDone) {
     var user = EE.auth.current();
-    if (user) { onDone(user); return; }
+    if (user) { onDone(user); return null; }
     var hasAccounts = EE.auth.hasAccounts ? EE.auth.hasAccounts() : true;
-    show(hasAccounts ? 'signin' : 'signup', onDone);
+    return build(hasAccounts ? 'signin' : 'signup', onDone);
   }
 
-  function show(mode, onDone) {
+  function build(mode, onDone) {
     var reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
     document.body.classList.add('auth-locked');
     var wrap = document.createElement('div'); wrap.innerHTML = html(mode);
@@ -112,9 +122,15 @@
     place(); halves();
     root.addEventListener('resize', place);
 
-    // 入場：カードがフェード＋下から浮き上がる
-    if (!reduce) card.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
-    setTimeout(function () { focusFirst(forms[mode]); }, reduce ? 0 : 60);
+    // 入場：reveal() でカードがフェード＋下から浮き上がる（それまでは見せない）
+    card.style.opacity = '0';
+    var revealed = false;
+    function reveal() {
+      if (revealed) return; revealed = true;
+      card.style.opacity = '';
+      if (!reduce) card.animate([{ opacity: 0, transform: 'translateY(12px)' }, { opacity: 1, transform: 'none' }], { duration: 340, easing: 'cubic-bezier(.2,.8,.2,1)' });
+      setTimeout(function () { focusFirst(forms[mode]); }, reduce ? 0 : 60);
+    }
 
     function focusFirst(f) { var i = f.querySelector('input'); if (i) i.focus({ preventScroll: true }); }
 
@@ -235,12 +251,20 @@
 
     function leave(user) {
       root.removeEventListener('resize', place);
-      var done = function () { el.remove(); document.body.classList.remove('auth-locked'); onDone(user); };
+      var done = function () {
+        el.remove(); document.body.classList.remove('auth-locked');
+        // 狭い画面ではサイドバーを隠していたので、ぱっと出さずにフェードで戻す
+        var sb = document.querySelector('.sidebar');
+        if (sb && narrow() && !reduce) sb.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 300, easing: 'ease-out' });
+        onDone(user);
+      };
       if (reduce) { done(); return; }
       var a = card.animate([{ opacity: 1, transform: 'none' }, { opacity: 0, transform: 'scale(.98)' }], { duration: 260, easing: 'ease-in', fill: 'forwards' });
       a.onfinish = done;
     }
+    var brandEl = el.querySelector('.auth-brand');
+    return { reveal: reveal, target: function () { return { crest: brandEl.querySelector('svg'), text: brandEl.querySelector('.brand-text') }; } };
   }
 
-  EE.login = { require: require };
+  EE.login = { require: require, gate: gate };
 })(this);
