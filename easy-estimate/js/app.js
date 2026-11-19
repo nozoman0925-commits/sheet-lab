@@ -140,8 +140,9 @@
       }
       if (b && b.dataset.u === 'signout') {
         toggleUserPop(false);
-        if (EE.views.editor.isDirty() && !confirm('保存していない変更があります。サインアウトしますか？')) return;
-        EE.auth.signOut().then(function () { location.reload(); });
+        var out = function () { EE.auth.signOut().then(function () { location.reload(); }); };
+        if (EE.views.editor.isDirty()) U.confirmBox('保存していない変更があります。サインアウトしますか？', 'サインアウト', { danger: true }).then(function (ok) { if (ok) out(); });
+        else out();
         return;
       }
       if (b && b.dataset.u === 'splash') { toggleUserPop(false); EE.splash.play({ replay: true, onReveal: intro }); }
