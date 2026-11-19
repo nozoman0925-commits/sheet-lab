@@ -44,7 +44,8 @@
   function defaultState() {
     return {
       schema: 2,
-      company: { name: '', invoiceRegNo: '', zip: '', address: '', tel: '', email: '', rep: '', license: '', bank: '' },   // 自社情報は利用者が入れる
+      company: { name: '', invoiceRegNo: '', zip: '', address: '', tel: '', fax: '', email: '', rep: '', license: '', bank: '',
+        logo: '', seal: '', showLogo: true, showSeal: true },   // logo・seal は画像（data URL）。空ならロゴは家紋＋会社名
       settings: {
         lineRounding: 'round',
         taxRounding: 'floor',
@@ -113,10 +114,22 @@
     };
   }
 
+  /* 自社（株式会社桜美建設）の会社情報。空の項目にだけ一度入れる（利用者が入れた項目は上書きしない） */
+  var COMPANY_PRESET = { name: '株式会社桜美建設', zip: '194-0022', address: '東京都町田市森野4-15-12 寺田ビルA-211号', tel: '042-794-7290', fax: '042-794-7291' };
+  function applyCompanyPreset(s) {
+    if (s.companyPreset === 'done') return s;
+    var co = s.company || (s.company = {});
+    Object.keys(COMPANY_PRESET).forEach(function (k) { if (!co[k]) co[k] = COMPANY_PRESET[k]; });
+    if (co.showLogo == null) co.showLogo = true;
+    if (co.showSeal == null) co.showSeal = true;
+    s.companyPreset = 'done';
+    return s;
+  }
+
   /** 初めて使うときの状態：工事項目・単価マスタ、テンプレート、計算式、定型文だけを入れ、顧客・書類・担当者・自社情報は空 */
   function initialState() {
     var s = sampleState(); s.sampleCleanup = '';
-    return ensureMembers(stripSample(s));
+    return applyCompanyPreset(ensureMembers(stripSample(s)));
   }
 
   /** サンプル一式（テスト・画面確認用。利用者のデータには入れない） */
@@ -359,6 +372,7 @@
     Object.keys(d).forEach(function (k) { if (s[k] == null) s[k] = d[k]; });
     Object.keys(d.settings).forEach(function (k) { if (s.settings[k] == null) s.settings[k] = d.settings[k]; });
     stripSample(s);
+    applyCompanyPreset(s);
     ensureMembers(s);
     // 以前の版で確定した書類にも、確定時の写しを作っておく（今の宛名・自社情報で。以後は変わらない）
     (s.documents || []).forEach(function (d) { if (d.status === 'issued' && !d.snap) { d.snap = snapOf(s, d); d.snap.migrated = true; } });
@@ -414,7 +428,7 @@
   root.EE = root.EE || {};
   root.EE.data = {
     KEY: KEY, uid: uid, ymd: ymd, addDays: addDays, today: today,
-    defaultState: defaultState, sampleState: function () { var s = sampleState(); s.sampleCleanup = 'done'; return s; }, initialState: initialState,
+    defaultState: defaultState, sampleState: function () { var s = sampleState(); s.sampleCleanup = 'done'; s.companyPreset = 'done'; return s; }, initialState: initialState,
     lineFromItem: lineFromItem, snapOf: snapOf, nextNumber: nextNumber, peekNumber: peekNumber, newEstimate: newEstimate,
     load: load, save: save, markStale: markStale, isStale: function () { return stale; }, loadIssue: function () { return loadIssue; }, clear: clear, migrate: migrate, ensureMembers: ensureMembers, STAGES: STAGES, stageIndex: stageIndex
   };
