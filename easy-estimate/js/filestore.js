@@ -31,7 +31,8 @@
   function get(id) { return tx('readonly', function (st) { return st.get(id); }); }
   function list() {
     return tx('readonly', function (st) { return st.getAll(); }).then(function (all) {
-      return (all || []).map(function (r) { return { id: r.id, name: r.name, type: r.type, size: r.size, createdAt: r.createdAt, method: r.method, rows: r.result && r.result.rows ? r.result.rows.length : 0, docIds: r.docIds || [] }; })
+      return (all || []).map(function (r) { return { id: r.id, kind: r.kind || 'import', name: r.name, type: r.type, size: r.size, createdAt: r.createdAt, method: r.method, rows: r.result && r.result.rows ? r.result.rows.length : 0, docIds: r.docIds || [],
+        projectId: r.projectId, phase: r.phase, note: r.note, thumb: r.thumb }; })
         .sort(function (a, b) { return (b.createdAt || '').localeCompare(a.createdAt || ''); });
     });
   }
@@ -51,5 +52,8 @@
   }
 
   root.EE = root.EE || {};
-  root.EE.filestore = { put: put, get: get, list: list, remove: remove, linkDoc: linkDoc, openOriginal: openOriginal };
+  /** 現場写真（kind:'photo'）。一覧用に小さな画像（thumb）も持つ */
+  function photos(projectId) { return list().then(function (l) { return l.filter(function (r) { return r.kind === 'photo' && r.projectId === projectId; }); }); }
+  function update(id, patch) { return get(id).then(function (r) { if (!r) return; Object.assign(r, patch); return put(r); }); }
+  root.EE.filestore = { put: put, get: get, list: list, remove: remove, linkDoc: linkDoc, openOriginal: openOriginal, photos: photos, update: update };
 })(this);

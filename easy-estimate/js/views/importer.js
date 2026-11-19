@@ -97,7 +97,7 @@
   function mount(view, kind) {
     var rootEl = view.querySelector('#imp-root');
     function refreshList() {
-      EE.filestore.list().then(function (l) { var el = view.querySelector('#imp-list'); if (el) el.innerHTML = listHTML(l.filter(function (r) { return kind === 'pdf' ? r.type === 'application/pdf' : r.type !== 'application/pdf'; })); })
+      EE.filestore.list().then(function (l) { var el = view.querySelector('#imp-list'); if (el) el.innerHTML = listHTML(l.filter(function (r) { return r.kind !== 'photo' && (kind === 'pdf' ? r.type === 'application/pdf' : r.type !== 'application/pdf'); })); })
         .catch(function (e) { var el = view.querySelector('#imp-list'); if (el) el.innerHTML = '<div class="hint">' + esc(e.message) + '</div>'; });
     }
     refreshList();

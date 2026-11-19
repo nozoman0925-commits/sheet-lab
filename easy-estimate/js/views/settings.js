@@ -3,7 +3,7 @@
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var K = EE.engine.ITEM_KINDS, TC = EE.engine.TAX_CATEGORIES, CT = EE.engine.COST_TYPES;
-  var TABS = [['members', '担当者'], ['items', '工事項目・単価マスター'], ['packages', '工事テンプレート'], ['formulas', '計算式'], ['snippets', '定型文'], ['company', '自社情報'], ['rules', '計算ルール'], ['data', 'データ・拡張']];
+  var TABS = [['members', '担当者'], ['items', '工事項目・単価マスター'], ['packages', '工事テンプレート'], ['formulas', '計算式'], ['snippets', '定型文'], ['company', '自社情報'], ['rules', '計算ルール'], ['features', '機能ライブラリ'], ['data', 'データ・拡張']];
   var mf = { kind: 'all', q: '', cat: '', showInactive: true };
 
   /* ---------- マスタ ---------- */
@@ -187,6 +187,23 @@
     rd.readAsText(file, 'utf-8');
   }
 
+  /* ---------- 機能ライブラリ ---------- */
+  // メニューに出す・出さないを選べる。隠してもデータは消さない。準備中の機能は「第N期で追加」と並べる
+  function featuresTab() {
+    var F = EE.features, hid = F.settings().navHidden, ready = F.FEATURES.filter(function (f) { return f.status === 'ready'; }).length;
+    return '<section class="panel" data-st style="max-width:980px"><div class="panel-h"><h2>機能ライブラリ</h2><span class="sub">使える機能 ' + ready + ' / ' + F.FEATURES.length + '</span></div><div class="panel-b">' +
+      '<p class="hint" style="margin-top:0">左のメニューに出すまとまりを選べます。隠してもデータは消えず、Ctrl+K の検索からはいつでも開けます。準備中の機能は、構想の順番（第N期）で追加していきます。</p>' +
+      '<div class="lib">' + F.SECTIONS.map(function (s) {
+        var list = F.FEATURES.filter(function (f) { return f.section === s.key; }), lock = s.key === 'home' || s.key === 'settings';
+        return '<div class="lib-sec' + (s.planned ? ' planned' : '') + '"><div class="lib-head">' + I[s.icon] + '<b>' + esc(s.label) + '</b><span class="hint">' + esc(s.note) + '</span><div class="spacer"></div>' +
+          (s.planned ? '<span class="badge">準備中（第' + s.planned + '期）</span>' :
+            lock ? '<span class="hint">常に表示</span>' : '<label class="chk"><input type="checkbox" data-nav-show="' + s.key + '"' + (hid[s.key] ? '' : ' checked') + '> メニューに出す</label>') + '</div>' +
+          '<ul class="lib-list">' + list.map(function (f) {
+            return '<li class="' + f.status + '">' + (f.status === 'ready' ? '<a href="' + f.href + '">' + esc(f.name) + '</a>' : '<span>' + esc(f.name) + '</span><span class="badge">第' + f.phase + '期</span>') + '</li>';
+          }).join('') + '</ul></div>';
+      }).join('') + '</div></div></section>';
+  }
+
   /* ---------- 自社情報 ---------- */
   function companyTab() {
     var c = EE.S.company;
@@ -283,11 +300,11 @@
   function render(tab) {
     tab = tab || 'items';
     var X = EE.settingsExtra;
-    var body = { members: EE.views.folders.membersTab, items: itemsTab, packages: X.templatesTab, formulas: X.formulasTab, snippets: X.snippetsTab, company: companyTab, rules: rulesTab, data: dataTab }[tab] || itemsTab;
+    var body = { members: EE.views.folders.membersTab, items: itemsTab, packages: X.templatesTab, formulas: X.formulasTab, snippets: X.snippetsTab, company: companyTab, rules: rulesTab, features: featuresTab, data: dataTab }[tab] || itemsTab;
     var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + TABS.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
-    return { title: '設定・マスタ', crumb: TABS.filter(function (t) { return t[0] === tab; })[0][1], html: html, mount: function (v) { mount(v, tab); } };
+    return { title: '設定', crumb: TABS.filter(function (t) { return t[0] === tab; })[0][1], html: html, mount: function (v) { mount(v, tab); } };
   }
 
   function mount(view, tab) {
@@ -361,6 +378,10 @@
           EE.fx.toast(isLogo ? '会社ロゴを登録しました' : '会社印を登録しました'); EE.app.rerender();
         });
         e.target.value = ''; return;
+      }
+      if (e.target.dataset.navShow) {
+        var ui = EE.features.settings(); ui.navHidden[e.target.dataset.navShow] = !e.target.checked; U.commit(); EE.app.renderNav();
+        EE.fx.toast(e.target.checked ? 'メニューに出しました' : 'メニューから隠しました（データは残っています）'); return;
       }
       if (e.target.id === 'show-logo' || e.target.id === 'show-seal') {
         EE.S.company[e.target.id === 'show-logo' ? 'showLogo' : 'showSeal'] = e.target.checked; U.commit(); EE.fx.toast('保存しました'); return;

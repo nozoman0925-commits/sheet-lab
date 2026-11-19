@@ -9,7 +9,9 @@ const { chromium } = require('playwright'); const path = require('path'); const 
 const signedIn = require('./_signed-in');
 const TOTAL = Number(process.argv[2]) || 10000, PAR = Number(process.argv[3]) || 4, SEED = Number(process.argv[4]) || 7;
 const BASE = 'file://' + path.join(__dirname, '..', 'index.html') + '?splash=off';
-const ROUTES = ['#/home', '#/docs', '#/docs/draft', '#/new', '#/new/edit', '#/new/text', '#/new/past', '#/new/template', '#/clients', '#/settings/items', '#/settings/packages', '#/settings/formulas', '#/settings/snippets', '#/settings/company', '#/settings/rules', '#/settings/members', '#/settings/data'];
+const ROUTES = ['#/home', '#/home?edit', '#/docs', '#/docs/draft', '#/new', '#/new/edit', '#/new/text', '#/new/past', '#/new/template', '#/clients', '#/sites', '#/schedule', '#/finance', '#/analysis', '#/procure',
+  '#/site/prj_haitsu', '#/site/prj_haitsu/estimate', '#/site/prj_yamada/photos', '#/site/prj_yamada/docs', '#/site/prj_midori/cost', '#/site/prj_midori/notes',
+  '#/settings/items', '#/settings/packages', '#/settings/formulas', '#/settings/snippets', '#/settings/company', '#/settings/rules', '#/settings/members', '#/settings/features', '#/settings/data'];
 const TEXTS = ['', '0', '-1', '1.5', '99999999999', 'abc', '外壁塗装 100平米', '<b>x</b>', '\'"', '１２３', 'テスト株式会社', ' ', 'a'.repeat(200), '2026-02-30', '1e5', 'フェンス 10m 撤去'];
 // 押さないもの：サインアウト（セッションが切れる）、全データ削除、ファイル選択、外部リンク
 const SKIP = '[data-u=signout], [data-act=reset], [data-act=clear-all], [data-act=wipe], input[type=file], a[target=_blank], a[href^=http]';
@@ -36,7 +38,7 @@ const FILLABLE = 'input:not([type=file]):not([type=checkbox]):not([type=radio]):
         const r = rnd();
         if (r < 0.08) { const to = pick(ROUTES); act = 'goto ' + to; await p.evaluate(h => { location.hash = h; }, to); await p.waitForTimeout(120); }
         else if (r < 0.10) { act = 'reload'; await p.reload(); await p.waitForTimeout(700); }
-        else if (r < 0.16) { const k = pick(['Escape', 'Enter', 'Tab', 'ArrowDown', 'Alt+2', 'Alt+3', 'Control+z']); act = 'key ' + k; await p.keyboard.press(k); await p.waitForTimeout(40); }
+        else if (r < 0.16) { const k = pick(['Escape', 'Enter', 'Tab', 'ArrowDown', 'Alt+2', 'Alt+3', 'Alt+5', 'Control+z', 'Control+k']); act = 'key ' + k; await p.keyboard.press(k); await p.waitForTimeout(40); }
         else {
           const kind = r < 0.70 ? 'click' : r < 0.88 ? 'fill' : 'select';
           const sel = kind === 'click' ? CLICKABLE : kind === 'fill' ? FILLABLE : 'select:not([disabled])';
