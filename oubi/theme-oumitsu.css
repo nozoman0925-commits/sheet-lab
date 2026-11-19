@@ -115,3 +115,5 @@ h1, h2, h3, .kpi .l, .big4 span, .launch-btn b, .sec-h h2 { font-family: var(--f
 .ee-top h1[tabindex="-1"]:focus { outline: none !important; box-shadow: none !important; }
 /* 明るい画面の見積の画面：選んでいる切り替えボタンは濃い青の字 */
 :root[data-theme="light"] .ee .seg button.on { color: #1b3f9e !important; background: rgba(35,80,196,.12) !important; }
+/* 営業の画面の「外で見やすい明るい画面」：地も明るく（暗い画面の地より優先） */
+html:root body.sl-on.sl-sun { background: #F4F6FA !important; }

@@ -13,7 +13,7 @@ const seed = { cases: { c1: { id: 'c1', no: 'OB-202611-001', createdAt: new Date
   lead: { date: today, customer: '山田 太郎', tel: '090-1111-2222', addr: '東京都町田市森野1-1-1', owner: 'u_tester', contacts: [] },
   work: { title: '山田様邸 外壁塗装工事', types: ['外壁塗装工事'] }, plan: {}, quote: { files: [], items: [{ name: '外壁塗装（シリコン）', qty: 100, unit: '㎡', price: 2500 }] },
   result: {}, schedule: { steps: [], prep: {}, changes: [] }, contract: { files: [] }, complete: { checks: {} }, invoice: { files: [] }, payments: [], vendors: [], reports: [], photos: [], actual: {}, log: [] } } };
-const SCREENS = [['home', null], ['list', 'list'], ['case', 'case'], ['cal', 'cal'], ['dash', 'dash'], ['settings', 'settings'], ['docs', '#/docs'], ['edit', 'edit'], ['finance', '#/finance'], ['items', '#/settings/items']];
+const SCREENS = [['home', null], ['list', 'list'], ['case', 'case'], ['cal', 'cal'], ['dash', 'dash'], ['settings', 'settings'], ['docs', '#/docs'], ['edit', 'edit'], ['finance', '#/finance'], ['items', '#/settings/items'], ['sales-sun', 'sales:1'], ['sales-night', 'sales:0']];
 (async () => {
   const b = await chromium.launch(); const only = process.argv[2]; let total = 0; const sum = [];
   for (const theme of ['dark', 'light']) for (const vp of [{ width: 1440, height: 900 }, { width: 390, height: 844 }]) {
@@ -21,7 +21,8 @@ const SCREENS = [['home', null], ['list', 'list'], ['case', 'case'], ['cal', 'ca
     await p.evaluate(t => { localStorage.setItem('oubi.theme', t); }, theme); await p.reload(); await p.waitForTimeout(2500);
     for (const [name, how] of SCREENS) {
       if (only && name !== only) continue;
-      if (how === 'case') await p.evaluate(() => OUBI.openCase('c1', 'quote'));
+      if (how && how.startsWith('sales:')) { await p.evaluate(v => { localStorage.setItem('oubi.slsun', v); OUBI.setTab('home'); OUBI.setTab('sales'); }, how.slice(6)); }
+      else if (how === 'case') await p.evaluate(() => OUBI.openCase('c1', 'quote'));
       else if (how === 'edit') { await p.evaluate(() => OUBI.openCase('c1', 'quote')); await p.waitForTimeout(500); await p.click('[data-mnew]'); }
       else if (how && how[0] === '#') await p.evaluate(h => { location.hash = h; }, how);
       else if (how) await p.evaluate(t => OUBI.setTab(t), how);
