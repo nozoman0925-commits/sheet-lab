@@ -4,18 +4,19 @@ const R=[];const ok=(n,c,x)=>R.push((c?"PASS ":"FAIL ")+n+(x?" | "+x:""));
 (async()=>{const b=await chromium.launch();const errs=[];try{
 const p=await b.newPage({viewport:{width:390,height:844}});p.on('pageerror',e=>errs.push(e.message));
 await p.goto('http://localhost:8765/index.html');await p.evaluate(()=>localStorage.clear());await p.reload();await p.waitForTimeout(400);
-// 1) 入門の流れに「己の生活を知る」が性格の問いの直後に入る／分岐
-const fl=await p.evaluate(()=>{const T=__T;T.ui.ob={};const f=T.flowX();const i=f.indexOf("ch:life");return {after:f[i-1],ids:f.slice(i,i+8)}});
-ok("「己の生活を知る」が問いの最初（16タイプは任意）",fl.after==="tone",fl.ids.join(","));
-const br=await p.evaluate(()=>{const T=__T;T.ui.ob={l1:["9"],l5:["6"]};const a=T.flowX();T.ui.ob={l1:["4"],l5:["6"]};const c=T.flowX();return {noneHasL2:a.includes("l2"),noneHasL6:a.includes("l6"),stuHasL6:c.includes("l6")}});
+// 1) 生活の問いは入門から外し、使い始めてから「己の生活を知る」で聞く（分岐は同じ）
+const fl=await p.evaluate(()=>{const T=__T;T.ui.ob={};T.ui.mflow=null;const f=T.flowX();T.ui.mflow="life";const g=T.flowX();T.ui.mflow=null;return {inFirst:f.includes("ch:life"),life:g.slice(0,6)}});
+ok("生活の問いは入門に入れず、あとで「己の生活を知る」から聞く",!fl.inFirst&&fl.life[0]==="ch:life",fl.life.join(","));
+const br=await p.evaluate(()=>{const T=__T;T.ui.mflow="life";T.ui.ob={l1:["9"],l5:["6"]};const a=T.flowX();T.ui.ob={l1:["4"],l5:["6"]};const c=T.flowX();return {noneHasL2:a.includes("l2"),noneHasL6:a.includes("l6"),stuHasL6:c.includes("l6")}});
 ok("予定が特にない人には活動・準備内容を聞かない",!br.noneHasL2&&!br.noneHasL6,JSON.stringify(br));ok("学生には準備内容を聞く",br.stuHasL6);
-await p.evaluate(()=>{const T=__T;T.ui.ob={m:{motive:"respect",name:"先生",gender:"male"},sign:"x",l1:["4"],l2:"4"};T.ui.obStep=T.flowX().indexOf("l6");T.render()});
+await p.evaluate(()=>{const T=__T;T.ui.mflow="life";T.ui.ob={m:{motive:"respect",name:"先生",gender:"male"},sign:"x",l1:["4"],l2:"4"};T.ui.obStep=T.flowX().indexOf("l6");T.render()});
 const l6=await p.$$eval('[data-act=obMulti]',x=>x.map(e=>e.innerText.trim()));
 ok("準備内容は立場で出し分け（学生：教材あり・書類なし）",l6.includes("学習教材・提出物の準備")&&!l6.includes("必要書類の確認"),l6.length+"択");
 await p.screenshot({path:'L1.png'});
 await p.evaluate(()=>{const T=__T;T.ui.obStep=T.flowX().indexOf("l1");T.render()});
 await p.click('[data-act=obMulti] >> nth=0');await p.click('[data-act=obMulti] >> nth=9');
 ok("「特にない」は他と同時に選べない",JSON.stringify(await p.evaluate(()=>__T.ui.ob.l1))==='["9"]');
+await p.evaluate(()=>{__T.ui.mflow=null;__T.ui.ob={}});
 // 2) 既存の利用者（見本データ）
 await p.evaluate(()=>{localStorage.clear()});await p.reload();await p.waitForTimeout(400);
 await p.click('[data-act=demo]');await p.waitForTimeout(300);await p.click('[data-tut=skip]');await p.click('[data-tut=skip]');await p.waitForTimeout(300);

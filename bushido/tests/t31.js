@@ -32,7 +32,7 @@ ok("見せた候補を、7日以内に繰り返すのは2割未満",rep.dup/rep.
 const cap=await p.evaluate(()=>{const T=__T;const M=T.S.main;M.created=T.todayKey();M.profile=Object.assign({},M.profile,{flags:Object.assign({},(M.profile||{}).flags,{care:true})});const k=T.todayKey();let mx=0;for(let r=0;r<30;r++){const d=T.day(k);d.mission=null;d.cond="good";T.missionPlan(k,r).offers.forEach(o=>mx=Math.max(mx,o.lv))}return mx});
 ok("始めて3日以内は、心の不調があっても難度2まで（上限は低い方）",cap<=2,"最大の難度 "+cap);
 // 道場に今日のEXPと次の段位まで
-await p.evaluate(()=>{const T=__T;T.S.main.created=T.addDays(T.todayKey(),-10);T.render()});
-ok("今日の稽古に「今日 +EXP」と「次の段位まで」",/今日 \+\d+ EXP/.test(await p.textContent('#sec-todo'))&&/次の段位/.test(await p.textContent('#sec-todo')));
+await p.evaluate(()=>{const T=__T;T.S.main.created=T.addDays(T.todayKey(),-10);T.S.main.look=Object.assign({},T.S.main.look,{view:"full"});T.render()});
+ok("表示の量「詳細」では、進捗に「今日 +EXP」と「次の段位まで」",/今日 \+\d+ EXP/.test(await p.textContent('#sec-progress'))&&/次の段位/.test(await p.textContent('#sec-progress')));
 }catch(e){R.push("CRASH "+e.message.split("\n").slice(0,3).join(" ~ "))}
 console.log(R.join("\n"));console.log('errors',JSON.stringify(errs));await b.close()})();

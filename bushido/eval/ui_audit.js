@@ -32,14 +32,14 @@ const AUDIT=()=>{const out=[];const vw=innerWidth;
   return out};
 let combos=0;
 for(const [w,h] of WIDTHS)for(const fs of FS)for(const th of THEMES){await p.setViewportSize({width:w,height:h});
-  await p.evaluate(([fs,th])=>{const T=__T;T.S.main.look=Object.assign({},T.S.main.look,{fs,theme:th,bg:"rain"});T.render()},[fs,th]);
+  await p.evaluate(([fs,th])=>{const T=__T;T.S.main.look=Object.assign({},T.S.main.look,{fs,theme:th,bg:"rain",view:"std"});T.render()},[fs,th]);
   for(const tab of TABS){await p.evaluate(t=>{document.querySelector('#tabs [data-tab='+t+']').click()},tab);await p.waitForTimeout(60);
     const r=await p.evaluate(AUDIT);combos++;r.forEach(([k,ex])=>add(k,w+"px/"+fs+"/"+th+"/"+tab+"："+ex))}
   // 一太刀を選ぶ画面と、夜のふり返り
   await p.evaluate(()=>document.querySelector('#tabs [data-tab=dojo]').click());await p.waitForTimeout(60);
   const sm=await p.$('#sec-mission [data-act=setMission]');if(sm){await sm.click();await p.waitForTimeout(120);(await p.evaluate(AUDIT)).forEach(([k,ex])=>add(k,w+"px/"+fs+"/"+th+"/一太刀の画面："+ex));await p.evaluate(()=>{const s=document.querySelector('#sheet');if(s)s.innerHTML=""})}
-  const rf=await p.$('#sec-night [data-act=reflect]');if(rf){await rf.click();await p.waitForTimeout(120);(await p.evaluate(AUDIT)).forEach(([k,ex])=>add(k,w+"px/"+fs+"/"+th+"/ふり返りの画面："+ex));await p.evaluate(()=>{const s=document.querySelector('#sheet');if(s)s.innerHTML=""})}
+  {await p.evaluate(()=>__T.A.reflect());await p.waitForTimeout(120);(await p.evaluate(AUDIT)).forEach(([k,ex])=>add(k,w+"px/"+fs+"/"+th+"/ふり返りの画面："+ex));await p.evaluate(()=>{const s=document.querySelector('#sheet');if(s)s.innerHTML=""})}
 }
 // 初回から最初の一太刀まで：画面の数（序章・入門の問い・入門の儀）
 const flow=await p.evaluate(()=>{const T=__T;T.ui.ob={};const f=T.flowX();return {入門の画面数:f.length,うち問い:f.filter(x=>/^[a-z]\d+$/.test(x)).length}});
-console.log(JSON.stringify({点検した画面:combos,見つかったこと:found,初回の道のり:Object.assign(flow,{序章:"7幕（スキップ可）",入門の儀:"34手順（後で行う・中断可）"}),ページのエラー:errs.slice(0,3)},null,1));await b.close()})();
+console.log(JSON.stringify({点検した画面:combos,見つかったこと:found,初回の道のり:Object.assign(flow,{序章:"7幕（スキップ可）",入門の儀:"最初は5手順（全編34手順は誓いの間から）"}),ページのエラー:errs.slice(0,3)},null,1));await b.close()})();

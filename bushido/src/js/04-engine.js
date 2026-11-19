@@ -27,7 +27,7 @@ function unsupAvailable(k){if(tenure()<7)return false;for(let i=1;i<7;i++){const
 function missionHist(before){return Object.keys(S.days).filter(k=>k<before&&S.days[k].mission&&S.days[k].mission.result).sort().map(k=>Object.assign({k},S.days[k].mission))}
 // 分野ごとの今の難度：見つめ直しの答えと段位を出発点に、3回続けて達成で+1、2回続けて未達で-1（記録から毎回計算）
 function catLevel(c,k){const pf=S.main.profile;
-  let lv=pf&&pf.cat?Math.min(6,Math.max(1,Math.round((100-pf.cat[c])/15)+1)):3;
+  let lv=pf&&pf.cat&&isFinite(pf.cat[c])?Math.min(6,Math.max(1,Math.round((100-pf.cat[c])/15)+1)):3;
   lv+=Math.floor((S.main.rankMax||0)/2);if(tenure()<=7)lv=Math.min(lv,3);
   let up=0,dn=0,change=null,cdate=null;
   missionHist(k).filter(m=>m.cat===c).forEach(m=>{
@@ -71,13 +71,25 @@ function missionPlan(k,roll){
   [1,2,3,4,5,6].sort((a,b)=>cw[b]-cw[a]).forEach(c=>add(c,pf?"見つめ直しで、いま崩れが大きい分野":"達成率が低い分野"));
   // 難度の目標
   const target=c=>{let t=catLevel(c,k).lv;if(cond==="bad")t=Math.min(t,2);if(care)t=Math.min(t,3);if(yc==="計画が大きすぎた"||yw==="time"||yw==="hard")t=Math.max(1,t-1);if(painActive()&&c===2)t=Math.min(t,2);if(cond==="good")t=Math.min(10,t+1);if(tenure()<=3)t=Math.min(t,2);return t};
+  const goalC=new Set(((S.main.obAns||{}).g1||[]).map(i=>[1,2,3,4,5,6][+i]).filter(Boolean));
+  const histC={};hist.slice(-30).forEach(h=>{if(h.cat==null)return;const x=histC[h.cat]=histC[h.cat]||{n:0,ok:0};x.n++;x.ok+=h.result==="done"?1:h.result==="part"?.5:0});
+  const lfTags=new Set(((lf&&lf.l4)||[]).map(i=>"L"+i));
+  const score=(m,c)=>{const cc=c!=null?c:m.c;let tg=cc?target(cc):2;if(!isFinite(tg))tg=2;const lv=isFinite(m.lv)?m.lv:2;
+    const goal=cc&&goalC.has(cc)?1:goalC.size?0:.5;
+    const condFit=cond==="bad"?Math.max(0,1-(lv-1)*.35):cond==="good"?(lv>=tg?1:.6):Math.max(0,1-Math.abs(lv-tg)*.3);
+    const state=.5*condFit+.5*(fitsTime(m)?1:0);
+    const ability=Math.max(0,1-Math.abs(lv-tg)/4);
+    const h=cc!=null&&histC[cc];const histS=h&&h.n?Math.min(1,.2+h.ok/h.n):.5;
+    const env=(fitsClock(m)?.7:0)+(m.q&&lfTags.has(m.q)?.3:0);
+    const fresh=!recent.has(m.t)&&!shown.has(m.t)?1:0;
+    const v=.25*goal+.25*state+.20*ability+.15*histS+.10*env+.05*fresh;return isFinite(v)?v:.5};
   const chosen=new Set();
   let cap=10;if(cond==="bad")cap=2;if(care)cap=Math.min(cap,3);if(tenure()<=3)cap=Math.min(cap,2); // 当てはまる上限のうち、いちばん低いもの // 不調の日・心の不調・始めて三日間は、難度に上限をかける // 不調の日・心の不調では、難度に上限をかける（絶対条件）
   // 似た命令（同じ答え・同じ悪習慣に向けた命令）は7日間出にくくする。なければ同じ命令だけを避ける
   const pick=(list,tg,pref)=>{list=list.filter(m=>!chosen.has(m.t)&&missionAllowed(m,pf,cond)&&m.lv<=cap);tg=Math.min(tg,cap);
     {const fit=list.filter(m=>fitsTime(m)&&fitsClock(m));if(fit.length)list=fit;else{const fc=list.filter(fitsClock);if(fc.length)list=fc}}
     const fresh=list.filter(m=>!recent.has(m.t)&&!shown.has(m.t)&&!(m.q&&m.q!==pref&&recentQ.has(m.q))),fresh1=list.filter(m=>!recent.has(m.t)&&!shown.has(m.t)),fresh2=list.filter(m=>!recent.has(m.t));list=fresh.length?fresh:fresh1.length?fresh1:fresh2.length?fresh2:list;if(!list.length)return null;
-    const w=list.map(m=>{const dd=Math.abs(m.lv-tg);return (dd===0?4:dd===1?2:dd===2?.6:.1)*(1+(pf&&m.q&&pf.score&&pf.score[m.q]!=null?pf.score[m.q]*1.5:0))*(pref&&m.q===pref?6:1)*(yw==="time"?(/^(\d+分|数秒|1分|2分|3分|5分)/.test((MDATA[m.id]||[""])[0])?3:.5):1)});
+    const w=list.map(m=>{const dd=Math.abs(m.lv-tg);return (.3+score(m))*(dd===0?4:dd===1?2:dd===2?.6:.1)*(1+(pf&&m.q&&pf.score&&pf.score[m.q]!=null?pf.score[m.q]*1.5:0))*(pref&&m.q===pref?6:1)*(yw==="time"?(/^(\d+分|数秒|1分|2分|3分|5分)/.test((MDATA[m.id]||[""])[0])?3:.5):1)});
     let x=r()*w.reduce((a,b)=>a+b,0);for(let i=0;i<list.length;i++){x-=w[i];if(x<=0)return list[i]}return list[list.length-1]};
   const detail=(m,why,c)=>{let w=why;if(pf&&m.q&&pf.score&&pf.score[m.q]>=2&&QMAP[m.q])w+="（見つめ直し：「"+QMAP[m.q].q.replace(/[「」]/g,"")+"」）";
     if(c){const cl=catLevel(c,k);if(cl.change==="up")w+=" ・ 3回続けて斬った。難度を上げた";if(cl.change==="down")w+=" ・ 2回続けて斬れなかった。難度を下げた"}return w};
@@ -93,6 +105,7 @@ function missionPlan(k,roll){
   if(out.length<3&&!usedD.has("rel")){const m=pick(MISSIONS[0],3);if(m&&cond!=="bad"){chosen.add(m.t);usedD.add("rel");out.push({c:0,t:m.t,lv:m.lv,id:m.id,why:detail(m,"人間関係と礼節を磨く",null)})}}
   for(const sl of slots){if(out.length>=3)break;if(usedD.has(domOf(sl.c)))continue;const m=pick(MISSIONS[sl.c],target(sl.c),sl.q);if(m){chosen.add(m.t);usedD.add(domOf(sl.c));out.push({c:sl.c,t:m.t,lv:m.lv,id:m.id,why:detail(m,sl.why,sl.c)})}}
   for(const sl of slots){if(out.length>=3)break;const m=pick(MISSIONS[sl.c],target(sl.c),sl.q);if(m){chosen.add(m.t);out.push({c:sl.c,t:m.t,lv:m.lv,id:m.id,why:detail(m,sl.why,sl.c)})}}
+  out.forEach(o=>{const m=MBYID[o.id]||{t:o.t,lv:o.lv,c:o.c};o.score=+score(m,o.c||null).toFixed(3)});
   return{offers:out,forced:false,cond};
 }
 function missionOffer(k,roll){return missionPlan(k,roll).offers}
@@ -126,7 +139,7 @@ const todayKey=()=>keyOf(new Date(Date.now()-DAY_START_H*3600e3));
 const wdOf=k=>parseKey(k).getDay();
 const diffDays=(a,b)=>Math.round((parseKey(b)-parseKey(a))/864e5);
 const mondayOf=k=>{const w=wdOf(k);return addDays(k,w===0?-6:1-w)};
-const fmtMD=k=>{if(!k)return "—";const d=parseKey(k);return (d.getMonth()+1)+"/"+d.getDate()+"（"+WD[d.getDay()]+"）"};
+const fmtMD=k=>{if(!k||typeof k!=="string"||!/^\d{4}-\d\d-\d\d/.test(k))return "—";const d=parseKey(k);return (d.getMonth()+1)+"/"+d.getDate()+"（"+WD[d.getDay()]+"）"};
 const nowHM=()=>{const d=new Date();return pad(d.getHours())+":"+pad(d.getMinutes())};
 const uid=()=>Math.random().toString(36).slice(2,10);
 const esc=s=>String(s==null?"":s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));

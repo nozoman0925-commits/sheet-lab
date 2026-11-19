@@ -6,24 +6,24 @@ const ctx=await b.newContext({viewport:{width:390,height:844}});const p=await ct
 await p.goto('http://localhost:8765/index.html');await p.evaluate(()=>localStorage.clear());await p.reload();await p.waitForTimeout(400);
 // 初回の問い
 const fq=await p.evaluate(()=>{const T=__T;T.ui.ob={};const f=T.flowX();return {n:f.filter(x=>/^[a-z]\d+$/.test(x)).length,temp:f.includes("t1"),type:f.includes("type"),ids:f.filter(x=>/^[a-z]\d+$/.test(x)).join(",")}});
-ok("初回の問いは安全と生活に絞る（16タイプは入れない）",fq.n<=20&&!fq.temp&&!fq.type,fq.n+"問："+fq.ids);
-ok("安全の問い（けが・医師・心・睡眠）は必ず聞く",["b9","b10","m1","m2","m6","s3"].every(x=>fq.ids.split(",").includes(x)));
+ok("初回の問いは安全・目標・時間の5問に絞る（16タイプ・生活は後で）",fq.n===5&&!fq.temp&&!fq.type,fq.n+"問："+fq.ids);
+ok("安全の問い（けが・医師・気分）と目標・使える時間は必ず聞く",["b9","b10","m1","g1","g2"].every(x=>fq.ids.split(",").includes(x)));
 // 見本で道場へ
 await p.click('[data-act=demo]');await p.waitForTimeout(300);await p.click('[data-tut=skip]');await p.click('[data-tut=skip]');await p.waitForTimeout(300);
 await p.evaluate(()=>{const T=__T;const M=T.S.main;M.demo=false;M.master={motive:"respect",name:"先生",gender:"male",date:T.todayKey()};M.tutVer=3;M.tutDone=true;M.hints={keiko:1,roku:1,chikai:1};
   M.obAns={b1:"1",b4:"1",b5:"1",b9:["4"],b10:"1",wake:"07:00",sleep:"23:30",m1:"0",m2:"0",m6:"2",g1:["0"],g2:"1",g3:"1",tone:"gen"};T.day(T.todayKey()).mission=null;T.render()});
-// 道場の並び（一太刀が主役、次に三層の稽古）
+// 道場（標準）：一太刀が主役、その下に進捗と毎日の修行
+await p.evaluate(()=>{const T=__T;T.S.main.look=Object.assign({},T.S.main.look,{view:"std"});T.render()});
 const ord=await p.evaluate(()=>[...document.querySelectorAll('#app>.stack>section')].map(e=>e.id).filter(Boolean));
-{const o2=ord.filter(x=>x!=="sec-week1");ok("道場：今日の帯が一番上（入門の七日の案内を除く）、すぐ下に一太刀、次に毎日の修行",o2[0]==="sec-todo"&&o2[1]==="sec-mission"&&o2[2]==="sec-quest",ord.join(" > "))}
-const tiers=await p.evaluate(()=>[...document.querySelectorAll('#sec-todo .tier .tl')].map(e=>e.textContent).join(","));ok("今日の稽古は必須・推奨・任意の三層",tiers.startsWith("必須")&&tiers.includes("推奨")&&tiers.includes("任意"),tiers);
-ok("必須は一太刀だけ",(await p.$$('#sec-todo .tier.t1')).length===1&&(await p.textContent('#sec-todo .tier.t1')).includes("一太刀"));
+ok("道場：一太刀が一番上、次に進捗、次に毎日の修行",ord[0]==="sec-mission"&&ord[1]==="sec-progress"&&ord[2]==="sec-quest",ord.join(" > "));
+ok("一太刀の金色の主ボタンは一つだけ",(await p.$$('#sec-mission .btn.gold')).length===1);
 await (await p.$('#sec-mission')).scrollIntoViewIfNeeded();await p.screenshot({path:B+'/W1.png'});
-// 不調の日は必須だけ
-const bad=await p.evaluate(()=>{const T=__T;T.day(T.todayKey()).cond="bad";T.render();const r=document.querySelectorAll('#sec-todo .tier').length;T.day(T.todayKey()).cond=null;T.render();return r});
-ok("不調の日は、必須の一つだけを見せる",bad===1,bad+"行");
-// 一太刀を斬ると「今日は斬った」
+// 不調の日は一太刀だけ（表示も減らす）
+const bad=await p.evaluate(()=>{const T=__T;T.day(T.todayKey()).cond="bad";T.render();const r={ids:[...document.querySelectorAll('#app>.stack>section')].map(e=>e.id),t:document.querySelector('#sec-mission .hero-title').textContent};T.day(T.todayKey()).cond=null;T.render();return r});
+ok("不調の日は、一太刀だけを軽く見せる",!bad.ids.includes("sec-progress")&&!bad.ids.includes("sec-quest")&&/軽く/.test(bad.t),JSON.stringify(bad));
+// 一太刀を斬ると、次にやることを一つ
 await p.evaluate(()=>{const T=__T;T.day(T.todayKey()).mission={text:"x",cat:1,lv:1,result:"done"};T.render()});
-{const nx=await p.textContent('#sec-todo .todo-next');ok("一太刀を斬れば、次にやること（習慣・ふり返り）へ案内する",/毎日の習慣|ふり返ろう|完了/.test(nx)&&await p.evaluate(()=>document.querySelector('#sec-todo .tier.t1').classList.contains('ok')),nx)}
+{const nx=await p.textContent('#sec-mission .hero-next');ok("一太刀を斬れば、次にやること（習慣・ふり返り）へ案内する",/毎日の修行|ふり返ろう|完了/.test(nx),nx)}
 // 師範は必要な場面だけ
 const ml=await p.evaluate(()=>{const T=__T;T.day(T.todayKey()).mission=null;T.S.main.created=T.addDays(T.todayKey(),-40);T.S.main.tasks=[];T.render();const e=document.querySelector('#sec-master .mline');return e?e.textContent:null});
 ok("何もない日は、師範の一言を出さない",ml===null,String(ml));

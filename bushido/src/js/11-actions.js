@@ -1,6 +1,6 @@
 const A={
   closeSheet:(el,ev)=>{if(ev.target===el||el.tagName==="BUTTON")closeSheet()},
-  obNext:()=>{if(ui.ob&&ui.ob.retConfirm&&flowX()[ui.obStep]==="self"){ui.ob.retConfirm=false;ui.obStep=flowX().indexOf("confirm");obAfter();return}ui.obStep=Math.min(flowX().length-1,ui.obStep+1);if(flowX()[ui.obStep]==="env2")ui.obStep++;obAfter()},
+  obNext:()=>{{const cf=$("#cf-sign");if(cf){const v=cf.value.trim();if(!v){cf.focus();toast("呼び名を記せ","道場や達成証に出る名前");return}ui.ob.sign=v}}if(ui.ob&&ui.ob.retConfirm&&(flowX()[ui.obStep]==="self"||flowX()[ui.obStep]==="m_photo")){ui.ob.retConfirm=false;ui.obStep=flowX().indexOf("confirm");obAfter();return}ui.obStep=Math.min(flowX().length-1,ui.obStep+1);if(flowX()[ui.obStep]==="env2")ui.obStep++;obAfter()},
   envHas:el=>{const e=envTarget();e.has=el.dataset.v;envRefresh()},
   envApp:el=>{const e=envTarget();const a=e.apps=e.apps||[];const i=a.indexOf(el.dataset.v);i<0?a.push(el.dataset.v):a.splice(i,1);e.checks=(e.checks||[]).filter(c=>!/を消した$/.test(c)||a.some(x=>c===x+" を消した"));envRefresh()},
   envChoice:el=>{const e=envTarget();e.choice=el.dataset.v;e.checks=[];e.slot=null;envRefresh()},
@@ -98,7 +98,7 @@ const A={
   saveVirtue:()=>{if(ui.pick==null){toast("一つ選べ");return}const k=todayKey();const v=virtueOf(k);const note=v.p[+ui.pick];day(k).virtue={k:v.k,note,at:nowHM()};saveDay(k);closeSheet();toast("七徳の実践「"+v.k+"」","+"+EXP_TASK+" EXP");render()},
   obFinish:()=>{const ob=ui.ob;const sign=$("#ob-sign").value.trim();if(!sign){$("#ob-sign").focus();return}
     const k=todayKey();const M=S.main;const pl=planFrom(ob);const t=pl.task;
-    M.onboarded=true;M.displayName=sign;M.features=pl.features;M.notif=pl.notif;applyProfile(pl,true);
+    M.onboarded=true;M.viewDefault=M.viewDefault||"min";M.displayName=sign;M.features=pl.features;M.notif=pl.notif;applyProfile(pl,true);
     if(ob.env&&envReady(ob.env))M.env=Object.assign({},ob.env,{state:envState(ob.env),date:k});M.created=M.created||k;
     M.oath={text:ob.oath,signature:sign,date:k,history:[]};
     M.tasks.push({id:uid(),cat:t.c,name:t.p.n,minimum:t.p.m||"",unit:t.p.u||"",restDays:t.p.r||[],status:"進行中",focus:true,start:k,settledOn:null,history:[{date:k,change:"開始"}]});
@@ -113,12 +113,12 @@ const A={
   sPhotoDel:()=>{const nm=$("#sf-name");if(nm)ui.ob.sign=nm.value.trim();const sf=ui.ob.self;if(sf.pk&&sf.pk!==(S.main.self0&&S.main.self0.key))photoDel(sf.pk);sf.pk=null;obDraft();render()},
   selfNext:()=>{const v=$("#sf-name").value.trim();if(!v){toast("お前の名を記せ","表示名は必須");$("#sf-name").focus();return}ui.ob.sign=v;A.obNext()},
   cropOk:()=>{const u=cropOut();const cb=ui.crop&&ui.crop.cb;ui.crop=null;closeSheet();if(u&&cb)cb(u)},
-  mChange:()=>{ui.ob.retConfirm=flowX().includes("self");ui.obStep=flowX().indexOf("m_pick");obAfter()},
+  mChange:()=>{ui.ob.retConfirm=flowX().includes("confirm");ui.obStep=flowX().indexOf("m_pick");obAfter()},
   mflowStart:()=>{const M=S.main;ui.mflow=M.master?"edit":"new";ui.ob={m:Object.assign({},M.master||{}),sign:M.displayName||""};if(!M.master)ui.ob.self={pk:(M.self0&&M.self0.key)||null};ui.obStep=0;obDraft();render();window.scrollTo(0,0)},
   mEditDone:()=>{mCommit(ui.ob);ui.mflow=null;ui.ob={};ui.obStep=0;S.main.obDraft=null;saveMain();tab="chikai";render();window.scrollTo(0,0);toast("師範を改めた","稽古の記録はそのまま");setTimeout(()=>mSay("advice"),600)},
   vowGo:()=>{const ob=ui.ob;const k=todayKey();const M=S.main;const first=!M.onboarded;const sign=ob.sign||M.displayName||"無名";
     if(first){const pl=planFrom(ob);const t=pl.task;
-      M.onboarded=true;M.displayName=sign;M.features=pl.features;M.notif=pl.notif;applyProfile(pl,true);
+      M.onboarded=true;M.viewDefault=M.viewDefault||"min";M.displayName=sign;M.features=pl.features;M.notif=pl.notif;applyProfile(pl,true);
       if(ob.env&&envReady(ob.env))M.env=Object.assign({},ob.env,{state:envState(ob.env),date:k});M.created=M.created||k;
       M.oath={text:VOW_LINES.join("\n")+"\n"+VOW_LAST,signature:sign,date:k,history:[]};
       M.tasks.push({id:uid(),cat:t.c,name:t.p.n,minimum:t.p.m||"",unit:t.p.u||"",restDays:t.p.r||[],status:"進行中",focus:true,start:k,settledOn:null,history:[{date:k,change:"開始"}]})}
@@ -149,7 +149,7 @@ const A={
   help:()=>openSheet('<p class="eyebrow">ヘルプ</p><h2>使い方</h2><ul class="plan-list"><li>毎日は道場の「今日やること」を上から片付ける</li><li>今日の一太刀は三つの命令から選び、夜までに結果を付ける</li><li>迷ったら師範の「助言を聞く」</li><li>SNSや動画を見たくなったら右下の「衝動」</li><li>夜は武道録で省察を書く</li></ul><div class="stack" style="gap:8px;margin-top:12px">'+(S.main.tutVer!==3&&S.main.tutStep!=null?'<button class="btn gold wide" data-act="tutResume">入門の儀を途中から再開する</button>':'')+'<button class="btn wide" data-act="tutStart">入門の儀を最初から行う</button><button class="btn ghost wide" data-act="closeSheet">閉じる</button></div>'),
   tutResume:()=>tutStart(S.main.tutStep||0),
   demo:()=>{seedDemo();render();window.scrollTo(0,0);tutStart(0)},
-  tutStart:()=>tutStart(0),
+  tutStart:()=>tutStart(0,true),
   openGrp:()=>{const g=document.querySelector('#app details.grp');if(g){g.open=true;ui.grpOpen=ui.grpOpen||{};ui.grpOpen[g.id]=true;g.scrollIntoView({behavior:"smooth",block:"start"})}},
   goto:el=>{const s=document.getElementById(el.dataset.v);if(s){openGrpOf(s);s.scrollIntoView({behavior:"smooth",block:"start"})}},
   setMission:()=>{const k=todayKey();const d=day(k);
@@ -183,7 +183,7 @@ const A={
     d.mission={text,cat,lv,why,mid,setAt:nowHM(),setTs:Date.now(),result:null,own:!!(own&&canWrite())};
     if(feat("ritual")&&RITUAL.findIndex((_,i)=>!d.ritual[i])===6)d.ritual[6]=nowHM();
     saveDay(k);closeSheet();toast("一太刀を受けた",text);render()},
-  mres:el=>{const k=todayKey();const m=day(k).mission;const prev=m.result;m.result=el.dataset.v;m.resultAt=nowHM();if(prev&&prev!==m.result){m.hist=(m.hist||[]).concat([{from:prev,to:m.result,at:new Date().toISOString()}])}if(m.result!=="miss")delete m.missWhy;saveDay(k);
+  mres:el=>{ui.heroRedo=false;const k=todayKey();const m=day(k).mission;const prev=m.result;m.result=el.dataset.v;m.resultAt=nowHM();if(prev&&prev!==m.result){m.hist=(m.hist||[]).concat([{from:prev,to:m.result,at:new Date().toISOString()}])}if(m.result!=="miss")delete m.missWhy;saveDay(k);
     if(m.result==="done"&&prev!=="done"){if(isCrit(k))toast("会心の一太刀","+"+(EXP_MISSION+EXP_CRIT)+" EXP（倍）");else toast("一太刀、達成","+"+EXP_MISSION+" EXP")}
     if(m.result==="miss"&&prev!=="miss"){const tp=typeOf(S.main.profile);if(tp){const rv=TYPES[partners(tp.code).rival][0];toast("好敵手の"+rv+"は、今日も斬った","2回続けば、命令を一段軽くする")}}render();
     if(m.result==="done"&&prev!=="done"&&look().fx!=="min"){const sec=$("#sec-mission");if(sec)sec.insertAdjacentHTML("beforeend",'<span class="stamp'+(look().fx==="low"?" still":"")+'" aria-hidden="true">斬</span>')}
@@ -200,6 +200,13 @@ const A={
   painClear:()=>{if(S.main.painStop){S.main.painStop.cleared=todayKey();saveMain()}render();toast("体の試練を再開する","軽いものから戻る")},
   postpone:()=>openSheet('<h2>一太刀を延期・中止する</h2><div class="stack" style="gap:12px"><label class="f">理由<select id="pp">'+["病気","負傷","重大な突発事情"].map(x=>'<option>'+x+'</option>').join("")+'</select></label><label class="f">詳しく（任意）<input type="text" id="pp2" maxlength="60"></label><div class="grid2"><button class="btn" data-act="closeSheet">閉じる</button><button class="btn red" data-act="savePostpone">延期・中止する</button></div></div>'),
   savePostpone:()=>{const k=todayKey();const m=day(k).mission;m.result="postponed";m.postponeReason=$("#pp").value+($("#pp2").value.trim()?"："+$("#pp2").value.trim():"");saveDay(k);closeSheet();render()},
+  startRec:()=>{const o=ui.heroOffer;if(!o){A.setMission();return}const k=todayKey();const d=day(k);d.cond=d.cond||"normal";ui.msOffer=[o];ui.msPick=0;ui.heroRedo=false;A.saveMission()},
+  heroCond:el=>{const k=todayKey();const d=day(k);d.cond=el.dataset.v;if(el.dataset.v!=="bad")d.viewKeep=false;saveDay(k);render()},
+  heroViewKeep:()=>{const k=todayKey();day(k).viewKeep=true;saveDay(k);render()},
+  heroRedo:()=>{ui.heroRedo=true;render()},
+  viewSet:el=>{S.main.look=Object.assign({},look(),{view:el.dataset.v});S.main.viewAsked=true;saveMain();render();toast("表示を変えた","誓いの間の「表示と通知」でいつでも戻せる")},
+  viewAskNo:()=>{S.main.viewAsked=true;saveMain();render()},
+  setTone:el=>{S.main.tone=el.dataset.v;saveMain();render()},
   introSeen:()=>{S.main.introSeen=true;saveMain();render()},
   quick:el=>{writeLog(el.dataset.t,el.dataset.k,"done");render()},
   log:el=>logSheet(el.dataset.t,el.dataset.k),

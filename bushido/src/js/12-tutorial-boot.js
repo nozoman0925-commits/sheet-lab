@@ -1,7 +1,7 @@
 const TUT=[
  {ch:0,center:true,t:"入門の儀",m:"道場の使い方を教えよう。聞くだけでは意味がない。押して覚えろ。",b:"光る所だけが押せる。練習なので、本番の記録には残らない。",next:"始める"},
  {ch:1,chap:true,m:"ここがお前の道場だ。毎日の稽古は、ここから始まる。"},
- {ch:1,tab:"dojo",sel:"#sec-todo",flag:"dojo",t:"今日の稽古",b:"必須は一太刀だけだ。推奨と任意は、余裕のある日に。",next:"次へ"},
+ {ch:1,tab:"dojo",sel:"#sec-mission",flag:"dojo",t:"今日の一太刀",b:"道場を開けば、今日やることが一つだけ出ている。ほかは下の「その他の稽古・記録」にある。",next:"次へ"},
  {ch:1,tab:"dojo",sel:"#sec-master",t:"師範",b:"迷ったら、ここで助言を聞ける。",next:"次へ"},
  {ch:1,tab:"dojo",sel:".rankchip",t:"段位とEXP",b:"記録するたびにEXPが増え、段位が上がる。",next:"次へ"},
  {ch:1,tab:"dojo",sel:".urge-fab",t:"衝動ボタン",b:"SNSや動画を見たくなったら、これを押せ。",next:"次へ"},
@@ -10,7 +10,7 @@ const TUT=[
  {ch:2,tab:"dojo",sel:"#sheet [data-act=msCond][data-v=normal]",press:true,slim:true,top:true,t:"体調を選ぶ",b:"ここでは「ふつう」を押せ。",done:()=>!!$("#ms-pick")||!!day(todayKey()).mission},
  {ch:2,tab:"dojo",sel:"#ms-pick",allow:"#ms-pick",slim:true,top:true,t:"三つから一つ選ぶ",b:"どれか一つを押せ。",done:()=>ui.msPick!=null||!!day(todayKey()).mission},
  {ch:2,tab:"dojo",sel:"#sheet [data-act=saveMission]",press:true,slim:true,top:true,t:"決める",b:"「この一太刀を受ける」を押せ。",done:()=>!!day(todayKey()).mission},
- {ch:2,tab:"dojo",sel:"#sec-mission .minfo",t:"やることは書いてある",b:"いつ・どこで・最低ラインまで、ここに書いてある。",next:"次へ"},
+ {ch:2,tab:"dojo",sel:"#sec-mission .hero-how",t:"やることは書いてある",b:"目安の時間・いつやるか・できない日の軽い版が書いてある。くわしい手順は「やり方をくわしく」から。",next:"次へ"},
  {ch:3,chap:true,m:"やったことは記録しろ。己の歩みを、曖昧にするな。"},
  {ch:3,tab:"dojo",sel:"#sec-mission [data-act=mres][data-v=done]",press:true,flag:"record",t:"達成を付ける",b:"やり終えたら「達成」。練習だ、押してみろ。",done:()=>{const m=day(todayKey()).mission;return !!(m&&m.result)}},
  {ch:3,tab:"dojo",sel:".rankchip",t:"EXPが増えた",b:"これが積み上がって、段位になる。",next:"次へ"},
@@ -43,26 +43,32 @@ function tutSandbox(){if(S.main.tutSnap)return;const k=todayKey();const M=S.main
 function tutRestore(){const sn=S.main.tutSnap;if(!sn)return;const k=sn.key;const M=S.main;
   S.days[k]=sn.day||{logs:{},mission:null,ritual:{},reflection:null,temptations:[]};M.tasks=sn.tasks;M.rankMax=sn.rankMax;M.rankLog=sn.rankLog;M.weeklies=sn.weeklies;M.returns=sn.returns;M.recoveries=sn.recoveries;
   M.tutSnap=null;ui.rankUp=null;ui.shownExp=null;saveDay(k);saveMain()}
-function tutStart(from){closeSheet();$("#ceremony").hidden=true;tutRestore();tutSandbox();ui.tutSteps=TUT;ui.tutKind="main";
-  ui.tut=from!=null?from:(S.main.tutStep||0);if(!(ui.tut>=0&&ui.tut<TUT.length))ui.tut=0;ui.tut=tutChStart(ui.tut);ui.tutSkip=false;ui.tutHelp=false;tab=TUT[ui.tut].tab||"dojo";
+const TUT_FIRST=[
+ {ch:2,chap:true,m:"まずは一つ。今日の一太刀を斬れ。"},
+ {ch:2,tab:"dojo",sel:"#sec-mission [data-act=startRec]",press:true,flag:"mission",t:"稽古を始める",b:"今日のおすすめが一つ出ている。「稽古を始める」を押せ。",done:()=>!!day(todayKey()).mission},
+ {ch:2,tab:"dojo",sel:"#sec-mission .hero-how",t:"やり方は、ここにある",b:"目安の時間と、できない日の軽い版が書いてある。くわしい手順は「やり方をくわしく」から。",next:"次へ"},
+ {ch:3,tab:"dojo",sel:"#sec-mission [data-act=mres][data-v=done]",press:true,t:"終わったら「やり切った」",b:"練習だ。押してみろ。本番の記録には残らない。",done:()=>!!(day(todayKey()).mission||{}).result},
+ {ch:7,tab:"dojo",center:true,reward:true,m:"よし。あとは毎日、これ一つからだ。",t:"入門の儀、完了。",b:"ほかの機能は、初めて開いた時にその場で案内する。すべての使い方は、誓いの間の「データ管理」からいつでも見直せる。",next:"道場へ進む"}];
+function tutStart(from,full){closeSheet();$("#ceremony").hidden=true;tutRestore();tutSandbox();const steps=(full||S.main.tutFull)?TUT:TUT_FIRST;if(full)S.main.tutFull=true;ui.tutSteps=steps;ui.tutKind="main";
+  ui.tut=from!=null?from:(S.main.tutStep||0);if(!(ui.tut>=0&&ui.tut<steps.length))ui.tut=0;if(steps===TUT)ui.tut=tutChStart(ui.tut);ui.tutSkip=false;ui.tutHelp=false;tab=steps[ui.tut].tab||"dojo";
   S.main.tutLater=false;S.main.tutStep=ui.tut;S.main.tutFlags=S.main.tutFlags||{};saveMain();render();window.scrollTo(0,0)}
 const HINTS={
- keiko:[{sel:"#sec-power",t:"二十の力",b:"便利さに頼って手放した力を、週に一つずつ取り戻す自立の試練です。やったら、何をしたかを書いて会得します。",next:"わかった"},{sel:"#sec-train",t:"鍛錬の型",b:"呼吸・瞑想のタイマーと、器具なしの自重トレーニングです。軽い版から始め、楽になったら一段上げます。",next:"わかった"},{sel:"#sec-focus",t:"稽古場",b:"修行を管理する場所です。重点修行は一つだけ。7日以上・達成率80%で「定着」すると、次の修行を追加できます。",next:"わかった"},{sel:"#sec-groom",t:"身支度の型",b:"朝・夜・週一・人と会う前の身支度を、手順どおりに押していきます。",next:"わかった"}],
- roku:[{sel:"#sec-status",t:"六能力",b:"直近30日の達成率です。記録を続けるほど伸びていきます。",next:"わかった"},{sel:"#sec-cal",t:"修行絵巻",b:"色が濃い日ほど修行を多く達成しています。日付を押すと、その日の記録が見られます。",next:"わかった"}],
- chikai:[{sel:"#sec-features",t:"使う機能を選ぶ",b:"使わない機能は消して、道場を短くできます。掟も自分に必要なものだけ選べます。",next:"わかった"}]
+ keiko:[{sel:"#sec-pick",t:"稽古場",b:"今日やると良い稽古を一つだけ出している。ほかの稽古は、下の分類（心を整える・身体を鍛える など）を開くと出てくる。",next:"わかった"}],
+ roku:[{sel:"#sec-reflect",t:"武道録",b:"今日と今週の記録だけを先に見せている。カレンダーや分析は、下の分類を開いた時だけ出てくる。",next:"わかった"}],
+ chikai:[{sel:"#app details.grp",t:"誓いの間",b:"誓い・師範・成長・表示と通知・データ管理の五つに分けてある。開いた所だけ中身が出る。表示の量は「表示と通知」で変えられる。",next:"わかった"}]
 };
 function hintStart(t){if(!HINTS[t])return;ui.tutSteps=HINTS[t];ui.tutKind=t;ui.tut=0;ui.tutSkip=false;requestAnimationFrame(tutShow)}
 function maybeHint(){if(ui.tut!=null||!S.main.onboarded||!(S.main.tutDone||S.main.tutLater))return;S.main.hints=S.main.hints||{};if(HINTS[tab]&&!S.main.hints[tab])hintStart(tab)}
 function tutEnd(later){const kind=ui.tutKind;ui.tut=null;ui.tutSteps=null;$("#tut").hidden=true;$("#tut").innerHTML="";document.documentElement.classList.remove("tut-lock");
   if(kind==="main"){closeSheet();tutRestore();tab="dojo";
     if(later){S.main.tutLater=true;toast("入門の儀を中断した","道場のカードか「？」から、続きを再開できる")}
-    else{S.main.tutDone=true;S.main.tutVer=3;S.main.tutStep=null;S.main.tutLater=false;S.main.hints=Object.assign({},S.main.hints||{},{roku:1})}}
+    else{S.main.tutDone=true;S.main.tutVer=3;S.main.tutStep=null;S.main.tutLater=false;S.main.tutFull=false}}
   else if(kind){S.main.hints=S.main.hints||{};S.main.hints[kind]=1}
   saveMain();render();if(kind==="main")window.scrollTo(0,0)}
 function tutStep(){return ui.tut==null||!ui.tutSteps?null:ui.tutSteps[ui.tut]}
 function tutAdvance(){const prev=ui.tutSteps[ui.tut];if(ui.tutKind==="main"&&prev&&prev.flag){S.main.tutFlags=S.main.tutFlags||{};S.main.tutFlags[prev.flag]=1}
   ui.tut++;ui.tutScrolled=false;ui.tutHelp=false;ui.tutMiss=0;if(ui.tut>=ui.tutSteps.length){tutEnd();return}
-  if(ui.tutKind==="main"){S.main.tutStep=tutChStart(ui.tut);saveMain()}tutShow()}
+  if(ui.tutKind==="main"){S.main.tutStep=ui.tutSteps===TUT?tutChStart(ui.tut):ui.tut;saveMain()}tutShow()}
 function tutBackIdx(){const cur=ui.tutSteps[ui.tut];if(!cur||cur.reward)return -1;for(let i=ui.tut-1;i>=0;i--){const s=ui.tutSteps[i];if(s.ch!==cur.ch)return -1;if(s.chap)return -1;if(!s.done&&!s.allow&&(s.tab||"dojo")===tab)return i}return -1}
 function tutCheck(){
   const s=tutStep();if(!s)return;
@@ -190,7 +196,7 @@ function normState(x){const isO=v=>!!v&&typeof v==="object"&&!Array.isArray(v);
   try{x=JSON.parse(JSON.stringify(x||{}))}catch(e){x={}}   // 凍結された記録でも直せるよう、写しを作る
   const B=blankMain();const M=Object.assign({},B,isO(x&&x.main)?x.main:{});
   Object.keys(B).forEach(k=>{const b=B[k];if(Array.isArray(b)){if(!Array.isArray(M[k]))M[k]=b}else if(isO(b)){if(!isO(M[k]))M[k]=b}else if(typeof b==="number"){if(typeof M[k]!=="number"||!isFinite(M[k]))M[k]=b}else if(typeof b==="string"&&k!=="displayName"&&k!=="future"){if(typeof M[k]!=="string"||!/^\d{4}-\d\d-\d\d$/.test(M[k])&&k==="created")M[k]=b}});
-  M.tasks=M.tasks.filter(isO).map(t=>{if(!(typeof t.cat==="number"&&CATS[t.cat]))t.cat=1;if(typeof t.name!=="string")t.name=String(t.name==null?"修行":t.name);if(!Array.isArray(t.restDays))t.restDays=[];if(!Array.isArray(t.history))t.history=[];if(typeof t.id!=="string")t.id="t"+Math.random().toString(36).slice(2,8);if(typeof t.start!=="string"||!/^\d{4}-\d\d-\d\d$/.test(t.start))t.start=M.created;return t});
+  M.tasks=M.tasks.filter(isO).map(t=>{if(!(typeof t.cat==="number"&&CATS[t.cat]))t.cat=1;if(t.settledOn!=null&&!(typeof t.settledOn==="string"&&/^\d{4}-\d\d-\d\d$/.test(t.settledOn)))t.settledOn=null;t.restDays=Array.isArray(t.restDays)?t.restDays.filter(x=>Number.isInteger(x)&&x>=0&&x<=6):[];if(typeof t.name!=="string")t.name=String(t.name==null?"修行":t.name);if(!Array.isArray(t.restDays))t.restDays=[];if(!Array.isArray(t.history))t.history=[];if(typeof t.id!=="string")t.id="t"+Math.random().toString(36).slice(2,8);if(typeof t.start!=="string"||!/^\d{4}-\d\d-\d\d$/.test(t.start))t.start=M.created;return t});
   ["rankLog","trials","recoveries","edits","abilities","okiteOff"].forEach(k=>{M[k]=M[k].filter(v=>v!=null)});
   M.rankLog=M.rankLog.filter(r=>isO(r)&&typeof r.rank==="number"&&RANKS[r.rank]);
   ["trials","recoveries","edits"].forEach(k=>{M[k]=M[k].filter(isO)});["weeklies","habits"].forEach(k=>{Object.keys(M[k]).forEach(w=>{if(!isO(M[k][w]))delete M[k][w]})});
@@ -206,6 +212,7 @@ function normState(x){const isO=v=>!!v&&typeof v==="object"&&!Array.isArray(v);
   ["onboarded","demo","tutDone","tutLater"].forEach(k=>{if(M[k]!=null&&typeof M[k]!=="boolean")M[k]=!!M[k]&&M[k]!=="false"});
   if(M.profile!=null&&!isO(M.profile))M.profile=null;
   if(M.obAns!=null&&!isO(M.obAns))M.obAns=null;
+  if(M.obAns){const DATE=/^\d{4}-\d\d-\d\d$/;["g1","b9","l1","l4","l5","l6"].forEach(q=>{const v=M.obAns[q];if(v!=null&&!Array.isArray(v))M.obAns[q]=[v]})}
   if(M.obDraft!=null&&!isO(M.obDraft))M.obDraft=null;
   if(M.prologue!=null&&!isO(M.prologue))M.prologue=null;
   const days={};const D=isO(x&&x.days)?x.days:{};
@@ -229,6 +236,8 @@ function normState(x){const isO=v=>!!v&&typeof v==="object"&&!Array.isArray(v);
     const LK="bushido.v1";store.saveMain=store.saveDay=()=>{try{localStorage.setItem(LK,JSON.stringify(S))}catch(e){}};safeRender()},10000);
   try{store=await initStore();const data=await store.load();if(done)return;done=true;clearTimeout(fallback);
     S=normState(data);
+    // 第34版：表示の量の既定値。すでに使っている人は「標準」、新しく始める人は「最小」
+    if(S.main.onboarded&&!S.main.viewDefault&&!(S.main.look&&S.main.look.view))S.main.viewDefault="std";
     tutRestore();
     if(!S.main.prologue&&(S.main.onboarded||(S.main.obDraft&&S.main.obDraft.ob&&(S.main.obDraft.step||0)>0)))S.main.prologue={done:true,skipped:"existing"};
     const dr=S.main.obDraft;if(dr&&dr.ob&&(!S.main.onboarded||dr.retake||dr.mflow)){ui.ob=dr.ob;ui.retake=!!dr.retake&&S.main.onboarded;ui.mflow=S.main.onboarded&&dr.mflow||null;ui.obStep=Math.min(dr.step||0,flowX().length-1);if(flowX()[ui.obStep]==="building")ui.obStep++}

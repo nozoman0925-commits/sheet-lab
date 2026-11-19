@@ -42,7 +42,7 @@ await p.evaluate(()=>localStorage.setItem('bushido.v1',JSON.stringify({main:{pro
 const ctl=await p.evaluate(()=>!!navigator.serviceWorker.controller);ok("オフライン用の仕組みが動く",ctl);
 await p.click('[data-act=demo]');await p.waitForTimeout(300);await p.click('[data-tut=skip]');await p.click('[data-tut=skip]');await p.waitForTimeout(400);
 await ctx.setOffline(true);const t0=Date.now();await p.reload();await p.waitForSelector('#tabs:not([hidden])',{timeout:15000});const ms=Date.now()-t0;
-ok("ネットなしで起動する",true,"起動 "+ms+"ms");ok("ネットなしで記録が残っている",await p.evaluate(()=>!!document.querySelector('#sec-todo')));
+ok("ネットなしで起動する",true,"起動 "+ms+"ms");ok("ネットなしで道場が出る",await p.evaluate(()=>!!document.querySelector('#sec-mission')));
 ok("ネットなしで今日の言葉が出る",!!(await p.$('#sec-quote')));
 await p.click('#tabs [data-tab=roku]');await p.waitForTimeout(300);await p.click('#tabs [data-tab=dojo]');await p.waitForTimeout(200);
 const img=await p.evaluate(async()=>{const im=new Image();return await new Promise(r=>{im.onload=()=>r(im.naturalWidth);im.onerror=()=>r(0);im.src="img/t01.webp"})});ok("ネットなしで16タイプの絵が出る",img>0,img+"px");

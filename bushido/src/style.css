@@ -784,6 +784,38 @@ html.tut-lock{overscroll-behavior:none}
 #sec-cal .btn.sm,#sec-cal [data-act=calPrev],#sec-cal [data-act=calNext]{min-width:40px;min-height:40px}
 .brand small{font-size:calc(11px*var(--fz,1))!important}
 .tiers.steps .tier .tl{font-size:calc(11px*var(--fz,1))!important}
+
+/* ===== 第34版：道場の主役（今日の一太刀）＝一画面一行動 ===== */
+:root .sec.hero{padding:20px 18px 18px;border-radius:16px;border:1px solid var(--gold-dim)}
+:root:not([data-bg=none]) .sec.hero{background-color:var(--glass-2,var(--panel))}
+.hero-date{margin:0 0 6px;font-size:calc(13px*var(--fz,1));color:var(--muted);font-variant-numeric:tabular-nums}
+.sec.hero .eyebrow{margin:0 0 4px}
+.hero-title{margin:0 0 6px;font-family:var(--display);font-weight:800;font-size:calc(24px*var(--fz,1));line-height:1.35;text-wrap:balance}
+.hero-sub{margin:0 0 14px;font-size:calc(13px*var(--fz,1));color:var(--muted)}
+.hero-task{margin:0 0 6px;font-family:var(--display);font-weight:700;font-size:calc(20px*var(--fz,1));line-height:1.5;color:var(--fg)}
+.hero-task.done{font-size:calc(17px*var(--fz,1));color:var(--muted)}
+.hero-ck{color:var(--gold-hi);margin-right:6px}
+.hero-meta{margin:0 0 14px;font-size:calc(13px*var(--fz,1));color:var(--muted)}
+.hero-how{margin:0 0 14px}.hero-how .hero-meta{margin:0 0 4px}.hero-how details.more{margin-top:6px}
+.hero-mline{margin:0 0 14px;padding-left:10px;border-left:2px solid var(--gold-dim);font-size:calc(13.5px*var(--fz,1));color:var(--fg);line-height:1.6}
+.btn.hero-go{min-height:52px;font-size:calc(16px*var(--fz,1));font-weight:700;letter-spacing:.08em}
+.btn.hero-go2{min-height:46px;margin-top:4px}
+.hero-next{margin:4px 0 10px;font-size:calc(14.5px*var(--fz,1));line-height:1.6}
+.hero-alt{display:flex;flex-wrap:wrap;justify-content:center;gap:4px 18px;margin-top:12px}
+.linkbtn{min-height:40px;padding:0 4px;border:0;background:none;color:var(--muted);font:inherit;font-size:calc(13.5px*var(--fz,1));text-decoration:underline;text-underline-offset:3px;cursor:pointer}
+.linkbtn:hover{color:var(--fg)}
+.linkbtn:focus-visible{outline:2px solid var(--gold-hi);outline-offset:2px;border-radius:4px}
+.hero-note{margin:14px 0 0;font-size:calc(12.5px*var(--fz,1));color:var(--muted)}
+.hero-sug{margin-top:14px;padding-top:12px;border-top:1px solid var(--line)}.hero-sug p{margin:0;font-size:calc(13px*var(--fz,1))}
+:root .sec.prog{background:none!important;border:none!important;box-shadow:none!important;-webkit-backdrop-filter:none!important;backdrop-filter:none!important;padding:4px 4px 0}
+.prog-row{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.prog-t{margin:0;font-size:calc(13px*var(--fz,1));color:var(--muted)}
+.prog-n{margin:0;font-size:calc(13px*var(--fz,1));color:var(--muted)}.prog-n b{color:var(--fg);font-size:calc(15px*var(--fz,1));margin-right:2px}
+.prog-meta,.prog-exp{margin:0;font-size:calc(12.5px*var(--fz,1));color:var(--muted)}.prog-exp b{color:var(--gold-hi)}
+.sec.prog .today-bar{margin:6px 0}
+.tag.red{border-color:var(--line)!important;color:var(--muted)!important;background:none!important}
+.quest.miss .mark{border-color:var(--line)!important;color:var(--muted)!important}
+.sec.pick{border-color:var(--gold-dim)}
 .loading{min-height:70vh;display:grid;place-items:center;color:var(--muted);font-family:var(--display);letter-spacing:.3em}
 .sec{scroll-margin-top:84px}
 .help{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-weight:700;flex:none;margin-left:6px}
