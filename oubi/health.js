@@ -5,7 +5,7 @@
    1) 不具合の記録（Sentry の代わり）  2) 実際のスマホでの速さ（Google の web-vitals：LCP・INP・CLS）
    3) 使った人数と画面（どこが使われているか）  4) 満足度（うまくいったあとに一度だけ聞く）
    管理者は「設定 → アプリの調子」で見られる。名前・電話などのお客様の情報は記録しない。 */
-const HL={q:[],sent:0,day:null,tabs:{},dirty:false,ver:'v24'};
+const HL={q:[],sent:0,day:null,tabs:{},dirty:false,ver:'v25'};
 const hlDay=()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')};
 function hlDev(){try{let d=localStorage.getItem('oubi.dev');if(!d){d='d'+Math.random().toString(36).slice(2,10);localStorage.setItem('oubi.dev',d)}return d}catch(e){return 'd0'}}
 const hlReady=()=>typeof mode!=='undefined'&&mode==='db'&&typeof db!=='undefined'&&db&&typeof me!=='undefined'&&me.id;

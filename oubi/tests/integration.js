@@ -78,6 +78,20 @@ function aCase(id, over) {
     ok(Object.values(d.cases).some(c => ((c.lead || {}).company || (c.lead || {}).customer) === '鈴木 一郎'), '見積の画面で登録した顧客は、業務管理の工事（問い合わせ）になる');
   }
 
+  // 2人目（別のタブ＝別の社員のまね）が見積を作ると、1人目の画面にも届く
+  const p2 = await p.context().newPage();
+  await p2.route(/supa\.js(\?.*)?$/, r => r.fulfill({ contentType: 'text/javascript', body: 'window.MOCK_ME=' + JSON.stringify({ id: 'u_tester', isOwner: true, name: 'テスト太郎' }) + ';\n' + fs.readFileSync(path.join(__dirname, 'mock-supa.js'), 'utf8') }));
+  await p2.route(/jsdelivr|googleapis|gstatic|cloudflare|gsi\.go\.jp|open-meteo/, r => r.abort());
+  await p2.goto(open.BASE); await p2.waitForTimeout(2500);
+  await p.evaluate(() => { location.hash = '#/docs'; }); await p.waitForTimeout(1000);
+  const n0 = await p.evaluate(() => EE.S.documents.length);
+  await p2.evaluate(() => OUBI.openCase('c3', 'quote')); await p2.waitForTimeout(500); await p2.click('[data-mnew]'); await p2.waitForTimeout(1500);
+  await p2.click('#btn-save'); await p2.waitForTimeout(1500);
+  await p.waitForTimeout(1500);
+  ok(await p.evaluate(n => EE.S.documents.length === n + 1, n0), '別の人が作った見積が、開いている一覧にも届く');
+  ok((await db()).cases.c3.quote.mitsuDocId, '別の人の見積も、その工事の「見積と利益」に入る');
+  await p2.close();
+
   // スマホ幅
   await p.setViewportSize({ width: 390, height: 844 }); await p.evaluate(() => { location.hash = '#/docs'; }); await p.waitForTimeout(1200);
   await p.screenshot({ path: OUT + 'int-mobile-docs.png' });
