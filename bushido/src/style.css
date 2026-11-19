@@ -771,6 +771,19 @@ html.tut-lock{overscroll-behavior:none}
 :root .sec.todo{background:var(--panel);border:1px solid var(--gold-dim);border-radius:14px;padding:16px 14px 14px}
 :root:not([data-bg=none]) .sec.todo{background-color:var(--glass-2,var(--panel));-webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15)}
 .tiers.steps .tier .ss em{font-style:normal;color:var(--gold-hi);font-weight:600}
+.today-exp{margin:2px 0 0;font-size:calc(12.5px*var(--fz,1));color:var(--muted)}
+.today-exp b{color:var(--gold-hi);font-weight:700}
+/* 第33版：押しやすさ・読みやすさ（1万人評価の画面点検で見つかった所） */
+.help{width:40px!important;height:40px!important}
+.cal{gap:3px}
+.cal .d{min-height:36px;color:var(--fg)}
+@media (min-width:360px){.cal .d{min-height:40px}}
+.cal .h{font-size:calc(11px*var(--fz,1))}
+.cal .d.l1{color:var(--fg)}
+:root[data-theme=haku] .cal .d.l3{background:var(--gold-hi)}
+#sec-cal .btn.sm,#sec-cal [data-act=calPrev],#sec-cal [data-act=calNext]{min-width:40px;min-height:40px}
+.brand small{font-size:calc(11px*var(--fz,1))!important}
+.tiers.steps .tier .tl{font-size:calc(11px*var(--fz,1))!important}
 .loading{min-height:70vh;display:grid;place-items:center;color:var(--muted);font-family:var(--display);letter-spacing:.3em}
 .sec{scroll-margin-top:84px}
 .help{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-weight:700;flex:none;margin-left:6px}

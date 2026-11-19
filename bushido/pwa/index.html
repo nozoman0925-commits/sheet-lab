@@ -775,6 +775,19 @@ html.tut-lock{overscroll-behavior:none}
 :root .sec.todo{background:var(--panel);border:1px solid var(--gold-dim);border-radius:14px;padding:16px 14px 14px}
 :root:not([data-bg=none]) .sec.todo{background-color:var(--glass-2,var(--panel));-webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15)}
 .tiers.steps .tier .ss em{font-style:normal;color:var(--gold-hi);font-weight:600}
+.today-exp{margin:2px 0 0;font-size:calc(12.5px*var(--fz,1));color:var(--muted)}
+.today-exp b{color:var(--gold-hi);font-weight:700}
+/* 第33版：押しやすさ・読みやすさ（1万人評価の画面点検で見つかった所） */
+.help{width:40px!important;height:40px!important}
+.cal{gap:3px}
+.cal .d{min-height:36px;color:var(--fg)}
+@media (min-width:360px){.cal .d{min-height:40px}}
+.cal .h{font-size:calc(11px*var(--fz,1))}
+.cal .d.l1{color:var(--fg)}
+:root[data-theme=haku] .cal .d.l3{background:var(--gold-hi)}
+#sec-cal .btn.sm,#sec-cal [data-act=calPrev],#sec-cal [data-act=calNext]{min-width:40px;min-height:40px}
+.brand small{font-size:calc(11px*var(--fz,1))!important}
+.tiers.steps .tier .tl{font-size:calc(11px*var(--fz,1))!important}
 .loading{min-height:70vh;display:grid;place-items:center;color:var(--muted);font-family:var(--display);letter-spacing:.3em}
 .sec{scroll-margin-top:84px}
 .help{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-weight:700;flex:none;margin-left:6px}
@@ -1202,6 +1215,10 @@ Object.keys(OPP_M).forEach(L=>OPP_M[L].forEach((x,j)=>{MBYID["o-"+L+j]={id:"o-"+
 
 function canWrite(){return (S.main.rankMax||0)>=2} // 破（侍）から自分の言葉で書ける
 function seeded(seed){let x=seed%2147483647;if(x<=0)x+=2147483646;return()=>{x=x*16807%2147483647;return(x-1)/2147483646}}
+// 時刻に縛られた課題（朝・就寝の時刻）。夜型・シフト制の人には出しにくくする
+const CLOCK_RE=/(朝|起き|起床|目覚まし|23時|布団に入|二度寝|昼寝|夕方以降|朝食|寝る1時間前|就寝|同じ時刻に寝)/;
+// 課題のおおよその所要時間（分）。「一日を通して」など時間を取らないものは null
+function mMinutes(id){const d=MDATA[id];if(!d)return null;const t=d[0]||"";const h=/(\d+)\s*時間/.exec(t),m=/(\d+)\s*分/.exec(t);return h?+h[1]*60:m?+m[1]:null}
 function missionAllowed(m,pf,cond){
   if(cond==="bad"&&m.tags&&m.tags.includes("ex"))return false;
   if(m.tags&&m.tags.includes("ex")&&typeof painActive==="function"&&painActive())return false;
@@ -1228,7 +1245,11 @@ function domOf(c){return DOMAIN_OF[c]||("x"+c)}
 function missionPlan(k,roll){
   const r=seeded(Math.floor(parseKey(k)/864e5)*31+(roll||0)*977+7);const pf=S.main.profile||null;const tp=typeOf(pf);const d=day(k);const cond=d.cond||"normal";
   const care=!!(pf&&pf.flags&&pf.flags.care);const y=S.days[addDays(k,-1)];const yc=y&&y.reflection&&y.reflection.issue;
-  const recent=new Set(),recentQ=new Set();for(let i=1;i<=7;i++){const dd=S.days[addDays(k,-i)];if(dd&&dd.mission){recent.add(dd.mission.text);const mm=MBYID[dd.mission.mid];if(mm&&mm.q)recentQ.add(mm.q)}}
+  const recent=new Set(),recentQ=new Set(),shown=new Set();for(let i=1;i<=7;i++){const dd=S.days[addDays(k,-i)];if(dd&&Array.isArray(dd.offered))dd.offered.forEach(t=>shown.add(t));if(dd&&dd.mission){recent.add(dd.mission.text);const mm=MBYID[dd.mission.mid];if(mm&&mm.q)recentQ.add(mm.q)}}
+  // 生活に合わせる：使える時間（入門の答え）と、夜型・シフト制の人には時刻に縛られた課題を避ける
+  const A=S.main.obAns||{};const budget=[5,15,30,60][+A.g2]||null;const lf=lifeOf();const nightLife=!!(lf&&(String(lf.l3)==="3"||String(lf.l3)==="4"));
+  const fitsTime=m=>{if(!budget)return true;const mm=mMinutes(m.id);return mm==null||mm<=budget*2};
+  const fitsClock=m=>!nightLife||!CLOCK_RE.test(m.t);
   const ym=y&&y.mission;const yw=ym&&ym.result==="miss"?ym.missWhy:null;
   const focus=S.main.tasks.find(t=>t.focus&&t.status==="進行中")||activeTasks()[0];
   const need=c=>{if(pf&&pf.cat)return pf.cat[c];const a=ability(c);return a==null?50:100-a};
@@ -1254,10 +1275,11 @@ function missionPlan(k,roll){
   // 難度の目標
   const target=c=>{let t=catLevel(c,k).lv;if(cond==="bad")t=Math.min(t,2);if(care)t=Math.min(t,3);if(yc==="計画が大きすぎた"||yw==="time"||yw==="hard")t=Math.max(1,t-1);if(painActive()&&c===2)t=Math.min(t,2);if(cond==="good")t=Math.min(10,t+1);if(tenure()<=3)t=Math.min(t,2);return t};
   const chosen=new Set();
-  const cap=cond==="bad"?2:care?3:tenure()<=3?2:10; // 不調の日・心の不調・始めて三日間は、難度に上限をかける // 不調の日・心の不調では、難度に上限をかける（絶対条件）
+  let cap=10;if(cond==="bad")cap=2;if(care)cap=Math.min(cap,3);if(tenure()<=3)cap=Math.min(cap,2); // 当てはまる上限のうち、いちばん低いもの // 不調の日・心の不調・始めて三日間は、難度に上限をかける // 不調の日・心の不調では、難度に上限をかける（絶対条件）
   // 似た命令（同じ答え・同じ悪習慣に向けた命令）は7日間出にくくする。なければ同じ命令だけを避ける
   const pick=(list,tg,pref)=>{list=list.filter(m=>!chosen.has(m.t)&&missionAllowed(m,pf,cond)&&m.lv<=cap);tg=Math.min(tg,cap);
-    const fresh=list.filter(m=>!recent.has(m.t)&&!(m.q&&m.q!==pref&&recentQ.has(m.q))),fresh2=list.filter(m=>!recent.has(m.t));list=fresh.length?fresh:fresh2.length?fresh2:list;if(!list.length)return null;
+    {const fit=list.filter(m=>fitsTime(m)&&fitsClock(m));if(fit.length)list=fit;else{const fc=list.filter(fitsClock);if(fc.length)list=fc}}
+    const fresh=list.filter(m=>!recent.has(m.t)&&!shown.has(m.t)&&!(m.q&&m.q!==pref&&recentQ.has(m.q))),fresh1=list.filter(m=>!recent.has(m.t)&&!shown.has(m.t)),fresh2=list.filter(m=>!recent.has(m.t));list=fresh.length?fresh:fresh1.length?fresh1:fresh2.length?fresh2:list;if(!list.length)return null;
     const w=list.map(m=>{const dd=Math.abs(m.lv-tg);return (dd===0?4:dd===1?2:dd===2?.6:.1)*(1+(pf&&m.q&&pf.score&&pf.score[m.q]!=null?pf.score[m.q]*1.5:0))*(pref&&m.q===pref?6:1)*(yw==="time"?(/^(\d+分|数秒|1分|2分|3分|5分)/.test((MDATA[m.id]||[""])[0])?3:.5):1)});
     let x=r()*w.reduce((a,b)=>a+b,0);for(let i=0;i<list.length;i++){x-=w[i];if(x<=0)return list[i]}return list[list.length-1]};
   const detail=(m,why,c)=>{let w=why;if(pf&&m.q&&pf.score&&pf.score[m.q]>=2&&QMAP[m.q])w+="（見つめ直し：「"+QMAP[m.q].q.replace(/[「」]/g,"")+"」）";
@@ -2805,7 +2827,7 @@ function renderTodo(k,d){
   const row=x=>'<button class="tier step '+x.cls+(x.ok?" ok":"")+'" '+x.act+'><span class="sn" aria-hidden="true">'+(x.ok?"✓":x.n)+'</span><span class="st"><span class="tt">'+x.t+'</span><span class="ss"><em>'+x.w+'</em> ・ '+x.sub+'</span></span><span class="tl">'+x.lab+'</span></button>';
   const w1=(()=>{const M=S.main;if(!M.onboarded||M.demo||!M.created)return "";const n=diffDays(M.created,k)+1;if(n<1||n>7||!WEEK1[n-1])return "";return '<p class="w1line">入門'+n+'日目のコツ：<b>'+WEEK1[n-1][0]+'</b></p>'})();
   return '<section class="sec todo" id="sec-todo">'+intro+'<div class="today-head"><p class="eyebrow">今日の稽古</p><span class="today-n num">'+doneN+' / '+steps.length+'</span>'+stk+'</div>'+
-   '<div class="today-bar" aria-hidden="true">'+steps.map(x=>'<i class="'+(x.ok?"on":"")+'"></i>').join("")+'</div>'+
+   (()=>{const ev=expEvents();const tE=ev.filter(e=>e.k===k).reduce((a,e)=>a+e.exp,0);const tot=ev.reduce((a,e)=>a+e.exp,0);const r=computeRank(tot);const nx=RANKS[r+1];return '<p class="today-exp">今日 <b>+'+tE+' EXP</b>'+(nx?' ・ 次の段位「'+nx.n+'」まで あと<b>'+Math.max(0,nx.exp-tot).toLocaleString()+'</b> EXP'+(tot>=nx.exp?'（条件：'+nx.cond+'）':''):'')+'</p>'})()+'<div class="today-bar" aria-hidden="true">'+steps.map(x=>'<i class="'+(x.ok?"on":"")+'"></i>').join("")+'</div>'+
    '<p class="todo-next">'+now+'</p>'+w1+'<div class="tiers steps">'+steps.map(row).join("")+
    (bad?'':'<button class="tier t3 more" data-act="openGrp"><span class="tl">任意</span><span class="tt">ほかの稽古 <small>掟・朝の型・心得</small></span><span class="chev" aria-hidden="true">›</span></button>')+'</div></section>';
 }
@@ -3352,7 +3374,7 @@ const A={
     if(!d.cond){openSheet('<p class="eyebrow">'+fmtMD(k)+' ・ 一太刀の前に</p><h2>今日の体と心は？</h2><p class="small muted" style="margin-bottom:10px">命令の重さを合わせる。不調の日に無理をさせる命令は出さない。</p><div class="qopts">'+[["good","万全","いつもより一段重い命令を出す"],["normal","ふつう","いつもの重さ"],["bad","不調","体調不良・けが・強い疲れ。回復を優先する"]].map(o=>'<button class="qopt" data-act="msCond" data-v="'+o[0]+'"><span>'+o[1]+'<small>'+o[2]+'</small></span></button>').join("")+'</div>');return}
     const rkG=S.main.rankMax||0;
     if(rkG===3&&!d.msDomain&&d.cond!=="bad"){openSheet('<p class="eyebrow">'+fmtMD(k)+' ・ 考える段</p><h2>今日、どこを鍛えるべきか。自分で決めろ。</h2><p class="small muted" style="margin-bottom:10px">昨日までの記録を思い出して選べ。選んだ分野から命令を出す。</p><div class="qopts">'+[1,2,3,4,5,6].map(c=>'<button class="qopt" data-act="msDomain" data-v="'+c+'"><span>'+CAT_SHORT[c]+'</span></button>').join("")+'<button class="qopt" data-act="msDomain" data-v="auto"><span>今日は任せる</span></button></div>');return}
-    const roll=d.offerRoll||0;const plan=missionPlan(k,roll);const offer=plan.offers;ui.msPick=plan.forced?0:null;ui.msOffer=offer;
+    const roll=d.offerRoll||0;const plan=missionPlan(k,roll);const offer=plan.offers;{const ts=offer.map(o=>o.t);const prev=Array.isArray(d.offered)?d.offered:[];const add=ts.filter(t=>!prev.includes(t));if(add.length){d.offered=prev.concat(add).slice(-12);saveDay(k)}}ui.msPick=plan.forced?0:null;ui.msOffer=offer;
     const tp=typeOf(S.main.profile);const pr=tp?partners(tp.code):null;
     const guide=rkG<=1?'<p class="small" style="color:var(--gold-hi);margin-bottom:8px">迷ったら「おすすめ」でいい。</p>':rkG===2?'<p class="small muted" style="margin-bottom:8px">三つから、自分で選べ。選んだものに責任を持て。</p>':rkG>=4?'<p class="small" style="color:var(--gold-hi);margin-bottom:8px">命令は、もう要らないはずだ。下で自分の一太刀を決めてもよい。</p>':'';
     const head=plan.forced?'<h2>今日は、これ一つだけを斬れ。</h2><p class="small" style="color:var(--red-ink);margin-bottom:10px">崩れが続いている。量ではない。今日一つ斬れば、流れは戻る。</p>':plan.cond==="bad"?'<h2>今日は守れ。回復も修行だ。</h2><p class="small muted" style="margin-bottom:10px">不調の日は、軽い命令だけを出す。休むと決めるのも、立派な一太刀だ。</p>':'<h2>今日は、これをやれ。</h2><p class="small muted" style="margin-bottom:6px">今日、何を斬れば「勝った」と言えるか。一つ選べ。選んだら今日中は変えられない。逃げ道は「病気・けが・急な事情」だけだ。</p>';

@@ -2,7 +2,7 @@
 
 毎日ひとつの「一太刀」（小さな約束）を斬り、記録し、段位を上げていく自己鍛錬アプリ。
 
-- 公開中：claude.ai の Artifact（第32版）
+- 公開中：claude.ai の Artifact（第33版）
 - オフライン版：`pwa/`（ホーム画面に追加すれば、ネットがなくても動く）
 
 ## すぐ使うコマンド
@@ -14,6 +14,8 @@ python3 build.py --check    # 今の bushido.html が src/ と一致するか確
 ./run_tests.sh --sim        # さらに 1万人の擬似データで検査
 ./run_tests.sh t27          # 序章のテストだけ
 node tests/boot10k.js bushido.html tests/fixtures/seed_user.json 10000 8  # 起動の耐久テスト（1万回）
+node eval/personas10k.js bushido.html 10000 14 # 1万人の仮想利用者による評価
+node eval/ui_audit.js                            # 画面の点検（幅・文字の大きさ・外観）
 node tools/export_review.js # 専門家レビュー用の表（docs/review/）を作り直す
 ```
 
