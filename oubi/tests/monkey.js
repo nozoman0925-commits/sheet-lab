@@ -73,7 +73,12 @@ const seed = { cases: {
           }
         }
       } catch (e) { act += ' (操作失敗: ' + e.message.split('\n')[0].slice(0, 80) + ')'; }
-      trail.push(act); if (trail.length > 8) trail.shift();
+      trail.push(act); if (trail.length > 12) trail.shift();
+      // アプリの外（エラー画面・別のページ）へ移ってしまったら記録して戻る
+      if (!p.url().startsWith(open.BASE)) {
+        pending.push('アプリの外へ移動: ' + p.url().slice(0, 80));
+        await p.goto(open.BASE).catch(() => {}); await p.waitForTimeout(2000);
+      }
       const st = await p.evaluate(() => {
         const txt = (document.body.innerText || '');
         const bad = (txt.match(/NaN|undefined|\[object Object\]|Infinity/g) || []);
