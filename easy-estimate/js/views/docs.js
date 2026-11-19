@@ -13,7 +13,7 @@
   function rows() {
     var q = U.norm(F.q).trim();
     var list = EE.S.documents.map(function (d) {
-      var c = U.findCustomer(d.customerId) || {};
+      var c = U.docCustomer(d);
       var r = U.calcDoc(d);
       return { d: d, c: c, r: r };
     }).filter(function (x) {
@@ -109,7 +109,7 @@
 
   /* ---- めくるカード：表＝概要、裏＝明細の要点と履歴 ---- */
   function cardHTML(d) {
-    var r = U.calcDoc(d), c = U.findCustomer(d.customerId) || {}, m = U.findMember(d.ownerId), pj = U.findProject(d.projectId);
+    var r = U.calcDoc(d), c = U.docCustomer(d), m = U.findMember(d.ownerId), pj = U.findProject(d.projectId);
     var days = U.daysFromToday(d.validUntil);
     var top = d.lines.map(function (l, i) { return { l: l, a: r.lines[i] ? r.lines[i].amount : 0 }; }).sort(function (a, b) { return b.a - a.a; }).slice(0, 5);
     var hist = (d.history || []).slice(-6).reverse();
@@ -197,9 +197,20 @@
     view.querySelector('#d-print').onclick = function () {
       var docs = EE.S.documents.filter(function (d) { return SEL[d.id]; });
       if (!docs.length) return;
-      var errs = docs.filter(function (d) { return EE.check.summary(U.checkDoc(d)).error; });
-      var go = function () { EE.print.printMany(docs); docs.forEach(function (d) { d.history = (d.history || []).concat([{ at: new Date().toISOString(), action: 'PDF出力（一括）' }]).slice(-50); }); U.commit(); };
-      if (errs.length) U.confirmBox('要修正の指摘がある書類が ' + errs.length + ' 件あります：\n' + errs.map(function (d) { return '・' + (d.title || d.no); }).join('\n') + '\n\nこのまま出力しますか？', 'このまま出力', { danger: true }).then(function (ok) { if (ok) go(); });
+      // 下書きは確定してから出す。要修正の指摘がある下書きは確定できないので、出さない
+      var drafts = docs.filter(function (d) { return d.status !== 'issued'; });
+      var errs = drafts.filter(function (d) { return EE.check.summary(U.checkDoc(d)).error; });
+      if (errs.length) {
+        U.confirmBox('要修正の指摘がある下書きが ' + errs.length + ' 件あるため、PDFを出せません：\n' + errs.map(function (d) { return '・' + (d.title || d.no || '（件名なし）'); }).join('\n') + '\n\n見積を開いて直してから出してください。', 'わかりました');
+        return;
+      }
+      var go = function () {
+        drafts.forEach(function (d) { EE.app.finalizeDoc(d); });
+        EE.print.printMany(docs);
+        docs.forEach(function (d) { d.history = (d.history || []).concat([{ at: new Date().toISOString(), action: 'PDF出力（一括）' }]).slice(-50); });
+        U.commit(); refresh();
+      };
+      if (drafts.length) U.confirmBox('下書き ' + drafts.length + ' 件は、PDFを出すと確定され、以後は変更・削除できません：\n' + drafts.map(function (d) { return '・' + (d.title || '（件名なし）'); }).join('\n'), '確定してPDFを出す').then(function (ok) { if (ok) go(); });
       else go();
     };
     view.addEventListener('click', async function (e) {
@@ -219,6 +230,8 @@
         // 受注した見積として使われている書類は消さない（受注額の集計から消えてしまうため）
         var acc = EE.S.projects.filter(function (p) { return p.acceptedDocId === d.id; })[0];
         if (acc) { EE.fx.toast('この見積は「' + acc.name + '」の受注見積なので削除できません', { warn: true, ms: 5000 }); return; }
+        // 以前の版で、下書きのままPDFを出した書類（相手に送った可能性がある）は消さない
+        if ((d.history || []).some(function (h) { return /PDF出力/.test(h.action); })) { EE.fx.toast('PDFを出したことのある書類は削除できません（送った書類として保存します）', { warn: true, ms: 5000 }); return; }
         var ok = await U.confirmBox('下書き「' + (d.title || d.no) + '」を削除しますか？', '削除する', { danger: true });
         if (!ok) return;
         var idx = EE.S.documents.indexOf(d);

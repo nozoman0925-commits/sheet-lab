@@ -66,7 +66,9 @@
 
     // ---- 2. 宛先 ----
     var cust = (ctx.customers || []).filter(function (c) { return c.id === doc.customerId; })[0];
-    if (!doc.customerId) {
+    // 確定済みの書類は、確定時の写しの宛名で見る（顧客データを後から消しても指摘しない）
+    if (!cust && doc.status === 'issued' && doc.snap && doc.snap.customer && doc.snap.customer.name) cust = doc.snap.customer;
+    if (!doc.customerId && !cust) {
       add('error', 'no-customer', '宛先（顧客）が選ばれていません', '', { area: 'header', field: 'customerId' });
     } else if (!cust) {
       add('error', 'customer-missing', '宛先の顧客データが見つかりません', '顧客が削除された可能性があります。', { area: 'header', field: 'customerId' });

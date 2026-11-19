@@ -218,6 +218,26 @@
   function cloneDoc(src) { return JSON.parse(JSON.stringify(src)); }
 
   /** 修正見積：元の版は残し、版番号を上げた下書きを作る */
+  /**
+   * 書類を確定する（発行確定）。要修正の指摘があれば確定しない。
+   * 確定すると編集・削除できず、PDF は確定時の写し（宛名・自社情報）で作る。
+   * @return {object} { ok, errors }
+   */
+  function finalizeDoc(doc) {
+    if (doc.status === 'issued') return { ok: true, errors: 0 };
+    var errs = EE.check.summary(U.checkDoc(doc)).error;
+    if (errs) return { ok: false, errors: errs };
+    var now = new Date().toISOString(), st = EE.S.settings;
+    if (!doc.no) doc.no = EE.data.nextNumber(EE.S, doc.issueDate);
+    doc.status = 'issued';
+    doc.issuedAt = now;
+    doc.rules = { lineRounding: st.lineRounding, taxRounding: st.taxRounding, overheadRounding: st.overheadRounding, discountRounding: st.discountRounding };
+    doc.totals = EE.engine.snapshot(EE.engine.calc(doc, doc.rules));
+    doc.snap = EE.data.snapOf(EE.S, doc);
+    doc.history = (doc.history || []).concat([{ at: now, action: '発行確定' }]).slice(-50);
+    return { ok: true, errors: 0 };
+  }
+
   function makeRevision(src) {
     var S = EE.S;
     var baseNo = src.no.replace(/-R\d+$/, '');
@@ -230,7 +250,7 @@
     d.no = baseNo + '-R' + d.rev;
     d.parentId = src.id;
     d.status = 'draft';
-    d.issuedAt = null; d.rules = null;
+    d.issuedAt = null; d.rules = null; delete d.snap;   // 新しい版は下書き。確定時の写しは持たない
     d.issueDate = EE.data.today();
     d.validUntil = EE.data.addDays(d.issueDate, S.settings.validDays);
     d.lines.forEach(function (l) { l.lineId = EE.data.uid('ln'); });
@@ -345,5 +365,5 @@
   }
 
   EE.app = { renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
-    duplicate: duplicate, newWith: newWith, takePrefill: takePrefill };
+    duplicate: duplicate, finalizeDoc: finalizeDoc, newWith: newWith, takePrefill: takePrefill };
 })(this);

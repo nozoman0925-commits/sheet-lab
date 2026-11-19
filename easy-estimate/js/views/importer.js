@@ -256,7 +256,7 @@
     var result = EE.docparse.parseDoc(lines, { items: EE.S.items, customers: EE.S.customers });
     ST.lines = lines; ST.result = result;
     ST.rows = result.rows.map(function (r) { return Object.assign({ include: true }, r); });
-    ST.priceMode = 'source';
+    ST.priceMode = 'master';   // 金額はマスタから。元の書類の単価は、選んだときだけ使う
     // 原本と読み取り結果を保存
     var rec = { id: EE.data.uid('imp'), name: ST.file.name, type: ST.file.type || (ST.kind === 'pdf' ? 'application/pdf' : 'image/*'), size: ST.file.size,
       createdAt: new Date().toISOString(), blob: ST.file, method: ST.method, result: { fields: result.fields, totals: result.totals, rows: result.rows, others: result.others, docType: result.docType }, lines: lines, docIds: [] };
@@ -290,7 +290,7 @@
       ST.lines = rec.lines || [];
       ST.result = EE.docparse.parseDoc(ST.lines, { items: EE.S.items, customers: EE.S.customers });
       ST.rows = ST.result.rows.map(function (r) { return Object.assign({ include: true }, r); });
-      ST.priceMode = 'source';
+      ST.priceMode = 'master';
       review(rootEl);
     } catch (err) { fail(rootEl, err, ST.kind === 'pdf' ? 'pdf' : 'photo'); }
   }
@@ -479,8 +479,8 @@
           return '<div class="check info" style="grid-template-columns:1fr auto"><div class="t">' + esc(o.text) + '</div><button class="btn ghost sm" data-act="o-add" data-o="' + i + '">明細に追加</button></div>'; }).join('') + '</div></details>' : '') +
         '<div class="sep" style="margin:18px 0"></div>' +
         '<div class="form-grid"><div class="field c8"><label>見積の単価</label><div class="seg" id="r-price">' +
-          '<button data-v="source" class="on">元の書類の単価を使う（他社見積の変換）</button><button data-v="master">自社マスタの単価を使う</button></div>' +
-          '<span class="hint">元の書類の単価を使った行は、見積の送信前チェックで「取り込み元の単価」と表示されます。</span></div>' +
+          '<button data-v="master" class="on">自社マスタの単価を使う</button><button data-v="source">元の書類の単価を使う（他社見積の変換）</button></div>' +
+          '<span class="hint" id="r-price-note">金額は自社マスタの単価で計算します（読み取った単価は使いません）。</span></div>' +
           '<div class="field c4" style="justify-content:flex-end"><button class="btn primary" data-act="r-make">' + I.check + '見積の下書きを作る</button></div></div>' +
       '</div></section>';
     showPage(0);
@@ -547,7 +547,18 @@
       var box = e.target.closest('.imp-box');
       if (box) { var row = document.querySelector('tr[data-r="' + box.dataset.r + '"]'); if (row) { row.scrollIntoView({ block: 'center', behavior: 'smooth' }); EE.fx.pulse(row); } return; }
       var sp = e.target.closest('#r-price [data-v]');
-      if (sp) { ST.priceMode = sp.dataset.v; sp.parentNode.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b === sp); }); return; }
+      if (sp) {
+        ST.priceMode = sp.dataset.v; sp.parentNode.querySelectorAll('button').forEach(function (b) { b.classList.toggle('on', b === sp); });
+        var note = document.getElementById('r-price-note');
+        if (note) {
+          note.textContent = ST.priceMode === 'source'
+            ? '注意：読み取った単価がそのまま見積に入り、マスタの単価とは別の金額になります。読み取り違いがないか必ず確認してください（送信前チェックで「取り込み元の単価」と表示されます）。'
+            : '金額は自社マスタの単価で計算します（読み取った単価は使いません）。';
+          note.style.color = ST.priceMode === 'source' ? 'var(--warn)' : '';
+          EE.fx.pulse(note);
+        }
+        return;
+      }
       var a = e.target.closest('[data-act]'); if (!a) return;
       var tr = a.closest('tr[data-r]');
       switch (a.dataset.act) {
@@ -573,7 +584,40 @@
   }
   function refreshRows() { var tb = document.getElementById('r-rows'); if (tb) tb.innerHTML = rowsHTML(); showPage(curPage); }
 
-  function make(rootEl) {
+  /** 新しいマスタとして登録する行の、単価・原価・原価区分を入れてもらう（原価0円・区分「その他」のまま登録しない） */
+  function askNewItems(rows, done) {
+    var CT = EE.engine.COST_TYPES;
+    U.modal({
+      title: '新しいマスタとして登録する品目', wide: true,
+      body: '<p class="hint" style="margin:0 0 12px">マスタの単価・原価・原価区分は、見積の金額・粗利・工事費の内訳（建設業法第20条）に使います。読み取った単価は参考として入れてあります。</p>' +
+        '<div class="table-scroll"><table class="table"><thead><tr><th>品名</th><th>単位</th><th class="r">販売単価（税抜）</th><th class="r">原価</th><th>原価区分</th></tr></thead><tbody>' +
+        rows.map(function (r, i) {
+          return '<tr data-n="' + i + '"><td>' + esc(r.name) + '</td><td>' + esc(r.unit || '式') + '</td>' +
+            '<td><input class="input num" data-nf="unitPrice" type="number" min="0" step="1" value="' + esc(r.unitPrice != null ? Math.round(r.unitPrice) : '') + '" style="width:120px;text-align:right" aria-label="「' + esc(r.name) + '」の販売単価"></td>' +
+            '<td><input class="input num" data-nf="unitCost" type="number" min="0" step="1" value="" style="width:120px;text-align:right" aria-label="「' + esc(r.name) + '」の原価"></td>' +
+            '<td><select class="input" data-nf="costType" aria-label="「' + esc(r.name) + '」の原価区分"><option value="">選ぶ</option>' + Object.keys(CT).map(function (k) { return '<option value="' + k + '">' + CT[k] + '</option>'; }).join('') + '</select></td></tr>';
+        }).join('') + '</tbody></table></div>',
+      foot: '<button class="btn ghost" data-c>戻る</button><button class="btn primary" data-s>' + I.check + '登録して続ける</button>',
+      onMount: function (el, api) {
+        el.querySelector('[data-c]').onclick = function () { api.close(); };
+        el.querySelector('[data-s]').onclick = function () {
+          var ok = true;
+          el.querySelectorAll('tr[data-n]').forEach(function (tr) {
+            var r = rows[Number(tr.dataset.n)];
+            tr.querySelectorAll('[data-nf]').forEach(function (f) {
+              var v = f.value.trim(), bad = v === '' || (f.type === 'number' && !(Number(v) >= 0));
+              f.classList.toggle('flag-err', bad); if (bad && ok) { ok = false; f.focus(); }
+              r['new_' + f.dataset.nf] = f.type === 'number' ? Math.round(Number(v)) : v;
+            });
+          });
+          if (!ok) { EE.fx.toast('単価・原価・原価区分をすべて入れてください', { warn: true }); return; }
+          api.close(); done();
+        };
+      }
+    });
+  }
+
+  function make(rootEl, confirmed) {
     var inc = ST.rows.filter(function (r) { return r.include; });
     if (!inc.length) { EE.fx.toast('明細を1行以上選んでください', { warn: true }); return; }
     var bad = inc.filter(function (r) { return !r.itemId || !(Number(r.qty) > 0) || (r.itemId === '__new' && !(r.name || '').trim()); });
@@ -582,14 +626,16 @@
       var tr = document.querySelector('tr[data-r="' + ST.rows.indexOf(bad[0]) + '"]'); if (tr) { tr.scrollIntoView({ block: 'center', behavior: 'smooth' }); EE.fx.shake(tr); }
       return;
     }
+    var fresh = inc.filter(function (r) { return r.itemId === '__new'; });
+    if (fresh.length && !confirmed) { askNewItems(fresh, function () { make(rootEl, true); }); return; }
     var newItems = 0;
     var rows = inc.map(function (r) {
       var itemId = r.itemId;
       if (itemId === '__new') {
         var it = { id: EE.data.uid('itm'), code: 'IMP-' + String(EE.S.items.filter(function (x) { return /^IMP-/.test(x.code); }).length + 1).padStart(3, '0'),
-          category: 'other', kind: 'construction', name: r.name.trim(), spec: '', unit: r.unit || '式', unitPrice: Math.round(Number(r.unitPrice) || 0), unitCost: 0,
-          taxCategory: 'std10', costType: 'other', active: true, synonyms: [], stdQty: 1, description: '取り込み：' + ST.file.name, supplier: '', contractor: '', note: '原価未登録',
-          updatedAt: EE.data.today(), priceHistory: [{ from: EE.data.today(), unitPrice: Math.round(Number(r.unitPrice) || 0), unitCost: 0 }] };
+          category: 'other', kind: 'construction', name: r.name.trim(), spec: '', unit: r.unit || '式', unitPrice: r.new_unitPrice, unitCost: r.new_unitCost,
+          taxCategory: 'std10', costType: r.new_costType, active: true, synonyms: [], stdQty: 1, description: '取り込み：' + ST.file.name, supplier: '', contractor: '', note: '',
+          updatedAt: EE.data.today(), priceHistory: [{ from: EE.data.today(), unitPrice: r.new_unitPrice, unitCost: r.new_unitCost }] };
         EE.S.items.push(it); itemId = it.id; newItems++;
       } else if (r.name && P_key(r.name) !== P_key(U.findItem(itemId).name)) {
         // 書類の表記を同義語として覚える（次回からその表記でも照合できる）
@@ -612,7 +658,7 @@
     EE.views.quick.openDraft({ rows: rows, customerId: custId, title: document.getElementById('r-title').value,
       importInfo: { importId: ST.importId, fileName: ST.file.name, docType: ST.result.docType, statedSubtotal: ST.priceMode === 'source' ? T.subtotal : null, statedTotal: T.total, number: ST.result.fields.number },
       notes: '', sourceLabel: '取り込み「' + ST.file.name + '」から作成（' + ({ 'pdf-text': 'PDFの文字', 'pdf-ocr': 'PDF・OCR', 'image-ocr': '画像・OCR' }[ST.method]) + '）' });
-    if (newItems) EE.fx.toast(newItems + '件を新しいマスタ（IMP-）として登録しました。原価は未登録です', { ms: 4000 });
+    if (newItems) EE.fx.toast(newItems + '件を新しいマスタ（IMP-）として登録しました', { ms: 4000 });
   }
   function P_key(s) { return EE.parse.key(s); }
 

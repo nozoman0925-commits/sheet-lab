@@ -12,10 +12,12 @@
   var esc = U.esc, yen = U.yen;
 
   function sheetHTML(doc) {
-    var S = EE.S, co = S.company;
+    var S = EE.S, sn = doc.status === 'issued' && doc.snap;
+    // 確定済みの書類は、確定時の写し（宛名・自社情報・工事場所）で作る。後から顧客や自社情報を変えても送ったものと同じになる
+    var co = sn ? sn.company : S.company;
     var r = U.calcDoc(doc);
-    var cust = U.findCustomer(doc.customerId) || {};
-    var pj = U.findProject(doc.projectId) || {};
+    var cust = sn ? sn.customer : (U.findCustomer(doc.customerId) || {});
+    var pj = sn ? { site: sn.site } : (U.findProject(doc.projectId) || {});
     var TC = EE.engine.TAX_CATEGORIES, CT = EE.engine.COST_TYPES;
     var hasReduced = doc.lines.some(function (l) { return l.taxCategory === 'red8'; });
 
@@ -103,7 +105,7 @@
     var pr = document.getElementById('print-root');
     pr.innerHTML = sheetHTML(doc);
     var oldTitle = document.title;
-    var cust = U.findCustomer(doc.customerId) || {};
+    var cust = (doc.status === 'issued' && doc.snap && doc.snap.customer) || U.findCustomer(doc.customerId) || {};
     // 「PDFとして保存」の既定ファイル名になる
     document.title = '見積書_' + doc.no + '_' + (cust.name || '') ;
     setTimeout(function () {
@@ -114,13 +116,19 @@
   }
 
   /** プレビュー画面（A4を縮小表示）→「PDFとして保存」 */
-  function preview(doc, onPrinted) {
+  /**
+   * @param {object}   doc
+   * @param {function} onPrinted     印刷の後に呼ぶ
+   * @param {function} beforePrint   （下書きのとき）印刷の前に確定する。Promise<doc|false> を返す。false なら印刷しない
+   */
+  function preview(doc, onPrinted, beforePrint) {
+    var draft = doc.status !== 'issued';
     var m = U.modal({
-      title: 'PDFプレビュー — ' + doc.no,
+      title: 'PDFプレビュー — ' + (doc.no || '（番号は確定時に付きます）'),
       wide: true,
       body: '<div class="preview-wrap"><div class="sk" style="width:620px;height:820px;margin:0 auto"></div></div>',
-      foot: '<span class="hint">印刷画面で送信先を「PDFに保存」にすると、そのまま送れるPDFになります。</span><div class="spacer"></div>' +
-        '<button class="btn ghost" data-x2>閉じる</button><button class="btn primary" data-print>' + U.I.pdf + 'PDFとして保存 / 印刷</button>',
+      foot: '<span class="hint">' + (draft ? 'PDFを出すと、この見積は確定され、以後は変更・削除できません（内容を変えるときは修正見積を作ります）。' : '印刷画面で送信先を「PDFに保存」にすると、そのまま送れるPDFになります。') + '</span><div class="spacer"></div>' +
+        '<button class="btn ghost" data-x2>閉じる</button><button class="btn primary" data-print>' + U.I.pdf + (draft ? '確定してPDFとして保存' : 'PDFとして保存 / 印刷') + '</button>',
       onMount: function (el, api) {
         var wrap = el.querySelector('.preview-wrap');
         // シマーを一瞬見せてから差し替え（描画待ちの空白を作らない）
@@ -135,7 +143,11 @@
           }, 160);
         });
         el.querySelector('[data-x2]').onclick = function () { api.close(); };
-        el.querySelector('[data-print]').onclick = function () {
+        el.querySelector('[data-print]').onclick = async function () {
+          if (draft && beforePrint) {
+            var fixed = await beforePrint(); if (!fixed) return;
+            doc = fixed; draft = false;
+          }
           printDoc(doc);
           if (onPrinted) onPrinted();
         };
