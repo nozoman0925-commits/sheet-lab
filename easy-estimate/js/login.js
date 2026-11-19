@@ -91,7 +91,8 @@
     var el = wrap.firstChild; document.body.appendChild(el);
     var card = el.querySelector('#auth-card'), blade = el.querySelector('#auth-blade');
     var forms = { signin: el.querySelector('#f-signin'), signup: el.querySelector('#f-signup') };
-    var busy = false, tried = { signin: false, signup: false };
+    // 切り替え中（switching）と送信中（sending）は別に持つ。切り替えの動きが終わる前の送信を黙って捨てないため
+    var switching = false, sending = false, tried = { signin: false, signup: false };
 
     function narrow() { return root.matchMedia('(max-width: 760px)').matches; }
     function off(m) { var n = narrow() ? 100 : 50; return m === 'signin' ? n : -n; }   // その状態でのブレードの位置（%）
@@ -147,12 +148,12 @@
       mode = to;
     }
     async function go(to) {
-      if (busy || to === mode) return;
-      busy = true;
+      if (switching || sending || to === mode) return;
+      switching = true;
       var lOut = blade.querySelector(mode === 'signin' ? '.blade-l' : '.blade-r');
       var lIn = blade.querySelector(to === 'signin' ? '.blade-l' : '.blade-r');
       if (reduce) {
-        swapForms(to); blade.style.transform = tx(off(to)); halves(); focusFirst(forms[to]); busy = false; return;
+        swapForms(to); blade.style.transform = tx(off(to)); halves(); focusFirst(forms[to]); switching = false; return;
       }
       lOut.inert = true;
       var a1 = blade.animate([{ transform: tx(off(mode)) }, { transform: tx(0) }], { duration: HALF, easing: EASE_IN, fill: 'forwards' });
@@ -168,7 +169,7 @@
       await a2.finished;
       blade.style.transform = tx(off(to)); a2.cancel();
       lIn.style.opacity = '1'; lIn.getAnimations().forEach(function (x) { x.cancel(); });
-      busy = false;
+      switching = false;
     }
     el.addEventListener('click', function (e) {
       var g = e.target.closest('[data-go]'); if (g) { go(g.dataset.go); return; }
@@ -223,7 +224,7 @@
     el.addEventListener('submit', async function (e) {
       e.preventDefault();
       var f = e.target, key = f === forms.signin ? 'signin' : 'signup';
-      if (busy) return;
+      if (sending || f.hidden) return;
       tried[key] = true;
       f.querySelector('.auth-alert').textContent = '';
       var errs = check(f), first = Object.keys(errs)[0];
@@ -233,7 +234,7 @@
         return;
       }
       var btn = f.querySelector('.auth-submit'), label = btn.firstChild.textContent;
-      busy = true; btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.firstChild.textContent = '確認中…';
+      sending = true; btn.disabled = true; btn.setAttribute('aria-busy', 'true'); btn.firstChild.textContent = '確認中…';
       try {
         var vals = { email: f.elements.email.value, password: f.elements.password.value };
         if (f.elements.name) vals.name = f.elements.name.value;
@@ -241,7 +242,7 @@
         Array.prototype.forEach.call(el.querySelectorAll('input[type=password], input[name=password]'), function (i) { i.value = ''; });
         leave(user);
       } catch (err) {
-        busy = false; btn.disabled = false; btn.removeAttribute('aria-busy'); btn.firstChild.textContent = label;
+        sending = false; btn.disabled = false; btn.removeAttribute('aria-busy'); btn.firstChild.textContent = label;
         var msg = (err && err.message) || 'うまくいきませんでした。もう一度お試しください';
         if (err && err.field && f.elements[err.field]) { setErr(f, err.field, msg); f.elements[err.field].focus(); }
         else { f.querySelector('.auth-alert').textContent = msg; if (f.elements.password) f.elements.password.focus(); }

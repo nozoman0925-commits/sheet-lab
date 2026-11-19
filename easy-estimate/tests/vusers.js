@@ -40,6 +40,9 @@ for (let i = 0; i < N; i++) {
   });
 }
 
+// VU_TASK=signup のように指定すると、その仕事の人だけを流す（同じ乱数で作った同じ人たち）
+if (process.env.VU_TASK) { const keep = users.filter(u => u.task === process.env.VU_TASK); users.length = 0; users.push(...keep); }
+
 (async () => {
   const b = await chromium.launch(); const results = []; const t0 = Date.now();
   // 画面幅ごとにまとめて、各タブで順に流す
