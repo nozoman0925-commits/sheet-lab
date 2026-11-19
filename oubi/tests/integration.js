@@ -18,7 +18,7 @@ function aCase(id, over) {
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const ok = (c, m) => { assert.ok(c, m); console.log('✓ ' + m); };
-  const seed = { cases: { c1: aCase('c1'), c2: aCase('c2', { lead: { date: today, customer: '山田 太郎', tel: '090-1111-2222', addr: '東京都町田市森野1-1-1', owner: 'u_tester' }, work: { title: '山田様邸 屋根工事', types: ['屋根工事'] }, quote: { files: [] } }),
+  const seed = { cases: { c1: aCase('c1', { plan: { material: 50000 } }), c2: aCase('c2', { lead: { date: today, customer: '山田 太郎', tel: '090-1111-2222', addr: '東京都町田市森野1-1-1', owner: 'u_tester' }, work: { title: '山田様邸 屋根工事', types: ['屋根工事'] }, quote: { files: [] } }),
     c3: aCase('c3', { lead: { date: today, customer: '佐藤 花子', tel: '090-3333-4444', addr: '相模原市', owner: 'u_tester' }, work: { title: '佐藤様邸 内装', types: ['内装リフォーム工事'] }, quote: { files: [] } }) } };
   const p = await open(b, { seed, wait: 2500 });
   p.on('pageerror', e => errs.push(e.message + ' ' + (e.stack || '').split('\n').slice(1, 3).join(' '))); p.on('console', m => { if (m.type() === 'error' && !/ERR_FAILED/.test(m.text())) errs.push(m.text()); });
@@ -56,7 +56,12 @@ function aCase(id, over) {
   const c1 = d.cases.c1;
   ok(c1.quote.amount === 300000 && c1.quote.items[0].qty === 120 && c1.quote.mitsuDocId === doc.id, '保存すると工事の見積金額・明細に入る（120㎡ → 300,000円）');
   ok(c1.plan.estimate === 300000, '収支書の予定見積金額にも入る');
+  ok(c1.plan.material === 50000, '見積に原価が無いときは、収支書に手で入れた原価（材料費 50,000円）を消さない');
 
+  // 見積に原価を入れると、収支書の原価にも入る（種類「その他」→ その他経費）
+  await p.evaluate(() => { const d = EE.S.documents[0]; d.lines[0].unitCost = 1500; d.lines[0].costType = 'material'; EE.ui.commit(); }); await p.waitForTimeout(1500);
+  d = await db();
+  ok(d.cases.c1.plan.material === 180000, '見積に原価を入れると、収支書の材料費に入る（120㎡ × 1,500円）');
   // 工事の画面に戻ると見積が並ぶ
   await p.click('#tabs [data-tab="list"]'); await p.waitForTimeout(800);
   ok(await p.evaluate(() => document.getElementById('ee-host').hidden && location.hash === ''), 'メニューで業務管理の画面に戻れる');

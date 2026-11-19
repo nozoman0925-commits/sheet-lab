@@ -304,7 +304,8 @@
     d.lines.forEach(function (ln, i) { var k = COST_TO_PLAN[ln.costType] || 'otherExp'; cost[k] = (cost[k] || 0) + ((r.lines[i] || {}).cost || 0); });
     var disc = 0, oh = 0; r.adjustments.forEach(function (a) { if (a.amount < 0) disc -= a.amount; else oh += a.amount; });
     pl.estimate = r.subtotal + disc; pl.discount = disc || '';
-    ['material', 'labor', 'outsource', 'otherExp'].forEach(function (k) { pl[k] = cost[k] || ''; });
+    // 原価は、見積に原価が入っているときだけ入れる（入っていなければ、収支書に手で入れた原価をそのまま残す）
+    if (r.costTotal > 0) ['material', 'labor', 'outsource', 'otherExp'].forEach(function (k) { pl[k] = cost[k] || ''; });
     pl.fromMitsu = d.id;
     var after = JSON.stringify([q.items, q.amount, q.date, q.validUntil, q.no, q.who, q.note, q.mitsuDocId, q.mitsuIssued, c.plan]);
     if (before !== after) { O.addLog(c, '見積を更新（' + (d.no || '下書き') + '・' + U.yen(r.subtotal) + '）'); return true; }

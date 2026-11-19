@@ -2550,7 +2550,7 @@ function mitsuQuoteBox(){
   const H=window.OUBI_HOST, q=C.quote||{}, ready=H.ready(), docs=ready?H.docsOf(C.id):[];
   const st=d=>d.status==='issued'?'<span class="chip ok">確定</span>':'<span class="chip">下書き</span>';
   const rows=docs.slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))).map(d=>{const r=H.calc(d);
-    return `<div class="mq-row${q.mitsuDocId===d.id?' main':''}"><div class="mq-tx"><b>${esc(d.no||'（番号は確定時）')}${d.patternLabel?' '+esc(d.patternLabel):''}</b> ${st(d)}${q.mitsuDocId===d.id?' <span class="chip sk">この工事の見積</span>':''}
+    return `<div class="mq-row${q.mitsuDocId===d.id?' main':''}"><div class="mq-tx"><div class="mq-h"><b>${esc(d.no||'（番号は確定時）')}${d.patternLabel?' '+esc(d.patternLabel):''}</b> ${st(d)}${q.mitsuDocId===d.id?' <span class="chip sk">この工事の見積</span>':''}</div>
       <span class="sub">${esc(d.title||'')}　税抜 ${yen(r.subtotal)}・税込 ${yen(r.total)}・粗利率 ${r.marginRate==null?'—':(r.marginRate*100).toFixed(1)+'%'}</span></div>
       <button type="button" class="btn sm" data-mopen="#/edit/${esc(d.id)}">開く</button></div>`}).join('');
   const amt=docAmount(C,'quote');
