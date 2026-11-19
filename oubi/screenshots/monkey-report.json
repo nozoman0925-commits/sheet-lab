@@ -1,1 +1,36 @@
-[]
+[
+ {
+  "msg": "例外: Cannot read properties of null (reading 'doc')",
+  "n": 5,
+  "trail": [
+   "fill input 例：〇〇様邸 浴室改修工事 = \"１２３\"",
+   "fill input  = \"aaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+   "click button 商品",
+   "fill input 例：A案、グレードアップ案 = \"abc\"",
+   "click button 工事単価",
+   "click a 現場の流れ",
+   "click button 破棄して移動",
+   "fill input 例：〇〇様邸 浴室改修工事 = \"-1\""
+  ],
+  "worker": 2,
+  "width": 1024,
+  "step": 1195
+ },
+ {
+  "msg": "画面が横にはみ出す @tab:list (幅390) span.",
+  "n": 3,
+  "trail": [
+   "click button[tab=cal] 予定",
+   "click button 日29",
+   "click button 木19",
+   "click button[tab=wb] ホワイトボード",
+   "key Escape",
+   "none → Escape",
+   "click button 木12",
+   "open case"
+  ],
+  "worker": 1,
+  "width": 390,
+  "step": 2540
+ }
+]

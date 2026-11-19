@@ -659,6 +659,7 @@
 
     view.addEventListener('input', function (e) {
       var t = e.target;
+      if (!ED) return;   // 破棄して移動した直後（画面が消える前）の操作は無視する
       if (t.dataset.adjK) {
         var row = t.closest('[data-adj]');
         var a = ED.doc.adjustments.filter(function (x) { return x.id === row.dataset.adj; })[0];
@@ -690,6 +691,7 @@
     });
     view.addEventListener('change', function (e) {
       var t = e.target;
+      if (!ED) return;   // 破棄して移動した直後（画面が消える前）の操作は無視する
       if (t.id === 'tpl-add' && t.value) {
         var p = EE.S.packages.filter(function (x) { return x.id === t.value; })[0];
         t.value = '';
@@ -754,6 +756,7 @@
 
     view.addEventListener('keydown', function (e) {
       var t = e.target;
+      if (!ED) return;   // 破棄して移動した直後（画面が消える前）の操作は無視する
       if (!t.classList.contains('qty')) return;
       var rows = Array.prototype.slice.call(view.querySelectorAll('.qty'));
       var i = rows.indexOf(t);
@@ -763,6 +766,7 @@
     });
 
     function onClick(e) {
+      if (!ED) return;
       var kb = e.target.closest('#pick-kind [data-kind]');
       if (kb) {
         pick.kind = kb.dataset.kind;

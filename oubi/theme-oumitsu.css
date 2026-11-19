@@ -119,4 +119,7 @@ h1, h2, h3, .kpi .l, .big4 span, .launch-btn b, .sec-h h2 { font-family: var(--f
 html:root body.sl-on.sl-sun { background: #F4F6FA !important; }
 /* 区切りのない長い英数字（名前・番号など）でも、画面の横にはみ出さず折り返す */
 body { overflow-wrap: break-word; }
-main h1, main h2, main h3, main .sub, .ee-top h1 { overflow-wrap: anywhere; }
+main, main *, .ee-top h1 { overflow-wrap: anywhere; }
+.paper, .paper * { overflow-wrap: normal; }
+main > *, main .panel > * { min-width: 0; }
+main .chip { max-width: 100%; white-space: normal; }
