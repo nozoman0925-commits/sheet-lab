@@ -73,17 +73,18 @@
 <script src="js/app.js"></script>
 <script src="js/login.js"></script>
 <script>
-  // 起動シーケンスを先に走らせ、アプリの起動（データの読み込み・描画）はその裏で行う。
-  // ロゴが定位置へ動き始めたら、メイン画面の展開（メニュー・カードの時間差表示）を始める
-  // 起動処理は「一拍置く」静止中（0.6秒〜）に行い、動いている間に重い処理が重ならないようにする。
-  // スキップされたらその場で起動する。
-  // サイドバーの家紋は最初に描いておく（ログイン画面の間も出す）
+  // 起動の流れ：ロゴ登場 → 一拍（この間にアプリを起動）→ ロゴが定位置へ → 画面が開く。
+  // サインインが要るときは業務データを読み込まず、ログイン画面を先に（見せずに）組み立てて、
+  // 狭い画面ではそのカード上部をロゴの着地点にする。スキップされたらその場で進める。
   document.getElementById('brand-crest').innerHTML = EE.crest.svg({ id: 'brand', className: 'brand-crest', fieldR: 106 });
-  // サインインが済むまでは業務データを読み込まない（ログイン画面を出す）。
   var started = false;
   function bootNow(user) { if (started) return; started = true; EE.app.boot({ deferIntro: true, user: user }); }
-  setTimeout(function () { var u = EE.auth.current(); if (u) bootNow(u); }, 600);
-  EE.splash.play({ onReveal: function () { EE.login.require(function (user) { bootNow(user); EE.app.intro(); }); } });
+  var gate = EE.auth.current() ? null : EE.login.gate(function (user) { bootNow(user); EE.app.intro(); });
+  if (!gate) setTimeout(function () { bootNow(EE.auth.current()); }, 600);
+  EE.splash.play({
+    target: function () { return gate && gate.target(); },
+    onReveal: function () { if (gate) gate.reveal(); else { bootNow(EE.auth.current()); EE.app.intro(); } }
+  });
 </script>
 </body>
 </html>

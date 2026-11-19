@@ -8,7 +8,6 @@
 .boot-bg { position: absolute; inset: 0; background: var(--bg, #06080e); }
 .boot-fly { position: fixed; margin: 0 !important; transform-origin: 50% 50%; opacity: 0; will-change: transform, opacity; pointer-events: none; }
 .boot .brand-text { white-space: nowrap; }
-.brand.boot-hide #brand-crest, .brand.boot-hide .brand-text { visibility: hidden; }   /* 着地するまで本物は隠す */
 
 /* サイドバーの家紋（着地点）：アイコン 34px、左 22px・上 20px */
 .brand-crest { width: 34px; height: 34px; margin: 0; flex: none; display: block; overflow: visible; filter: drop-shadow(0 0 10px rgba(212, 189, 140, .25)); }

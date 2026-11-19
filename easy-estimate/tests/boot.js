@@ -41,6 +41,21 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#/home';
   assert.ok(p.url().endsWith('#/docs'), '移動中でもメニューを押せる');
   await p.waitForTimeout(1200); await p.click('a[href="#/home"].nav-item'); await p.waitForTimeout(80);
   assert.ok(!(await p.$('.boot')), '画面遷移では出ない');
+  // 狭い画面・サインイン前：サイドバーは隠れているので、ロゴはログインカード上部に着地する（消えない）
+  const n = await b.newPage({ viewport: { width: 700, height: 860 } });
+  n.on('pageerror', e => errs.push(e.message));
+  await n.goto(URL); await n.waitForTimeout(50);
+  const nl = await n.evaluate(() => new Promise(r => {
+    document.getAnimations().filter(a => a.effect.target && a.effect.target.classList && a.effect.target.classList.contains('boot-fly')).forEach(a => { a.pause(); a.currentTime = 1619.9; });
+    requestAnimationFrame(() => { const rr = e => { const q = e.getBoundingClientRect(); return [q.x, q.y, q.width].map(Math.round); };
+      const fl = document.querySelectorAll('.boot-fly');
+      r([rr(fl[0]), rr(document.querySelector('.auth-brand svg')), getComputedStyle(fl[0]).opacity, rr(fl[1]), rr(document.querySelector('.auth-brand .brand-text'))]); });
+  }));
+  console.log('狭い画面の着地', nl);
+  assert.deepStrictEqual(nl[0], nl[1], '家紋がログインカードのロゴ位置に着地'); assert.deepStrictEqual(nl[3], nl[4], '文字も着地'); assert.strictEqual(nl[2], '1');
+  await n.waitForTimeout(1800); await n.screenshot({ path: OUT + 'boot-e-narrow-login.png' });
+  assert.ok(!(await n.$('.boot')) && await n.isVisible('.auth-brand svg'), '着地後もロゴが残る');
+
   console.log(errs.length ? 'ERRORS: ' + errs.join(' / ') : 'boot: ok'); await b.close();
   if (errs.length) process.exit(1);
 })();

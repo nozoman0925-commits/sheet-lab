@@ -25,7 +25,8 @@
   function rect(el) { var r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }
 
   /**
-   * @param {object} opts { onReveal: function（メイン画面を出し始める時に1回呼ぶ） }
+   * @param {object} opts { onReveal: function（メイン画面を出し始める時に1回呼ぶ）,
+   *                        target: function → { crest, text }（着地点。省略時はサイドバーのロゴ） }
    */
   function play(opts) {
     opts = opts || {};
@@ -34,36 +35,44 @@
     if (/[?&]splash=off/.test(location.search) && !opts.replay) { reveal(); return null; }
     var reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-    // サイドバーのロゴ（着地点）。家紋がまだ入っていなければ同じデータで入れておく
+    // 着地点：opts.target() が返す要素（例：狭い画面のログインカード上部のロゴ）、無ければサイドバーのロゴ。
+    // 着地点が見えない（幅0・非表示）ときは、その部品は中央で静かに消える（ぱっと消さない）
     var slot = document.getElementById('brand-crest');
     if (slot && !slot.firstChild) slot.innerHTML = root.EE.crest.svg({ id: 'brand', className: 'brand-crest', fieldR: 106 });
-    var crestEl = slot && slot.querySelector('svg'), textEl = document.querySelector('.brand-text');
-    if (!crestEl || !textEl) { reveal(); return null; }
-    var brand = document.querySelector('.brand');
+    var srcCrest = slot && slot.querySelector('svg'), srcText = document.querySelector('.brand .brand-text');
+    if (!srcCrest || !srcText) { reveal(); return null; }
+    var tgt = (opts.target && opts.target()) || {};
+    var landC = shown(tgt.crest) ? tgt.crest : shown(srcCrest) ? srcCrest : null;
+    var landT = shown(tgt.text) ? tgt.text : shown(srcText) ? srcText : null;
 
     var el = document.createElement('div');
     el.className = 'boot';
     el.setAttribute('role', 'status');
     el.setAttribute('aria-label', '桜ミツ 起動中');
     el.innerHTML = '<div class="boot-bg"></div>';
-    var fc = crestEl.cloneNode(true), ft = textEl.cloneNode(true);
+    var fc = (landC || srcCrest).cloneNode(true), ft = (landT || srcText).cloneNode(true);
     fc.removeAttribute('id'); fc.classList.add('boot-fly');
-    ft.classList.add('boot-fly');
+    ft.removeAttribute('id'); ft.classList.add('boot-fly');
     el.appendChild(fc); el.appendChild(ft);
     document.body.appendChild(el);
-    brand.classList.add('boot-hide');
+    var hidden = [landC, landT].filter(Boolean);
+    hidden.forEach(function (n) { n.style.visibility = 'hidden'; });   // 着地するまで本物は隠す
 
-    // 最終位置（サイドバー）に置く
-    var rc = rect(crestEl), rt = rect(textEl);
-    place(fc, rc); place(ft, rt);
+    // 大きさ：着地点があればその大きさ、無ければ本来の大きさ（家紋 34px、文字は自然な幅）
+    var rc = landC ? rect(landC) : { w: 34, h: 34 };
+    var rt = landT ? rect(landT) : natural(ft);
 
-    // 中央の見せ方：家紋 約128px、その下にアプリ名（約2倍）。最終位置からの差分で計算
+    // 中央の見せ方：家紋 約128px、その下にアプリ名（約2倍）
     var vw = root.innerWidth, vh = root.innerHeight;
     var cs = Math.min(128, vh * 0.2) / rc.w, ts = 2;
     var gap = 22, groupH = rc.h * cs + gap + rt.h * ts;
     var top = vh / 2 - groupH / 2;
     var cC = { x: vw / 2, y: top + rc.h * cs / 2 };
     var tC = { x: vw / 2, y: top + rc.h * cs + gap + rt.h * ts / 2 };
+    // 着地点の無い部品は「中央が最終位置」とみなして置く
+    if (!landC) { rc.x = cC.x - rc.w / 2; rc.y = cC.y - rc.h / 2; }
+    if (!landT) { rt.x = tC.x - rt.w / 2; rt.y = tC.y - rt.h / 2; }
+    place(fc, rc); place(ft, rt);
     var cT = 'translate(' + (cC.x - (rc.x + rc.w / 2)) + 'px,' + (cC.y - (rc.y + rc.h / 2)) + 'px) scale(' + cs + ')';
     var tT = 'translate(' + (tC.x - (rt.x + rt.w / 2)) + 'px,' + (tC.y - (rt.y + rt.h / 2)) + 'px) scale(' + ts + ')';
     var cT0 = cT.replace(/scale\(([^)]+)\)/, function (m, s) { return 'scale(' + (s * 0.92) + ')'; });
@@ -72,17 +81,21 @@
     var anims = [], timers = [], done = false, revealed = false;
     var k = reduce ? 0 : 1;   // 動きを減らす設定：移動・拡大はせず、短いフェードだけ
     function a(node, frames, o) { var x = node.animate(frames, Object.assign({ fill: 'both' }, o)); anims.push(x); return x; }
+    // 移動：着地点があれば変形を外して着地、無ければ少し縮みながらフェードアウト
+    function leave(node, from, lands) {
+      if (lands) a(node, [{ transform: from }, { transform: 'none' }], { duration: T.moveDur, delay: T.move, easing: EASE_IN_OUT, fill: 'forwards' });
+      else a(node, [{ transform: from, opacity: 1 }, { transform: from + ' scale(.94)', opacity: 0 }], { duration: 420, delay: T.move, easing: 'ease-in', fill: 'forwards' });
+    }
 
     if (k) {
       a(fc, [{ opacity: 0, transform: cT0 }, { opacity: 1, transform: cT }], { duration: T.in, easing: EASE_OUT });
       a(ft, [{ opacity: 0, transform: tT0 }, { opacity: 1, transform: tT }], { duration: T.in, delay: T.nameDelay, easing: EASE_OUT });
-      a(fc, [{ transform: cT }, { transform: 'none' }], { duration: T.moveDur, delay: T.move, easing: EASE_IN_OUT, fill: 'forwards' });
-      a(ft, [{ transform: tT }, { transform: 'none' }], { duration: T.moveDur, delay: T.move, easing: EASE_IN_OUT, fill: 'forwards' });
+      leave(fc, cT, !!landC); leave(ft, tT, !!landT);
       a(el.firstChild, [{ opacity: 1 }, { opacity: 0 }], { duration: T.revealDur, delay: T.reveal, easing: 'ease-out' });
       timers.push(setTimeout(startReveal, T.reveal));
       timers.push(setTimeout(finish, T.move + T.moveDur + 20));
     } else {
-      fc.style.opacity = ft.style.opacity = '1';   // 定位置に置いたまま、背景だけ消す
+      fc.style.opacity = landC ? '1' : '0'; ft.style.opacity = landT ? '1' : '0';   // 定位置に置いたまま、背景だけ消す
       a(el.firstChild, [{ opacity: 1 }, { opacity: 0 }], { duration: 200, delay: 300 });
       timers.push(setTimeout(startReveal, 300));
       timers.push(setTimeout(finish, 520));
@@ -98,7 +111,7 @@
       timers.forEach(clearTimeout);
       anims.forEach(function (x) { try { x.cancel(); } catch (e) {} });
       document.removeEventListener('keydown', onKey, true);
-      brand.classList.remove('boot-hide');
+      hidden.forEach(function (n) { n.style.visibility = ''; });
       el.remove();
       current = null;
       startReveal();
@@ -113,6 +126,17 @@
     return current;
   }
 
+  /** 実際に見えているか（幅・高さがあり、非表示でない） */
+  function shown(n) {
+    if (!n || !n.isConnected) return false;
+    var r = n.getBoundingClientRect(); if (r.width < 1 || r.height < 1) return false;
+    return getComputedStyle(n).visibility !== 'hidden';
+  }
+  /** 着地点の無い部品の本来の大きさ */
+  function natural(n) {
+    n.style.left = '0px'; n.style.top = '0px'; n.style.width = 'auto'; n.style.height = 'auto';
+    var r = n.getBoundingClientRect(); return { w: Math.max(1, r.width), h: Math.max(1, r.height) };
+  }
   function place(node, r) {
     node.style.left = r.x + 'px'; node.style.top = r.y + 'px';
     node.style.width = r.w + 'px'; node.style.height = r.h + 'px';
