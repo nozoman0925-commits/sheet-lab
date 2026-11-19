@@ -7802,7 +7802,8 @@
     if (!opts.host && (!opts.deferIntro || introWaiting)) { introWaiting = false; intro(); }
 
     if (!opts.host) root.addEventListener('hashchange', onHash);
-    document.addEventListener('pointerdown', EE.fx.ripple);
+    // 押したときの波紋：業務管理の中では、見積の画面（.ee）の中のボタンだけ（業務管理のボタンの形を崩さない）
+    document.addEventListener('pointerdown', function (e) { if (!opts.host || (e.target.closest && e.target.closest('.ee'))) EE.fx.ripple(e); });
     if (!opts.host) EE.fx.bindAmbient();   // カーソルを追う光・カードの傾き・クリックの波紋と粒
     document.addEventListener('click', function (e) {
       var tr = e.target.closest('[data-href]');

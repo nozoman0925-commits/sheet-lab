@@ -117,3 +117,6 @@ h1, h2, h3, .kpi .l, .big4 span, .launch-btn b, .sec-h h2 { font-family: var(--f
 :root[data-theme="light"] .ee .seg button.on { color: #1b3f9e !important; background: rgba(35,80,196,.12) !important; }
 /* 営業の画面の「外で見やすい明るい画面」：地も明るく（暗い画面の地より優先） */
 html:root body.sl-on.sl-sun { background: #F4F6FA !important; }
+/* 区切りのない長い英数字（名前・番号など）でも、画面の横にはみ出さず折り返す */
+body { overflow-wrap: break-word; }
+main h1, main h2, main h3, main .sub, .ee-top h1 { overflow-wrap: anywhere; }

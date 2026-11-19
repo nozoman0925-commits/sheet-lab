@@ -78,15 +78,17 @@ const seed = { cases: {
         const txt = (document.body.innerText || '');
         const bad = (txt.match(/NaN|undefined|\[object Object\]|Infinity/g) || []);
         const over = document.documentElement.scrollWidth > window.innerWidth + 2;
+        let culprit = '';
+        if (over) { const W = innerWidth; for (const e of document.querySelectorAll('body *')) { const r = e.getBoundingClientRect(); if (r.right > W + 2 && r.width) { culprit = e.tagName.toLowerCase() + '.' + [...e.classList].join('.') + (e.id ? '#' + e.id : ''); break; } } }
         const where = location.hash ? location.hash.split('/').slice(0, 3).join('/') : 'tab:' + ((document.querySelector('#tabs [aria-current="page"]') || {}).dataset || {}).tab;
-        return { bad: [...new Set(bad)], over, where };
+        return { bad: [...new Set(bad)], over, where, culprit };
       }).catch(() => null);
       if (st) {
         const where = st.where.replace(/doc_\w+|c\d+\b/, 'id');
         st.bad.forEach(x => pending.push('画面に「' + x + '」が表示 @' + where));
-        if (st.over) pending.push('画面が横にはみ出す @' + where + ' (幅' + vp.width + ')');
+        if (st.over) pending.push('画面が横にはみ出す @' + where + ' (幅' + vp.width + ') ' + st.culprit);
       }
-      pending.forEach(msg => { const key = msg.replace(/\d+/g, '#'); if (!failures.has(key)) failures.set(key, { msg, n: 0, trail: trail.slice(), worker: w, width: vp.width, step: i }); failures.get(key).n++; });
+      pending.forEach(msg => { const key = msg.replace(/\d+/g, '#'); if (!failures.has(key)) { failures.set(key, { msg, n: 0, trail: trail.slice(), worker: w, width: vp.width, step: i }); console.log('  ★ 新しい失敗: ' + msg + '\n     ' + trail.join('\n     ')); } failures.get(key).n++; });
       pending = [];
       done++; if (done % 500 === 0) console.log(`  ${done} 回 (${Math.round((Date.now() - t0) / 1000)}秒) 失敗の種類 ${failures.size}`);
     }
