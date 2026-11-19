@@ -10,7 +10,7 @@
   --text: #e9eef8;
   --text-2: #b4bfd3;
   --muted: #7d889e;
-  --dim: #515c72;
+  --dim: #8a95ab;   /* 補足文字：暗い背景で 4.5:1 以上 */
   --accent: #4d8dff;
   --accent-2: #8ab8ff;
   --accent-deep: #2a5bd7;
@@ -359,7 +359,7 @@ select.input option { background: #0e1422; }
 .search .input { padding-left: 34px; }
 
 /* ===== 見積エディタ ===== */
-.editor { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 20px; align-items: start; }
+.editor { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 20px; align-items: start; }
 .summary { position: sticky; top: 0; }
 .sum-row { display: flex; justify-content: space-between; align-items: baseline; padding: 7px 0; color: var(--text-2); }
 .sum-row .yen { color: var(--text); }
@@ -377,7 +377,7 @@ select.input option { background: #0e1422; }
 .bd .bar i { display: block; height: 100%; background: var(--accent); opacity: .75; transition: width .35s var(--ease); }
 
 .lines td { padding: 8px 10px; }
-.lines .qty { width: 92px; text-align: right; height: 32px; }
+.lines .qty { width: 80px; text-align: right; height: 32px; }
 .lines .no { color: var(--dim); width: 28px; }
 .lines .code { font-family: ui-monospace, Menlo, monospace; font-size: 11.5px; color: var(--muted); }
 .lines .price { color: var(--text-2); white-space: nowrap; }
@@ -564,3 +564,21 @@ details summary::marker { color: var(--muted); }
 .user-pop [role=menuitem] .avatar { width: 20px; height: 20px; font-size: 10px; box-shadow: none; }
 .user-pop [role=menuitem] small { margin-left: auto; font-size: 10.5px; color: var(--muted); }
 @media (max-width: 760px) { .site-grid { grid-template-columns: 1fr; } .folder-grid { grid-template-columns: repeat(2, 1fr); } }
+
+/* ===== 読みやすさ・操作しやすさ（第三者評価を受けて） ===== */
+tr:focus-within .row-actions { opacity: 1; }                 /* キーボードで行の操作ボタンに来たら見える */
+@media (hover: none) { .row-actions { opacity: 1; } }       /* スマホ・タブレットは常に見える */
+@media (min-width: 1400px) { .table.lines th:nth-child(3), .table.lines td:nth-child(3) { min-width: 120px; } }   /* 品名・規格が数文字ずつ折り返さないように */
+.table-scroll { overflow-x: auto; }                          /* 表が広いときは表の中だけ横に動かす（右の合計に重ならない） */
+[data-href]:focus-visible, .flow-case:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+#title:focus { outline: none; }
+.setup-list { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.setup-list li { display: flex; flex-direction: column; gap: 4px; padding: 14px 16px 14px 46px; position: relative; border-radius: 14px; background: rgba(255,255,255,.03); border: 1px solid var(--line); }
+.setup-list li a { color: #9cc3ff; font-weight: 600; text-decoration: none; }
+.setup-list li a:hover { text-decoration: underline; }
+.setup-list li.done { opacity: .6; }
+.setup-mark { position: absolute; left: 14px; top: 15px; width: 20px; height: 20px; border-radius: 50%; border: 1.5px solid rgba(147,197,253,.55); display: grid; place-items: center; }
+.setup-list li.done .setup-mark { background: var(--accent); border-color: var(--accent); }
+.setup-mark svg { width: 12px; height: 12px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 760px) { .setup-list { grid-template-columns: 1fr; } }

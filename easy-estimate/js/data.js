@@ -44,17 +44,7 @@
   function defaultState() {
     return {
       schema: 2,
-      company: {
-        name: '株式会社サンプル住設',
-        invoiceRegNo: 'T1234567890123',
-        zip: '150-0001',
-        address: '東京都渋谷区神宮前1-2-3 EEビル4F',
-        tel: '03-1234-5678',
-        email: 'info@example.jp',
-        rep: '代表取締役 青木 誠',
-        license: '東京都知事許可（般-6）第000000号',
-        bank: '○○銀行 渋谷支店 普通 1234567 カ）サンプルジュウセツ'
-      },
+      company: { name: '', invoiceRegNo: '', zip: '', address: '', tel: '', email: '', rep: '', license: '', bank: '' },   // 自社情報は利用者が入れる
       settings: {
         lineRounding: 'round',
         taxRounding: 'floor',
@@ -79,8 +69,44 @@
     };
   }
 
+  /* 以前の版で最初から入れていたサンプル（架空の会社・顧客・案件・見積・担当者）。保存データから一度だけ取り除くのに使う */
+  var SAMPLE_COMPANY = { name: '株式会社サンプル住設', invoiceRegNo: 'T1234567890123', zip: '150-0001', address: '東京都渋谷区神宮前1-2-3 EEビル4F', tel: '03-1234-5678',
+    email: 'info@example.jp', rep: '代表取締役 青木 誠', license: '東京都知事許可（般-6）第000000号', bank: '○○銀行 渋谷支店 普通 1234567 カ）サンプルジュウセツ' };
+  var SAMPLE_CUS = ['cus_sample', 'cus_yamada', 'cus_midori'], SAMPLE_MEM = ['mem_aoki', 'mem_sakurai', 'mem_tanaka'];
+  function isSampleProject(id) { return /^prj_(haitsu|yamada|midori|x\d+)$/.test(id || ''); }
+
+  /**
+   * サンプルを取り除く（一度だけ。s.sampleCleanup = 'done' を付ける）
+   * 消すもの：決まったIDのサンプル顧客・案件と、それらに付いた書類、アカウントに紐づいていないサンプル担当者、
+   *           サンプルのままの自社情報。自分で作った顧客・書類・マスタはそのまま。
+   */
+  function stripSample(s) {
+    if (s.sampleCleanup === 'done') return s;
+    var drop = {};
+    s.documents = (s.documents || []).filter(function (d) { var x = SAMPLE_CUS.indexOf(d.customerId) >= 0 || isSampleProject(d.projectId); if (x) drop[d.id] = 1; return !x; });
+    s.projects = (s.projects || []).filter(function (p) { return !isSampleProject(p.id) && SAMPLE_CUS.indexOf(p.customerId) < 0; });
+    s.customers = (s.customers || []).filter(function (c) { return SAMPLE_CUS.indexOf(c.id) < 0; });
+    s.members = (s.members || []).filter(function (m) { return SAMPLE_MEM.indexOf(m.id) < 0 || m.accountId; });
+    var ids = s.members.map(function (m) { return m.id; });
+    s.documents.forEach(function (d) { if (d.ownerId && ids.indexOf(d.ownerId) < 0) d.ownerId = ''; });
+    s.projects.forEach(function (p) { if (p.ownerId && ids.indexOf(p.ownerId) < 0) p.ownerId = ''; if (drop[p.acceptedDocId]) delete p.acceptedDocId; });
+    if (ids.indexOf(s.currentMemberId) < 0) s.currentMemberId = ids[0] || '';
+    var co = s.company || {};
+    Object.keys(SAMPLE_COMPANY).forEach(function (k) { if (co[k] === SAMPLE_COMPANY[k]) co[k] = ''; });
+    s.sampleCleanup = 'done';
+    return s;
+  }
+
+  /** 初めて使うときの状態：工事項目・単価マスタ、テンプレート、計算式、定型文だけを入れ、顧客・書類・担当者・自社情報は空 */
+  function initialState() {
+    var s = sampleState(); s.sampleCleanup = '';
+    return ensureMembers(stripSample(s));
+  }
+
+  /** サンプル一式（テスト・画面確認用。利用者のデータには入れない） */
   function sampleState() {
     var s = defaultState();
+    s.company = Object.assign({}, SAMPLE_COMPANY);
     var t = today();
     function item(code, kind, name, spec, unit, price, cost, costType, tax) {
       var it = { id: 'itm_' + code.toLowerCase().replace('-', ''), code: code, kind: kind, name: name, spec: spec, unit: unit,
@@ -292,21 +318,31 @@
     };
   }
 
+  /**
+   * 読み込み。保存データが読めない（壊れている・形式が違う）ときは、元のデータを別のキーに退避してから
+   * サンプルで起動する（黙って上書きしない）。退避したキーは loadIssue に残し、画面で知らせる。
+   */
+  var loadIssue = null, stale = false, lastWritten = null;
   function load() {
-    try {
-      var raw = root.localStorage.getItem(KEY);
-      if (raw) {
+    var raw = null;
+    try { raw = root.localStorage.getItem(KEY); } catch (e) { return initialState(); }
+    if (raw) {
+      try {
         var s = JSON.parse(raw);
-        if (s && (s.schema === 1 || s.schema === 2)) return migrate(s);
-      }
-    } catch (e) { /* 壊れていたらサンプルで起動 */ }
-    return sampleState();
+        if (s && (s.schema === 1 || s.schema === 2)) { lastWritten = raw; return migrate(s); }
+      } catch (e) { /* 下で退避する */ }
+      var bk = KEY + ':corrupt:' + new Date().toISOString().replace(/[:.]/g, '-');
+      try { root.localStorage.setItem(bk, raw); loadIssue = { key: bk, size: raw.length }; }
+      catch (e) { loadIssue = { key: null, size: raw.length }; stale = true; }   // 退避できないときは保存もしない
+    }
+    return initialState();
   }
 
   function migrate(s) {
     var d = defaultState();
     Object.keys(d).forEach(function (k) { if (s[k] == null) s[k] = d[k]; });
     Object.keys(d.settings).forEach(function (k) { if (s.settings[k] == null) s.settings[k] = d.settings[k]; });
+    stripSample(s);
     ensureMembers(s);
     (s.projects || []).forEach(function (p) { if (!p.stage) p.stage = 'estimate'; });
     if (s.schema === 1) {
@@ -330,6 +366,7 @@
     var u = s.user || {};
     var rep = String((s.company || {}).rep || '').replace(/^(代表取締役|取締役|代表|社長)\s*/, '').trim();
     var m = { id: uid('mem'), name: u.name || rep || '利用者', role: u.role || '管理者', hue: u.hue || 217 };
+    if (!u.name && !rep) m.placeholder = true;   // サインインした人が引き継ぐ仮の担当者
     s.members = [m];
     s.currentMemberId = m.id;
     (s.documents || []).forEach(function (d) { if (d.ownerId == null) d.ownerId = m.id; });
@@ -338,18 +375,29 @@
     return s;
   }
 
+  /**
+   * 保存。直前の保存内容を1世代だけ残す（KEY:prev）。別のタブが新しい内容を保存していたら保存しない（stale）
+   */
   function save(state) {
-    try { root.localStorage.setItem(KEY, JSON.stringify(state)); return true; }
-    catch (e) { return false; }
+    if (stale) return false;
+    try {
+      var cur = root.localStorage.getItem(KEY), next = JSON.stringify(state);
+      if (cur && cur !== next) { try { root.localStorage.setItem(KEY + ':prev', cur); } catch (e) { root.localStorage.removeItem(KEY + ':prev'); } }
+      root.localStorage.setItem(KEY, next);
+      lastWritten = next;
+      return true;
+    } catch (e) { return false; }
   }
+  /** 別のタブで保存されたとき（storage イベント）に呼ぶ。自分が最後に書いた内容と違えば、以後この画面からは保存しない */
+  function markStale(newValue) { if (newValue !== lastWritten) stale = true; return stale; }
 
   function clear() { try { root.localStorage.removeItem(KEY); } catch (e) {} }
 
   root.EE = root.EE || {};
   root.EE.data = {
     KEY: KEY, uid: uid, ymd: ymd, addDays: addDays, today: today,
-    defaultState: defaultState, sampleState: sampleState,
+    defaultState: defaultState, sampleState: function () { var s = sampleState(); s.sampleCleanup = 'done'; return s; }, initialState: initialState,
     lineFromItem: lineFromItem, nextNumber: nextNumber, peekNumber: peekNumber, newEstimate: newEstimate,
-    load: load, save: save, clear: clear, migrate: migrate, ensureMembers: ensureMembers, STAGES: STAGES, stageIndex: stageIndex
+    load: load, save: save, markStale: markStale, isStale: function () { return stale; }, loadIssue: function () { return loadIssue; }, clear: clear, migrate: migrate, ensureMembers: ensureMembers, STAGES: STAGES, stageIndex: stageIndex
   };
 })(this);

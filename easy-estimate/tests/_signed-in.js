@@ -1,5 +1,5 @@
 /*
- * テスト用：最初にページを開いたときに「サインイン済み」の状態を作り、開き直す。
+ * テスト用：最初にページを開いたときに「サインイン済み」＋「サンプル一式」の状態を作り、開き直す。
  * （addInitScript は使わない。file:// で毎回ストレージを触ると、リロード時に保存内容が消えることがあるため）
  * 本物のアカウント処理（js/auth.js）は tests/login.js で確かめる。
  */
@@ -13,6 +13,8 @@ module.exports = function signedIn(page) {
         if (!localStorage.getItem('oumitsu:auth:v1')) localStorage.setItem('oumitsu:auth:v1', JSON.stringify({ users: [{ id: 'usr_test', name: '青木 誠', email: 'test@example.com', salt: 'AAAAAAAAAAAAAAAAAAAAAA==', iter: 1, hash: '-', createdAt: '' }] }));
         const u = JSON.parse(localStorage.getItem('oumitsu:auth:v1')).users[0];
         sessionStorage.setItem('oumitsu:session', JSON.stringify({ uid: u.id, at: '' }));
+        // 画面の確認用にサンプル一式を入れる（利用者が初めて開いたときは空から始まる）
+        if (!localStorage.getItem(EE.data.KEY)) localStorage.setItem(EE.data.KEY, JSON.stringify(EE.data.sampleState()));
       });
       return page.reload(opts);   // 同じURL（#付き）への goto は読み込み直さないため reload
     }

@@ -5,6 +5,14 @@ const C = require('../js/check.js');
 let n = 0;
 function t(name, fn) { fn(); n++; console.log('ok', name); }
 
+t('端数調整で税率区分がマイナスにならない（合計がマイナスにならない）', () => {
+  const r = E.calc({ lines: [{ qty: 1, unitPrice: 50, taxCategory: 'std10' }, { qty: 1, unitPrice: 40, taxCategory: 'red8' }], adjustments: [{ id: 'a', type: 'roundoff', unit: 1000 }] });
+  assert.strictEqual(r.subtotal, 0); assert.strictEqual(r.tax, 0); assert.strictEqual(r.total, 0);
+  Object.values(r.byRate).forEach(x => assert.ok(x.base >= 0));
+  const r2 = E.calc({ lines: [{ qty: 1, unitPrice: 1500, taxCategory: 'std10' }, { qty: 1, unitPrice: 600, taxCategory: 'red8' }], adjustments: [{ id: 'a', type: 'roundoff', unit: 1000 }] });
+  assert.strictEqual(r2.subtotal, 2000); assert.strictEqual(r2.byRate.std10.base, 1400);   // 大きい区分から引く（従来どおり）
+});
+
 t('roundDiv 各モード', () => {
   assert.strictEqual(E.roundDiv(250, 100, 'floor'), 2);
   assert.strictEqual(E.roundDiv(250, 100, 'round'), 3);

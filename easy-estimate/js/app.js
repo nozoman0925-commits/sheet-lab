@@ -84,7 +84,7 @@
   }
 
   function setActive(i) {
-    document.querySelectorAll('.nav-item').forEach(function (a) { a.classList.toggle('active', Number(a.dataset.nav) === i); });
+    document.querySelectorAll('.nav-item').forEach(function (a) { var on = Number(a.dataset.nav) === i; a.classList.toggle('active', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     var h = location.hash || '#/home';
     var best = null;
     document.querySelectorAll('.nav-child').forEach(function (c) {
@@ -154,7 +154,8 @@
     var pop = document.getElementById('user-pop'); if (!pop) return;
     if (show === !pop.hidden) return;
     document.getElementById('side-user').classList.toggle('on', show);
-    if (show) { pop.hidden = false; updateCount(); EE.fx.anim(pop, [{ opacity: 0, transform: 'translateY(6px) scale(.98)' }, { opacity: 1, transform: 'none' }], { duration: 200 }); }
+    var ub = document.getElementById('user-btn'); if (ub) ub.setAttribute('aria-expanded', show ? 'true' : 'false');
+    if (show) { pop.hidden = false; updateCount(); var fi = pop.querySelector('a, button'); if (fi) setTimeout(function () { fi.focus(); }, 0); EE.fx.anim(pop, [{ opacity: 0, transform: 'translateY(6px) scale(.98)' }, { opacity: 1, transform: 'none' }], { duration: 200 }); }
     else pop.hidden = true;
   }
 
@@ -181,6 +182,11 @@
       fresh.scrollTop = 0;
       document.getElementById('actions').onclick = null;
       if (current.mount) current.mount(fresh.firstChild);
+      if (EE.a11y) { EE.a11y.enhance(fresh); EE.a11y.enhance(document.getElementById('actions')); }
+      // 画面を切り替えた後にフォーカスが行き場を失ったら、画面の見出しへ（読み上げで移動が分かる）
+      if (animate !== false && (!document.activeElement || document.activeElement === document.body)) {
+        var h1 = document.getElementById('title'); h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true });
+      }
       if (animate !== false) { EE.fx.pageIn(fresh.firstChild, dir); EE.fx.stagger(fresh); }
       lastHash = location.hash;
     };
@@ -271,12 +277,16 @@
     EE.fx.countAll(v);
   }
 
-  /** サインインした人を担当者名簿につなぐ（同じ名前の担当者がいればその人、いなければ追加） */
+  /**
+   * サインインした人を担当者名簿につなぐ。
+   * そのアカウントの担当者がいればその人。いなければ、最初に自動で作られた仮の担当者（「利用者」）を引き継ぐか、新しく追加する。
+   * 名前が同じというだけでは、他の人の担当者には紐づけない（なりすまし防止）。
+   */
   function linkMember(user) {
-    var norm = function (s) { return String(s || '').replace(/[\s　]+/g, ''); };
     var ms = EE.S.members || (EE.S.members = []);
-    var m = ms.filter(function (x) { return x.accountId === user.id; })[0] || ms.filter(function (x) { return !x.accountId && norm(x.name) === norm(user.name); })[0];
-    if (!m) { m = { id: EE.data.uid('mem'), name: user.name, role: '担当', hue: 200 + (ms.length * 47) % 160 }; ms.push(m); }
+    var m = ms.filter(function (x) { return x.accountId === user.id; })[0];
+    if (!m) { m = ms.filter(function (x) { return !x.accountId && x.placeholder; })[0]; if (m) { m.name = user.name; delete m.placeholder; } }
+    if (!m) { m = { id: EE.data.uid('mem'), name: user.name, role: ms.length ? '担当' : '管理者', hue: 200 + (ms.length * 47) % 160 }; ms.push(m); }
     m.accountId = user.id;
     EE.S.currentMemberId = m.id;
     EE.data.save(EE.S);
@@ -302,8 +312,13 @@
       if (tr && !e.target.closest('button, a, input, select')) location.hash = tr.dataset.href;
     });
     document.addEventListener('keydown', function (e) {
-      if (e.key === 'Escape') { var m = U.topModal(); if (m) { m.close(); return; } }
-      if (e.altKey && /^[1-5]$/.test(e.key)) { e.preventDefault(); location.hash = NAV[Number(e.key) - 1].href; return; }
+      if (e.key === 'Escape') {
+        var m = U.topModal(); if (m) { m.close(); return; }
+        var up = document.getElementById('user-pop'); if (up && !up.hidden) { toggleUserPop(false); var ub2 = document.getElementById('user-btn'); if (ub2) ub2.focus(); return; }
+      }
+      // Alt（Mac は Option）＋1〜5。Mac では e.key が記号になるので e.code で見る。入力中は横取りしない
+      var dg = /^Digit([1-5])$/.exec(e.code || '');
+      if (e.altKey && dg && !/INPUT|TEXTAREA|SELECT/.test((document.activeElement || {}).tagName || '')) { e.preventDefault(); location.hash = NAV[Number(dg[1]) - 1].href; return; }
       if (current && current.mount && EE.views.editor && /^#\/(new\/edit|edit)/.test(location.hash)) EE.views.editor.onKey(e);
       else if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'p') { /* 一覧画面での印刷はブラウザ既定のまま */ }
     });
@@ -312,9 +327,23 @@
     });
     U.members();
     renderUser(); bindUser();
+    EE.a11y && EE.a11y.enhance(document.querySelector('.sidebar'));
+    // 別のタブで保存されたら、この画面からは保存せず再読み込みを促す（上書きで相手の変更を消さない）
+    root.addEventListener('storage', function (e) {
+      if (e.key !== EE.data.KEY || !EE.data.markStale(e.newValue)) return;
+      if (document.getElementById('stale-box')) return;
+      U.modal({ title: '別のタブで更新されました', body: '<p id="stale-box" style="margin:0;color:var(--text-2)">このアプリを別のタブ（またはウィンドウ）でも開いていて、そちらで内容が保存されました。<br>この画面のまま保存すると、そちらの変更を消してしまうため、ここからは保存しません。再読み込みして最新の内容を開いてください。</p>',
+        foot: '<button class="btn primary" data-rl>再読み込み</button>', onMount: function (el) { el.querySelector('[data-rl]').onclick = function () { location.reload(); }; } });
+    });
+    // 保存データが読めなかったとき（壊れていた等）：元のデータは退避してある
+    var li = EE.data.loadIssue();
+    if (li) U.modal({ title: '保存データを読めませんでした', body: '<p style="margin:0;color:var(--text-2)">このブラウザに保存されていたデータが壊れていたため、読み込めませんでした。' +
+      (li.key ? '元のデータは消さずに退避しています（保存名：' + U.esc(li.key) + '）。設定・マスタ →「データ」のバックアップと合わせて、復元をご相談ください。' : '退避もできなかったため、この画面からは保存しません。ブラウザの空き容量を確認してください。') + '</p>' });
+    // ブラウザの判断でデータが消されにくくする（対応ブラウザのみ）
+    if (navigator.storage && navigator.storage.persist) navigator.storage.persist().catch(function () {});
     U.onCommit(updateCount);
   }
 
-  EE.app = { renderUser: function () { renderUser(); }, boot: boot, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
+  EE.app = { renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
     duplicate: duplicate, newWith: newWith, takePrefill: takePrefill };
 })(this);

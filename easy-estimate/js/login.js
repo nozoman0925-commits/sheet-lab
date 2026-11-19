@@ -43,7 +43,7 @@
             field('signin', 'password', 'パスワード', 'password', 'current-password') +
             '<button class="btn primary auth-submit" type="submit"><span>サインイン</span></button>' +
             '<p class="auth-switch">アカウントが無い場合は <button type="button" class="link" data-go="signup">新規登録</button></p>' +
-            '<p class="auth-note">アカウントはこのPCのブラウザ内にだけ保存され、外部には送信しません</p>' +
+            '<p class="auth-note">アカウントとデータはこのPCのブラウザ内にだけ保存され、外部には送信しません。サインインは使う人の確認で、このPCを操作できる人からデータを隠すものではありません</p>' +
           '</form>' +
           '<form class="auth-form" id="f-signup" novalidate' + (mode === 'signup' ? '' : ' hidden') + '>' +
             '<h1 class="auth-title">アカウントを作成</h1><p class="auth-lead">この端末で使うアカウントを作ります</p>' +
@@ -54,7 +54,7 @@
             field('signup', 'password2', 'パスワード（確認）', 'password', 'new-password') +
             '<button class="btn primary auth-submit" type="submit"><span>アカウントを作成</span></button>' +
             '<p class="auth-switch">アカウントをお持ちの場合は <button type="button" class="link" data-go="signin">サインイン</button></p>' +
-            '<p class="auth-note">アカウントはこのPCのブラウザ内にだけ保存され、外部には送信しません</p>' +
+            '<p class="auth-note">アカウントとデータはこのPCのブラウザ内にだけ保存され、外部には送信しません。サインインは使う人の確認で、このPCを操作できる人からデータを隠すものではありません</p>' +
           '</form>' +
         '</div>' +
         '<div class="auth-track"><div class="auth-blade" id="auth-blade">' +

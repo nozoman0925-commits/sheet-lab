@@ -165,8 +165,9 @@
   }
 
   function refresh(detailOnly) {
-    if (!detailOnly) document.getElementById('c-list').innerHTML = listHTML();
-    var d = document.getElementById('c-detail');
+    var l = document.getElementById('c-list'), d = document.getElementById('c-detail');
+    if (!d) return;   // 別の画面へ移った後に呼ばれたとき
+    if (!detailOnly && l) l.innerHTML = listHTML();
     d.innerHTML = detailHTML();
     EE.fx.stagger(d, { step: 25 });
   }

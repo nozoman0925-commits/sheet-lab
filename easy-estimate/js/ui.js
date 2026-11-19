@@ -57,7 +57,8 @@
   var listeners = [];
   function commit() {
     var ok = EE.data.save(EE.S);
-    if (!ok) EE.fx.toast('ブラウザに保存できませんでした（容量不足の可能性）', { warn: true, ms: 4000 });
+    if (!ok && EE.data.isStale()) EE.fx.toast('別のタブで内容が更新されたため、この画面からは保存していません。再読み込みしてください', { warn: true, ms: 6000 });
+    else if (!ok) EE.fx.toast('ブラウザに保存できませんでした（容量不足の可能性）', { warn: true, ms: 4000 });
     listeners.forEach(function (f) { f(); });
     return ok;
   }
@@ -92,13 +93,14 @@
   }
 
   /* ---- モーダル ---- */
-  var stack = [];
+  var stack = [], mid = 0;
   function modal(o) {
-    var ov = document.createElement('div');
+    var ov = document.createElement('div'), hid = 'mdl-t' + (++mid);
+    var opener = document.activeElement;   // 閉じたらここへフォーカスを戻す
     ov.className = 'overlay';
-    ov.innerHTML = '<div class="panel modal' + (o.wide ? ' wide' : '') + '" role="dialog" aria-modal="true">' +
-      '<div class="panel-h"><h2>' + esc(o.title) + '</h2><div class="spacer"></div>' +
-      '<button class="btn ghost icon sm" data-x title="閉じる (Esc)">' + I.x + '</button></div>' +
+    ov.innerHTML = '<div class="panel modal' + (o.wide ? ' wide' : '') + '" role="dialog" aria-modal="true" aria-labelledby="' + hid + '">' +
+      '<div class="panel-h"><h2 id="' + hid + '">' + esc(o.title) + '</h2><div class="spacer"></div>' +
+      '<button class="btn ghost icon sm" data-x title="閉じる (Esc)" aria-label="閉じる">' + I.x + '</button></div>' +
       '<div class="panel-b">' + (o.body || '') + '</div>' +
       (o.foot ? '<div class="modal-f">' + o.foot + '</div>' : '') + '</div>';
     document.body.appendChild(ov);
@@ -110,12 +112,24 @@
       close: function (v) {
         var i = stack.indexOf(api); if (i >= 0) stack.splice(i, 1);
         if (o.onClose) o.onClose(v);
+        if (!stack.length) { var app = document.querySelector('.app'); if (app) app.inert = false; }
+        if (opener && opener.isConnected && opener.focus) setTimeout(function () { opener.focus({ preventScroll: true }); }, 0);
         if (EE.fx.reduce || !ov.animate) return ov.remove();
         var a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: 'forwards' });
         a.onfinish = function () { ov.remove(); };
       }
     };
     stack.push(api);
+    var appEl = document.querySelector('.app'); if (appEl) appEl.inert = true;   // 背面を操作・フォーカスできなくする
+    // Tab をダイアログの中で回す
+    m.addEventListener('keydown', function (e) {
+      if (e.key !== 'Tab') return;
+      var fs = Array.prototype.filter.call(m.querySelectorAll('button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'), function (x) { return !x.disabled && x.offsetParent !== null; });
+      if (!fs.length) return;
+      var first = fs[0], last = fs[fs.length - 1];
+      if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+      else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+    });
     ov.addEventListener('mousedown', function (e) { if (e.target === ov) api.close(); });
     m.querySelector('[data-x]').onclick = function () { api.close(); };
     if (o.onMount) o.onMount(m, api);
@@ -132,12 +146,13 @@
       var m = modal({
         title: opts.title || '確認',
         body: '<div style="white-space:pre-wrap;color:var(--text-2)">' + esc(msg) + '</div>',
-        foot: '<button class="btn ghost" data-no>キャンセル</button><button class="btn ' + (opts.danger ? 'danger' : 'primary') + '" data-ok autofocus>' + esc(ok || 'OK') + '</button>',
+        foot: '<button class="btn ghost" data-no>キャンセル</button><button class="btn ' + (opts.danger ? 'danger' : 'primary') + '" data-ok>' + esc(ok || 'OK') + '</button>',
         onClose: function () { if (!done) resolve(false); },
         onMount: function (el, api) {
           el.querySelector('[data-no]').onclick = function () { api.close(); };
           el.querySelector('[data-ok]').onclick = function () { done = true; resolve(true); api.close(); };
-          setTimeout(function () { el.querySelector('[data-ok]').focus(); }, 30);
+          // 危険な操作（削除など）は「キャンセル」を既定にする（Enter で即実行しない）
+          setTimeout(function () { el.querySelector(opts.danger ? '[data-no]' : '[data-ok]').focus(); }, 40);
         }
       });
     });

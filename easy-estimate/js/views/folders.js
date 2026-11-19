@@ -108,7 +108,7 @@
       '<div class="toolbar" data-st style="margin:18px 0 0">' + '<div class="grow"></div>' +
         (m ? '<button class="btn" data-act="edit-member">' + I.edit + '担当者の情報</button>' : '') +
         '<button class="btn" data-act="docs-list">' + I.docs + '書類一覧で見る</button>' +
-        '<button class="btn primary" data-act="new-doc">' + I.plus + (m ? m.name + 'の担当で見積を作る' : '見積を作る') + '</button></div>' +
+        '<button class="btn primary" data-act="new-doc">' + I.plus + (m ? esc(m.name) + 'の担当で見積を作る' : '見積を作る') + '</button></div>' +
       (cards ? '<div class="site-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'まだ担当の現場・書類はありません</div></section>');
     return {
       title: (m ? m.name : '未割り当て') + 'のファイル', crumb: '担当者のファイル', html: html,

@@ -14,6 +14,10 @@ t('危険な式は受け付けない', () => {
   assert.throws(() => C.compile('a; b'), /使えない文字/);
   assert.throws(() => C.compile('constructor.constructor("x")'), /使えない文字|使えない関数|正しくありません/);
   assert.throws(() => C.compile('a / b')({ a: 1, b: 0 }), /0で割って/);
+  for (const e of ['constructor', 'toString', '__proto__', 'hasOwnProperty', 'valueOf'])
+    assert.throws(() => C.compile(e)({ a: 1 }), /がありません/);              // JavaScript の内部の名前は読まない
+  assert.throws(() => C.compile('constructor(1)'), /使えない関数/);
+  assert.throws(() => C.compile('a * 2')({ a: 'x' }), /数値ではありません/);
 });
 t('単位換算とロス率・切り上げ', () => {
   const f = { expr: 'w * d', inputs: [{ key: 'w', unit: 'm' }, { key: 'd', unit: 'm' }], lossPct: 10, round: 'decimal' };

@@ -130,9 +130,14 @@
       b.onclick = function () { opts.action.run(); close(); };
       t.appendChild(b);
     }
+    if (opts.warn) t.setAttribute('role', 'alert');
     box.appendChild(t);
     anim(t, [{ opacity: 0, transform: 'translateY(10px) scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 240 });
-    var timer = setTimeout(close, opts.ms || (opts.action ? 5000 : 2200));
+    var ms = opts.ms || (opts.action ? 8000 : 2200), timer = setTimeout(close, ms);
+    // カーソルが乗っている間・フォーカスがある間は消さない（「元に戻す」を押せるように）
+    var hold = function () { clearTimeout(timer); }, resume = function () { if (!t.matches(':hover') && !t.contains(document.activeElement)) { clearTimeout(timer); timer = setTimeout(close, 2500); } };
+    t.addEventListener('mouseenter', hold); t.addEventListener('focusin', hold);
+    t.addEventListener('mouseleave', resume); t.addEventListener('focusout', function () { setTimeout(resume, 0); });
     function close() {
       clearTimeout(timer);
       if (!t.isConnected) return;
