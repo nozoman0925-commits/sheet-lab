@@ -50,3 +50,15 @@
 .sheet .notes { white-space: pre-wrap; }
 .sheet .foot { margin-top: 5mm; font-size: 7.5pt; color: #777; display: flex; justify-content: space-between; }
 .sheet .draft-mark { position: absolute; right: 0; top: 10mm; font-size: 9pt; color: #b33; border: 1px solid #b33; padding: .5mm 2mm; }
+
+/* 発行元のロゴと会社印（角印） */
+.sheet .from .logo { margin-bottom: 2mm; }
+.sheet .from .logo img { max-width: 60mm; max-height: 20mm; display: block; }
+.sheet .from .crest-logo { display: flex; align-items: center; gap: 2.5mm; color: #111; }
+.sheet .from .crest-logo .sheet-crest { width: 11mm; height: 11mm; flex: none; overflow: visible; }
+.sheet .from .crest-logo .c-field { fill: #fff; }
+.sheet .from .crest-logo .c-art { fill: #111; }
+.sheet .from .crest-logo .c-glow, .sheet .from .crest-logo .c-sheen, .sheet .from .crest-logo .c-rayfills { display: none; }
+.sheet .from .crest-logo span { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-size: 13pt; font-weight: 600; letter-spacing: .14em; }
+.sheet .from .co-wrap { position: relative; }
+.sheet .from .co-wrap .seal { position: absolute; right: -2mm; top: -4mm; width: 21mm; height: 21mm; object-fit: contain; mix-blend-mode: multiply; opacity: .92; }

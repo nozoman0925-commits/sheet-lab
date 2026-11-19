@@ -11,6 +11,14 @@
   var EE = root.EE, U = EE.ui;
   var esc = U.esc, yen = U.yen;
 
+  /** 発行元のロゴ：登録した画像、無ければ家紋＋会社名 */
+  function logoHTML(co, key) {
+    if (co.showLogo === false) return '';
+    if (co.logo) return '<div class="logo"><img src="' + co.logo + '" alt=""></div>';
+    // 同じ書類からは同じ PDF になるよう、識別名は書類ごとに決める
+    return '<div class="logo crest-logo">' + EE.crest.svg({ id: 'shl-' + String(key || 'x').replace(/\W/g, ''), className: 'sheet-crest', fieldR: 106 }) + '<span>' + esc(co.name || '') + '</span></div>';
+  }
+
   function sheetHTML(doc) {
     var S = EE.S, sn = doc.status === 'issued' && doc.snap;
     // 確定済みの書類は、確定時の写し（宛名・自社情報・工事場所）で作る。後から顧客や自社情報を変えても送ったものと同じになる
@@ -78,9 +86,11 @@
           '</table>' +
         '</div>' +
         '<div class="from">' +
-          '<div class="co">' + esc(co.name || '') + '</div>' +
+          // 会社名の上に角印を重ねる。家紋＋会社名のロゴのときは、ロゴが会社名を兼ねる（2回書かない）
+          '<div class="co-wrap">' + (co.showLogo !== false && !co.logo ? logoHTML(co, doc.id) : logoHTML(co, doc.id) + '<div class="co">' + esc(co.name || '') + '</div>') +
+            (co.seal && co.showSeal !== false ? '<img class="seal" src="' + co.seal + '" alt="">' : '') + '</div>' +
           (co.zip ? '〒' + esc(co.zip) + '<br>' : '') + esc(co.address || '') + '<br>' +
-          (co.tel ? 'TEL ' + esc(co.tel) + '<br>' : '') + (co.email ? esc(co.email) + '<br>' : '') +
+          (co.tel || co.fax ? (co.tel ? 'TEL ' + esc(co.tel) : '') + (co.tel && co.fax ? '　' : '') + (co.fax ? 'FAX ' + esc(co.fax) : '') + '<br>' : '') + (co.email ? esc(co.email) + '<br>' : '') +
           (co.rep ? esc(co.rep) + '<br>' : '') + (co.license ? '<span style="font-size:8pt">' + esc(co.license) + '</span><br>' : '') +
           (co.invoiceRegNo ? '<span class="reg sans num">登録番号 ' + esc(co.invoiceRegNo) + '</span>' : '') +
           '<div class="stamps"><div>承認</div><div>担当</div></div>' +

@@ -197,9 +197,45 @@
       f('c8', 'name', '会社名・屋号', '', true) +
       '<div class="field c4"><label>適格請求書発行事業者 登録番号</label><input class="input num" name="invoiceRegNo" value="' + esc(c.invoiceRegNo || '') + '" placeholder="T1234567890123"><span class="hint" id="reg-hint">「T」＋数字13桁</span></div>' +
       f('c3', 'zip', '郵便番号') + f('c9', 'address', '住所') +
-      f('c4', 'tel', '電話') + f('c4', 'email', 'メール') + f('c4', 'rep', '代表者') +
+      f('c3', 'tel', '電話') + f('c3', 'fax', 'FAX') + f('c6', 'email', 'メール') + f('c6', 'rep', '代表者') +
       f('c6', 'license', '建設業許可番号', '例：東京都知事許可（般-6）第000000号') + f('c6', 'bank', '振込先（請求書で使用予定）') +
-      '</div><div style="margin-top:18px;display:flex;justify-content:flex-end"><button class="btn primary" data-act="save-co">' + I.save + '保存</button></div></div></section>';
+      '</div><div style="margin-top:18px;display:flex;justify-content:flex-end"><button class="btn primary" data-act="save-co">' + I.save + '保存</button></div></div></section>' +
+      // 会社ロゴ・会社印（角印）
+      '<section class="panel" data-st style="max-width:920px;margin-top:18px"><div class="panel-h"><h2>会社ロゴ・会社印</h2><span class="sub">見積書（PDF）の発行元の欄に入ります</span></div><div class="panel-b"><div class="brand-assets">' +
+        '<div class="asset"><div class="label">会社ロゴ（横長・推奨 360×120px）</div><div class="asset-box logo">' + logoPreview(c) + '</div>' +
+          '<div class="asset-actions"><label class="btn sm">' + I.upload + '画像を選ぶ<input type="file" accept="image/png,image/jpeg,image/webp" id="up-logo" hidden></label>' +
+          (c.logo ? '<button class="btn sm ghost" data-act="del-logo">家紋＋会社名に戻す</button>' : '') + '</div>' +
+          '<label class="chk"><input type="checkbox" id="show-logo"' + (c.showLogo !== false ? ' checked' : '') + '> 見積書にロゴを入れる</label>' +
+          '<span class="hint">画像を選ばないときは、家紋と会社名でロゴを作ります。</span></div>' +
+        '<div class="asset"><div class="label">会社印・角印（正方形・推奨 500×500px）</div><div class="asset-box seal">' + (c.seal ? '<img src="' + c.seal + '" alt="登録した会社印">' : '<span class="hint">未登録</span>') + '</div>' +
+          '<div class="asset-actions"><label class="btn sm">' + I.upload + '画像を選ぶ<input type="file" accept="image/png,image/jpeg,image/webp" id="up-seal" hidden></label>' +
+          (c.seal ? '<button class="btn sm ghost" data-act="del-seal">削除</button>' : '') + '</div>' +
+          '<label class="chk"><input type="checkbox" id="show-seal"' + (c.showSeal !== false ? ' checked' : '') + '> 見積書に角印を押す（会社名の上に重ねる）</label>' +
+          '<span class="hint">背景が透明か白の画像がきれいに出ます。画像はこのブラウザの中にだけ保存されます。</span></div>' +
+      '</div></div></section>';
+  }
+  /** ロゴの見本：画像があればそれ、無ければ家紋＋会社名 */
+  function logoPreview(c) {
+    if (c.logo) return '<img src="' + c.logo + '" alt="登録した会社ロゴ">';
+    return '<span class="crest-logo">' + EE.crest.svg({ id: 'colog', className: 'brand-crest', fieldR: 106 }) + '<b>' + esc(c.name || '会社名') + '</b></span>';
+  }
+  /** 画像を読み込み、長辺を縮めて PNG にする（保存の容量を抑える） */
+  function loadImage(file, maxW, maxH, done) {
+    if (!file || !/^image\//.test(file.type)) { EE.fx.toast('画像ファイル（PNG・JPEG）を選んでください', { warn: true }); return; }
+    if (file.size > 8 * 1024 * 1024) { EE.fx.toast('画像が大きすぎます（8MBまで）', { warn: true }); return; }
+    var rd = new FileReader();
+    rd.onload = function () {
+      var img = new Image();
+      img.onload = function () {
+        var k = Math.min(1, maxW / img.width, maxH / img.height), w = Math.round(img.width * k), h = Math.round(img.height * k);
+        var cv = document.createElement('canvas'); cv.width = w; cv.height = h;
+        cv.getContext('2d').drawImage(img, 0, 0, w, h);
+        done(cv.toDataURL('image/png'));
+      };
+      img.onerror = function () { EE.fx.toast('画像を読み込めませんでした', { warn: true }); };
+      img.src = rd.result;
+    };
+    rd.readAsDataURL(file);
   }
 
   /* ---------- 計算ルール ---------- */
@@ -280,6 +316,10 @@
           if (!v.name) { var n = view.querySelector('[name=name]'); n.classList.add('flag-err'); EE.fx.shake(n); return; }
           if (v.invoiceRegNo && !/^T\d{13}$/.test(v.invoiceRegNo)) { var r = view.querySelector('[name=invoiceRegNo]'); r.classList.add('flag-err'); EE.fx.shake(r); EE.fx.toast('登録番号は「T」＋数字13桁です', { warn: true }); return; }
           Object.assign(S.company, v); U.commit(); EE.fx.success(a); break;
+        case 'del-logo': S.company.logo = ''; U.commit(); EE.fx.toast('ロゴを家紋＋会社名に戻しました'); EE.app.rerender(); break;
+        case 'del-seal':
+          if (!(await U.confirmBox('登録した会社印を削除しますか？', '削除する', { danger: true }))) return;
+          S.company.seal = ''; U.commit(); EE.fx.toast('会社印を削除しました'); EE.app.rerender(); break;
         case 'save-rules':
           var on = function (n) { return view.querySelector('[data-rule="' + n + '"] .on').dataset.v; };
           var m = Number(document.getElementById('r-margin').value), d = Number(document.getElementById('r-days').value);
@@ -313,6 +353,18 @@
       }
     });
     view.addEventListener('change', function (e) {
+      // 会社ロゴ・会社印：選んだら縮めてすぐ保存
+      if ((e.target.id === 'up-logo' || e.target.id === 'up-seal') && e.target.files[0]) {
+        var isLogo = e.target.id === 'up-logo';
+        loadImage(e.target.files[0], isLogo ? 720 : 500, isLogo ? 240 : 500, function (url) {
+          EE.S.company[isLogo ? 'logo' : 'seal'] = url; U.commit();
+          EE.fx.toast(isLogo ? '会社ロゴを登録しました' : '会社印を登録しました'); EE.app.rerender();
+        });
+        e.target.value = ''; return;
+      }
+      if (e.target.id === 'show-logo' || e.target.id === 'show-seal') {
+        EE.S.company[e.target.id === 'show-logo' ? 'showLogo' : 'showSeal'] = e.target.checked; U.commit(); EE.fx.toast('保存しました'); return;
+      }
       if (e.target.id === 'csv-in' && e.target.files[0]) { csvIn(e.target.files[0]); e.target.value = ''; }
       if (e.target.id === 'json-in' && e.target.files[0]) {
         var rd = new FileReader();

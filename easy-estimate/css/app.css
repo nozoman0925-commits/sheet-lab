@@ -322,7 +322,7 @@ select.input { appearance: none; padding-right: 30px; cursor: pointer;
   background-repeat: no-repeat; background-position: right 10px center; }
 select.input option { background: #0e1422; }
 .form-grid { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px 16px; }
-.c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c6 { grid-column: span 6; } .c8 { grid-column: span 8; } .c12 { grid-column: span 12; } .c2 { grid-column: span 2; }
+.c3 { grid-column: span 3; } .c4 { grid-column: span 4; } .c5 { grid-column: span 5; } .c6 { grid-column: span 6; } .c8 { grid-column: span 8; } .c9 { grid-column: span 9; } .c12 { grid-column: span 12; } .c2 { grid-column: span 2; }
 .hint { font-size: 11.5px; color: var(--dim); }
 
 .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: rgba(6,9,16,.55); border: 1px solid var(--line); position: relative; }
@@ -582,3 +582,20 @@ tr:focus-within .row-actions { opacity: 1; }                 /* キーボード�
 .setup-mark svg { width: 12px; height: 12px; }
 .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 @media (max-width: 760px) { .setup-list { grid-template-columns: 1fr; } }
+
+/* 自社情報：会社ロゴ・会社印 */
+.brand-assets { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px; }
+.brand-assets .asset { display: flex; flex-direction: column; gap: 10px; }
+.asset-box { display: grid; place-items: center; border-radius: 12px; border: 1px dashed rgba(147,197,253,.3); background: #f4f2ec; padding: 12px; }
+.asset-box.logo { height: 120px; }
+.asset-box.seal { width: 140px; height: 140px; }
+.asset-box img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.asset-box .hint { color: #6b7280; }
+.asset-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.asset .chk { display: flex; gap: 8px; align-items: center; font-size: 13px; color: var(--text-2); }
+.crest-logo { display: inline-flex; align-items: center; gap: 12px; color: #111; }
+.crest-logo .brand-crest { width: 56px; height: 56px; filter: none; }
+.crest-logo .brand-crest .c-field { fill: #fff; }
+.crest-logo .brand-crest .c-art { fill: #111; }
+.crest-logo b { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-size: 22px; font-weight: 600; letter-spacing: .12em; }
+@media (max-width: 760px) { .brand-assets { grid-template-columns: 1fr; } }
