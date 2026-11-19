@@ -79,7 +79,8 @@ function tutShow(){
   if(s.done&&s.done())return tutAdvance();
   box.hidden=false;document.documentElement.classList.add("tut-lock");
   const vh=window.innerHeight;
-  if(el&&!ui.tutScrolled&&!el.closest("#tabs")&&!el.closest("#sheet")){
+  const offView=el&&(()=>{const q=el.getBoundingClientRect();return q.bottom<8||q.top>vh-8})();
+  if(el&&(!ui.tutScrolled||offView)&&!el.closest("#tabs")&&!el.closest("#sheet")){
     ui.tutScrolled=true;const r=el.getBoundingClientRect();
     const want=r.height>vh*.55?100:Math.max(100,(vh-r.height)/2-80);
     if(Math.abs(r.top-want)>4)window.scrollTo({top:window.scrollY+r.top-want,behavior:"instant"});
@@ -99,15 +100,28 @@ function tutShow(){
     (main&&s.reward?'<div class="tut-m">'+mPic(S.main.master)+'<p>「'+s.m+'」</p></div><h3>'+s.t+'</h3><p>'+body+'</p>':(s.reward?'<div class="seal">入門</div>':'')+'<h3>'+s.t+'</h3><p>'+body+'</p>');
   const card='<div class="tut-card'+(s.reward?" reward":"")+(s.slim?" slim":"")+'" role="dialog" aria-live="polite">'+dots+inner+hint+help+acts+(main&&!s.reward&&!s.slim?'<span class="tut-prac">練習中 ・ 本番の記録には残らない</span>':'')+'</div>';
   if(!el){box.innerHTML='<div class="tut-dim"></div>'+card;const c=box.querySelector(".tut-card");c.style.top="50%";c.style.transform="translateY(-50%)";fillPk();return}
+  const placeTut=()=>{if(!el.isConnected||!box.querySelector(".tut-card"))return;
   const r=el.getBoundingClientRect();const p=6; // スクロール後の位置で測り直す
   const top=Math.max(4,r.top-p),left=Math.max(4,r.left-p),w=Math.min(window.innerWidth-8-left,r.width+p*2),hh=r.height+p*2;
   let html='<div class="tut-ring'+(s.press?" press":"")+'" style="top:'+top+'px;left:'+left+'px;width:'+w+'px;height:'+hh+'px"></div>';
   if(s.press)html+='<div class="tut-tap" style="top:'+(r.top+r.height/2)+'px;left:'+(r.left+Math.min(r.width/2,r.width-24))+'px"></div>';
-  box.innerHTML=html+card;fillPk();
+  {const old=box.querySelector(".tut-card");if(old){box.querySelectorAll(".tut-ring,.tut-tap").forEach(x=>x.remove());old.removeAttribute("style");old.classList.remove("above","below");old.insertAdjacentHTML("beforebegin",html)}else{box.innerHTML=html+card;fillPk()}}
   const c=box.querySelector(".tut-card");const cx=Math.min(Math.max(r.left+r.width/2,40),window.innerWidth-40);
-  if(s.top){c.style.top="calc(env(safe-area-inset-top,0px) + 12px)"}
-  else if(r.top+r.height/2>vh/2){c.style.bottom=Math.max(12,vh-top+14)+"px";c.classList.add("above");c.style.setProperty("--ax",cx+"px")}
-  else{c.style.top=Math.min(vh-240,top+hh+14)+"px";c.classList.add("below");c.style.setProperty("--ax",cx+"px")}
+  // カードの実際の高さを測ってから置く：光っている所の下 → 上 → どちらも無理なら画面の下端。必ず画面内に収める
+  const ch=c.offsetHeight,M=12,below=top+hh+14,above=top-14-ch;c.style.setProperty("--ax",cx+"px");
+  if(s.top){c.style.top=M+"px"}
+  else if(r.top+r.height/2<=vh/2&&below+ch<=vh-M){c.style.top=below+"px";c.classList.add("below")}
+  else if(above>=M){c.style.top=above+"px";c.classList.add("above")}
+  else if(below+ch<=vh-M){c.style.top=below+"px";c.classList.add("below")}
+  else{ // 上下どちらにも収まらない：広い方に置き、カードの中をスクロールさせる（光っている所は隠さない）
+    const spB=vh-M-below,spA=top-14-M;
+    if(spB>=spA){c.style.top=below+"px";c.style.maxHeight=Math.max(120,spB)+"px";c.classList.add("below")}
+    else{c.style.maxHeight=Math.max(120,spA)+"px";c.style.top=Math.max(M,top-14-Math.min(ch,Math.max(120,spA)))+"px";c.classList.add("above")}}
+  {const t=parseFloat(c.style.top)||0,h2=c.offsetHeight;const fit=Math.min(Math.max(M,t),Math.max(M,vh-h2-M));if(Math.abs(fit-t)>1){c.style.top=fit+"px";c.classList.remove("above","below")}}};
+  box.innerHTML=card;fillPk();placeTut();
+  if(ui.tutRO)ui.tutRO.disconnect();
+  if(window.ResizeObserver){ui.tutRO=new ResizeObserver(()=>requestAnimationFrame(placeTut));ui.tutRO.observe($("#app"))}
+  if(ui.tutScrollH)window.removeEventListener("scroll",ui.tutScrollH);ui.tutScrollH=()=>requestAnimationFrame(placeTut);window.addEventListener("scroll",ui.tutScrollH,{passive:true});
 }
 window.addEventListener("click",ev=>{
   const cb=ev.target.closest("[data-cer]");

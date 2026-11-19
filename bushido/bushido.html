@@ -727,6 +727,54 @@ details.grp>summary .gs{opacity:.8}
 :root[data-bg=rain][data-theme=haku] .sc-photo{filter:saturate(.75) brightness(1.08)}
 :root[data-bg=rain][data-theme=sumi] .sc-photo{filter:grayscale(.92) contrast(1.05)}
 :root[data-bg=rain][data-theme=sumi]{--sc-veil:linear-gradient(180deg,rgba(10,10,12,.62) 0,rgba(10,10,12,.40) 35%,rgba(10,10,12,.45) 70%,rgba(10,10,12,.66) 100%)}
+
+/* ===== 第32版：分かりやすい「今日の稽古」・画面外に出ない案内・白い余白の修正 ===== */
+/* 上下に引っぱった時に白が出ないよう、ページの一番外側も同じ色に。引っぱり自体も止める */
+html{background:var(--sc-sky2,var(--ink));overscroll-behavior:none}
+:root[data-bg=none]{background:var(--ink)}
+body{overscroll-behavior:none}
+.brand small{display:block!important;font-size:calc(10.5px*var(--fz,1));letter-spacing:.02em;margin-top:5px;color:var(--muted)}
+nav.tabs button span{letter-spacing:.02em!important;font-size:calc(10px*var(--fz,1))!important}
+/* 今日の稽古 */
+.today-intro{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:12px;border:1px solid var(--gold-dim);border-radius:10px;background:var(--glass,var(--panel))}
+.today-intro p{font-size:calc(13.5px*var(--fz,1));line-height:1.65;flex:1}
+.today-intro b{color:var(--gold-hi)}
+.today-head{display:flex;align-items:center;gap:10px}
+.today-head .eyebrow{margin:0;flex:1}
+.today-n{font-size:calc(14px*var(--fz,1));color:var(--gold-hi);font-weight:700}
+.today-bar{display:flex;gap:4px;margin:8px 0 12px}
+.today-bar i{flex:1;height:4px;border-radius:2px;background:var(--track)}
+.today-bar i.on{background:var(--gold)}
+.tiers.steps{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.tiers.steps .tier.step{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;min-height:60px;padding:10px 14px 10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--glass,var(--panel));text-align:left;width:100%}
+.tiers.steps .tier .sn{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--gold);color:var(--gold-hi);font-family:var(--display);font-weight:800;font-size:calc(15px*var(--fz,1))}
+.tiers.steps .tier .st{display:flex;flex-direction:column;min-width:0;gap:2px}
+.tiers.steps .tier .tt{font-family:var(--body)!important;font-weight:700;font-size:calc(15px*var(--fz,1))!important;white-space:normal;color:var(--fg)}
+.tiers.steps .tier .tt small{font-weight:500;color:var(--muted);font-size:.82em;margin-left:2px}
+.tiers.steps .tier .ss{font-size:calc(12.5px*var(--fz,1));color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tiers.steps .tier .tl{font-size:calc(10.5px*var(--fz,1));letter-spacing:.08em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.tiers.steps .tier.t1:not(.ok){border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-dim) inset}
+.tiers.steps .tier.t1:not(.ok) .tl{color:var(--gold-hi);border-color:var(--gold)}
+.tiers.steps .tier.ok{opacity:.72}
+.tiers.steps .tier.ok .sn{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.tiers.steps .tier.ok .tt{text-decoration:line-through;text-decoration-color:var(--gold-dim)}
+.tiers.steps .tier.more{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 14px;border-radius:12px;border:1px dashed var(--line);background:transparent;opacity:.9}
+.tiers.steps .tier.more .tt{font-size:calc(13px*var(--fz,1));color:var(--muted);flex:1;white-space:normal}
+.tiers.steps .tier.more .chev{color:var(--muted);font-size:18px}
+.tiers.steps .tier:active{transform:scale(.99)}
+/* カードの手順番号と、済んだ手順 */
+.stepno{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:8px;border-radius:50%;border:1px solid var(--gold);color:var(--gold-hi);font-size:11px;font-weight:700;letter-spacing:0;vertical-align:1px}
+.sec.step-done .stepno{background:var(--gold);color:var(--gold-ink)}
+.sec.step-done{border-color:var(--gold-dim)}
+/* 案内（チュートリアル）のカード：画面の高さを超えない・中でスクロール */
+.tut-card{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
+html.tut-lock{overscroll-behavior:none}
+.w1line{margin:-4px 0 4px;font-size:calc(12.5px*var(--fz,1));color:var(--muted)}
+.w1line b{color:var(--fg);font-weight:600}
+/* 今日の稽古は主役のカード（写真の上でも読めるように、すりガラスで） */
+:root .sec.todo{background:var(--panel);border:1px solid var(--gold-dim);border-radius:14px;padding:16px 14px 14px}
+:root:not([data-bg=none]) .sec.todo{background-color:var(--glass-2,var(--panel));-webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15)}
+.tiers.steps .tier .ss em{font-style:normal;color:var(--gold-hi);font-weight:600}
 .loading{min-height:70vh;display:grid;place-items:center;color:var(--muted);font-family:var(--display);letter-spacing:.3em}
 .sec{scroll-margin-top:84px}
 .help{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-weight:700;flex:none;margin-left:6px}
@@ -790,10 +838,10 @@ setTimeout(function(){var a=document.getElementById("app");if(a&&a.querySelector
 <script>try{var L0=JSON.parse(localStorage.getItem("bushido.look")||"null");if(L0){var r0=document.documentElement;["theme","fs","fx","anim","tex","mfx","bg"].forEach(function(k){if(L0[k])r0.dataset[k]=L0[k]})}else{document.documentElement.dataset.theme="kuro";document.documentElement.dataset.tex="on";document.documentElement.dataset.bg="rain"}}catch(e){document.documentElement.dataset.theme="kuro"}</script>
 <nav class="tabs" id="tabs" hidden>
   <div class="in">
-    <button data-tab="dojo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5c4 1.2 14 1.2 18 0"/><path d="M5 9h14"/><path d="M7 6.4V20M17 6.4V20"/><path d="M12 6.8V9"/></svg><b>道場</b><span>HOME</span></button>
-    <button data-tab="keiko"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4 9.5 14.5"/><path d="M20 4l-.6 2.6L10.6 15.4"/><path d="M7.5 12.5l4 4"/><path d="M8.6 15.4 4.5 19.5"/><path d="M4 18.8l1.2 1.2"/></svg><b>稽古場</b><span>TRAINING</span></button>
-    <button data-tab="roku"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M4 6.5c0-1.4 1-2.5 2-2.5M4 6.5V18c0 1.1.9 2 2 2"/><path d="M9.5 9h5M9.5 12h5M9.5 15h3"/></svg><b>武道録</b><span>RECORD</span></button>
-    <button data-tab="chikai"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 3.5l5 5-8.5 8.5-5.2 1.2 1.2-5.2z"/><path d="M13.5 5.5l5 5"/><path d="M6.8 17.2C5.2 18.2 4.4 19.4 4 21"/></svg><b>誓いの間</b><span>OATH</span></button>
+    <button data-tab="dojo"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5.5c4 1.2 14 1.2 18 0"/><path d="M5 9h14"/><path d="M7 6.4V20M17 6.4V20"/><path d="M12 6.8V9"/></svg><b>道場</b><span>ホーム</span></button>
+    <button data-tab="keiko"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4 9.5 14.5"/><path d="M20 4l-.6 2.6L10.6 15.4"/><path d="M7.5 12.5l4 4"/><path d="M8.6 15.4 4.5 19.5"/><path d="M4 18.8l1.2 1.2"/></svg><b>稽古場</b><span>トレーニング</span></button>
+    <button data-tab="roku"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16H6z"/><path d="M4 6.5c0-1.4 1-2.5 2-2.5M4 6.5V18c0 1.1.9 2 2 2"/><path d="M9.5 9h5M9.5 12h5M9.5 15h3"/></svg><b>武道録</b><span>記録</span></button>
+    <button data-tab="chikai"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15.5 3.5l5 5-8.5 8.5-5.2 1.2 1.2-5.2z"/><path d="M13.5 5.5l5 5"/><path d="M6.8 17.2C5.2 18.2 4.4 19.4 4 21"/></svg><b>誓いの間</b><span>誓い・設定</span></button>
   </div>
 </nav>
 <div id="sheet"></div>
@@ -1487,7 +1535,7 @@ function header(){
   const {exp,rank}=syncRank();const next=RANKS[rank+1];
   const cur=RANKS[rank];const pct=next?Math.max(0,Math.min(100,(exp-cur.exp)/(next.exp-cur.exp)*100)):100;
   const wait=next&&exp>=next.exp;
-  return '<header class="top">'+kamon+'<div class="brand">武士道<small>THE WAY OF SELF MASTERY</small></div><div class="rankchip"><b>'+cur.n+'</b>'+(rankState()?'<i class="rs">'+rankState()+'</i>':'')+'<span><span id="expn">'+(ui.shownExp!=null&&ui.shownExp<exp?ui.shownExp:exp).toLocaleString()+'</span> EXP'+(next?' / 次 '+next.exp.toLocaleString():'')+'</span></div><button class="help" data-act="help" aria-label="使い方とヘルプ">？</button><div class="hbar" title="'+(next?(wait?next.n+"は修行の条件待ち":next.n+"まで"+Math.round(pct)+"%"):"最高段位")+'"><i style="width:'+(ui.shownPct!=null&&ui.shownExp<exp?ui.shownPct:pct)+'%"></i></div><span id="expfloat" class="expfloat"></span></header>';
+  return '<header class="top">'+kamon+'<div class="brand">武士道<small>毎日の約束で、己を鍛える</small></div><div class="rankchip"><b>'+cur.n+'</b>'+(rankState()?'<i class="rs">'+rankState()+'</i>':'')+'<span><span id="expn">'+(ui.shownExp!=null&&ui.shownExp<exp?ui.shownExp:exp).toLocaleString()+'</span> EXP'+(next?' / 次 '+next.exp.toLocaleString():'')+'</span></div><button class="help" data-act="help" aria-label="使い方とヘルプ">？</button><div class="hbar" title="'+(next?(wait?next.n+"は修行の条件待ち":next.n+"まで"+Math.round(pct)+"%"):"最高段位")+'"><i style="width:'+(ui.shownPct!=null&&ui.shownExp<exp?ui.shownPct:pct)+'%"></i></div><span id="expfloat" class="expfloat"></span></header>';
 }
 function render(){applyLook();
   if(plActive()){$("#tabs").hidden=true;$("#app").innerHTML="";plMount();return}if($("#prologue"))plUnmount();
@@ -2170,8 +2218,8 @@ function anchorDL(filename,blob){try{const u=URL.createObjectURL(blob);const a=d
 
 /* 画面ごとに、毎日見る区画だけを開いて見せる。残りは折りたたみにまとめる */
 const GROUPS={
- dojo:[{t:"ほかの稽古",s:"掟・朝の型・心得・勝利の壺",after:"sec-quote",after2:"sec-quest"},
-  {t:"整えること",s:"一度やれば済む準備・振り返り",cls:"fold",ids:["sec-env","sec-profile","sec-tutresume","sec-rest","sec-life","sec-weekly","sec-yimp"]}],
+ dojo:[{t:"ほかの稽古",s:"掟・朝の型・心得・勝利の壺",after:"sec-quote",after2:"sec-night",after3:"sec-quest"},
+  {t:"整えること",s:"入門の七日・準備・振り返り",cls:"fold",ids:["sec-week1","sec-env","sec-profile","sec-tutresume","sec-rest","sec-life","sec-weekly","sec-yimp"]}],
  keiko:[{t:"ほかの鍛錬",s:"身支度・二十の力・六つの修行・試練",after:"sec-train"}],
  roku:[{t:"能力・戦績・姿見",s:"六つの能力・人生の戦績・姿見の記録",ids:["sec-status","sec-feats","sec-mirror"]},{t:"傾向と履歴",s:"生活の基盤・言い訳・過去の自分・EXP履歴",ids:["sec-base","sec-excuse","sec-refl-list"],ey:["VS ","EXP履歴","再起履歴"]}],
  chikai:[{t:"段位・刀・卒業",ey:["刀の成長","段位","離 ","卒業 ・ "],ids:["sec-grad-m"]},
@@ -2180,9 +2228,9 @@ const GROUPS={
   {t:"設定",s:"外観・通知・機能・データ",ids:["sec-look","sec-features"],ey:["通知設定","用語集","データ設定"]}]};
 function groupSections(){const G=GROUPS[tab];const st=$("#app .stack");if(!G||!st)return;ui.grpOpen=ui.grpOpen||{};
   G.forEach((g,gi)=>{let els;const kids=[...st.children].filter(e=>e.tagName==="SECTION");
-    if(g.after){const a=document.getElementById(g.after)||document.getElementById(g.after2);const i=a?kids.indexOf(a):-1;els=i>=0?kids.slice(i+1):[]}
+    if(g.after){const a=document.getElementById(g.after)||document.getElementById(g.after2)||document.getElementById(g.after3);const i=a?kids.indexOf(a):-1;els=i>=0?kids.slice(i+1):[]}
     else els=kids.filter(e=>(g.ids||[]).includes(e.id)||(g.cls&&e.classList.contains(g.cls))||(g.ey||[]).some(x=>{const y=e.querySelector(".eyebrow");return y&&y.textContent.indexOf(x)===0}));
-    els=els.filter(e=>!["sec-grad-apply","sec-pain","sec-week1"].includes(e.id));if(!els.length)return;
+    els=els.filter(e=>!["sec-grad-apply","sec-pain"].includes(e.id));if(!els.length)return;
     const d=document.createElement("details");d.className="grp";d.id="grp-"+tab+"-"+gi;d.open=!!(ui.grpOpen[d.id]||ui.grpAll);
     d.innerHTML='<summary><span class="gt">'+g.t+'</span>'+(g.s?'<span class="gs">'+g.s+'</span>':'')+'<span class="gn num">'+els.length+'</span></summary>';
     const box=document.createElement("div");box.className="stack grp-in";els.forEach(e=>box.appendChild(e));d.appendChild(box);st.appendChild(d);
@@ -2679,8 +2727,7 @@ function renderDojo(){
   if(!S.main.profile)out.push('<section class="sec" id="sec-profile" style="border-color:var(--red)"><p class="eyebrow">まだ終えていない</p><h2>まずは自分を見つめ直せ。</h2><p class="small muted" style="margin-bottom:10px">体・眠り・食・欲・身辺・知・行動・心について、'+QCOUNT+'の問いに答える（約5分）。答えから、一太刀の命令と掟をあなた一人のものにする。今の修行と記録はそのまま残る。</p><button class="btn gold wide" data-act="retake">見つめ直す</button></section>');
   if(S.main.tutVer!==3&&S.main.master&&ui.tut==null)out.push('<section class="sec" id="sec-tutresume" style="border-color:var(--gold)"><p class="eyebrow">入門の儀'+(S.main.tutStep?" ・ 途中":"")+'</p><h2>道場の使い方を、師範が教える。</h2><p class="small muted" style="margin-bottom:10px">実際に押して覚える約3分の儀式。練習の操作は本番のEXPや記録に残らない。'+(S.main.tutStep?"中断した章から再開する。":"")+'</p><button class="btn gold wide" data-act="tutResume">'+(S.main.tutStep?"入門の儀を再開する":"入門の儀を始める")+'</button></section>');
   if(painActive())out.push('<section class="sec" id="sec-pain" style="border-color:var(--red)"><p class="eyebrow">安全 ・ '+fmtMD(S.main.painStop.date)+'から</p><h2>体の試練を止めている。</h2><p class="small muted" style="margin-bottom:10px">痛みの申告があったため、体を使う命令は出さない。痛みが続く・強い・しびれがあるときは、医療機関に相談しろ。</p><button class="btn wide" data-act="painClear">痛みが引いた（体の試練を再開する）</button></section>');
-  out.push(masterCard());
-  out.push(week1Card(k));
+  const mCard=masterCard();
   {const y=S.days[addDays(k,-1)];const items=y&&y.prep?y.prep.items.filter(x=>PREP[x]):[];const pc=d.prepCheck;
    if(items.length&&!(pc&&pc.done)){const r=pc?pc.res:{};const ng=items.some(x=>r[x]===0);
     out.push('<section class="sec" id="sec-prep"><p class="eyebrow">昨夜の仕込み ・ 確かめる</p><h2>仕込みは、できていたか。</h2>'+items.map(x=>'<div class="row" style="padding:6px 0;border-top:1px solid var(--line)"><span class="grow small">'+PREP[x]+'</span><button class="btn sm'+(r[x]===1?" gold":"")+'" data-act="prepRes" data-k="'+x+'" data-v="1" aria-pressed="'+(r[x]===1)+'">できていた</button><button class="btn sm'+(r[x]===0?" red":"")+'" data-act="prepRes" data-k="'+x+'" data-v="0" aria-pressed="'+(r[x]===0)+'" style="margin-left:6px">できず</button></div>').join("")+
@@ -2696,10 +2743,10 @@ function renderDojo(){
   out.push(renderTodo(k,d));
   // 一太刀
   const m=d.mission;
-  if(!m)out.push('<section class="sec mission" id="sec-mission"><p class="eyebrow">今日の'+term("一太刀")+'</p><p class="small muted" style="margin-bottom:10px">三つから一つ選べ。選んだら、今日は変えない。</p><button class="btn gold wide" data-act="setMission">今日の一太刀を受ける</button></section>');
+  if(!m)out.push('<section class="sec mission" id="sec-mission"><p class="eyebrow"><span class="stepno">1</span>今日の挑戦（'+term("一太刀")+'）</p><p class="small muted" style="margin-bottom:10px">三つから一つ選べ。選んだら、今日は変えない。</p><button class="btn gold wide" data-act="setMission">今日の一太刀を受ける</button></section>');
   else{
     const res=m.result;const canFix=m.own&&m.setTs&&Date.now()-m.setTs<10*60e3&&!res;
-    out.push('<section class="sec mission" id="sec-mission"><div class="row"><p class="eyebrow grow" style="margin:0">今日の'+term("一太刀")+'</p>'+(res?'<span class="tag '+(res==="done"?"gold":res==="miss"?"red":"")+'">'+({done:"達成",part:"一部達成",miss:"未達成",postponed:"延期・中止"}[res])+'</span>':'')+'</div><p class="txt">'+esc(m.text)+'</p>'+(m.lv?'<p class="small muted" style="margin:-6px 0 10px"><b class="lvtag">難度'+m.lv+' / 10</b> '+(m.cat!=null&&CAT_SHORT[m.cat]?'分野：'+CAT_SHORT[m.cat]:'')+'</p>':'')+(m.why?'<p class="small" style="margin:-4px 0 8px"><span class="muted">なぜこの命令か：</span>'+esc(m.why)+'</p>':'')+
+    out.push('<section class="sec mission'+(res?" step-done":"")+'" id="sec-mission"><div class="row"><p class="eyebrow grow" style="margin:0"><span class="stepno">'+(res?"✓":"1")+'</span>今日の挑戦（'+term("一太刀")+'）</p>'+(res?'<span class="tag '+(res==="done"?"gold":res==="miss"?"red":"")+'">'+({done:"達成",part:"一部達成",miss:"未達成",postponed:"延期・中止"}[res])+'</span>':'')+'</div><p class="txt">'+esc(m.text)+'</p>'+(m.lv?'<p class="small muted" style="margin:-6px 0 10px"><b class="lvtag">難度'+m.lv+' / 10</b> '+(m.cat!=null&&CAT_SHORT[m.cat]?'分野：'+CAT_SHORT[m.cat]:'')+'</p>':'')+(m.why?'<p class="small" style="margin:-4px 0 8px"><span class="muted">なぜこの命令か：</span>'+esc(m.why)+'</p>':'')+
     (m.mid&&MDATA[m.mid]&&!res?mInfoHTML(m.mid,m.cat,true)+(()=>{const a=mAlt(m);return a?'<p class="small muted" style="margin:6px 0 10px">体調などで実行できない時の代案：「'+esc(a.t)+'」。やり切れば「一部達成」として付けろ。</p>':''})():'')+
     (res==="miss"&&m.missWhy&&MISS_NEXT[m.missWhy]?'<div class="note" style="margin-bottom:10px"><p class="small muted">原因：'+MISS_T[m.missWhy]+'（'+MISS_GROUP[m.missWhy]+'の問題）</p><p class="small">'+MISS_NEXT[m.missWhy].join("")+'</p></div>':'')+(canFix?'<button class="btn ghost sm" data-act="fixMission" style="margin:-6px 0 10px">誤字を直す（決めてから10分以内）</button>':'')+
     (res==="postponed"?'<p class="small muted">理由：'+esc(m.postponeReason)+'</p>':
@@ -2708,7 +2755,10 @@ function renderDojo(){
   // クエスト
   const qs=activeTasks().filter(t=>k>=t.start);const paused=S.main.tasks.filter(t=>t.status==="一時停止");
   const total=qs.filter(t=>taskOn(t,k)).length;const doneN=qs.filter(t=>{const l=d.logs[t.id];return taskOn(t,k)&&l&&(isDoneState(l.state)||isExcluded(l.state))}).length;
-  out.push('<section class="sec" id="sec-quest"><div class="row" style="margin-bottom:6px"><div class="grow"><p class="eyebrow" style="margin:0">今日のクエスト</p><h2 style="margin:0">毎日の修行</h2></div><span class="num muted">'+doneN+' / '+total+'</span></div><div class="bar" style="margin-bottom:6px"><i style="width:'+(total?doneN/total*100:0)+'%"></i></div>'+(qs.length?qs.map(t=>questRow(t,k)).join(""):paused.length?'<p class="muted small">修行は一時停止中です。稽古場の「設定」から再開できます。停止中の日は、達成率の計算に入りません。</p>':'<p class="muted small">修行がまだありません。稽古場で追加します。</p>')+'</section>');
+  out.push('<section class="sec'+(total&&doneN>=total?" step-done":"")+'" id="sec-quest"><div class="row" style="margin-bottom:6px"><div class="grow"><p class="eyebrow" style="margin:0"><span class="stepno">'+(total&&doneN>=total?"✓":"2")+'</span>毎日の習慣（修行）</p><h2 style="margin:0">毎日の修行</h2></div><span class="num muted">'+doneN+' / '+total+'</span></div><div class="bar" style="margin-bottom:6px"><i style="width:'+(total?doneN/total*100:0)+'%"></i></div>'+(qs.length?qs.map(t=>questRow(t,k)).join(""):paused.length?'<p class="muted small">修行は一時停止中です。稽古場の「設定」から再開できます。停止中の日は、達成率の計算に入りません。</p>':'<p class="muted small">修行がまだありません。稽古場で追加します。</p>')+'</section>');
+  if(!(d.cond==="bad"||painActive())){const rf=d.reflection;out.push('<section class="sec night'+(rf?" step-done":"")+'" id="sec-night"><p class="eyebrow"><span class="stepno">'+(rf?"✓":(total?"3":"2"))+'</span>夜のふり返り（省察）</p>'+
+    (rf?'<p class="small">今日のふり返りは書いた。'+(rf.improve?'明日の改善：'+esc(rf.improve):'')+'</p>':'<p class="small muted" style="margin-bottom:10px">寝る前に30秒。今日の自分を選ぶだけでいい。</p><button class="btn wide" data-act="reflect">ふり返る</button>')+'</section>')}
+  out.push(mCard);out.push(week1Card(k));
   out.push(quoteCard());
   if(feat("okite"))out.push(renderOkite(k,d));
   out.push(ritualSec);
@@ -2744,15 +2794,20 @@ function renderTodo(k,d){
   rec.push({t:"夜の省察（30秒）",sub:"寝る前に（目安 "+esc(N.night||"")+"）",ok:!!d.reflection,act:'data-act="reflect"',btn:"書く"});
   const recDone=rec.every(x=>x.ok);const st=streak();
   const head=!m?'まず、<b>今日の一太刀</b>を受けよ。':!mRes?'今日の一太刀を、<b>斬れ</b>。':mCut&&(recDone||bad)?'今日の修行は終えた。<br><span class="small" style="font-family:var(--body);font-weight:500;color:var(--gold-hi)">アプリを閉じて、現実で斬れ。今日はもう開かなくていい。</span>':mCut?'今日は<b>斬った</b>。あとは、やれたらでいい。':'記録した。明日、取り返せ。';
-  const chip=(lab,cls,t,ok,act,gold)=>'<button class="tier '+cls+(ok?" ok":"")+(gold&&!ok?" now":"")+'" '+act+'><span class="tl">'+lab+'</span><span class="tt">'+t+'</span><span class="ck" aria-hidden="true">'+(ok?"✓":"")+'</span></button>';
-  const qOk=!qs.length||qDone>=qs.length;
+  const qOk=!qs.length||qDone>=qs.length;const rOk=!!d.reflection;
   const stk=st?'<span class="streak" title="1日だけの空白は許される">継続 '+st+'日</span>':'';
-  return '<section class="sec todo" id="sec-todo"><p class="todo-next">'+head+'</p><div class="tiers">'+
-   chip("必須","t1","一太刀",mRes,m?'data-act="goto" data-v="sec-mission"':'data-act="setMission"',true)+
-   (bad?stk+'</div><p class="small muted" style="margin-top:6px">今日は体を休める日だ。一太刀だけでいい。</p>':
-    (qs.length?chip("推奨","t2","修行 "+qDone+"/"+qs.length,qOk,'data-act="goto" data-v="sec-quest"'):'')+
-    chip("推奨","t2","省察",!!d.reflection,'data-act="reflect"')+
-    chip("任意","t3","ほか",false,'data-act="openGrp"')+stk+'</div>')+'</section>';
+  const steps=[{n:1,lab:"必須",cls:"t1",t:"今日の挑戦を1つやり切る",w:"一太刀",ok:mRes,sub:!m?"まだ選んでいない":!mRes?"「"+esc(m.text)+"」":({done:"達成",part:"一部達成",miss:"未達成",postponed:"延期"}[m.result]||"記録済み"),act:m?'data-act="goto" data-v="sec-mission"':'data-act="setMission"'}];
+  if(!bad){if(qs.length)steps.push({n:2,lab:"推奨",cls:"t2",t:"毎日の習慣をこなす",w:"修行",ok:qOk,sub:qDone+" / "+qs.length+" できた",act:'data-act="goto" data-v="sec-quest"'});
+    steps.push({n:steps.length+1,lab:"推奨",cls:"t2",t:"寝る前に30秒ふり返る",w:"省察",ok:rOk,sub:rOk?"書いた":"目安 "+esc(N.night||"21:30"),act:'data-act="reflect"'})}
+  const doneN=steps.filter(x=>x.ok).length;
+  const now=bad?'今日は体を休める日。<b>挑戦を1つ</b>だけでいい。':!m?'まず、<b>今日の挑戦を1つ選ぼう</b>。':!mRes?'選んだ挑戦を<b>やり切ろう</b>。終わったら「達成」を押す。':(qs.length&&!qOk)?'次は<b>毎日の習慣</b>。やったものから「達成」。':!rOk?'最後に、寝る前に<b>30秒ふり返ろう</b>。':'今日の稽古は<b>完了</b>。アプリを閉じて、現実で斬れ。';
+  const intro=(!S.main.introSeen&&tenure()<=7)?'<div class="today-intro"><p><b>武士道</b>は、毎日の小さな約束を守って自分を鍛えるアプリ。上の順にこなすと経験値（EXP）がたまり、段位が上がる。</p><button class="btn sm ghost" data-act="introSeen">わかった</button></div>':'';
+  const row=x=>'<button class="tier step '+x.cls+(x.ok?" ok":"")+'" '+x.act+'><span class="sn" aria-hidden="true">'+(x.ok?"✓":x.n)+'</span><span class="st"><span class="tt">'+x.t+'</span><span class="ss"><em>'+x.w+'</em> ・ '+x.sub+'</span></span><span class="tl">'+x.lab+'</span></button>';
+  const w1=(()=>{const M=S.main;if(!M.onboarded||M.demo||!M.created)return "";const n=diffDays(M.created,k)+1;if(n<1||n>7||!WEEK1[n-1])return "";return '<p class="w1line">入門'+n+'日目のコツ：<b>'+WEEK1[n-1][0]+'</b></p>'})();
+  return '<section class="sec todo" id="sec-todo">'+intro+'<div class="today-head"><p class="eyebrow">今日の稽古</p><span class="today-n num">'+doneN+' / '+steps.length+'</span>'+stk+'</div>'+
+   '<div class="today-bar" aria-hidden="true">'+steps.map(x=>'<i class="'+(x.ok?"on":"")+'"></i>').join("")+'</div>'+
+   '<p class="todo-next">'+now+'</p>'+w1+'<div class="tiers steps">'+steps.map(row).join("")+
+   (bad?'':'<button class="tier t3 more" data-act="openGrp"><span class="tl">任意</span><span class="tt">ほかの稽古 <small>掟・朝の型・心得</small></span><span class="chev" aria-hidden="true">›</span></button>')+'</div></section>';
 }
 function questRow(t,k){
   const l=logOf(k,t.id);const off=!taskOn(t,k);const st=off?"rest":(l?l.state:"");
@@ -3341,6 +3396,7 @@ const A={
   painClear:()=>{if(S.main.painStop){S.main.painStop.cleared=todayKey();saveMain()}render();toast("体の試練を再開する","軽いものから戻る")},
   postpone:()=>openSheet('<h2>一太刀を延期・中止する</h2><div class="stack" style="gap:12px"><label class="f">理由<select id="pp">'+["病気","負傷","重大な突発事情"].map(x=>'<option>'+x+'</option>').join("")+'</select></label><label class="f">詳しく（任意）<input type="text" id="pp2" maxlength="60"></label><div class="grid2"><button class="btn" data-act="closeSheet">閉じる</button><button class="btn red" data-act="savePostpone">延期・中止する</button></div></div>'),
   savePostpone:()=>{const k=todayKey();const m=day(k).mission;m.result="postponed";m.postponeReason=$("#pp").value+($("#pp2").value.trim()?"："+$("#pp2").value.trim():"");saveDay(k);closeSheet();render()},
+  introSeen:()=>{S.main.introSeen=true;saveMain();render()},
   quick:el=>{writeLog(el.dataset.t,el.dataset.k,"done");render()},
   log:el=>logSheet(el.dataset.t,el.dataset.k),
   pickState:el=>{document.querySelectorAll("#lg-state .chip").forEach(b=>b.setAttribute("aria-pressed",b===el));ui.pick=el.dataset.v;$("#lg-reason").hidden=ui.pick!=="miss"},
@@ -3510,7 +3566,8 @@ function tutShow(){
   if(s.done&&s.done())return tutAdvance();
   box.hidden=false;document.documentElement.classList.add("tut-lock");
   const vh=window.innerHeight;
-  if(el&&!ui.tutScrolled&&!el.closest("#tabs")&&!el.closest("#sheet")){
+  const offView=el&&(()=>{const q=el.getBoundingClientRect();return q.bottom<8||q.top>vh-8})();
+  if(el&&(!ui.tutScrolled||offView)&&!el.closest("#tabs")&&!el.closest("#sheet")){
     ui.tutScrolled=true;const r=el.getBoundingClientRect();
     const want=r.height>vh*.55?100:Math.max(100,(vh-r.height)/2-80);
     if(Math.abs(r.top-want)>4)window.scrollTo({top:window.scrollY+r.top-want,behavior:"instant"});
@@ -3530,15 +3587,28 @@ function tutShow(){
     (main&&s.reward?'<div class="tut-m">'+mPic(S.main.master)+'<p>「'+s.m+'」</p></div><h3>'+s.t+'</h3><p>'+body+'</p>':(s.reward?'<div class="seal">入門</div>':'')+'<h3>'+s.t+'</h3><p>'+body+'</p>');
   const card='<div class="tut-card'+(s.reward?" reward":"")+(s.slim?" slim":"")+'" role="dialog" aria-live="polite">'+dots+inner+hint+help+acts+(main&&!s.reward&&!s.slim?'<span class="tut-prac">練習中 ・ 本番の記録には残らない</span>':'')+'</div>';
   if(!el){box.innerHTML='<div class="tut-dim"></div>'+card;const c=box.querySelector(".tut-card");c.style.top="50%";c.style.transform="translateY(-50%)";fillPk();return}
+  const placeTut=()=>{if(!el.isConnected||!box.querySelector(".tut-card"))return;
   const r=el.getBoundingClientRect();const p=6; // スクロール後の位置で測り直す
   const top=Math.max(4,r.top-p),left=Math.max(4,r.left-p),w=Math.min(window.innerWidth-8-left,r.width+p*2),hh=r.height+p*2;
   let html='<div class="tut-ring'+(s.press?" press":"")+'" style="top:'+top+'px;left:'+left+'px;width:'+w+'px;height:'+hh+'px"></div>';
   if(s.press)html+='<div class="tut-tap" style="top:'+(r.top+r.height/2)+'px;left:'+(r.left+Math.min(r.width/2,r.width-24))+'px"></div>';
-  box.innerHTML=html+card;fillPk();
+  {const old=box.querySelector(".tut-card");if(old){box.querySelectorAll(".tut-ring,.tut-tap").forEach(x=>x.remove());old.removeAttribute("style");old.classList.remove("above","below");old.insertAdjacentHTML("beforebegin",html)}else{box.innerHTML=html+card;fillPk()}}
   const c=box.querySelector(".tut-card");const cx=Math.min(Math.max(r.left+r.width/2,40),window.innerWidth-40);
-  if(s.top){c.style.top="calc(env(safe-area-inset-top,0px) + 12px)"}
-  else if(r.top+r.height/2>vh/2){c.style.bottom=Math.max(12,vh-top+14)+"px";c.classList.add("above");c.style.setProperty("--ax",cx+"px")}
-  else{c.style.top=Math.min(vh-240,top+hh+14)+"px";c.classList.add("below");c.style.setProperty("--ax",cx+"px")}
+  // カードの実際の高さを測ってから置く：光っている所の下 → 上 → どちらも無理なら画面の下端。必ず画面内に収める
+  const ch=c.offsetHeight,M=12,below=top+hh+14,above=top-14-ch;c.style.setProperty("--ax",cx+"px");
+  if(s.top){c.style.top=M+"px"}
+  else if(r.top+r.height/2<=vh/2&&below+ch<=vh-M){c.style.top=below+"px";c.classList.add("below")}
+  else if(above>=M){c.style.top=above+"px";c.classList.add("above")}
+  else if(below+ch<=vh-M){c.style.top=below+"px";c.classList.add("below")}
+  else{ // 上下どちらにも収まらない：広い方に置き、カードの中をスクロールさせる（光っている所は隠さない）
+    const spB=vh-M-below,spA=top-14-M;
+    if(spB>=spA){c.style.top=below+"px";c.style.maxHeight=Math.max(120,spB)+"px";c.classList.add("below")}
+    else{c.style.maxHeight=Math.max(120,spA)+"px";c.style.top=Math.max(M,top-14-Math.min(ch,Math.max(120,spA)))+"px";c.classList.add("above")}}
+  {const t=parseFloat(c.style.top)||0,h2=c.offsetHeight;const fit=Math.min(Math.max(M,t),Math.max(M,vh-h2-M));if(Math.abs(fit-t)>1){c.style.top=fit+"px";c.classList.remove("above","below")}}};
+  box.innerHTML=card;fillPk();placeTut();
+  if(ui.tutRO)ui.tutRO.disconnect();
+  if(window.ResizeObserver){ui.tutRO=new ResizeObserver(()=>requestAnimationFrame(placeTut));ui.tutRO.observe($("#app"))}
+  if(ui.tutScrollH)window.removeEventListener("scroll",ui.tutScrollH);ui.tutScrollH=()=>requestAnimationFrame(placeTut);window.addEventListener("scroll",ui.tutScrollH,{passive:true});
 }
 window.addEventListener("click",ev=>{
   const cb=ev.target.closest("[data-cer]");

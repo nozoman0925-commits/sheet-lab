@@ -200,6 +200,7 @@ const A={
   painClear:()=>{if(S.main.painStop){S.main.painStop.cleared=todayKey();saveMain()}render();toast("体の試練を再開する","軽いものから戻る")},
   postpone:()=>openSheet('<h2>一太刀を延期・中止する</h2><div class="stack" style="gap:12px"><label class="f">理由<select id="pp">'+["病気","負傷","重大な突発事情"].map(x=>'<option>'+x+'</option>').join("")+'</select></label><label class="f">詳しく（任意）<input type="text" id="pp2" maxlength="60"></label><div class="grid2"><button class="btn" data-act="closeSheet">閉じる</button><button class="btn red" data-act="savePostpone">延期・中止する</button></div></div>'),
   savePostpone:()=>{const k=todayKey();const m=day(k).mission;m.result="postponed";m.postponeReason=$("#pp").value+($("#pp2").value.trim()?"："+$("#pp2").value.trim():"");saveDay(k);closeSheet();render()},
+  introSeen:()=>{S.main.introSeen=true;saveMain();render()},
   quick:el=>{writeLog(el.dataset.t,el.dataset.k,"done");render()},
   log:el=>logSheet(el.dataset.t,el.dataset.k),
   pickState:el=>{document.querySelectorAll("#lg-state .chip").forEach(b=>b.setAttribute("aria-pressed",b===el));ui.pick=el.dataset.v;$("#lg-reason").hidden=ui.pick!=="miss"},

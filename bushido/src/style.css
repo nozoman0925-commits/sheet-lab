@@ -723,6 +723,54 @@ details.grp>summary .gs{opacity:.8}
 :root[data-bg=rain][data-theme=haku] .sc-photo{filter:saturate(.75) brightness(1.08)}
 :root[data-bg=rain][data-theme=sumi] .sc-photo{filter:grayscale(.92) contrast(1.05)}
 :root[data-bg=rain][data-theme=sumi]{--sc-veil:linear-gradient(180deg,rgba(10,10,12,.62) 0,rgba(10,10,12,.40) 35%,rgba(10,10,12,.45) 70%,rgba(10,10,12,.66) 100%)}
+
+/* ===== 第32版：分かりやすい「今日の稽古」・画面外に出ない案内・白い余白の修正 ===== */
+/* 上下に引っぱった時に白が出ないよう、ページの一番外側も同じ色に。引っぱり自体も止める */
+html{background:var(--sc-sky2,var(--ink));overscroll-behavior:none}
+:root[data-bg=none]{background:var(--ink)}
+body{overscroll-behavior:none}
+.brand small{display:block!important;font-size:calc(10.5px*var(--fz,1));letter-spacing:.02em;margin-top:5px;color:var(--muted)}
+nav.tabs button span{letter-spacing:.02em!important;font-size:calc(10px*var(--fz,1))!important}
+/* 今日の稽古 */
+.today-intro{display:flex;gap:12px;align-items:flex-start;padding:12px 14px;margin-bottom:12px;border:1px solid var(--gold-dim);border-radius:10px;background:var(--glass,var(--panel))}
+.today-intro p{font-size:calc(13.5px*var(--fz,1));line-height:1.65;flex:1}
+.today-intro b{color:var(--gold-hi)}
+.today-head{display:flex;align-items:center;gap:10px}
+.today-head .eyebrow{margin:0;flex:1}
+.today-n{font-size:calc(14px*var(--fz,1));color:var(--gold-hi);font-weight:700}
+.today-bar{display:flex;gap:4px;margin:8px 0 12px}
+.today-bar i{flex:1;height:4px;border-radius:2px;background:var(--track)}
+.today-bar i.on{background:var(--gold)}
+.tiers.steps{display:flex;flex-direction:column;gap:8px;margin-top:12px}
+.tiers.steps .tier.step{display:grid;grid-template-columns:34px 1fr auto;align-items:center;gap:12px;min-height:60px;padding:10px 14px 10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--glass,var(--panel));text-align:left;width:100%}
+.tiers.steps .tier .sn{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;border:1.5px solid var(--gold);color:var(--gold-hi);font-family:var(--display);font-weight:800;font-size:calc(15px*var(--fz,1))}
+.tiers.steps .tier .st{display:flex;flex-direction:column;min-width:0;gap:2px}
+.tiers.steps .tier .tt{font-family:var(--body)!important;font-weight:700;font-size:calc(15px*var(--fz,1))!important;white-space:normal;color:var(--fg)}
+.tiers.steps .tier .tt small{font-weight:500;color:var(--muted);font-size:.82em;margin-left:2px}
+.tiers.steps .tier .ss{font-size:calc(12.5px*var(--fz,1));color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tiers.steps .tier .tl{font-size:calc(10.5px*var(--fz,1));letter-spacing:.08em;color:var(--muted);border:1px solid var(--line);border-radius:999px;padding:2px 8px}
+.tiers.steps .tier.t1:not(.ok){border-color:var(--gold);box-shadow:0 0 0 1px var(--gold-dim) inset}
+.tiers.steps .tier.t1:not(.ok) .tl{color:var(--gold-hi);border-color:var(--gold)}
+.tiers.steps .tier.ok{opacity:.72}
+.tiers.steps .tier.ok .sn{background:var(--gold);color:var(--gold-ink);border-color:var(--gold)}
+.tiers.steps .tier.ok .tt{text-decoration:line-through;text-decoration-color:var(--gold-dim)}
+.tiers.steps .tier.more{display:flex;align-items:center;gap:8px;min-height:44px;padding:8px 14px;border-radius:12px;border:1px dashed var(--line);background:transparent;opacity:.9}
+.tiers.steps .tier.more .tt{font-size:calc(13px*var(--fz,1));color:var(--muted);flex:1;white-space:normal}
+.tiers.steps .tier.more .chev{color:var(--muted);font-size:18px}
+.tiers.steps .tier:active{transform:scale(.99)}
+/* カードの手順番号と、済んだ手順 */
+.stepno{display:inline-grid;place-items:center;width:20px;height:20px;margin-right:8px;border-radius:50%;border:1px solid var(--gold);color:var(--gold-hi);font-size:11px;font-weight:700;letter-spacing:0;vertical-align:1px}
+.sec.step-done .stepno{background:var(--gold);color:var(--gold-ink)}
+.sec.step-done{border-color:var(--gold-dim)}
+/* 案内（チュートリアル）のカード：画面の高さを超えない・中でスクロール */
+.tut-card{max-height:calc(100vh - 24px);max-height:calc(100dvh - 24px);overflow:auto;overscroll-behavior:contain}
+html.tut-lock{overscroll-behavior:none}
+.w1line{margin:-4px 0 4px;font-size:calc(12.5px*var(--fz,1));color:var(--muted)}
+.w1line b{color:var(--fg);font-weight:600}
+/* 今日の稽古は主役のカード（写真の上でも読めるように、すりガラスで） */
+:root .sec.todo{background:var(--panel);border:1px solid var(--gold-dim);border-radius:14px;padding:16px 14px 14px}
+:root:not([data-bg=none]) .sec.todo{background-color:var(--glass-2,var(--panel));-webkit-backdrop-filter:blur(16px) saturate(1.15);backdrop-filter:blur(16px) saturate(1.15)}
+.tiers.steps .tier .ss em{font-style:normal;color:var(--gold-hi);font-weight:600}
 .loading{min-height:70vh;display:grid;place-items:center;color:var(--muted);font-family:var(--display);letter-spacing:.3em}
 .sec{scroll-margin-top:84px}
 .help{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-weight:700;flex:none;margin-left:6px}
