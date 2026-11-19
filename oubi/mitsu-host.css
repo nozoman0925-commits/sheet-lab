@@ -29,3 +29,4 @@
 .mq-row { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--sunk); }
 .mq-row.main { outline: 2px solid var(--blue); }
 .mq-tx { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.mq-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }

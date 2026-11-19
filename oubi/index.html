@@ -1935,6 +1935,7 @@ function renderDash(){
   return `
   <div class="row sb"><div class="hero"><h1>すべての現場を、ひとつに。</h1><div class="sub">${t.replace(/-/g,'/')}（${W[new Date(t).getDay()]}） ・ 対象 ${live.length} 案件</div></div>
     <button class="btn pri" type="button" data-new>＋ 新しい工事を登録</button></div>
+  ${window.OUBI_HOST?`<div class="mq-links" role="group" aria-label="見積の数字"><button type="button" class="btn" data-mopen="#/finance">粗利・会計（見積の原価から）</button><button type="button" class="btn" data-mopen="#/analysis">分析（受注率・推移・工事種別）</button><button type="button" class="btn" data-mopen="#/sites">現場の流れ</button></div>`:''}
   <div class="big4"><button type="button" class="c1" data-flag="active"><b>${active.length}</b><span>進行中</span></button><button type="button" class="c2" data-jump="alerts"><b>${al.length}</b><span>要対応</span></button><button type="button" class="c3" data-flag="recv"><b>${payWait}</b><span>入金待ち</span></button><button type="button" class="c4" data-flag="pay"><b>${vendWait}</b><span>支払待ち</span></button></div>
   <section class="panel"><div class="row sb"><h2>今週のスケジュール</h2><button type="button" class="btn sm" data-tab="cal">すべて見る</button></div>
     ${wk.length?`<div class="week">${wk.slice(0,8).map(w=>`<button type="button" class="wk" data-open="${w.c.id}" data-sec="schedule"><span class="dt"><b>${md(w.d)}</b><small>${W[new Date(w.d).getDay()]}</small></span><span class="bd"><b>${esc(((w.c.lead||{}).siteAddr||'').replace(/^.*?[都道府県]/,'').slice(0,8))} ${esc((w.c.lead||{}).customer||'')}様邸</b><span>${esc((w.c.work||{}).title||'')}</span><span>${esc(w.what)}${(w.c.lead||{}).owner?'（担当 '+esc(pn(w.c.lead.owner))+'）':''}</span></span><span class="chip sk">${esc(stageLabel(w.c))}</span></button>`).join('')}</div>`:'<div class="empty">今後7日間の工程・現地調査はありません。工程表に日付を入れるとここに並びます。</div>'}</section>
@@ -2280,6 +2281,8 @@ async function saveCompany(){
 function renderSettings(){
   const co=CO(), dis=me.isOwner?'':'disabled';
   return `<h1>設定</h1>${hlPanel()}
+  ${window.OUBI_HOST?`<div class="panel" id="set-mitsu"><h2>見積の設定</h2><div class="sub">見積で使う品目・テンプレート・計算式・定型文・端数の決まり、書類に入れるロゴと会社印。</div>
+   <div class="mq-links">${[['#/settings/items','品目マスタ'],['#/settings/packages','テンプレート'],['#/settings/formulas','計算式'],['#/settings/snippets','定型文'],['#/settings/rules','計算の決まり'],['#/settings/company','ロゴ・会社印']].map(([h,l])=>`<button type="button" class="btn" data-mopen="${h}">${l}</button>`).join('')}</div></div>`:''}
   <div class="panel" id="set-co"><h2>会社の情報（見積書・契約書・請求書に入ります）</h2>
    <div class="fields">
     <label class="fld"><span>会社名</span><input id="co-name" value="${esc(co.name)}" ${dis}></label>

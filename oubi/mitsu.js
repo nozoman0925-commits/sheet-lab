@@ -2877,6 +2877,8 @@
   /** 段階を1つ進める（受注のときは、どの見積で受注したかを記録） */
   async function advance(projectId) {
     var p = U.findProject(projectId); if (!p) return;
+    // 業務管理の中では、段階（受注・着工・完了・請求・入金）は工事の画面で記録する
+    if (EE.host && root.OUBI) { root.OUBI.openCase(p.id); return; }
     var ST = EE.data.STAGES, si = EE.data.stageIndex(p.stage), next = ST[si + 1]; if (!next) return;
     var docs = EE.S.documents.filter(function (d) { return d.projectId === p.id; });
     if (next.key === 'order') {
@@ -6184,7 +6186,8 @@
     var docs = EE.S.documents.filter(function (d) { return d.customerId === c.id; }).sort(function (a, b) { return (b.issueDate || '').localeCompare(a.issueDate || ''); });
     return '<div class="panel-h" style="padding:0 0 12px"><h2 style="font-size:17px">' + esc(c.name) + ' <span class="muted">' + esc(c.honorific) + '</span></h2><div class="spacer"></div>' +
         '<button class="btn sm" data-act="edit-c">' + I.edit + '編集</button>' +
-        '<button class="btn sm danger" data-act="del-c">' + I.trash + '</button>' +
+        (EE.host ? '' : '<button class="btn sm danger" data-act="del-c">' + I.trash + '</button>') +   // 業務管理の中では、顧客は工事の記録なので消さない
+
         '<button class="btn sm primary" data-act="new-doc">' + I.plus + 'この顧客で見積</button></div>' +
       '<div class="form-grid" style="margin-bottom:18px">' +
         [['担当者', c.contact], ['住所', (c.zip ? '〒' + c.zip + ' ' : '') + c.address], ['電話', c.tel], ['メール', c.email]].map(function (x) {
@@ -6313,7 +6316,8 @@
     });
     var none = statsFor(NONE);
     if (none.docs.length) tiles.push('<a class="folder-tile" href="#/folder/' + NONE + '">' + folderIcon(null, none.docs.length) + '<b>未割り当て</b><small>担当者のいない書類 ' + none.docs.length + '</small></a>');
-    tiles.push('<a class="folder-tile add" href="#/settings/members" title="担当者を追加">' +
+    // 業務管理の中では、社員は業務管理の「社員一覧」で増やす
+    if (!EE.host) tiles.push('<a class="folder-tile add" href="#/settings/members" title="担当者を追加">' +
       '<span class="fold-add">' + I.plus + '</span><b>担当者を追加</b><small>設定 → 担当者</small></a>');
     return '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>担当者のファイル</h2><span class="sub">担当者ごとの現場と書類。クリックでいつでも開けます</span></div>' +
       '<div class="panel-b"><div class="folder-grid">' + tiles.join('') + '</div></div></section>';
@@ -7348,7 +7352,10 @@
     tab = tab || 'items';
     var X = EE.settingsExtra;
     var body = { members: EE.views.folders.membersTab, items: itemsTab, packages: X.templatesTab, formulas: X.formulasTab, snippets: X.snippetsTab, company: companyTab, rules: rulesTab, features: featuresTab, data: dataTab }[tab] || itemsTab;
-    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + TABS.map(function (t) {
+    // 業務管理の中では、担当者（社員の名簿は業務管理）・データ（全員の共有データの消去）・機能ライブラリ（メニューは業務管理）は出さない
+    var tabs = EE.host ? TABS.filter(function (t) { return ['members', 'data', 'features'].indexOf(t[0]) < 0; }) : TABS;
+    if (EE.host && ['members', 'data', 'features'].indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
+    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
     return { title: '設定', crumb: TABS.filter(function (t) { return t[0] === tab; })[0][1], html: html, mount: function (v) { mount(v, tab); } };

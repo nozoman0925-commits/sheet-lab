@@ -55,7 +55,8 @@
     });
     var none = statsFor(NONE);
     if (none.docs.length) tiles.push('<a class="folder-tile" href="#/folder/' + NONE + '">' + folderIcon(null, none.docs.length) + '<b>未割り当て</b><small>担当者のいない書類 ' + none.docs.length + '</small></a>');
-    tiles.push('<a class="folder-tile add" href="#/settings/members" title="担当者を追加">' +
+    // 業務管理の中では、社員は業務管理の「社員一覧」で増やす
+    if (!EE.host) tiles.push('<a class="folder-tile add" href="#/settings/members" title="担当者を追加">' +
       '<span class="fold-add">' + I.plus + '</span><b>担当者を追加</b><small>設定 → 担当者</small></a>');
     return '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>担当者のファイル</h2><span class="sub">担当者ごとの現場と書類。クリックでいつでも開けます</span></div>' +
       '<div class="panel-b"><div class="folder-grid">' + tiles.join('') + '</div></div></section>';
