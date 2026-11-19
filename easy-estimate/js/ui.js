@@ -66,6 +66,8 @@
 
   function findItem(id) { return EE.S.items.filter(function (x) { return x.id === id; })[0]; }
   function findCustomer(id) { return EE.S.customers.filter(function (x) { return x.id === id; })[0]; }
+  /** 書類の宛名：顧客がいなければ確定時の写しを使う（顧客を削除した後の確定済み書類） */
+  function docCustomer(d) { return findCustomer(d.customerId) || (d.snap && d.snap.customer) || {}; }
   function findProject(id) { return EE.S.projects.filter(function (x) { return x.id === id; })[0]; }
   /* 担当者 */
   function members() { if (!EE.S.members || !EE.S.members.length) EE.data.ensureMembers(EE.S); return EE.S.members; }
@@ -193,7 +195,7 @@
   }
 
   EE.ui = { esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
-    commit: commit, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, findProject: findProject, findDoc: findDoc,
+    commit: commit, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
     rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
     readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge };
 })(this);

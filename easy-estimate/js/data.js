@@ -97,6 +97,22 @@
     return s;
   }
 
+  /**
+   * 確定時の写し：宛名・自社情報・工事場所・担当者名を書類に書き写す。確定後は PDF をこの写しで作るので、
+   * 後から顧客や自社情報を変えても、送った書類と同じものが出る（電子帳簿保存法）
+   */
+  function snapOf(s, doc) {
+    var c = (s.customers || []).filter(function (x) { return x.id === doc.customerId; })[0] || {};
+    var p = (s.projects || []).filter(function (x) { return x.id === doc.projectId; })[0] || {};
+    var m = (s.members || []).filter(function (x) { return x.id === doc.ownerId; })[0] || {};
+    return {
+      at: new Date().toISOString(),
+      customer: { name: c.name || '', honorific: c.honorific || '', contact: c.contact || '', zip: c.zip || '', address: c.address || '' },
+      company: JSON.parse(JSON.stringify(s.company || {})),
+      projectName: p.name || '', site: p.site || '', ownerName: m.name || ''
+    };
+  }
+
   /** 初めて使うときの状態：工事項目・単価マスタ、テンプレート、計算式、定型文だけを入れ、顧客・書類・担当者・自社情報は空 */
   function initialState() {
     var s = sampleState(); s.sampleCleanup = '';
@@ -344,6 +360,8 @@
     Object.keys(d.settings).forEach(function (k) { if (s.settings[k] == null) s.settings[k] = d.settings[k]; });
     stripSample(s);
     ensureMembers(s);
+    // 以前の版で確定した書類にも、確定時の写しを作っておく（今の宛名・自社情報で。以後は変わらない）
+    (s.documents || []).forEach(function (d) { if (d.status === 'issued' && !d.snap) { d.snap = snapOf(s, d); d.snap.migrated = true; } });
     (s.projects || []).forEach(function (p) { if (!p.stage) p.stage = 'estimate'; });
     if (s.schema === 1) {
       // v1 → v2：カテゴリー・同義語・テンプレート・計算式・定型文を追加（既存データは上書きしない）
@@ -397,7 +415,7 @@
   root.EE.data = {
     KEY: KEY, uid: uid, ymd: ymd, addDays: addDays, today: today,
     defaultState: defaultState, sampleState: function () { var s = sampleState(); s.sampleCleanup = 'done'; return s; }, initialState: initialState,
-    lineFromItem: lineFromItem, nextNumber: nextNumber, peekNumber: peekNumber, newEstimate: newEstimate,
+    lineFromItem: lineFromItem, snapOf: snapOf, nextNumber: nextNumber, peekNumber: peekNumber, newEstimate: newEstimate,
     load: load, save: save, markStale: markStale, isStale: function () { return stale; }, loadIssue: function () { return loadIssue; }, clear: clear, migrate: migrate, ensureMembers: ensureMembers, STAGES: STAGES, stageIndex: stageIndex
   };
 })(this);

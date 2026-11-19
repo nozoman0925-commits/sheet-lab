@@ -569,13 +569,34 @@
 
   function showPreview() {
     var d = docForCheck();
+    var id = ED.doc.id, finalizedHere = false;
     EE.print.preview(d, function () {
-      var orig = U.findDoc(ED.doc.id);
+      var orig = U.findDoc(id);
       if (orig) {
         orig.history = (orig.history || []).concat([{ at: new Date().toISOString(), action: 'PDF出力' }]).slice(-50);
         U.commit();
       }
-    });
+      if (finalizedHere) { var top = U.topModal(); if (top) top.close(); EE.app.rerender(); }
+    }, function () { return finalizeForPdf().then(function (doc) { if (doc) finalizedHere = true; return doc; }); });
+  }
+
+  /** PDF を出す前に確定する（下書きのとき）。確定できたら書類を返す */
+  async function finalizeForPdf() {
+    if (ED.dirty) save();
+    var orig = U.findDoc(ED.doc.id);
+    if (!orig) { EE.fx.toast('先に保存してください', { warn: true }); return false; }
+    var ok = await U.confirmBox('PDFを出すと、この見積は確定されます。\n確定すると変更・削除はできません（電子帳簿保存法に合わせた保存）。内容を変えるときは「修正見積」で新しい版を作ります。', '確定してPDFを出す');
+    if (!ok) return false;
+    var res = EE.app.finalizeDoc(orig);
+    if (!res.ok) {
+      EE.fx.toast('要修正が ' + res.errors + ' 件あるため確定できません。直してからPDFを出してください', { warn: true, ms: 4000 });
+      var top = U.topModal(); if (top) top.close();
+      openCheck(false);
+      return false;
+    }
+    U.commit(); ED.dirty = false;
+    EE.fx.toast('確定しました（' + orig.no + '）');
+    return orig;
   }
 
   async function pdf() {
@@ -601,13 +622,8 @@
       '\n内容を変える場合は、後から「修正見積」で新しい版を作れます。', '発行確定する');
     if (!ok) return;
     var orig = U.findDoc(ED.doc.id);
-    var now = new Date().toISOString();
-    orig.status = 'issued';
-    orig.issuedAt = now;
-    orig.rules = { lineRounding: EE.S.settings.lineRounding, taxRounding: EE.S.settings.taxRounding,
-      overheadRounding: EE.S.settings.overheadRounding, discountRounding: EE.S.settings.discountRounding };
-    orig.totals = EE.engine.snapshot(EE.engine.calc(orig, orig.rules));
-    orig.history.push({ at: now, action: '発行確定' });
+    var res = EE.app.finalizeDoc(orig);
+    if (!res.ok) { EE.fx.toast('要修正が ' + res.errors + ' 件あるため発行確定できません', { warn: true, ms: 3000 }); return openCheck(false); }
     U.commit();
     ED.dirty = false;
     EE.fx.toast('発行確定しました（' + orig.no + '）');

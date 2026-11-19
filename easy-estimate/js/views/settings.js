@@ -293,8 +293,11 @@
           U.download('easy-estimate_backup_' + EE.data.today() + '.json', JSON.stringify(S, null, 2));
           EE.fx.success(a, '書き出しました'); break;
         case 'wipe':
-          if (!(await U.confirmBox('マスタ・顧客・書類をすべて削除します。元に戻せません。', 'すべて削除', { danger: true }))) return;
-          var keep = { company: S.company, settings: S.settings };
+          var keptDocs = S.documents.filter(function (d) { return d.status === 'issued' || (d.history || []).some(function (h) { return /PDF出力/.test(h.action); }); });
+          if (!(await U.confirmBox('マスタ・顧客・下書きの書類をすべて削除します。元に戻せません。' + (keptDocs.length ? '\n\n確定済み・PDFを出した書類 ' + keptDocs.length + ' 件は、電子帳簿保存法の保存のため残します。' : ''), 'すべて削除', { danger: true }))) return;
+          // 残す書類は、宛名などを確定時の写しに持たせてから残す（顧客を消しても PDF が同じになるように）
+          keptDocs.forEach(function (d) { if (!d.snap) d.snap = EE.data.snapOf(S, d); if (d.status !== 'issued') { d.status = 'issued'; d.issuedAt = d.issuedAt || new Date().toISOString(); d.totals = d.totals || EE.engine.snapshot(EE.engine.calc(d, S.settings)); } d.customerId = ''; d.projectId = ''; });
+          var keep = { company: S.company, settings: S.settings, documents: keptDocs, seq: S.seq };
           EE.S = EE.data.migrate(Object.assign(EE.data.defaultState(), keep));
           if (EE.auth && EE.auth.current()) EE.app.linkMember(EE.auth.current());
           U.commit(); EE.fx.toast('すべて削除しました'); EE.app.rerender(); EE.app.renderUser(); break;

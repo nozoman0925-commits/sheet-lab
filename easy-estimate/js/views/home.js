@@ -217,7 +217,7 @@
       '<div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);margin-top:18px">' +
         '<section class="panel" data-st><div class="panel-h"><h2>最近の書類</h2><div class="spacer"></div><a class="btn ghost sm" href="#/docs">すべて見る</a></div>' +
           '<div class="panel-b" style="padding-top:8px">' + (docs.length ? '<table class="table"><tbody>' + docs.slice(0, 6).map(function (d) {
-            var c = U.findCustomer(d.customerId) || {};
+            var c = U.docCustomer(d);
             return '<tr class="clickable" data-href="#/edit/' + d.id + '"><td><span class="num">' + esc(d.no) + '</span><span class="cell-sub">' + U.jdate(d.issueDate) + '</span></td>' +
               '<td>' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(c.name || '宛先未設定') + '</span></td>' +
               '<td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td></tr>';

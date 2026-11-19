@@ -267,7 +267,7 @@
   function pastList() {
     var q = U.norm(PF.q).trim();
     return EE.S.documents.filter(function (d) {
-      var c = U.findCustomer(d.customerId) || {}; var pj = U.findProject(d.projectId) || {};
+      var c = U.docCustomer(d); var pj = U.findProject(d.projectId) || {};
       var hay = U.norm([d.no, d.title, c.name, c.address, pj.site, d.lines.map(function (l) { return l.name + ' ' + (l.spec || ''); }).join(' ')].join(' '));
       if (q && q.split(/\s+/).some(function (w) { return hay.indexOf(w) < 0; })) return false;
       if (PF.cat && d.category !== PF.cat && !d.lines.some(function (l) { var it = U.findItem(l.itemId); return it && it.category === PF.cat; })) return false;
@@ -295,7 +295,7 @@
     var list = pastList();
     if (!list.length) return '<div class="empty">条件に合う見積がありません</div>';
     return '<div class="checks">' + list.map(function (d) {
-      var c = U.findCustomer(d.customerId) || {};
+      var c = U.docCustomer(d);
       return '<button class="check info" data-doc="' + d.id + '" style="grid-template-columns:1fr auto;text-align:left;cursor:pointer;color:inherit;' + (pastSel === d.id ? 'border-color:var(--accent)' : '') + '">' +
         '<div><div class="t">' + esc(d.title || d.no) + '</div><div class="d">' + esc(c.name || '') + '　' + U.jdate(d.issueDate) + '　' + d.lines.length + '行</div></div>' +
         '<span class="num">' + U.yen(U.calcDoc(d).total) + '</span></button>';
