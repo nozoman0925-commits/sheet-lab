@@ -159,14 +159,14 @@
     var x = e.clientX, y = e.clientY, c = NEON[(Math.random() * NEON.length) | 0];
     var ring = document.createElement('span');
     ring.className = 'click-ring'; ring.style.cssText = 'left:' + x + 'px;top:' + y + 'px;--c:' + c;
-    document.body.appendChild(ring);
+    EE.ui.layer().appendChild(ring);
     ring.animate([{ transform: 'scale(.4)', opacity: 1 }, { transform: 'scale(5.5)', opacity: 0 }], { duration: 480, easing: 'cubic-bezier(.2,.8,.3,1)' }).onfinish = function () { ring.remove(); };
     var n = t.matches('.btn.primary, .folder-tile, .quick-card') ? 12 : 8;
     for (var i = 0; i < n; i++) {
       var d = document.createElement('span');
       var col = NEON[(i + (Math.random() * 2 | 0)) % NEON.length];
       d.className = 'click-dot'; d.style.cssText = 'left:' + x + 'px;top:' + y + 'px;--c:' + col;
-      document.body.appendChild(d);
+      EE.ui.layer().appendChild(d);
       var ang = (i / n) * Math.PI * 2 + Math.random() * 0.5, dist = 30 + Math.random() * 34;
       d.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + Math.cos(ang) * dist + 'px,' + Math.sin(ang) * dist + 'px) scale(.2)', opacity: 0 }],
         { duration: 520 + Math.random() * 180, easing: 'cubic-bezier(.15,.8,.3,1)' }).onfinish = (function (el) { return function () { el.remove(); }; })(d);

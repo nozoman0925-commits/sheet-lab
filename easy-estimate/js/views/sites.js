@@ -101,6 +101,8 @@
   /** 段階を1つ進める（受注のときは、どの見積で受注したかを記録） */
   async function advance(projectId) {
     var p = U.findProject(projectId); if (!p) return;
+    // 業務管理の中では、段階（受注・着工・完了・請求・入金）は工事の画面で記録する
+    if (EE.host && root.OUBI) { root.OUBI.openCase(p.id); return; }
     var ST = EE.data.STAGES, si = EE.data.stageIndex(p.stage), next = ST[si + 1]; if (!next) return;
     var docs = EE.S.documents.filter(function (d) { return d.projectId === p.id; });
     if (next.key === 'order') {

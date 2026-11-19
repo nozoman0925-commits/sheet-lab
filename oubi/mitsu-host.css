@@ -1,0 +1,33 @@
+/* 見積（桜ミツ）の画面を業務管理の中に置くための見た目 */
+.ee-host { position: relative; min-height: calc(100vh - 72px); padding-top: 18px; padding-bottom: calc(var(--navh, 0px) + 32px); }
+.ee-host[hidden] { display: none !important; }
+.ee-host > * { position: relative; z-index: 1; }
+.ee.ee-host { background: transparent !important; }
+.ee-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 1400px; margin: 0 auto 12px; }
+.ee-ttl { flex: 1 1 220px; min-width: 0; }
+.ee-top h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: .02em; line-height: 1.4; }
+.ee-top .crumb { color: var(--text-2); font-size: 16px; line-height: 1.5; }
+.ee-acts { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+.ee-sub { display: flex; gap: 8px; overflow-x: auto; max-width: 1400px; margin: 0 auto 16px; padding: 2px 0 6px; scrollbar-width: thin; }
+.ee-sub a { white-space: nowrap; min-height: 48px; padding: 0 18px; display: inline-flex; align-items: center; border-radius: 999px; font-size: 16px; color: var(--text-2);
+  text-decoration: none; border: 1px solid var(--line-hi); background: var(--panel); }
+.ee-sub a:hover { color: var(--text); border-color: var(--accent); }
+.ee-sub a.on { background: var(--accent-deep); border-color: var(--accent-deep); color: #fff; font-weight: 650; }
+.ee-sub a:focus-visible { outline: 3px solid var(--accent-2); outline-offset: 2px; }
+.ee-host .view { max-width: 1400px; margin: 0 auto; overflow: visible; }
+.ee-layer { position: relative; z-index: 1000; height: 0; background: none !important; }
+.ee-print { display: none; background: none !important; }
+.ee-widgets { background: none !important; margin: 28px auto 0; max-width: 1400px; }
+.ee-widgets:empty { display: none; }
+.ee-home-h { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.ee-home-h h2 { margin: 0; font-size: 22px; flex: 1; }
+@media print {
+  body > *:not(.ee-print) { display: none !important; }
+  .ee-print { display: block !important; }
+}
+/* 工事の「見積と利益」の中の見積の一覧（業務管理の見た目） */
+.mq-list { display: grid; gap: 8px; margin: 10px 0; }
+.mq-row { display: flex; gap: 12px; align-items: center; padding: 12px 14px; border-radius: 12px; background: var(--sunk); }
+.mq-row.main { outline: 2px solid var(--blue); }
+.mq-tx { flex: 1; min-width: 0; display: grid; gap: 4px; }
+.mq-links { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0 14px; }

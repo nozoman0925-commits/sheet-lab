@@ -301,7 +301,10 @@
     tab = tab || 'items';
     var X = EE.settingsExtra;
     var body = { members: EE.views.folders.membersTab, items: itemsTab, packages: X.templatesTab, formulas: X.formulasTab, snippets: X.snippetsTab, company: companyTab, rules: rulesTab, features: featuresTab, data: dataTab }[tab] || itemsTab;
-    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + TABS.map(function (t) {
+    // 業務管理の中では、担当者（社員の名簿は業務管理）・データ（全員の共有データの消去）・機能ライブラリ（メニューは業務管理）は出さない
+    var tabs = EE.host ? TABS.filter(function (t) { return ['members', 'data', 'features'].indexOf(t[0]) < 0; }) : TABS;
+    if (EE.host && ['members', 'data', 'features'].indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
+    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
     return { title: '設定', crumb: TABS.filter(function (t) { return t[0] === tab; })[0][1], html: html, mount: function (v) { mount(v, tab); } };

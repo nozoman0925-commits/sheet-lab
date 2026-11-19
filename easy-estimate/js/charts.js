@@ -16,7 +16,7 @@
   /* ---- 共通ツールチップ ---- */
   var tip;
   function showTip(html, x, y) {
-    if (!tip) { tip = document.createElement('div'); tip.className = 'viz-tip'; document.body.appendChild(tip); }
+    if (!tip) { tip = document.createElement('div'); tip.className = 'viz-tip'; EE.ui.layer().appendChild(tip); }
     tip.innerHTML = html; tip.hidden = false;
     var w = tip.offsetWidth, h = tip.offsetHeight;
     var left = Math.min(window.innerWidth - w - 8, x + 14), top = y - h - 12;

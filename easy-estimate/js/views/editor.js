@@ -530,7 +530,7 @@
     }
     var badge = document.querySelector('#sec-header .panel-h .badge');
     if (badge) badge.textContent = d.no;
-    document.querySelector('.topbar .crumb').textContent = d.no;
+    var crumb = document.getElementById('crumb'); if (crumb) crumb.textContent = d.no;
     if (wasNew) EE.app.replaceRoute('#/edit/' + d.id);
     renderSiteHint();
     updateChecks();
