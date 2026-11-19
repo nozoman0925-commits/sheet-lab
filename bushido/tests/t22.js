@@ -40,6 +40,7 @@ const pain=await p.evaluate(()=>{const T=__T;const k=T.addDays(T.todayKey(),1);l
 ok("痛みの申告後は運動の命令が出ない",pain.active&&pain.ex===0,JSON.stringify(pain));ok("道場に安全の停止カード",!!(await p.$('#sec-pain')));
 await (await p.$('#sec-pain')).scrollIntoViewIfNeeded();await p.screenshot({path:'V4.png'});
 await p.click('#sec-pain [data-act=painClear]');ok("「痛みが引いた」で再開",!(await p.evaluate(()=>__T.painActive()))&&!(await p.$('#sec-pain')));
+if(await p.$('#sec-mission [data-act=heroRedo]'))await p.click('#sec-mission [data-act=heroRedo]');
 await p.click('#sec-mission [data-act=mres][data-v=done]');await p.waitForTimeout(200);
 const h2=await p.evaluate(()=>{const T=__T;return T.day(T.todayKey()).mission.hist||[]});ok("結果の修正履歴が残る",h2.length>=1&&h2[h2.length-1].to==="done",JSON.stringify(h2[h2.length-1]));
 // 6) EXPの偏り対策

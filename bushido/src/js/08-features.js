@@ -31,23 +31,31 @@ function anchorDL(filename,blob){try{const u=URL.createObjectURL(blob);const a=d
 
 /* 画面ごとに、毎日見る区画だけを開いて見せる。残りは折りたたみにまとめる */
 const GROUPS={
- dojo:[{t:"ほかの稽古",s:"掟・朝の型・心得・勝利の壺",after:"sec-quote",after2:"sec-night",after3:"sec-quest"},
-  {t:"整えること",s:"入門の七日・準備・振り返り",cls:"fold",ids:["sec-week1","sec-env","sec-profile","sec-tutresume","sec-rest","sec-life","sec-weekly","sec-yimp"]}],
- keiko:[{t:"ほかの鍛錬",s:"身支度・二十の力・六つの修行・試練",after:"sec-train"}],
- roku:[{t:"能力・戦績・姿見",s:"六つの能力・人生の戦績・姿見の記録",ids:["sec-status","sec-feats","sec-mirror"]},{t:"傾向と履歴",s:"生活の基盤・言い訳・過去の自分・EXP履歴",ids:["sec-base","sec-excuse","sec-refl-list"],ey:["VS ","EXP履歴","再起履歴"]}],
- chikai:[{t:"段位・刀・卒業",ey:["刀の成長","段位","離 ","卒業 ・ "],ids:["sec-grad-m"]},
-  {t:"己を知る",s:"型・見つめ直し・開始時点の写真",ids:["sec-type","sec-myprofile","sec-self0"],ey:["見つめ直し"]},
-  {t:"心得と未来之書",ey:["七徳の心得","未来之書"]},
-  {t:"設定",s:"外観・通知・機能・データ",ids:["sec-look","sec-features"],ey:["通知設定","用語集","データ設定"]}]};
+ dojo:[{t:"その他の稽古・記録",s:"修行・ふり返り・師範・言葉・整えること",rest:true}],
+ keiko:[{t:"心を整える",s:"呼吸・瞑想・欲の統制・今日の心得",ids:["sec-train","sec-tempt","sec-virtue"]},
+  {t:"身体を鍛える",s:"自重の型",ids:["sec-bw"]},
+  {t:"生活を整える",s:"朝の型・身支度・毎日の掟",ids:["sec-ritual","sec-groom","sec-okite"]},
+  {t:"特別な修行",s:"二十の力・六つの修行",ids:["sec-power","sec-six"]},
+  {t:"試練",s:"30日・75日の長い挑戦",ids:["sec-trial"]}],
+ roku:[{t:"カレンダー",s:"修行絵巻",ids:["sec-cal"]},
+  {t:"成長の記録",s:"人生の戦績・姿見・勝利の壺",ids:["sec-feats","sec-mirror","sec-wins"]},
+  {t:"分析",s:"六つの能力・生活の基盤・言い訳・過去の自分",ids:["sec-status","sec-base","sec-excuse"],ey:["VS "]},
+  {t:"これまでの記録",s:"省察・EXP・再起",ids:["sec-refl-list"],ey:["EXP履歴","再起履歴"]}],
+ chikai:[{t:"自分の誓い",s:"起請文・未来之書・七徳の心得",ey:["起請文","未来之書","七徳の心得"]},
+  {t:"師範",s:"師範・言葉づかい・師範への誓い",ids:["sec-mset","sec-tone","sec-vow"]},
+  {t:"自分の成長",s:"段位・刀・卒業・武士の型・見つめ直し",ids:["sec-grad-m","sec-self0","sec-type","sec-myprofile"],ey:["刀の成長","段位","離 ","卒業 ・ ","見つめ直し"]},
+  {t:"表示と通知",s:"表示の量・外観・通知・使う機能",ids:["sec-look","sec-features"],ey:["通知設定"]},
+  {t:"データ管理",s:"書き出し・読み込み・全消去・使い方",ey:["データ設定","用語集"]}]};
 function groupSections(){const G=GROUPS[tab];const st=$("#app .stack");if(!G||!st)return;ui.grpOpen=ui.grpOpen||{};
   G.forEach((g,gi)=>{let els;const kids=[...st.children].filter(e=>e.tagName==="SECTION");
-    if(g.after){const a=document.getElementById(g.after)||document.getElementById(g.after2)||document.getElementById(g.after3);const i=a?kids.indexOf(a):-1;els=i>=0?kids.slice(i+1):[]}
+    if(g.rest){const show=ui.homeShow||[];els=kids.filter(e=>!show.includes(e.id))}
+    else if(g.after){const a=document.getElementById(g.after)||document.getElementById(g.after2)||document.getElementById(g.after3);const i=a?kids.indexOf(a):-1;els=i>=0?kids.slice(i+1):[]}
     else els=kids.filter(e=>(g.ids||[]).includes(e.id)||(g.cls&&e.classList.contains(g.cls))||(g.ey||[]).some(x=>{const y=e.querySelector(".eyebrow");return y&&y.textContent.indexOf(x)===0}));
     els=els.filter(e=>!["sec-grad-apply","sec-pain"].includes(e.id));if(!els.length)return;
     const d=document.createElement("details");d.className="grp";d.id="grp-"+tab+"-"+gi;d.open=!!(ui.grpOpen[d.id]||ui.grpAll);
     d.innerHTML='<summary><span class="gt">'+g.t+'</span>'+(g.s?'<span class="gs">'+g.s+'</span>':'')+'<span class="gn num">'+els.length+'</span></summary>';
     const box=document.createElement("div");box.className="stack grp-in";els.forEach(e=>box.appendChild(e));d.appendChild(box);st.appendChild(d);
-    d.addEventListener("toggle",()=>{ui.grpOpen[d.id]=d.open})})}
+    d.addEventListener("toggle",()=>{ui.grpOpen[d.id]=d.open;if(d.open&&tab==="dojo"&&g.rest&&S.main.onboarded){const st=S.main.uiStat=S.main.uiStat||{};const k=todayKey();st.other=(st.other||[]).filter(x=>diffDays(x,k)<14);if(!st.other.includes(k)){st.other.push(k);saveMain()}}})})}
 function openGrpOf(el){const dt=el&&el.closest&&el.closest("details.grp");if(dt&&!dt.open){dt.open=true;ui.grpOpen=ui.grpOpen||{};ui.grpOpen[dt.id]=true}}
 
 /* 入門の七日：始めてから7日間は、毎日「今日の目標はこれ一つだけ」を示す。空いた日を責めない */

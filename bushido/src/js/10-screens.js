@@ -126,17 +126,17 @@ const QCOUNT=QS.reduce((n,q)=>n+(q.type==="times"?2:1),0);
 const CHFLOW_ALL=CHAPTERS.flatMap(c=>["ch:"+c.id].concat(QS.filter(q=>q.ch===c.id).map(q=>q.id)));
 const MFLOW_NEW=["m_pick","m_info","m_photo","self","confirm","vow"],MFLOW_EDIT=["m_pick","m_info","m_photo","confirm"];
 // 初回に聞く問い：安全（けが・医師の制限・心・睡眠・体力）と、計画に要るもの（起床と就寝・変えたいこと・時間・厳しさ）
-const QUICK_Q=["b1","b4","b5","b9","b10","s1","s3","m1","m2","m6","g1","g2","g3"];
-function obFlowQs(full){return CHAPTERS.filter(c=>c.id!=="temp").flatMap(c=>{const qs=QS.filter(q=>q.ch===c.id&&(full||c.id==="life"||QUICK_Q.includes(q.id))).map(q=>q.id).filter(liveQ);return qs.length?["ch:"+c.id].concat(qs):[]})}
+const QUICK_Q=["b9","b10","m1","g1","g2"];
+function obFlowQs(full){return CHAPTERS.filter(c=>c.id!=="temp").flatMap(c=>{const qs=QS.filter(q=>q.ch===c.id&&(full||QUICK_Q.includes(q.id))).map(q=>q.id).filter(liveQ);return qs.length?["ch:"+c.id].concat(qs):[]})}
 function restQs(){const A=S.main.obAns;if(!A)return[];return CHAPTERS.filter(c=>c.id!=="temp"&&c.id!=="life").flatMap(c=>{const qs=QS.filter(q=>q.ch===c.id&&(q.type==="times"?!A.wake:A[q.id]==null)).map(q=>q.id);return qs.length?["ch:"+c.id].concat(qs):[]})}
 function restCount(){return restQs().filter(x=>x.indexOf("ch:")!==0).length}
 function obAnsOf(ob){const o={};Object.keys(ob||{}).forEach(k=>{if(!["m","self","sign","env","retConfirm"].includes(k))o[k]=ob[k]});return o}
 /* 外観（修行の記録とは別に保存する） */
 const LOOK_DEF={theme:"kuro",fs:"m",fx:"std",anim:"on",tex:"on",mfx:"std",bg:"rain"};
-function look(){return Object.assign({},LOOK_DEF,(S&&S.main&&S.main.look)||{})}
+function look(){return Object.assign({},LOOK_DEF,{view:(S&&S.main&&S.main.viewDefault)||"min"},(S&&S.main&&S.main.look)||{})}
 function applyLook(L){L=L||look();const r=document.documentElement;r.dataset.theme=L.theme;r.dataset.fs=L.fs;r.dataset.fx=L.fx;r.dataset.anim=L.anim;r.dataset.tex=L.tex;r.dataset.mfx=L.mfx;r.dataset.bg=L.bg;
   try{localStorage.setItem("bushido.look",JSON.stringify(L))}catch(e){}}
-function flowX(){if(ui.mflow==="rest")return ["restIntro"].concat(ui.restFlow||restQs(),["building","result"]);if(ui.mflow==="type")return ["ch:temp"].concat(TEMP_Q.map(q=>q[0]),["type"]);if(ui.mflow==="life")return ["ch:life"].concat(QS.filter(q=>q.ch==="life").map(q=>q.id).filter(liveQ),["lifeDone"]);if(ui.mflow)return ui.mflow==="edit"?MFLOW_EDIT:MFLOW_NEW;return ui.retake?["tone"].concat(obFlowQs(true),["building","result"]):["start","m_pick","m_info","m_photo","self","know","tone"].concat(obFlowQs(false),["building","result","plan","env1","env2","confirm","vow"])}
+function flowX(){if(ui.mflow==="rest")return ["restIntro"].concat(ui.restFlow||restQs(),["building","result"]);if(ui.mflow==="type")return ["ch:temp"].concat(TEMP_Q.map(q=>q[0]),["type"]);if(ui.mflow==="life")return ["ch:life"].concat(QS.filter(q=>q.ch==="life").map(q=>q.id).filter(liveQ),["lifeDone"]);if(ui.mflow)return ui.mflow==="edit"?MFLOW_EDIT:MFLOW_NEW;return ui.retake?["tone"].concat(obFlowQs(true),["building","result"]):["start","m_pick","m_info","m_photo"].concat(obFlowQs(false),["building","result","confirm","vow"])}
 function envState(e){if(!e)return null;if(e.has==="no")return"none";return e.choice||null}
 function envBody(e){
   if(!e.has)return '<p class="eyebrow">第零関門 ・ 環境を断つ</p><p class="q qq">今、あなたの携帯に<br>Instagram・TikTok・X・YouTubeは<br>入っているか。</p><div class="qopts"><button class="qopt" data-act="envHas" data-v="yes"><span>入っている</span></button><button class="qopt" data-act="envHas" data-v="no"><span>入っていない</span></button></div><p class="small muted">嘘をついても、このアプリには分からない。だが、自分には分かる。断つべきは、アプリそのものより、生活を崩している使い方だ。仕事で必要なものは、残して管理すればいい。</p>';
@@ -255,6 +255,7 @@ function renderGate(){
   if(id==="confirm"){const m=ob.m||S.main.master||{};const pf=ui.mflow?S.main.profile:profileFrom(ob);const tp=typeOf(pf);const sk=ob.self?ob.self.pk:(S.main.self0&&S.main.self0.key);const nm=ob.sign||S.main.displayName||"";
     return wrap('<p class="eyebrow">最終確認</p><p class="q qq">この二人で、道を歩む。</p><div class="duo"><figure>'+mPic(m)+'<figcaption><span class="small muted">師範</span><b>'+esc(m.name||"")+'</b><span class="small muted">'+(m.rel?esc(m.rel)+" ・ ":"")+((GENDERS.find(g=>g[0]===m.gender)||[])[1]||"")+'</span></figcaption></figure><span class="duo-x">共に</span><figure>'+sPic(sk)+'<figcaption><span class="small muted">己</span><b>'+esc(nm)+'</b><span class="small muted">'+(tp?tp.t[0]+" "+tp.code:"型は未診断")+'</span></figcaption></figure></div>'+
     '<div class="note"><div class="cfrow"><span>師範の動機</span><b>'+(MOTIVES[m.motive]?MOTIVES[m.motive].n:"")+'</b></div><div class="cfrow"><span>16タイプ</span><b>'+(tp?tp.t[0]+"（"+tp.code+" ・ "+famOf(tp.code).n+"）":"未診断")+'</b></div>'+(m.feel?'<div class="cfrow"><span>抱いている感情</span><b>'+esc(m.feel)+'</b></div>':'')+'</div>'+
+    (ui.mflow?'':'<label class="f" style="margin-top:12px">あなたの呼び名<input type="text" id="cf-sign" maxlength="20" autocomplete="nickname" placeholder="名前または号" value="'+esc(nm)+'"></label>')+
     '<div class="grid2"><button class="btn" data-act="mChange">設定を変更する</button><button class="btn gold" data-act="'+(ui.mflow==="edit"?"mEditDone":"obNext")+'">これで決定する</button></div>')}
   if(id==="vow"){const m=ob.m||{};const sk=ob.self?ob.self.pk:(S.main.self0&&S.main.self0.key);
     return wrap('<p class="eyebrow">誓い</p><p class="q qq">師範への誓い</p><div class="duo face"><figure>'+mPic(m,"l")+'<figcaption><b>'+esc(m.name||"")+'</b></figcaption></figure><span class="duo-x">誓</span><figure>'+sPic(sk,"r")+'<figcaption><b>'+esc(ob.sign||S.main.displayName||"")+'</b></figcaption></figure></div>'+
@@ -312,8 +313,9 @@ function renderPowers(k){
 function renderTrain(k){
   const d=day(k);const bN=weekCount(breathDoneOn,k),wN=weekCount(bwDoneOn,k);
   const bt=(d.breath||[]).filter(x=>x.done).map(x=>(BREATH.find(b=>b.id===x.mode)||{}).n).join("、");
-  return '<section class="sec" id="sec-train"><p class="eyebrow">自宅でできる鍛錬</p><h2>鍛錬の型</h2>'+
+  return '<section class="sec" id="sec-train"><p class="eyebrow">心を整える</p><h2>呼吸・瞑想</h2>'+
   '<div class="task"><div class="row"><div class="grow"><b>呼吸・瞑想</b> '+(breathDoneOn(d)?'<span class="tag gold">今日済</span>':'')+'<div class="small muted">'+(bt?esc(bt)+' ・ ':'')+'今週 '+bN+'日</div></div><button class="btn sm'+(breathDoneOn(d)?"":" gold")+'" data-act="breath">始める</button></div><p class="small muted" style="margin-top:6px">1日5分を毎日続けることに意味があります。長さより継続。</p></div>'+
+  '</section><section class="sec" id="sec-bw"><p class="eyebrow">身体を鍛える</p><h2>自重の型</h2>'+
   '<div class="task"><div class="row"><div class="grow"><b>自重の型</b> '+(bwDoneOn(d)?'<span class="tag gold">今日済</span>':'')+'<div class="small muted">器具なし ・ 今週 '+wN+' / 3回</div></div><button class="btn sm'+(bwDoneOn(d)?"":" gold")+'" data-act="bw">'+(bwDoneOn(d)?"記録を見る":"始める")+'</button></div><p class="small muted" style="margin-top:6px">週3回を目安に。軽い版から始め、楽になった種目だけ一段上げます。</p></div></section>';
 }
 function breathSheet(){
@@ -378,6 +380,55 @@ function gapInfo(k){const la=lastActiveBefore(k);if(!la)return null;const gap=di
 function feat(f){return !S.main.features||S.main.features[f]!==false}
 function okiteActive(){const off=S.main.okiteOff||[];return OKITE_ALL.filter(x=>!off.includes(x.id))}
 function okiteDay(d){const o=(d&&d.okite)||{};const act=okiteActive();return{act,ok:act.filter(x=>o[x.id]==="ok").length,na:act.filter(x=>o[x.id]==="na").length}}
+
+/* ===== 第34版：道場の主役（今日の一太刀）・進み具合・表示の量 ===== */
+// 表示の量：最小・標準・詳細。不調の日は、本人が戻すまで一時的に最小にする
+function viewOf(d){const v=look().view||"min";if(d&&(d.cond==="bad"||painActive())&&!d.viewKeep&&v!=="min")return "min";return v}
+function heroDom(o){if(o.opp)return "己の型を鍛える";const c=o.c!=null?o.c:o.cat;return c===0?"人間関係・礼節":(CATS[c]&&CATS[c].name)||""}
+function heroPick(k,d){let plan;try{plan=missionPlan(k,d.offerRoll||0)}catch(e){return null}const offs=(plan.offers||[]).slice();if(!offs.length)return null;
+  if(gapInfo(k)||needsRecovery())offs.sort((a,b)=>a.lv-b.lv);else offs.sort((a,b)=>(b.score||0)-(a.score||0));
+  const o=offs[0];if(!Array.isArray(d.offered)||!d.offered.includes(o.t)){d.offered=(Array.isArray(d.offered)?d.offered:[]).concat([o.t]).slice(-12);saveDay(k)}
+  ui.heroOffer=o;return o}
+function heroLine(){try{const h=masterCard();const m=/<p class="mline">「([\s\S]*?)」<\/p>/.exec(h);return m?m[1]:null}catch(e){return null}}
+function renderHero(k,d,gp,rec){const m=d.mission;const v=viewOf(d);const bad=d.cond==="bad"||painActive();
+  const ml=heroLine();const mn=S.main.master?esc(S.main.master.name||"師範"):"師範";
+  const line=ml?'<p class="hero-mline">'+mn+'「'+esc(ml)+'」</p>':'';
+  const note=(bad&&!d.viewKeep&&(look().view||"min")!=="min")?'<p class="hero-note">今日は調子に合わせて、表示を減らしている。<button class="linkbtn" data-act="heroViewKeep">いつもの表示に戻す</button></p>':'';
+  const head='<p class="hero-date">'+fmtMD(k)+'</p><p class="eyebrow">今日の'+term("一太刀")+'</p>';
+  let body='';
+  if(!m){const o=heroPick(k,d);
+    if(!o)body='<h2 class="hero-title">今日の挑戦を一つ選ぼう。</h2><button class="btn gold wide hero-go" data-act="setMission">候補を見る</button>';
+    else{const md=MDATA[o.id]||[];const mins=(/(\d+)\s*分/.exec(md[0]||"")||[])[1];
+      const title=gp?"おかえり。小さく再開しよう。":rec?"立て直しの一つ。軽くていい。":bad?"今日は軽く。これ一つでいい。":(mins&&+mins<=10?"まずは"+mins+"分、始めよう。":"今日は、この一つだけ。");
+      body='<h2 class="hero-title">'+title+'</h2><p class="hero-sub">今日のあなたに合った、小さな挑戦</p><p class="hero-task">'+esc(o.t)+'</p><p class="hero-meta">目安 '+esc(md[0]||"短時間")+' ・ '+esc(heroDom(o))+'</p>'+line+
+      '<button class="btn gold wide hero-go" data-act="startRec">稽古を始める</button>'+
+      '<div class="hero-alt"><button class="linkbtn" data-act="setMission">ほかの候補から選ぶ</button>'+(bad?'<button class="linkbtn" data-act="heroCond" data-v="normal">調子が戻った</button>':'<button class="linkbtn" data-act="heroCond" data-v="bad">今日は調子が悪い</button>')+'</div>'}}
+  else if(!m.result||ui.heroRedo){const md=(m.mid&&MDATA[m.mid])||null;const canFix=m.own&&m.setTs&&Date.now()-m.setTs<10*60e3&&!m.result;
+    body='<h2 class="hero-title">やり切ろう。</h2><p class="hero-task">'+esc(m.text)+'</p>'+
+    (md?'<div class="hero-how"><p class="hero-meta">目安 '+esc(md[0])+' ・ '+esc(md[1])+'</p><p class="small">できない日は：'+esc(md[2])+'</p><details class="more"><summary>やり方をくわしく</summary>'+mInfoHTML(m.mid,m.cat,true)+(m.why?'<p class="small" style="margin-top:6px">なぜこの命令か：'+esc(m.why)+'</p>':'')+'</details></div>':'<div class="hero-how"></div>')+line+
+    '<button class="btn gold wide hero-go" data-act="mres" data-v="done">やり切った</button><div class="hero-alt"><button class="linkbtn" data-act="mres" data-v="part">一部だけできた</button><button class="linkbtn" data-act="mres" data-v="miss">今日はできなかった</button>'+(canFix?'<button class="linkbtn" data-act="fixMission">選び直す</button>':'')+'</div>'}
+  else{const res=m.result;const lab={done:"達成",part:"一部達成",miss:"未達成",postponed:"延期・中止"}[res]||"記録済み";
+    const qs=activeTasks().filter(t=>k>=t.start&&taskOn(t,k));const qLeft=qs.filter(t=>!d.logs[t.id]).length;const h=new Date().getHours();const night=h>=18||h<DAY_START_H;
+    let next;if(res==="miss"&&m.missWhy&&MISS_NEXT[m.missWhy])next='<p class="hero-meta" style="margin:0 0 4px">原因：'+MISS_T[m.missWhy]+'（'+MISS_GROUP[m.missWhy]+'の問題）</p><p class="hero-next">'+MISS_NEXT[m.missWhy].join("")+'</p>';
+    else if(qLeft&&!bad)next='<p class="hero-next">次は、毎日の修行（あと'+qLeft+'つ）。</p><button class="btn wide hero-go2" data-act="goto" data-v="sec-quest">修行を記録する</button>';
+    else if(!d.reflection&&!bad)next=night?'<p class="hero-next">最後に、寝る前に30秒ふり返ろう。</p><button class="btn wide hero-go2" data-act="reflect">ふり返る</button>':'<p class="hero-next">夜に、30秒ふり返ろう。</p>';
+    else next='<p class="hero-next">今日の稽古は完了。アプリを閉じて、現実で斬れ。</p>';
+    body='<h2 class="hero-title">'+(res==="done"?"斬った。":res==="part"?"一歩、進んだ。":res==="miss"?"記録した。明日、取り返せ。":"記録した。")+'</h2><p class="hero-task done"><span class="hero-ck" aria-hidden="true">'+(res==="done"||res==="part"?"✓":"・")+'</span>'+esc(m.text)+' <span class="tag'+(res==="done"?" gold":"")+'">'+lab+'</span></p>'+line+next+
+    '<div class="hero-alt"><button class="linkbtn" data-act="heroRedo">結果を変える</button></div>'}
+  // 表示の好みの学習：よく開く人には、本人の了承を得て表示を増やす
+  const st=S.main.uiStat||{};const days7=(st.other||[]).filter(x=>diffDays(x,k)<7).length;const cur=look().view||"min";
+  const sug=(!bad&&!S.main.viewAsked&&((cur==="min"&&days7>=3)||(cur==="std"&&days7>=5)))?'<div class="hero-sug"><p>「その他」をよく開いている。表示を「'+(cur==="min"?"標準":"詳細")+'」にする？</p><div class="hero-alt"><button class="btn sm" data-act="viewSet" data-v="'+(cur==="min"?"std":"full")+'">'+(cur==="min"?"標準":"詳細")+'にする</button><button class="linkbtn" data-act="viewAskNo">このまま</button></div></div>':'';
+  return '<section class="sec mission hero'+(m&&m.result&&!ui.heroRedo?" step-done":"")+'" id="sec-mission">'+head+body+note+sug+'</section>'}
+function renderProgress(k,d){const v=viewOf(d);if(v==="min")return "";
+  const m=d.mission;const bad=d.cond==="bad"||painActive();const qs=activeTasks().filter(t=>k>=t.start&&taskOn(t,k));const qDone=qs.filter(t=>d.logs[t.id]).length;
+  const items=[!!(m&&m.result)];if(!bad){if(qs.length)items.push(qDone>=qs.length);items.push(!!d.reflection)}
+  const n=items.filter(Boolean).length;const st=streak();const R=RANKS[(S.main.rankMax||0)]||RANKS[0];
+  let extra='';if(v==="full"){const ev=expEvents();const tE=ev.filter(e=>e.k===k).reduce((a,e)=>a+e.exp,0);const tot=ev.reduce((a,e)=>a+e.exp,0);const r=computeRank(tot);const nx=RANKS[r+1];
+    extra='<p class="prog-exp">今日 <b>+'+tE+' EXP</b>'+(nx?' ・ 次の段位「'+nx.n+'」まで あと '+Math.max(0,nx.exp-tot).toLocaleString()+' EXP':'')+'</p>'}
+  return '<section class="sec prog" id="sec-progress"><div class="prog-row"><p class="prog-t">今日の進捗</p><p class="prog-n"><b>'+items.length+'つ中'+n+'つ</b>完了</p></div><div class="today-bar" aria-hidden="true">'+items.map(x=>'<i class="'+(x?"on":"")+'"></i>').join("")+'</div><p class="prog-meta">'+(st?'継続 '+st+'日 ・ ':'')+R.n+'</p>'+extra+'</section>'}
+function homeShow(k,d,gp,rec){const v=viewOf(d);const h=new Date().getHours();const night=h>=18||h<DAY_START_H;
+  const s=["sec-mission","sec-pain","sec-renderr"];if(gp)s.push("sec-gap");if(rec)s.push("sec-recover");
+  if(v!=="min"){s.push("sec-progress","sec-quest","sec-prep")}if(night||v==="full")s.push("sec-night");if(v==="full")s.push("sec-quote");return s}
 function renderDojo(){
   const k=todayKey(),d=day(k),v=virtueOf(k);
   const y=S.days[addDays(k,-1)];
@@ -402,34 +453,27 @@ function renderDojo(){
   if(rec)out.push('<section class="sec" id="sec-recover" style="border-color:var(--gold)"><p class="eyebrow">'+term("再起")+'</p><h2>ここから立て直す</h2><p class="small muted" style="margin-bottom:10px">「'+esc(rec.name)+'」が3日続けて、未達成か未記録です。記録は消えません。次の一手を一つ選んでください。</p><div class="stack" style="gap:6px">'+RECOVER.map(r=>'<button class="btn wide" data-act="recover" data-t="'+rec.id+'" data-v="'+r.k+'">'+r.t+'</button>').join("")+'</div></section>');
   if(y&&y.reflection&&(y.reflection.improve||y.reflection.next))out.push('<section class="sec" id="sec-yimp"><p class="eyebrow">昨日の自分からの改善策</p>'+(y.reflection.improve?'<p>'+esc(y.reflection.improve)+'</p>':'')+(y.reflection.next?'<p class="small muted" style="margin-top:4px">具体的な行動：'+esc(y.reflection.next)+'</p>':'')+'</section>');
   const ritualSec=feat("ritual")?renderRitual(k,d):"";
-  out.push(renderTodo(k,d));
-  // 一太刀
+  // 一太刀（道場の主役）
   const m=d.mission;
-  if(!m)out.push('<section class="sec mission" id="sec-mission"><p class="eyebrow"><span class="stepno">1</span>今日の挑戦（'+term("一太刀")+'）</p><p class="small muted" style="margin-bottom:10px">三つから一つ選べ。選んだら、今日は変えない。</p><button class="btn gold wide" data-act="setMission">今日の一太刀を受ける</button></section>');
-  else{
-    const res=m.result;const canFix=m.own&&m.setTs&&Date.now()-m.setTs<10*60e3&&!res;
-    out.push('<section class="sec mission'+(res?" step-done":"")+'" id="sec-mission"><div class="row"><p class="eyebrow grow" style="margin:0"><span class="stepno">'+(res?"✓":"1")+'</span>今日の挑戦（'+term("一太刀")+'）</p>'+(res?'<span class="tag '+(res==="done"?"gold":res==="miss"?"red":"")+'">'+({done:"達成",part:"一部達成",miss:"未達成",postponed:"延期・中止"}[res])+'</span>':'')+'</div><p class="txt">'+esc(m.text)+'</p>'+(m.lv?'<p class="small muted" style="margin:-6px 0 10px"><b class="lvtag">難度'+m.lv+' / 10</b> '+(m.cat!=null&&CAT_SHORT[m.cat]?'分野：'+CAT_SHORT[m.cat]:'')+'</p>':'')+(m.why?'<p class="small" style="margin:-4px 0 8px"><span class="muted">なぜこの命令か：</span>'+esc(m.why)+'</p>':'')+
-    (m.mid&&MDATA[m.mid]&&!res?mInfoHTML(m.mid,m.cat,true)+(()=>{const a=mAlt(m);return a?'<p class="small muted" style="margin:6px 0 10px">体調などで実行できない時の代案：「'+esc(a.t)+'」。やり切れば「一部達成」として付けろ。</p>':''})():'')+
-    (res==="miss"&&m.missWhy&&MISS_NEXT[m.missWhy]?'<div class="note" style="margin-bottom:10px"><p class="small muted">原因：'+MISS_T[m.missWhy]+'（'+MISS_GROUP[m.missWhy]+'の問題）</p><p class="small">'+MISS_NEXT[m.missWhy].join("")+'</p></div>':'')+(canFix?'<button class="btn ghost sm" data-act="fixMission" style="margin:-6px 0 10px">誤字を直す（決めてから10分以内）</button>':'')+
-    (res==="postponed"?'<p class="small muted">理由：'+esc(m.postponeReason)+'</p>':
-    '<p class="small muted" style="margin-bottom:6px">'+(res?"結果を変えるときは押し直します。":"終わったら（または夜に）結果を押します。")+'</p><div class="seg"><button class="btn'+(res==="done"?" gold":"")+'" data-act="mres" data-v="done">達成</button><button class="btn" data-act="mres" data-v="part" '+(res==="part"?'style="border-color:var(--gold);color:var(--gold-hi)"':'')+'>一部達成</button><button class="btn'+(res==="miss"?" red":"")+'" data-act="mres" data-v="miss">未達成</button></div><button class="btn ghost sm" data-act="postpone" style="margin-top:8px">病気・けが・急な事情で延期／中止する</button>')+'</section>');
-  }
+  out.unshift(renderHero(k,d,gp,rec));
   // クエスト
   const qs=activeTasks().filter(t=>k>=t.start);const paused=S.main.tasks.filter(t=>t.status==="一時停止");
   const total=qs.filter(t=>taskOn(t,k)).length;const doneN=qs.filter(t=>{const l=d.logs[t.id];return taskOn(t,k)&&l&&(isDoneState(l.state)||isExcluded(l.state))}).length;
-  out.push('<section class="sec'+(total&&doneN>=total?" step-done":"")+'" id="sec-quest"><div class="row" style="margin-bottom:6px"><div class="grow"><p class="eyebrow" style="margin:0"><span class="stepno">'+(total&&doneN>=total?"✓":"2")+'</span>毎日の習慣（修行）</p><h2 style="margin:0">毎日の修行</h2></div><span class="num muted">'+doneN+' / '+total+'</span></div><div class="bar" style="margin-bottom:6px"><i style="width:'+(total?doneN/total*100:0)+'%"></i></div>'+(qs.length?qs.map(t=>questRow(t,k)).join(""):paused.length?'<p class="muted small">修行は一時停止中です。稽古場の「設定」から再開できます。停止中の日は、達成率の計算に入りません。</p>':'<p class="muted small">修行がまだありません。稽古場で追加します。</p>')+'</section>');
-  if(!(d.cond==="bad"||painActive())){const rf=d.reflection;out.push('<section class="sec night'+(rf?" step-done":"")+'" id="sec-night"><p class="eyebrow"><span class="stepno">'+(rf?"✓":(total?"3":"2"))+'</span>夜のふり返り（省察）</p>'+
+  out.push('<section class="sec'+(total&&doneN>=total?" step-done":"")+'" id="sec-quest"><div class="row" style="margin-bottom:6px"><div class="grow"><p class="eyebrow" style="margin:0">毎日の習慣</p><h2 style="margin:0">毎日の修行</h2></div><span class="num muted">'+doneN+' / '+total+'</span></div><div class="bar" style="margin-bottom:6px"><i style="width:'+(total?doneN/total*100:0)+'%"></i></div>'+(qs.length?qs.map(t=>questRow(t,k)).join(""):paused.length?'<p class="muted small">修行は一時停止中です。稽古場の「設定」から再開できます。停止中の日は、達成率の計算に入りません。</p>':'<p class="muted small">修行がまだありません。稽古場で追加します。</p>')+'</section>');
+  out.splice(1,0,renderProgress(k,d));
+  if(!(d.cond==="bad"||painActive())){const rf=d.reflection;out.push('<section class="sec night'+(rf?" step-done":"")+'" id="sec-night"><p class="eyebrow">夜のふり返り（省察）</p>'+
     (rf?'<p class="small">今日のふり返りは書いた。'+(rf.improve?'明日の改善：'+esc(rf.improve):'')+'</p>':'<p class="small muted" style="margin-bottom:10px">寝る前に30秒。今日の自分を選ぶだけでいい。</p><button class="btn wide" data-act="reflect">ふり返る</button>')+'</section>')}
   out.push(mCard);out.push(week1Card(k));
   out.push(quoteCard());
-  if(feat("okite"))out.push(renderOkite(k,d));
-  out.push(ritualSec);
-  if(feat("virtue"))out.push('<section class="sec"><p class="eyebrow">今日の心得 ・ '+fmtMD(k)+'</p><div class="virtue"><div class="kanji'+(v.k.length>1?" long":"")+'">'+v.k+'</div><div><h3>'+v.m+'</h3><p class="small muted">'+v.t+'</p></div></div>'+(v.q?'<div style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px"><p style="font-family:var(--display);font-weight:800;color:var(--gold-hi)">'+v.q+'</p><p class="small muted">'+v.src+'</p></div>':'')+
-  (d.virtue?'<p class="small" style="margin-top:12px"><span class="tag gold">実践済</span>　'+esc(d.virtue.note)+'</p>':'<button class="btn wide" data-act="virtueDone" style="margin-top:12px">今日の「'+v.k+'」を実践した</button>')+'</section>');
-  const allW=victories();const wins=allW.map((w,i)=>Object.assign({i},w)).slice(-3).reverse();
-  out.push('<section class="sec"><p class="eyebrow">'+term("勝利の壺")+'</p>'+(wins.length?wins.map(w=>'<div class="row small" style="padding:4px 0"><span class="muted num" style="width:5.5em;flex:none">'+fmtMD(w.k)+'</span><span class="grow">'+esc(w.what)+'</span>'+(w.cert?'<button class="btn sm ghost" data-act="cert" data-i="'+w.i+'">達成証</button>':'')+'</div>').join(""):'<p class="small muted">修行の定着・試練の完遂・段位の昇格・再起後の達成がここに貯まります。</p>')+'</section>');
+  ui.homeShow=homeShow(k,d,gp,rec);
   return out.join("");
 }
+function renderVirtueWins(k,d,which){const v=virtueOf(k);const parts=[];
+  if(which==="virtue"&&feat("virtue"))parts[0]=('<section class="sec" id="sec-virtue"><p class="eyebrow">今日の心得 ・ '+fmtMD(k)+'</p><div class="virtue"><div class="kanji'+(v.k.length>1?" long":"")+'">'+v.k+'</div><div><h3>'+v.m+'</h3><p class="small muted">'+v.t+'</p></div></div>'+(v.q?'<div style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px"><p style="font-family:var(--display);font-weight:800;color:var(--gold-hi)">'+v.q+'</p><p class="small muted">'+v.src+'</p></div>':'')+
+  (d.virtue?'<p class="small" style="margin-top:12px"><span class="tag gold">実践済</span>　'+esc(d.virtue.note)+'</p>':'<button class="btn wide" data-act="virtueDone" style="margin-top:12px">今日の「'+v.k+'」を実践した</button>')+'</section>');
+  if(which==="wins"){const allW=victories();const wins=allW.map((w,i)=>Object.assign({i},w)).slice(-3).reverse();
+  parts[1]=('<section class="sec" id="sec-wins"><p class="eyebrow">'+term("勝利の壺")+'</p>'+(wins.length?wins.map(w=>'<div class="row small" style="padding:4px 0"><span class="muted num" style="width:5.5em;flex:none">'+fmtMD(w.k)+'</span><span class="grow">'+esc(w.what)+'</span>'+(w.cert?'<button class="btn sm ghost" data-act="cert" data-i="'+w.i+'">達成証</button>':'')+'</div>').join(""):'<p class="small muted">修行の定着・試練の完遂・段位の昇格・再起後の達成がここに貯まります。</p>')+'</section>');}
+  return which==="virtue"?parts[0]||"":parts[1]||""}
 function renderRitual(k,d){
   const nOk=RITUAL.filter((_,i)=>d.ritual[i]).length;const full=nOk===8;const open=!full||ui.ritualOpen;
   return '<section class="sec" id="sec-ritual"><div class="row"><div class="grow"><p class="eyebrow" style="margin:0">MORNING RITUAL</p><h2 style="margin:0">朝の型</h2></div>'+(full?'<span class="tag gold">完遂 '+d.ritual[0]+'〜'+d.ritual[7]+'</span>':'<span class="num muted">'+nOk+' / 8</span>')+'</div>'+
@@ -495,6 +539,13 @@ function victories(){
 }
 
 /* ============ 稽古場 ============ */
+function keikoPick(k){const d=day(k);const pf=S.main.profile||{};const f=pf.flags||{};const g1=(S.main.obAns||{}).g1;const goalBody=(Array.isArray(g1)?g1:g1!=null?[g1]:[]).map(String).includes("1");
+  const safeBody=!f.noEx&&!painActive()&&d.cond!=="bad";const bN=weekCount(bwDoneOn,k);
+  let p=null;
+  if(feat("train")&&!breathDoneOn(d)&&(f.care||d.cond==="bad"||!goalBody||!safeBody))p={t:"呼吸・瞑想",s:"1分から。心を落ち着かせる",act:'data-act="breath"',btn:"始める"};
+  else if(feat("train")&&safeBody&&!bwDoneOn(d)&&bN<3)p={t:"自重の型",s:"器具なし・今週 "+bN+" / 3回",act:'data-act="bw"',btn:"始める"};
+  else if(feat("train")&&!breathDoneOn(d))p={t:"呼吸・瞑想",s:"1分から。心を落ち着かせる",act:'data-act="breath"',btn:"始める"};
+  return '<section class="sec pick" id="sec-pick"><p class="eyebrow">今日のおすすめ</p>'+(p?'<div class="row"><div class="grow"><h2 style="margin:0">'+p.t+'</h2><p class="small muted">'+p.s+'</p></div><button class="btn gold" '+p.act+'>'+p.btn+'</button></div>':'<p class="small">今日のおすすめは済んだ。ほかの稽古は、下の分類から選べる。</p>')+'</section>'}
 function renderKeiko(){
   const out=[];const k=todayKey();
   const focus=S.main.tasks.find(t=>t.focus&&t.status==="進行中");
@@ -502,7 +553,9 @@ function renderKeiko(){
   if(focus){const el=eligibleDays(focus,focus.start,k);const ok=el.filter(e=>e.l&&isDoneState(e.l.state)).length;const r=taskRate(focus,30);
     out.push('<section class="sec" id="sec-focus" style="border-color:var(--gold)"><p class="eyebrow">'+term("重点修行")+' ・ '+term("定着")+'まで</p><h3>'+esc(focus.name)+'</h3><div class="grid2 small" style="margin-top:6px"><div>実施日数 <b class="num">'+ok+'</b> / 7日</div><div>達成率 <b class="num">'+(r?Math.round(r.rate*100):0)+'%</b> / 80%</div></div><div class="bar" style="margin-top:8px"><i style="width:'+Math.min(100,ok/7*100)+'%"></i></div><p class="small muted" style="margin-top:8px">定着すると次の修行を追加できます（+'+EXP_SETTLE+' EXP）。</p><div style="margin-top:12px;border-top:1px solid var(--line);padding-top:10px"><div class="row small"><span class="grow">習慣を意識する目安（保証ではない）</span><b class="num">'+ok+' / 66日</b></div><div class="bar" style="margin-top:6px"><i style="width:'+Math.min(100,ok/66*100)+'%"></i></div><p class="small muted" style="margin-top:6px">66日は保証ではなく、習慣を意識する目安です。研究では、考えずにできるまでの日数は人によって18〜254日と大きく違いました（Lallyら、2010年。平均66日）。7日は最初の確認、75日は武士道独自の試練です。</p></div></section>');}
   else out.push('<section class="sec" id="sec-focus"><p class="small">重点修行がありません。次の修行を一つ選べます。</p><button class="btn gold wide" data-act="addTask" style="margin-top:10px">修行を追加する</button></section>');
+  out.splice(1,0,keikoPick(k));
   if(feat("train"))out.push(renderTrain(k));
+  {const d0=day(k);if(feat("virtue"))out.push(renderVirtueWins(k,d0,"virtue"));if(feat("ritual"))out.push(renderRitual(k,d0));if(feat("okite"))out.push(renderOkite(k,d0))}
   if(feat("power"))out.push(renderPowers(k));
   if(feat("groom"))out.push(renderGroom(k));
   // 六つの修行
@@ -510,13 +563,13 @@ function renderKeiko(){
   for(let c=1;c<=6;c++){const ts=S.main.tasks.filter(t=>t.cat===c&&t.status!=="中止");const a=ability(c);
     cats+='<div class="cat"><div class="cat-h"><span class="ord">'+CATS[c].ord+'</span><span class="nm">'+CATS[c].name+'</span><span class="ab">'+CATS[c].ab+' <b class="num" style="color:var(--fg)">'+(a==null?"—":a)+'</b></span></div>'+
     (ts.length?ts.map(t=>{const r=taskRate(t,30);return '<div class="task'+(t.focus?" focus":"")+'"><div class="row"><div class="grow"><b>'+esc(t.name)+'</b> <span class="tag'+(t.status==="定着"?" gold":"")+'">'+(t.focus?"重点":t.status)+'</span></div><button class="btn sm ghost" data-act="editTask" data-t="'+t.id+'">設定</button></div><div class="small muted">'+(t.minimum?'最低ライン：'+esc(t.minimum)+' ・ ':'')+'30日達成率 '+(r?Math.round(r.rate*100)+'%（'+r.ok+'/'+r.n+'）':'—')+((t.restDays||[]).length?' ・ 休息日 '+t.restDays.map(i=>WD[i]).join(""):'')+'</div></div>'}).join(""):'<p class="small muted" style="margin-top:4px">未着手</p>')+'</div>';}
-  out.push('<section class="sec"><p class="eyebrow">六つの修行</p>'+cats+'</section>');
+  out.push('<section class="sec" id="sec-six"><p class="eyebrow">六つの修行</p>'+cats+'</section>');
   // 欲望との対決
   const d=day(k);const won=d.temptations.filter(x=>x.won).length,lost=d.temptations.length-won;
-  if(feat("tempt"))out.push('<section class="sec"><p class="eyebrow">欲の統制</p><h2>欲望との対決</h2><p class="small muted" style="margin-bottom:8px">SNSや動画を見たくなったら、画面右下の「衝動」を押せ。60秒の呼吸で波をやり過ごす。</p><div class="row" style="margin-bottom:10px"><div class="grow small">今日　勝ち <b class="num" style="color:var(--gold-hi);font-size:calc(18px*var(--fz,1))">'+won+'</b>　負け <b class="num" style="font-size:calc(18px*var(--fz,1))">'+lost+'</b></div></div><div class="grid2"><button class="btn gold" data-act="tempt" data-v="1">誘惑に打ち勝った</button><button class="btn" data-act="tempt" data-v="0">誘惑に負けた</button></div>'+(d.temptations.length?'<div class="small muted" style="margin-top:10px">'+d.temptations.slice(-5).reverse().map(x=>'<div>'+esc(x.at)+'　'+esc(x.type)+'　'+(x.won?"勝":"負")+(x.note?'　'+esc(x.note):'')+'</div>').join("")+'</div>':'')+'</section>');
+  if(feat("tempt"))out.push('<section class="sec" id="sec-tempt"><p class="eyebrow">欲の統制</p><h2>欲望との対決</h2><p class="small muted" style="margin-bottom:8px">SNSや動画を見たくなったら、画面右下の「衝動」を押せ。60秒の呼吸で波をやり過ごす。</p><div class="row" style="margin-bottom:10px"><div class="grow small">今日　勝ち <b class="num" style="color:var(--gold-hi);font-size:calc(18px*var(--fz,1))">'+won+'</b>　負け <b class="num" style="font-size:calc(18px*var(--fz,1))">'+lost+'</b></div></div><div class="grid2"><button class="btn gold" data-act="tempt" data-v="1">誘惑に打ち勝った</button><button class="btn" data-act="tempt" data-v="0">誘惑に負けた</button></div>'+(d.temptations.length?'<div class="small muted" style="margin-top:10px">'+d.temptations.slice(-5).reverse().map(x=>'<div>'+esc(x.at)+'　'+esc(x.type)+'　'+(x.won?"勝":"負")+(x.note?'　'+esc(x.note):'')+'</div>').join("")+'</div>':'')+'</section>');
   // 試練
   const trs=S.main.trials.slice().reverse();
-  out.push('<section class="sec"><p class="eyebrow">期間クエスト</p><h2>試練モード</h2>'+(trs.length?trs.map(tr=>{const e=trialEval(tr);return '<div class="task"><div class="row"><b class="grow">'+esc(tr.name)+'</b><span class="tag'+(e.status==="完遂"?" gold":e.status==="失敗"?" red":"")+'">'+e.status+'</span></div><div class="small muted">'+tr.days+'日 ・ '+fmtMD(tr.start)+'開始 ・ '+(e.status==="進行中"?e.day+'日目':e.status==="失敗"?fmtMD(e.failedOn)+'に未達':e.status==="完遂"?'+'+EXP_TRIAL+' EXP':'中止：'+esc(tr.stopReason||""))+'</div>'+(e.status==="進行中"?'<div class="bar" style="margin-top:6px"><i style="width:'+(e.okDays/tr.days*100)+'%"></i></div><div class="row" style="margin-top:8px;justify-content:flex-end;gap:6px"><button class="btn sm ghost" data-act="trialChange" data-v="'+tr.id+'">条件変更</button><button class="btn sm ghost" data-act="trialStop" data-v="'+tr.id+'">中止</button></div>':'')+(e.status==="失敗"||e.status==="中止"?'<div style="margin-top:8px;text-align:right"><button class="btn sm" data-act="trialRetry" data-v="'+tr.id+'">同じ条件で再挑戦</button></div>':'')+'</div>'}).join(""):'<p class="small muted">7日・30日・75日の約束を自分と交わします。開始後は条件を簡単に変えられません。</p>')+'<button class="btn wide" data-act="newTrial" style="margin-top:12px" '+(activeTasks().length?"":"disabled")+'>試練を始める</button></section>');
+  out.push('<section class="sec" id="sec-trial"><p class="eyebrow">期間クエスト</p><h2>試練モード</h2>'+(trs.length?trs.map(tr=>{const e=trialEval(tr);return '<div class="task"><div class="row"><b class="grow">'+esc(tr.name)+'</b><span class="tag'+(e.status==="完遂"?" gold":e.status==="失敗"?" red":"")+'">'+e.status+'</span></div><div class="small muted">'+tr.days+'日 ・ '+fmtMD(tr.start)+'開始 ・ '+(e.status==="進行中"?e.day+'日目':e.status==="失敗"?fmtMD(e.failedOn)+'に未達':e.status==="完遂"?'+'+EXP_TRIAL+' EXP':'中止：'+esc(tr.stopReason||""))+'</div>'+(e.status==="進行中"?'<div class="bar" style="margin-top:6px"><i style="width:'+(e.okDays/tr.days*100)+'%"></i></div><div class="row" style="margin-top:8px;justify-content:flex-end;gap:6px"><button class="btn sm ghost" data-act="trialChange" data-v="'+tr.id+'">条件変更</button><button class="btn sm ghost" data-act="trialStop" data-v="'+tr.id+'">中止</button></div>':'')+(e.status==="失敗"||e.status==="中止"?'<div style="margin-top:8px;text-align:right"><button class="btn sm" data-act="trialRetry" data-v="'+tr.id+'">同じ条件で再挑戦</button></div>':'')+'</div>'}).join(""):'<p class="small muted">7日・30日・75日の約束を自分と交わします。開始後は条件を簡単に変えられません。</p>')+'<button class="btn wide" data-act="newTrial" style="margin-top:12px" '+(activeTasks().length?"":"disabled")+'>試練を始める</button></section>');
   return out.join("");
 }
 
@@ -582,6 +635,7 @@ function renderRoku(){
   out.push('<section class="sec"><p class="eyebrow">EXP履歴 ・ 記録から毎回再計算</p><div class="tbl-wrap"><table><tbody>'+(ev.length?ev.map(e=>'<tr><td class="muted">'+fmtMD(e.k)+'</td><td style="white-space:normal">'+esc(e.what)+'</td><td class="r" style="color:var(--gold-hi)">+'+e.exp+'</td></tr>').join(""):'<tr><td class="muted">まだありません</td></tr>')+'</tbody></table></div>'+(evAll.length>12?'<button class="btn ghost sm" data-act="expAll" style="margin-top:6px">'+(ui.expAll?"直近だけ表示":"すべて表示（"+evAll.length+"件）")+'</button>':'')+'</section>');
   // 再起履歴
   if(S.main.recoveries.length)out.push('<section class="sec"><p class="eyebrow">再起履歴</p>'+S.main.recoveries.slice().reverse().map(r=>{const t=S.main.tasks.find(x=>x.id===r.taskId);return '<div class="small" style="padding:4px 0"><span class="muted num">'+fmtMD(r.date)+'</span>　'+esc(t?t.name:"")+'　→ '+esc((RECOVER.find(x=>x.k===r.choice)||{}).t)+(r.note?'<div class="muted">'+esc(r.note)+'</div>':'')+'</div>'}).join("")+'</section>');
+  out.push(renderVirtueWins(todayKey(),day(todayKey()),"wins"));
   return out.join("");
 }
 function okiteAvg(from,to){let n=0,s=0;for(let k=from;k<=to;k=addDays(k,1)){const d=S.days[k];if(d&&d.okite&&Object.keys(d.okite).length){n++;s+=okiteCount(d).ok}}return n?Math.round(s/n*10)/10:null}
@@ -768,11 +822,13 @@ function renderChikai(){
    row("文字サイズ",seg("fs",[["m","標準"],["l","大きめ"],["xl","最大"]]))+
    row("演出",seg("fx",[["std","標準"],["low","控えめ"],["min","最小限"]]))+
    row("アニメーション",seg("anim",[["on","ON"],["off","OFF"]]))+
+   row("表示の量",seg("view",[["min","最小"],["std","標準"],["full","詳細"]]))+
    row("背景",seg("bg",[["rain","写真（雨の縁側）"],["calm","絵（雨の森）"],["none","無地"]]))+
    row("背景の質感",seg("tex",[["on","ON"],["off","OFF"]]))+
    row("師範の登場",seg("mfx",[["std","標準"],["low","控えめ"],["min","最小限"]]))+
    '<p class="small muted" style="margin:8px 0">演出の「最小限」では昇格の儀を短い知らせにし、達成の印も押さない。師範の登場の「控えめ」は、復帰・連続達成・週の振り返り・未達成・卒業の時だけ現れる。</p><button class="btn ghost wide sm" data-act="lookReset">外観だけを初期状態に戻す</button></section>')}
   out.push('<section class="sec"><p class="eyebrow">データ設定</p><p class="small muted">保存先：'+(store.kind==="db"?"あなた専用の領域（他の人は閲覧・編集できません）":"この端末のブラウザ内")+'</p><div class="stack" style="gap:8px;margin-top:10px"><button class="btn wide" data-act="tutStart">使い方（チュートリアル）をもう一度見る</button><div class="note small"><p class="muted">保存されている内容</p><p>記録 '+Object.keys(S.days).length+'日分 ・ 修行 '+S.main.tasks.length+' ・ 姿見の写真 '+photoDays().length+'枚'+(S.main.master&&S.main.master.pk?' ・ 師範の写真':'')+(S.main.self0?' ・ 開始時点の写真':'')+'</p><p class="muted">写真は書き出しに含まれない（写真は本人専用の保存領域にだけ置く）。'+(()=>{try{const b=JSON.parse(localStorage.getItem("bushido.backup")||"null");return b?'この端末の控え：'+fmtMD(b.date):''}catch(e){return ''}})()+'</p></div><button class="btn wide" data-act="calAdd">毎朝と夜の合図をカレンダーに入れる</button><button class="btn wide" data-act="export">記録を書き出す（JSON）</button><button class="btn wide" data-act="importOpen">書き出した記録から復元する</button>'+(store.kind==="db"?'<button class="btn wide ghost" data-act="restoreLocal">この端末の控えから復元する</button>':'')+''+(ui.confirmReset?'<div class="banner red small">すべての記録・段位・起請文を消去します。元に戻せません。</div><div class="grid2"><button class="btn" data-act="resetNo">やめる</button><button class="btn red" data-act="resetYes">消去する</button></div>':'<button class="btn red wide" data-act="reset">すべての記録を消去</button>')+'</div><div id="exportOut"></div></section>');
+  {const tn=S.main.tone||"gen";out.push('<section class="sec" id="sec-tone"><p class="eyebrow">師範の言葉づかい</p><div class="chips" role="radiogroup">'+TONES.map(o=>'<button class="chip" role="radio" data-act="setTone" data-v="'+o.v+'" aria-pressed="'+(tn===o.v)+'" aria-checked="'+(tn===o.v)+'">'+o.t+'</button>').join("")+'</div><p class="small muted" style="margin-top:6px">'+esc((TONES.find(o=>o.v===tn)||TONES[1]).s)+'</p></section>')}
   return out.join("");
 }
 
