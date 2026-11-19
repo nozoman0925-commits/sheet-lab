@@ -93,6 +93,9 @@
         el.querySelector('[data-c]').onclick = function () { api.close(); };
         var del = el.querySelector('[data-del]');
         if (del) del.onclick = async function () {
+          // 書類で使っている品目を消すと、過去の書類（発行済みも）がマスタを失うので消さない
+          var used = EE.S.documents.filter(function (d) { return d.lines.some(function (l) { return l.itemId === it.id; }); }).length;
+          if (used) { EE.fx.toast('「' + it.name + '」は ' + used + ' 件の書類で使っているため削除できません。「使用中」を外すと、新しい見積の候補に出なくなります', { warn: true, ms: 6000 }); return; }
           if (!(await U.confirmBox('「' + it.name + '」を削除しますか？', '削除する', { danger: true }))) return;
           EE.S.items.splice(EE.S.items.indexOf(it), 1);
           EE.S.packages.forEach(function (p) { p.lines = p.lines.filter(function (l) { return l.itemId !== it.id; }); });
@@ -231,7 +234,7 @@
         '<label class="btn">' + I.upload + '読み込み<input type="file" accept=".json,application/json" id="json-in" hidden></label></div></div></section>' +
       '<section class="panel" data-st><div class="panel-h"><h2>初期化</h2></div><div class="panel-b">' +
         '<p class="hint" style="margin-top:0">お試し用のサンプル（マスタ・顧客・見積）に戻すか、すべて空にします。</p>' +
-        '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn" data-act="sample">' + I.refresh + 'サンプルに戻す</button><button class="btn danger" data-act="wipe">' + I.trash + 'すべて削除</button></div></div></section>' +
+        '<div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn danger" data-act="wipe">' + I.trash + 'すべて削除</button></div></div></section>' +
       '<section class="panel" data-st><div class="panel-h"><h2>起動アニメーション</h2></div><div class="panel-b">' +
         '<p class="hint" style="margin-top:0">初回はフル演出、2回目以降は短縮版で表示します。どこかをクリックするか、キーを押すと飛ばせます。</p>' +
         '<button class="btn" data-act="replay-splash">' + I.spark + '起動アニメーションをもう一度見る</button></div></section>' +
@@ -289,13 +292,12 @@
         case 'export':
           U.download('easy-estimate_backup_' + EE.data.today() + '.json', JSON.stringify(S, null, 2));
           EE.fx.success(a, '書き出しました'); break;
-        case 'sample':
-          if (!(await U.confirmBox('今のデータを消して、サンプルデータに戻しますか？\n（先にバックアップの書き出しをおすすめします）', 'サンプルに戻す', { danger: true }))) return;
-          EE.S = EE.data.sampleState(); U.commit(); EE.fx.toast('サンプルデータに戻しました'); EE.app.rerender(); break;
         case 'wipe':
           if (!(await U.confirmBox('マスタ・顧客・書類をすべて削除します。元に戻せません。', 'すべて削除', { danger: true }))) return;
           var keep = { company: S.company, settings: S.settings };
-          EE.S = Object.assign(EE.data.defaultState(), keep); U.commit(); EE.fx.toast('すべて削除しました'); EE.app.rerender(); break;
+          EE.S = EE.data.migrate(Object.assign(EE.data.defaultState(), keep));
+          if (EE.auth && EE.auth.current()) EE.app.linkMember(EE.auth.current());
+          U.commit(); EE.fx.toast('すべて削除しました'); EE.app.rerender(); EE.app.renderUser(); break;
       }
     });
     view.addEventListener('input', function (e) {

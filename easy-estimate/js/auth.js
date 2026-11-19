@@ -31,7 +31,10 @@
   }
   function same(a, b) { if (a.length !== b.length) return false; var d = 0; for (var i = 0; i < a.length; i++) d |= a.charCodeAt(i) ^ b.charCodeAt(i); return d === 0; }
 
-  var fails = 0, lockUntil = 0;
+  // 続けて失敗した回数とロック解除の時刻は、再読み込みで消えないよう保存する
+  var LKEY = 'oumitsu:auth:lock';
+  function lockState() { try { return JSON.parse(root.localStorage.getItem(LKEY)) || { fails: 0, until: 0 }; } catch (e) { return { fails: 0, until: 0 }; } }
+  function setLock(v) { try { root.localStorage.setItem(LKEY, JSON.stringify(v)); } catch (e) {} }
 
   var local = {
     name: 'local',
@@ -43,15 +46,18 @@
       } catch (e) { return null; }
     },
     signIn: async function (v) {
-      if (Date.now() < lockUntil) throw new AuthError('', '続けて失敗したため、' + Math.ceil((lockUntil - Date.now()) / 1000) + ' 秒待ってからもう一度お試しください');
+      var lk = lockState();
+      if (Date.now() < lk.until) throw new AuthError('', '続けて失敗したため、' + Math.ceil((lk.until - Date.now()) / 1000) + ' 秒待ってからもう一度お試しください');
       var u = store().users.filter(function (x) { return x.email === normEmail(v.email); })[0];
       // アカウントが無いときも同じだけ計算して、どちらが違ったか分からないようにする
       var h = await derive(v.password, u ? unb64(u.salt) : new Uint8Array(16), u ? u.iter : ITER);
       if (!u || !same(h, u.hash)) {
-        if (++fails >= 5) { fails = 0; lockUntil = Date.now() + 30000; }
+        lk.fails = (lk.fails || 0) + 1;
+        if (lk.fails >= 5) { lk.fails = 0; lk.until = Date.now() + 30000; }
+        setLock(lk);
         throw new AuthError('', 'メールアドレスかパスワードが違います');
       }
-      fails = 0;
+      setLock({ fails: 0, until: 0 });
       root.sessionStorage.setItem(SKEY, JSON.stringify({ uid: u.id, at: new Date().toISOString() }));
       return { id: u.id, name: u.name, email: u.email };
     },

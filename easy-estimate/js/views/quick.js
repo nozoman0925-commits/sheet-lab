@@ -329,7 +329,7 @@
         '<div class="field c6"><label>&nbsp;</label><button class="btn primary" data-act="make">' + I.copy + '選んだ明細で見積を作る</button></div></div>';
   }
   function mountPast(view) {
-    function refresh() { view.querySelector('#p-list').innerHTML = pastListHTML(); }
+    function refresh() { var l = view.querySelector('#p-list'); if (l) l.innerHTML = pastListHTML(); }
     refresh();
     var deb;
     view.addEventListener('input', function (e) {

@@ -147,6 +147,7 @@
 
   function refresh() {
     var t = document.getElementById('doc-table');
+    if (!t) return;   // 入力の直後に別の画面へ移ったとき（遅れて動く更新）は何もしない
     t.innerHTML = tableHTML();
     EE.fx.stagger(t, { step: 18 });
   }
@@ -215,6 +216,9 @@
       if (a.dataset.act === 'dup') EE.app.duplicate(d.id);
       else if (a.dataset.act === 'rev') { var r = EE.app.makeRevision(d); location.hash = '#/edit/' + r.id; }
       else if (a.dataset.act === 'del') {
+        // 受注した見積として使われている書類は消さない（受注額の集計から消えてしまうため）
+        var acc = EE.S.projects.filter(function (p) { return p.acceptedDocId === d.id; })[0];
+        if (acc) { EE.fx.toast('この見積は「' + acc.name + '」の受注見積なので削除できません', { warn: true, ms: 5000 }); return; }
         var ok = await U.confirmBox('下書き「' + (d.title || d.no) + '」を削除しますか？', '削除する', { danger: true });
         if (!ok) return;
         var idx = EE.S.documents.indexOf(d);

@@ -36,9 +36,11 @@
     return ED;
   }
 
-  function locked() { return ED.doc.status === 'issued'; }
+  function locked() { return !!ED && ED.doc.status === 'issued'; }
   function docForCheck() {
     var d = ED.doc;
+    // 編集中の下書きは、保存時の合計との照合をしない（保存前は食い違って当然なので、誤った「要修正」を出さない）
+    if (!locked() && d.totals) { d = Object.assign({}, d); delete d.totals; }
     if (!d.no) { d = Object.assign({}, d, { no: EE.data.peekNumber(EE.S, d.issueDate) }); }
     return d;
   }
@@ -172,7 +174,7 @@
       html: html,
       mount: mount,
       guard: function () { return ED && ED.dirty; },
-      discard: function () { ED = null; }
+      discard: function () { clearTimeout(asTimer); clearTimeout(checkTimer); ED = null; }
     };
   }
 
@@ -363,6 +365,7 @@
   function updateChecks() {
     clearTimeout(checkTimer);
     checkTimer = setTimeout(function () {
+      if (!ED) return;   // 「破棄して移動」で編集中の書類が無くなった後に遅れて動いたとき
       var list = U.checkDoc(docForCheck());
       var s = EE.check.summary(list);
       var sum = document.getElementById('check-sum');
@@ -687,9 +690,10 @@
         var opt = p.lines.filter(function (l) { return l.optional; }).length;
         EE.fx.toast('「' + p.name + '」から ' + ids.length + ' 行を追加しました' + (opt ? '（参考候補 ' + opt + ' 行は追加していません）' : ''), {
           action: { label: '元に戻す', run: function () {
+            if (!ED) return;   // 編集画面を離れた後に押されたとき
             ED.doc.lines = ED.doc.lines.filter(function (l) { return ids.indexOf(l.lineId) < 0; });
             ED.doc.adjustments = ED.doc.adjustments.filter(function (a) { return addedAdj.indexOf(a.id) < 0; });
-            renderLines();
+            markDirty(); renderLines();
           } }
         });
         return;
@@ -765,8 +769,9 @@
         var ids = addItems(p.lines);
         EE.fx.toast('「' + p.name + '」から ' + (ids ? ids.length : 0) + ' 行を追加しました', {
           action: { label: '元に戻す', run: function () {
+            if (!ED) return;
             ED.doc.lines = ED.doc.lines.filter(function (l) { return ids.indexOf(l.lineId) < 0; });
-            renderLines();
+            markDirty(); renderLines();
           } }
         });
         return;
@@ -790,7 +795,8 @@
           var doneDel = false, after = function () { if (doneDel) return; doneDel = true; renderLines(); };
           if (anim) { anim.onfinish = after; setTimeout(after, 220); } else after();
           EE.fx.toast('「' + removed.name + '」を削除しました', { action: { label: '元に戻す', run: function () {
-            L.splice(Math.min(idx, L.length), 0, removed); renderLines(removed.lineId);
+            if (!ED || ED.doc.lines !== L) return;
+            L.splice(Math.min(idx, L.length), 0, removed); markDirty(); renderLines(removed.lineId);
           } } });
         } else if (act === 'up' && idx > 0) {
           L.splice(idx - 1, 0, L.splice(idx, 1)[0]); markDirty(); renderLines(L[idx - 1].lineId);
@@ -824,13 +830,13 @@
         var removedA = ED.doc.adjustments.filter(function (x) { return x.id === aid; })[0];
         ED.doc.adjustments = ED.doc.adjustments.filter(function (x) { return x.id !== aid; });
         markDirty(); renderAdj(); updateSummary();
-        EE.fx.toast('「' + (removedA.label || ADJ_LABEL[removedA.type]) + '」を削除しました', { action: { label: '元に戻す', run: function () { ED.doc.adjustments.push(removedA); renderAdj(); updateSummary(); } } });
+        EE.fx.toast('「' + (removedA.label || ADJ_LABEL[removedA.type]) + '」を削除しました', { action: { label: '元に戻す', run: function () { if (!ED) return; ED.doc.adjustments.push(removedA); markDirty(); renderAdj(); updateSummary(); } } });
         return;
       }
       if (act === 'bulk-del' || act === 'bulk-dup' || act === 'bulk-refresh' || act === 'bulk-discount') {
         var ids = selectedIds(); if (!ids.length) return;
         var before = clone(ED.doc.lines), beforeAdj = clone(ED.doc.adjustments || []);
-        var undo = { label: '元に戻す', run: function () { ED.doc.lines = before; ED.doc.adjustments = beforeAdj; renderLines(); } };
+        var undo = { label: '元に戻す', run: function () { if (!ED) return; ED.doc.lines = before; ED.doc.adjustments = beforeAdj; markDirty(); renderLines(); } };
         if (act === 'bulk-del') {
           ED.doc.lines = ED.doc.lines.filter(function (l) { return ids.indexOf(l.lineId) < 0; });
           EE.fx.toast(ids.length + ' 行を削除しました', { action: undo });

@@ -159,12 +159,27 @@
         '<div class="kpi-value num" data-count="' + value + '" data-format="' + fmt + '">0</div><div class="kpi-foot">' + foot + '</div></div>';
     }
     var periods = [['3m', '3か月'], ['6m', '6か月'], ['year', '今年'], ['all', 'すべて']];
+    /* はじめに：自社情報・顧客・最初の見積がそろうまで、やることを順に出す */
+    function setupHTML() {
+      var steps = [
+        [!!(S.company.name && S.company.address), '自社情報（会社名・住所・登録番号）を入れる', '#/settings/company', '見積書に載ります'],
+        [S.customers.length > 0, '顧客を登録する', '#/clients', '宛先として選べるようになります'],
+        [S.documents.length > 0, '最初の見積を作る', '#/new', '文章からでも、マスタから選んでも作れます']
+      ];
+      if (steps.every(function (x) { return x[0]; })) return '';
+      return '<section class="panel setup" data-st style="margin-bottom:18px"><div class="panel-h"><h2>はじめに</h2><span class="sub">3つそろえると見積を送れます</span></div><div class="panel-b"><ol class="setup-list">' +
+        steps.map(function (x) {
+          return '<li class="' + (x[0] ? 'done' : '') + '"><span class="setup-mark" aria-hidden="true">' + (x[0] ? I.check : '') + '</span>' +
+            (x[0] ? '<span>' + x[1] + '<span class="sr-only">（済み）</span></span>' : '<a href="' + x[2] + '">' + x[1] + '</a>') + '<span class="hint">' + x[3] + '</span></li>';
+        }).join('') + '</ol></div></section>';
+    }
 
     var html =
       '<div class="toolbar" data-st style="margin-bottom:18px"><div class="grow"><div style="font-size:22px;font-weight:650">' + esc(S.company.name || '桜ミツ') + '</div>' +
         '<div class="hint">' + U.jdate(EE.data.today()) + '　金額はマスタと固定の計算エンジンだけで決まります（AIは金額を決めません）</div></div>' +
         '<a class="btn" href="#/settings/items">' + I.box + 'マスタ ' + S.items.length + '件</a>' +
         '<a class="btn primary" href="#/new">' + I.spark + 'かんたん見積もり作成</a></div>' +
+      setupHTML() +
       /* 1. 案件フロー */
       '<div class="flow-filters" data-st>' +
         '<div class="seg" id="f-period">' + periods.map(function (p) { return '<button data-v="' + p[0] + '" class="' + (F.period === p[0] ? 'on' : '') + '">' + p[1] + '</button>'; }).join('') + '</div>' +

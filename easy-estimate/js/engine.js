@@ -186,8 +186,13 @@
         var unit = [100, 1000, 10000].indexOf(Number(a.unit)) >= 0 ? Number(a.unit) : 1000;
         var cut = out.subtotal > 0 ? out.subtotal % unit : 0;
         if (cut) {
-          var big = Object.keys(out.byRate).sort(function (x, y) { return out.byRate[y].base - out.byRate[x].base; })[0];
-          byCat[big] = cut;
+          // 差額は金額が大きい税率区分から順に引く。1つの区分を0円未満にはしない（税がマイナスにならないように）
+          var left = cut;
+          Object.keys(out.byRate).sort(function (x, y) { return out.byRate[y].base - out.byRate[x].base; }).forEach(function (c) {
+            if (!left) return;
+            var take = Math.min(left, Math.max(0, out.byRate[c].base));
+            if (take) { byCat[c] = take; left -= take; }
+          });
           book(a, byCat, -1);
         } else {
           out.adjustments.push({ id: a.id, type: a.type, label: a.label || '', amount: 0, byCat: {} });

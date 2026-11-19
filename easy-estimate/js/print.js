@@ -52,7 +52,9 @@
     var b = r.breakdown;
     var bdRows = Object.keys(CT).filter(function (k) { return b[k] !== 0 || k === 'material' || k === 'labor'; }).map(function (k) {
       return '<tr><td>' + CT[k] + '</td><td class="r num">' + yen(b[k]) + '</td></tr>';
-    }).join('');
+    }).join('') +
+      // 値引き・端数調整も内訳に入れ、内訳の合計が小計（税抜）と一致するようにする
+      (b.discount ? '<tr><td>値引き・端数調整</td><td class="r num">' + yen(b.discount) + '</td></tr>' : '');
 
     var title = '御見積書' + (doc.patternLabel ? '（' + doc.patternLabel + '）' : '') + (doc.rev ? '（第' + doc.rev + '版）' : '');
     return '<div class="sheet">' +

@@ -7,6 +7,8 @@
 (function (root) {
   'use strict';
 
+  function own(o, k) { return o != null && Object.prototype.hasOwnProperty.call(o, k); }
+
   /** 式を解析して関数にする（構文エラーは例外） */
   function compile(expr) {
     var toks = [], re = /\s*(\d+(?:\.\d+)?|[A-Za-z_][A-Za-z0-9_]*|[-+*/(),])/y, m, pos = 0;
@@ -36,14 +38,19 @@
       if (/^\d/.test(t)) { var n = Number(t); return function () { return n; }; }
       if (/^[A-Za-z_]/.test(t)) {
         if (peek() === '(') {
-          if (!FN[t]) throw new Error('使えない関数です：' + t);
+          if (!own(FN, t)) throw new Error('使えない関数です：' + t);
           i++; var args = [expr0()];
           while (peek() === ',') { i++; args.push(expr0()); }
           eat(')');
           var f = FN[t];
           return function (v) { return f.apply(null, args.map(function (a) { return a(v); })); };
         }
-        return function (v) { if (!(t in v)) throw new Error('入力「' + t + '」がありません'); return v[t]; };
+        // 入力そのものにある名前だけを読む（constructor・toString など、JavaScript の内部の名前は読まない）
+        return function (v) {
+          if (!own(v, t)) throw new Error('入力「' + t + '」がありません');
+          var n = Number(v[t]); if (!isFinite(n)) throw new Error('入力「' + t + '」が数値ではありません');
+          return n;
+        };
       }
       throw new Error('式の書き方が正しくありません：' + t);
     }
