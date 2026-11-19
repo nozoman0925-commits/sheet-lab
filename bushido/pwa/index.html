@@ -820,6 +820,10 @@ html.tut-lock{overscroll-behavior:none}
 .tag.red{border-color:var(--line)!important;color:var(--muted)!important;background:none!important}
 .quest.miss .mark{border-color:var(--line)!important;color:var(--muted)!important}
 .sec.pick{border-color:var(--gold-dim)}
+#prologue .pl-again{display:none}#prologue[data-act="6"] .pl-again{display:inline-flex}#prologue[data-act="6"] [data-pl=skip]{display:none}
+.mt-kamon .mon{width:40px;height:40px}
+.kamon-pf{display:grid;place-items:center}.kamon-pf .mon{width:70%;height:70%}
+.brand small{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.35;max-width:14em}
 .loading{min-height:70vh;display:grid;place-items:center;color:var(--muted);font-family:var(--display);letter-spacing:.3em}
 .sec{scroll-margin-top:84px}
 .help{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-weight:700;flex:none;margin-left:6px}
@@ -1324,7 +1328,7 @@ function missionPlan(k,roll){
   const pick=(list,tg,pref)=>{list=list.filter(m=>!chosen.has(m.t)&&missionAllowed(m,pf,cond)&&m.lv<=cap);tg=Math.min(tg,cap);
     {const fit=list.filter(m=>fitsTime(m)&&fitsClock(m));if(fit.length)list=fit;else{const fc=list.filter(fitsClock);if(fc.length)list=fc}}
     const fresh=list.filter(m=>!recent.has(m.t)&&!shown.has(m.t)&&!(m.q&&m.q!==pref&&recentQ.has(m.q))),fresh1=list.filter(m=>!recent.has(m.t)&&!shown.has(m.t)),fresh2=list.filter(m=>!recent.has(m.t));list=fresh.length?fresh:fresh1.length?fresh1:fresh2.length?fresh2:list;if(!list.length)return null;
-    const w=list.map(m=>{const dd=Math.abs(m.lv-tg);return (.3+score(m))*(dd===0?4:dd===1?2:dd===2?.6:.1)*(1+(pf&&m.q&&pf.score&&pf.score[m.q]!=null?pf.score[m.q]*1.5:0))*(pref&&m.q===pref?6:1)*(yw==="time"?(/^(\d+分|数秒|1分|2分|3分|5分)/.test((MDATA[m.id]||[""])[0])?3:.5):1)});
+    const w=list.map(m=>{const dd=Math.abs(m.lv-tg);return (dd===0?4:dd===1?2:dd===2?.6:.1)*(1+(pf&&m.q&&pf.score&&pf.score[m.q]!=null?pf.score[m.q]*1.5:0))*(pref&&m.q===pref?6:1)*(yw==="time"?(/^(\d+分|数秒|1分|2分|3分|5分)/.test((MDATA[m.id]||[""])[0])?3:.5):1)});
     let x=r()*w.reduce((a,b)=>a+b,0);for(let i=0;i<list.length;i++){x-=w[i];if(x<=0)return list[i]}return list[list.length-1]};
   const detail=(m,why,c)=>{let w=why;if(pf&&m.q&&pf.score&&pf.score[m.q]>=2&&QMAP[m.q])w+="（見つめ直し：「"+QMAP[m.q].q.replace(/[「」]/g,"")+"」）";
     if(c){const cl=catLevel(c,k);if(cl.change==="up")w+=" ・ 3回続けて斬った。難度を上げた";if(cl.change==="down")w+=" ・ 2回続けて斬れなかった。難度を下げた"}return w};
@@ -1340,7 +1344,8 @@ function missionPlan(k,roll){
   if(out.length<3&&!usedD.has("rel")){const m=pick(MISSIONS[0],3);if(m&&cond!=="bad"){chosen.add(m.t);usedD.add("rel");out.push({c:0,t:m.t,lv:m.lv,id:m.id,why:detail(m,"人間関係と礼節を磨く",null)})}}
   for(const sl of slots){if(out.length>=3)break;if(usedD.has(domOf(sl.c)))continue;const m=pick(MISSIONS[sl.c],target(sl.c),sl.q);if(m){chosen.add(m.t);usedD.add(domOf(sl.c));out.push({c:sl.c,t:m.t,lv:m.lv,id:m.id,why:detail(m,sl.why,sl.c)})}}
   for(const sl of slots){if(out.length>=3)break;const m=pick(MISSIONS[sl.c],target(sl.c),sl.q);if(m){chosen.add(m.t);out.push({c:sl.c,t:m.t,lv:m.lv,id:m.id,why:detail(m,sl.why,sl.c)})}}
-  out.forEach(o=>{const m=MBYID[o.id]||{t:o.t,lv:o.lv,c:o.c};o.score=+score(m,o.c||null).toFixed(3)});
+  // おすすめの順（単純なルール）：目標の分野 → 最近見せていない → 軽い
+  out.forEach(o=>{o.goal=!!(o.c&&goalC.has(o.c));o.fresh=!shown.has(o.t)});
   return{offers:out,forced:false,cond};
 }
 function missionOffer(k,roll){return missionPlan(k,roll).offers}
@@ -1602,7 +1607,7 @@ function header(){
   const {exp,rank}=syncRank();const next=RANKS[rank+1];
   const cur=RANKS[rank];const pct=next?Math.max(0,Math.min(100,(exp-cur.exp)/(next.exp-cur.exp)*100)):100;
   const wait=next&&exp>=next.exp;
-  return '<header class="top">'+kamon+'<div class="brand">武士道<small>毎日の約束で、己を鍛える</small></div><div class="rankchip"><b>'+cur.n+'</b>'+(rankState()?'<i class="rs">'+rankState()+'</i>':'')+'<span><span id="expn">'+(ui.shownExp!=null&&ui.shownExp<exp?ui.shownExp:exp).toLocaleString()+'</span> EXP'+(next?' / 次 '+next.exp.toLocaleString():'')+'</span></div><button class="help" data-act="help" aria-label="使い方とヘルプ">？</button><div class="hbar" title="'+(next?(wait?next.n+"は修行の条件待ち":next.n+"まで"+Math.round(pct)+"%"):"最高段位")+'"><i style="width:'+(ui.shownPct!=null&&ui.shownExp<exp?ui.shownPct:pct)+'%"></i></div><span id="expfloat" class="expfloat"></span></header>';
+  return '<header class="top">'+kamon+'<div class="brand">武士道<small>己に勝て。言い訳を断て。昨日の己を超えろ。</small></div><div class="rankchip"><b>'+cur.n+'</b>'+(rankState()?'<i class="rs">'+rankState()+'</i>':'')+'<span><span id="expn">'+(ui.shownExp!=null&&ui.shownExp<exp?ui.shownExp:exp).toLocaleString()+'</span> EXP'+(next?' / 次 '+next.exp.toLocaleString():'')+'</span></div><button class="help" data-act="help" aria-label="使い方とヘルプ">？</button><div class="hbar" title="'+(next?(wait?next.n+"は修行の条件待ち":next.n+"まで"+Math.round(pct)+"%"):"最高段位")+'"><i style="width:'+(ui.shownPct!=null&&ui.shownExp<exp?ui.shownPct:pct)+'%"></i></div><span id="expfloat" class="expfloat"></span></header>';
 }
 function render(){applyLook();
   if(plActive()){$("#tabs").hidden=true;$("#app").innerHTML="";plMount();return}if($("#prologue"))plUnmount();
@@ -1766,7 +1771,7 @@ const ML={
   type:["「{t}」だな。その性質に合った稽古の進め方を示そう。"]}};
 const STREAK_MS=[3,7,14,21,30,50,66,75,100,150,200,365];
 function curMaster(){return (ui.ob&&ui.ob.m&&ui.ob.m.motive)?ui.ob.m:S.main.master||null}
-function mLine(ev,v,m){m=m||S.main.master;if(!m||!ML[m.motive])return null;const a=ML[m.motive][ev];if(!a)return null;let t=a[Math.floor(Math.random()*a.length)];
+function mLine(ev,v,m){if(!MASTER_MODE&&!m)return null;m=m||S.main.master;if(!m||!ML[m.motive])return null;const a=ML[m.motive][ev];if(!a)return null;let t=a[Math.floor(Math.random()*a.length)];
   v=Object.assign({I:m.gender==="male"?"俺":"私"},v||{});return t.replace(/\{(\w)\}/g,(_,k)=>v[k]!=null?v[k]:"")}
 function mArtSVG(m){const mo=MOTIVES[m&&m.motive]||MOTIVES.respect;const c=mo.c;const g=m&&m.gender;
   const back=g==="female"?'<path d="M138 228 Q136 148 200 146 Q264 148 262 228 L272 338 Q200 356 128 338Z" fill="#0b0a08"/>':'';
@@ -1782,13 +1787,21 @@ function mArtSVG(m){const mo=MOTIVES[m&&m.motive]||MOTIVES.respect;const c=mo.c;
   '<circle cx="282" cy="410" r="20" fill="#15130f" stroke="#c9a24a" stroke-width="2"/><text x="282" y="418" text-anchor="middle" font-size="22" font-weight="800" font-family="serif" fill="#c9a24a">'+mo.k+'</text></svg>'}
 function mArtURL(m){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(mArtSVG(m))}
 const SELF_NONE='<svg viewBox="0 0 100 120" aria-hidden="true"><circle cx="50" cy="38" r="20" fill="#8a7d63"/><path d="M12 118 C14 82 30 66 50 66 C70 66 86 82 88 118Z" fill="#8a7d63"/></svg>';
-function mPic(m,cls){if(!m)return '<div class="pf '+(cls||"")+'"><div class="ph-none">'+SELF_NONE+'<span>未設定</span></div></div>';
+function mPic(m,cls){if(!MASTER_MODE)return '<div class="pf kamon-pf '+(cls||"")+'">'+kamon+'</div>';if(!m)return '<div class="pf '+(cls||"")+'"><div class="ph-none">'+SELF_NONE+'<span>未設定</span></div></div>';
   return '<div class="pf '+(cls||"")+'">'+(m.pk?'<img data-pk="'+m.pk+'" data-fb="'+m.motive+'|'+(m.gender||"")+'" alt="師範 '+esc(m.name||"")+' の写真">':'<img src="'+mArtURL(m)+'" alt="師範 '+esc(m.name||"")+' の絵（オリジナル）">')+'</div>'}
 function sPic(pk,cls){return '<div class="pf '+(cls||"")+'">'+(pk?'<img data-pk="'+pk+'" alt="自分の写真">':'<div class="ph-none">'+SELF_NONE+'<span>写真なし</span></div>')+'</div>'}
 async function fillPk(){for(const im of document.querySelectorAll("img[data-pk]")){if(im.getAttribute("src"))continue;im.setAttribute("src","data:image/gif;base64,R0lGODlhAQABAAAAACw=");const u=await photoLoad(im.dataset.pk);
   if(u)im.src=u;else if(im.dataset.fb){const f=im.dataset.fb.split("|");im.src=mArtURL({motive:f[0],gender:f[1]})}else{const d=document.createElement("div");d.className="ph-none";d.innerHTML=SELF_NONE+"<span>写真を読み込めない</span>";im.replaceWith(d)}}}
 function photoDel(k){if(!k)return;delete memPhotos[k];try{if(store.deletePhoto)Promise.resolve(store.deletePhoto(k)).catch(()=>{})}catch(e){}}
-function mSay(ev,v){const m=S.main.master;if(!m||!S.main.onboarded)return;const mf=look().mfx;if(mf==="min")return;if(mf==="low"&&!["ret","grad","streak","weekly","miss"].includes(ev))return;const line=mLine(ev,v);if(!line)return;const el=$("#mtoast");if(!el)return;
+// 第35版：師範（人物）の言葉は出さない。出来事に合った出典つきの格言を、短く見せる
+const MASTER_MODE=false;
+const SAY_TAG={done:"cont",part:"cont",streak:"cont",miss:"fail",ret:"start",stall:"adv",rankup:"humble",grad:"humble",weekly:"learn"};
+function sayQuote(ev){if(!S.main.onboarded)return;const mf=look().mfx;if(mf==="min")return;if(mf==="low"&&!["ret","grad","streak","weekly","miss"].includes(ev))return;
+  const tag=SAY_TAG[ev];if(!tag)return;const pool=QUOTES.map((q,i)=>[q,i]).filter(([q])=>(q[3]||"").split(",").includes(tag));if(!pool.length)return;
+  const [q]=pool[Math.floor(Math.random()*pool.length)];const el=$("#mtoast");if(!el)return;
+  el.style.setProperty("--mc","");el.innerHTML='<div class="mt-kamon" aria-hidden="true">'+kamon+'</div><div><small>格言 ・ '+esc(q[1])+(q[2]?'（'+esc(q[2])+'）':'')+'</small><p>'+esc(q[0])+'</p></div>';
+  el.classList.remove("show");void el.offsetWidth;el.classList.add("show");clearTimeout(timers.mt);timers.mt=setTimeout(()=>el.classList.remove("show"),4200)}
+function mSay(ev,v){if(!MASTER_MODE){sayQuote(ev);return}const m=S.main.master;if(!m||!S.main.onboarded)return;const mf=look().mfx;if(mf==="min")return;if(mf==="low"&&!["ret","grad","streak","weekly","miss"].includes(ev))return;const line=mLine(ev,v);if(!line)return;const el=$("#mtoast");if(!el)return;
   el.style.setProperty("--mc",(MOTIVES[m.motive]||{}).c||"");el.innerHTML=mPic(m)+'<div><small>師範 ・ '+esc(m.name)+'</small><p>'+esc(line)+'</p></div>';fillPk();
   el.classList.remove("show");void el.offsetWidth;el.classList.add("show");clearTimeout(timers.mt);timers.mt=setTimeout(()=>el.classList.remove("show"),4200)}
 /* 16タイプ：伝え方の調整（基本人格は動機で決まる。型は伝え方と提示方法だけを変える） */
@@ -1816,7 +1829,7 @@ function adviceBody(){const tp=typeOf(S.main.profile);const a=adviceActs();
     else if(a.length>1)out+='<p class="small muted" style="margin-top:8px">選べ（どちらからでもいい）</p><ul class="plan-list">'+a.slice(0,3).map(y=>'<li>'+esc(y.t)+'</li>').join("")+'</ul>';
     else out+='<p class="small muted" style="margin-top:8px">選べ</p><ul class="plan-list"><li>今すぐやる</li><li>時刻を決めて、その時にやる</li></ul>'}
   return out}
-function masterCard(){const M=S.main;const m=M.master;
+function masterCard(){if(!MASTER_MODE)return "";const M=S.main;const m=M.master;
   if(!m)return '<section class="sec fold" id="sec-master"><p class="eyebrow">己の師範</p><h2>師範を迎えよ。</h2><p class="small muted" style="margin-bottom:10px">お前が変わる理由となる人物を一人選び、師範として迎える。稽古の結果に応じて、師範が言葉をかける。今の記録・EXP・段位はそのまま残る。</p><button class="btn gold wide" data-act="mflowStart">師範を選ぶ</button></section>';
   const k=todayKey();const d=day(k);const h=new Date().getHours();const mm=d.mission;let line;
   const tn=tenure();
@@ -2296,9 +2309,8 @@ const GROUPS={
   {t:"分析",s:"六つの能力・生活の基盤・言い訳・過去の自分",ids:["sec-status","sec-base","sec-excuse"],ey:["VS "]},
   {t:"これまでの記録",s:"省察・EXP・再起",ids:["sec-refl-list"],ey:["EXP履歴","再起履歴"]}],
  chikai:[{t:"自分の誓い",s:"起請文・未来之書・七徳の心得",ey:["起請文","未来之書","七徳の心得"]},
-  {t:"師範",s:"師範・言葉づかい・師範への誓い",ids:["sec-mset","sec-tone","sec-vow"]},
   {t:"自分の成長",s:"段位・刀・卒業・武士の型・見つめ直し",ids:["sec-grad-m","sec-self0","sec-type","sec-myprofile"],ey:["刀の成長","段位","離 ","卒業 ・ ","見つめ直し"]},
-  {t:"表示と通知",s:"表示の量・外観・通知・使う機能",ids:["sec-look","sec-features"],ey:["通知設定"]},
+  {t:"表示と通知",s:"表示の量・外観・言葉の厳しさ・通知・使う機能",ids:["sec-look","sec-tone","sec-features"],ey:["通知設定"]},
   {t:"データ管理",s:"書き出し・読み込み・全消去・使い方",ey:["データ設定","用語集"]}]};
 function groupSections(){const G=GROUPS[tab];const st=$("#app .stack");if(!G||!st)return;ui.grpOpen=ui.grpOpen||{};
   G.forEach((g,gi)=>{let els;const kids=[...st.children].filter(e=>e.tagName==="SECTION");
@@ -2369,7 +2381,7 @@ function plReduced(){try{return look().anim==="off"||matchMedia("(prefers-reduce
 function plD(n){return plReduced()?0:n}
 function plMount(){if($("#prologue"))return;const el=document.createElement("div");el.id="prologue";el.setAttribute("role","dialog");el.setAttribute("aria-label","入門の序章");
   el.innerHTML='<div class="pl-aurora" aria-hidden="true"><i></i><i></i><i></i></div><div class="pl-scenes">'+plScenes()+'</div><div class="pl-grain" aria-hidden="true"></div><div class="pl-vignette"></div>'+
-   '<div class="pl-top"><button class="pl-btn" data-pl="back" aria-label="前の幕へ戻る">‹</button><div class="pl-dots" aria-hidden="true">'+PROLOGUE.map(()=>'<i></i>').join("")+'</div><button class="pl-btn" data-pl="skip">スキップ</button></div>'+
+   '<div class="pl-top"><button class="pl-btn" data-pl="back" aria-label="前の幕へ戻る">‹</button><div class="pl-dots" aria-hidden="true">'+PROLOGUE.map(()=>'<i></i>').join("")+'</div><button class="pl-btn" data-pl="skip">スキップ</button><button class="pl-btn pl-again" data-pl="again">はじめから見る</button></div>'+
    '<div class="pl-center"><div class="pl-glass"><p class="pl-ch" aria-hidden="true"></p><div class="pl-text" aria-live="polite"></div></div></div>'+
    '<p class="pl-hint" aria-hidden="true">タップして進む</p>'+
    '<div class="pl-cta"><button class="pl-enter" data-pl="enter">入門する</button><button class="pl-demo" data-pl="demo">先に見本で中を見る</button></div>';
@@ -2377,7 +2389,8 @@ function plMount(){if($("#prologue"))return;const el=document.createElement("div
   el.addEventListener("click",plTap);
   // ガラスに映る淡い光（指やマウスの位置）
   el.addEventListener("pointermove",ev=>{const g=el.querySelector(".pl-glass");if(!g)return;const r=g.getBoundingClientRect();g.style.setProperty("--mx",(ev.clientX-r.left)+"px");g.style.setProperty("--my",(ev.clientY-r.top)+"px")},{passive:true});ui.pl={act:-1,beat:-1,busy:false,t:0};
-  const a=Math.max(0,Math.min(PROLOGUE.length-1,(S.main.prologue&&S.main.prologue.act)||0));plShowAct(a)}
+  const pa=S.main.prologue&&S.main.prologue.act;if(pa==null)ui.pl.quickAll=true; // 初めては最後の一画面を一度に見せる
+  const a=Math.max(0,Math.min(PROLOGUE.length-1,pa!=null?pa:PROLOGUE.length-1));plShowAct(a)} // 第35版：序章は最後の一画面から（全編は「はじめから見る」）
 function plUnmount(){const el=$("#prologue");if(el)el.remove();document.documentElement.classList.remove("pl-lock");ui.pl=null}
 function plFmt(t){return esc(t).replace(/&lt;g&gt;/g,'<span class="g">').replace(/&lt;\/g&gt;/g,'</span>').replace(/\n/g,"<br>").replace(/\|/g,"<wbr>")} // 「|」は文節の区切り（ここでだけ折り返す）
 function plShowAct(i){const el=$("#prologue");if(!el)return;const P=ui.pl;P.act=i;P.beat=-1;P.busy=true;P.leaving=false;const seq=P.seq=(P.seq||0)+1;
@@ -2387,7 +2400,7 @@ function plShowAct(i){const el=$("#prologue");if(!el)return;const P=ui.pl;P.act=
   el.querySelector(".pl-hint").classList.remove("on");el.querySelector(".pl-cta").classList.remove("on");
   const tx=el.querySelector(".pl-text");tx.className="pl-text";tx.innerHTML="";const g=el.querySelector(".pl-glass");g.classList.remove("on");
   S.main.prologue={act:i,done:false};saveMain();
-  setTimeout(()=>{if(!ui.pl||ui.pl.seq!==seq)return;g.classList.add("on");setTimeout(()=>{if(ui.pl&&ui.pl.seq===seq)plBeat(0)},plD(400))},plD(PL_T.swap))}
+  setTimeout(()=>{if(!ui.pl||ui.pl.seq!==seq)return;g.classList.add("on");setTimeout(()=>{if(!ui.pl||ui.pl.seq!==seq)return;if(P.quickAll&&i===PROLOGUE.length-1){P.quickAll=false;PROLOGUE[i].b.forEach((_,j)=>setTimeout(()=>{if(ui.pl&&ui.pl.seq===seq)plBeat(j)},j*plD(380)))}else plBeat(0)},plD(400))},plD(PL_T.swap))}
 function plBeat(j){const el=$("#prologue");if(!el||!ui.pl)return;const P=ui.pl;const seq=P.seq;const A=PROLOGUE[P.act];const B=A.b[j];P.beat=j;P.busy=true;
   el.querySelector(".pl-hint").classList.remove("on");
   const tx=el.querySelector(".pl-text");if(B.c==="big")tx.classList.add("focus");
@@ -2405,11 +2418,11 @@ function plTap(ev){const P=ui.pl;if(!P)return;const b=ev.target.closest("[data-p
   if(b){ev.stopPropagation();const v=b.dataset.pl;
     if(v==="enter")return plEnter(false);if(v==="demo")return plEnter(true);
     if(v==="skip"){if(P.act<PROLOGUE.length-1)plGo(PROLOGUE.length-1);return}
-    if(v==="back"){if(P.act>0)plGo(P.act-1);return}return}
+    if(v==="back"){if(P.act>0)plGo(P.act-1);return}if(v==="again"){plGo(0);return}return}
   if(P.busy||Date.now()-P.t<250)return; // 連続タップで飛ばさない
   const A=PROLOGUE[P.act];if(P.beat<A.b.length-1)plBeat(P.beat+1);else if(P.act<PROLOGUE.length-1)plGo(P.act+1)}
 function plEnter(demo){const el=$("#prologue");if(!el)return;S.main.prologue={done:true,date:todayKey()};saveMain();
-  el.classList.add("leave");setTimeout(()=>{plUnmount();if(demo){A.demo();return}ui.ob=ui.ob||{};ui.obStep=Math.max(0,flowX().indexOf("m_pick"));obAfter()},plD(PL_T.swap))}
+  el.classList.add("leave");setTimeout(()=>{plUnmount();if(demo){A.demo();return}ui.ob=ui.ob||{};const f=flowX();ui.obStep=Math.max(0,f.findIndex(x=>/^[a-z]\d+$/.test(x)));obAfter()},plD(PL_T.swap))}
 document.addEventListener("keydown",ev=>{if(!ui.pl||!$("#prologue"))return;if(ev.key===" "||ev.key==="Enter"||ev.key==="ArrowRight"){if(ev.target&&ev.target.closest&&ev.target.closest("[data-pl]"))return;ev.preventDefault();plTap({target:$("#prologue .pl-center")})}else if(ev.key==="ArrowLeft"&&ui.pl.act>0)plGo(ui.pl.act-1)});
 function typeIdx(code){return Object.keys(TYPES).indexOf(code)+1}
 function typeArt(code,small){const n=typeIdx(code);return n?"img/"+(small?"s":"t")+String(n).padStart(2,"0")+".webp":""}
@@ -2539,7 +2552,7 @@ const QCOUNT=QS.reduce((n,q)=>n+(q.type==="times"?2:1),0);
 const CHFLOW_ALL=CHAPTERS.flatMap(c=>["ch:"+c.id].concat(QS.filter(q=>q.ch===c.id).map(q=>q.id)));
 const MFLOW_NEW=["m_pick","m_info","m_photo","self","confirm","vow"],MFLOW_EDIT=["m_pick","m_info","m_photo","confirm"];
 // 初回に聞く問い：安全（けが・医師の制限・心・睡眠・体力）と、計画に要るもの（起床と就寝・変えたいこと・時間・厳しさ）
-const QUICK_Q=["b9","b10","m1","g1","g2"];
+const QUICK_Q=["b9","b10","m1"];
 function obFlowQs(full){return CHAPTERS.filter(c=>c.id!=="temp").flatMap(c=>{const qs=QS.filter(q=>q.ch===c.id&&(full||QUICK_Q.includes(q.id))).map(q=>q.id).filter(liveQ);return qs.length?["ch:"+c.id].concat(qs):[]})}
 function restQs(){const A=S.main.obAns;if(!A)return[];return CHAPTERS.filter(c=>c.id!=="temp"&&c.id!=="life").flatMap(c=>{const qs=QS.filter(q=>q.ch===c.id&&(q.type==="times"?!A.wake:A[q.id]==null)).map(q=>q.id);return qs.length?["ch:"+c.id].concat(qs):[]})}
 function restCount(){return restQs().filter(x=>x.indexOf("ch:")!==0).length}
@@ -2549,7 +2562,7 @@ const LOOK_DEF={theme:"kuro",fs:"m",fx:"std",anim:"on",tex:"on",mfx:"std",bg:"ra
 function look(){return Object.assign({},LOOK_DEF,{view:(S&&S.main&&S.main.viewDefault)||"min"},(S&&S.main&&S.main.look)||{})}
 function applyLook(L){L=L||look();const r=document.documentElement;r.dataset.theme=L.theme;r.dataset.fs=L.fs;r.dataset.fx=L.fx;r.dataset.anim=L.anim;r.dataset.tex=L.tex;r.dataset.mfx=L.mfx;r.dataset.bg=L.bg;
   try{localStorage.setItem("bushido.look",JSON.stringify(L))}catch(e){}}
-function flowX(){if(ui.mflow==="rest")return ["restIntro"].concat(ui.restFlow||restQs(),["building","result"]);if(ui.mflow==="type")return ["ch:temp"].concat(TEMP_Q.map(q=>q[0]),["type"]);if(ui.mflow==="life")return ["ch:life"].concat(QS.filter(q=>q.ch==="life").map(q=>q.id).filter(liveQ),["lifeDone"]);if(ui.mflow)return ui.mflow==="edit"?MFLOW_EDIT:MFLOW_NEW;return ui.retake?["tone"].concat(obFlowQs(true),["building","result"]):["start","m_pick","m_info","m_photo"].concat(obFlowQs(false),["building","result","confirm","vow"])}
+function flowX(){if(ui.mflow==="rest")return ["restIntro"].concat(ui.restFlow||restQs(),["building","result"]);if(ui.mflow==="type")return ["ch:temp"].concat(TEMP_Q.map(q=>q[0]),["type"]);if(ui.mflow==="life")return ["ch:life"].concat(QS.filter(q=>q.ch==="life").map(q=>q.id).filter(liveQ),["lifeDone"]);if(ui.mflow)return ui.mflow==="edit"?MFLOW_EDIT:MFLOW_NEW;return ui.retake?["tone"].concat(obFlowQs(true),["building","result"]):["start"].concat(obFlowQs(false).filter(x=>x.indexOf("ch:")!==0),["qdone"])}
 function envState(e){if(!e)return null;if(e.has==="no")return"none";return e.choice||null}
 function envBody(e){
   if(!e.has)return '<p class="eyebrow">第零関門 ・ 環境を断つ</p><p class="q qq">今、あなたの携帯に<br>Instagram・TikTok・X・YouTubeは<br>入っているか。</p><div class="qopts"><button class="qopt" data-act="envHas" data-v="yes"><span>入っている</span></button><button class="qopt" data-act="envHas" data-v="no"><span>入っていない</span></button></div><p class="small muted">嘘をついても、このアプリには分からない。だが、自分には分かる。断つべきは、アプリそのものより、生活を崩している使い方だ。仕事で必要なものは、残して管理すればいい。</p>';
@@ -2620,8 +2633,8 @@ function profileBars(pf){const ds=Object.keys(DOM).filter(d=>pf.dom[d]!=null).so
 function careNote(){return '<div class="note" style="border-color:var(--red)"><b style="color:var(--red-ink)">先に、心を守れ</b><p class="small muted" style="margin-top:4px">気分の沈みやストレスが強く続いているなら、一人で抱えず、医療機関や相談窓口に相談してください（こころの健康相談統一ダイヤル 0570-064-556）。このアプリは医療の代わりになりません。厳しさは自動で「無理なく」にしました。</p></div>'}
 function renderGate(){
   const ob=ui.ob;const FL=flowX();const id=ui.obPick?"pick":FL[ui.obStep]||FL[0];const idx=FL.indexOf(id);
-  const qi=QS.findIndex(q=>q.id===id);const qn=qi>=0?QS.slice(0,qi+1).reduce((n,q)=>n+(q.type==="times"?2:1),0):null;
-  const bar=idx>0||ui.retake||ui.mflow?'<div class="qtop"><button class="qback" data-act="obBack" aria-label="戻る">‹</button><div class="qbar"><i style="width:'+Math.round(idx/(FL.length-1)*100)+'%"></i></div>'+(qn?'<span class="small muted num" style="flex:none">'+qn+' / '+QCOUNT+'</span>':'')+'</div>':'';
+  const qi=QS.findIndex(q=>q.id===id);const FQ=FL.filter(x=>/^[a-z]\d+$/.test(x));const qn=qi>=0&&FQ.includes(id)?FQ.indexOf(id)+1:null;const QT=FQ.length;
+  const bar=idx>0||ui.retake||ui.mflow?'<div class="qtop"><button class="qback" data-act="obBack" aria-label="戻る">‹</button><div class="qbar"><i style="width:'+Math.round(idx/(FL.length-1)*100)+'%"></i></div>'+(qn?'<span class="small muted num" style="flex:none">'+qn+' / '+QT+'</span>':'')+'</div>':'';
   const wrap=(inner,cls)=>'<div class="gate quiz'+(cls?" "+cls:"")+'">'+bar+inner+'</div>';
   if(id==="start")return '<div class="gate">'+kamon.replace('class="mon"','class="mon" style="width:56px;height:56px"')+'<p class="eyebrow">入門 ・ 男のための道場</p><p class="q">男として、<br>己を変える<br>覚悟はあるか。</p><p class="lede">誰を師範にするのか。なぜ変わりたいのか。まず師範を選び、己の姿を記し、体と生活の問いに答え（約3分）、誓いを立てる。</p><div class="stack"><button class="btn gold shutsujin" data-act="obNext">入門する</button><button class="btn ghost wide small" data-act="demo">先に見本データで中を見る</button></div></div>';
   if(id==="env1"||id==="env2"){const e=ob.env=ob.env||{};const ready=envReady(e);
@@ -2799,7 +2812,7 @@ function okiteDay(d){const o=(d&&d.okite)||{};const act=okiteActive();return{act
 function viewOf(d){const v=look().view||"min";if(d&&(d.cond==="bad"||painActive())&&!d.viewKeep&&v!=="min")return "min";return v}
 function heroDom(o){if(o.opp)return "己の型を鍛える";const c=o.c!=null?o.c:o.cat;return c===0?"人間関係・礼節":(CATS[c]&&CATS[c].name)||""}
 function heroPick(k,d){let plan;try{plan=missionPlan(k,d.offerRoll||0)}catch(e){return null}const offs=(plan.offers||[]).slice();if(!offs.length)return null;
-  if(gapInfo(k)||needsRecovery())offs.sort((a,b)=>a.lv-b.lv);else offs.sort((a,b)=>(b.score||0)-(a.score||0));
+  if(gapInfo(k)||needsRecovery())offs.sort((a,b)=>a.lv-b.lv);else offs.sort((a,b)=>(b.goal-a.goal)||(b.fresh-a.fresh)||(a.lv-b.lv));
   const o=offs[0];if(!Array.isArray(d.offered)||!d.offered.includes(o.t)){d.offered=(Array.isArray(d.offered)?d.offered:[]).concat([o.t]).slice(-12);saveDay(k)}
   ui.heroOffer=o;return o}
 function heroLine(){try{const h=masterCard();const m=/<p class="mline">「([\s\S]*?)」<\/p>/.exec(h);return m?m[1]:null}catch(e){return null}}
@@ -2813,7 +2826,7 @@ function renderHero(k,d,gp,rec){const m=d.mission;const v=viewOf(d);const bad=d.
     if(!o)body='<h2 class="hero-title">今日の挑戦を一つ選ぼう。</h2><button class="btn gold wide hero-go" data-act="setMission">候補を見る</button>';
     else{const md=MDATA[o.id]||[];const mins=(/(\d+)\s*分/.exec(md[0]||"")||[])[1];
       const title=gp?"おかえり。小さく再開しよう。":rec?"立て直しの一つ。軽くていい。":bad?"今日は軽く。これ一つでいい。":(mins&&+mins<=10?"まずは"+mins+"分、始めよう。":"今日は、この一つだけ。");
-      body='<h2 class="hero-title">'+title+'</h2><p class="hero-sub">今日のあなたに合った、小さな挑戦</p><p class="hero-task">'+esc(o.t)+'</p><p class="hero-meta">目安 '+esc(md[0]||"短時間")+' ・ '+esc(heroDom(o))+'</p>'+line+
+      body='<h2 class="hero-title">'+title+'</h2><p class="hero-sub">'+(S.main.firstDay===k?'初日はこれを押すだけでいい。':'今日のあなたに合った、小さな挑戦')+'</p><p class="hero-task">'+esc(o.t)+'</p><p class="hero-meta">目安 '+esc(md[0]||"短時間")+' ・ '+esc(heroDom(o))+'</p>'+line+
       '<button class="btn gold wide hero-go" data-act="startRec">稽古を始める</button>'+
       '<div class="hero-alt"><button class="linkbtn" data-act="setMission">ほかの候補から選ぶ</button>'+(bad?'<button class="linkbtn" data-act="heroCond" data-v="normal">調子が戻った</button>':'<button class="linkbtn" data-act="heroCond" data-v="bad">今日は調子が悪い</button>')+'</div>'}}
   else if(!m.result||ui.heroRedo){const md=(m.mid&&MDATA[m.mid])||null;const canFix=m.own&&m.setTs&&Date.now()-m.setTs<10*60e3&&!m.result;
@@ -3200,8 +3213,8 @@ function renderChikai(){
   const o=S.main.oath||{};
   out.push('<section class="sec"><p class="eyebrow">'+term("起請文")+' ・ '+(o.date?fmtMD(o.date):"")+'</p><div class="oath">'+esc(o.text||"")+'</div><div class="sign">'+esc(o.signature||"")+'</div><button class="btn sm ghost" data-act="editOath" style="margin-top:8px">書き直す（履歴を残す）</button></section>');
   {const m=S.main.master;const s0=S.main.self0;
-   out.push('<section class="sec" id="sec-mset"><p class="eyebrow">己の師範'+(m?' ・ '+fmtMD(m.date)+'から':'')+'</p>'+(m?'<div class="mcard">'+mPic(m)+'<div class="grow small"><b style="font-family:var(--display);font-size:calc(18px*var(--fz,1))">'+esc(m.name)+'</b><p class="muted">'+MOTIVES[m.motive].n+(m.rel?' ・ '+esc(m.rel):'')+' ・ '+((GENDERS.find(g=>g[0]===m.gender)||[])[1]||"")+'</p>'+(m.reason?'<p class="muted">理由：'+esc(m.reason)+'</p>':'')+(m.words?'<p class="muted">望んだ言葉：「'+esc(m.words)+'」</p>':'')+'</div></div><div class="stack" style="gap:6px;margin-top:10px"><button class="btn wide" data-act="mflowStart">師範の設定を変更する</button><div class="grid2"><button class="btn sm" data-act="mMasterPhoto" data-v="lib">写真を変更</button><button class="btn sm" data-act="mMasterPhoto" data-v="cam">カメラで撮る</button></div>'+(m.pk?'<button class="btn sm ghost" data-act="mMasterPhotoDel">写真を外す（絵にする）</button>':'')+'</div>':'<p class="small muted" style="margin-bottom:8px">まだ師範がいない。</p><button class="btn gold wide" data-act="mflowStart">師範を選ぶ</button>')+'</section>');
-   if(S.main.vow)out.push('<section class="sec" id="sec-vow"><p class="eyebrow">師範への誓い ・ '+fmtMD(S.main.vow.date)+'</p><div class="oath vow">'+VOW_LINES.map(l=>'<p>'+l+'</p>').join("")+'<p class="last">'+VOW_LAST+'</p></div></section>');
+   if(MASTER_MODE)out.push('<section class="sec" id="sec-mset"><p class="eyebrow">己の師範'+(m?' ・ '+fmtMD(m.date)+'から':'')+'</p>'+(m?'<div class="mcard">'+mPic(m)+'<div class="grow small"><b style="font-family:var(--display);font-size:calc(18px*var(--fz,1))">'+esc(m.name)+'</b><p class="muted">'+MOTIVES[m.motive].n+(m.rel?' ・ '+esc(m.rel):'')+' ・ '+((GENDERS.find(g=>g[0]===m.gender)||[])[1]||"")+'</p>'+(m.reason?'<p class="muted">理由：'+esc(m.reason)+'</p>':'')+(m.words?'<p class="muted">望んだ言葉：「'+esc(m.words)+'」</p>':'')+'</div></div><div class="stack" style="gap:6px;margin-top:10px"><button class="btn wide" data-act="mflowStart">師範の設定を変更する</button><div class="grid2"><button class="btn sm" data-act="mMasterPhoto" data-v="lib">写真を変更</button><button class="btn sm" data-act="mMasterPhoto" data-v="cam">カメラで撮る</button></div>'+(m.pk?'<button class="btn sm ghost" data-act="mMasterPhotoDel">写真を外す（絵にする）</button>':'')+'</div>':'<p class="small muted" style="margin-bottom:8px">まだ師範がいない。</p><button class="btn gold wide" data-act="mflowStart">師範を選ぶ</button>')+'</section>');
+   if(MASTER_MODE&&S.main.vow)out.push('<section class="sec" id="sec-vow"><p class="eyebrow">師範への誓い ・ '+fmtMD(S.main.vow.date)+'</p><div class="oath vow">'+VOW_LINES.map(l=>'<p>'+l+'</p>').join("")+'<p class="last">'+VOW_LAST+'</p></div></section>');
    out.push('<section class="sec" id="sec-self0"><p class="eyebrow">己の姿 ・ 開始時点'+(s0?' ・ '+fmtMD(s0.date):'')+'</p><div class="mcard">'+sPic(s0&&s0.key)+'<p class="small muted grow">成長を比べる基準の写真。姿見の写真を撮っても上書きされない。公開されず、AIにも送られない。</p></div><div class="grid2" style="margin-top:10px"><button class="btn sm" data-act="mSelfPhoto" data-v="lib">'+(s0?"写真を変更":"写真を登録")+'</button><button class="btn sm" data-act="mSelfPhoto" data-v="cam">カメラで撮る</button></div>'+(s0?'<button class="btn sm ghost wide" data-act="mSelfDel" style="margin-top:6px">開始時点の写真を削除</button>':'')+'</section>')}
   out.push('<section class="sec"><p class="eyebrow">刀の成長 ・ '+term("守破離",SHUHARI[rank])+'</p><h2>'+SWORDS[rank]+'</h2>'+'<div class="sword-wrap">'+swordSVG(rank)+'</div>'+'<p class="small muted">段位とともに刀が鍛えられます。守（見習い・足軽）→ 破（侍・武士）→ 離（師範・達人）。</p></section>');
   out.push('<section class="sec"><p class="eyebrow">段位 ・ EXPと修行実績の両方が必要 ・ 一度得た段位は失わない</p>'+(rank>0?'<button class="btn wide" data-act="certRank" style="margin-bottom:8px">今の段位の達成証を作る</button>':'')+'<div class="ranks">'+RANKS.map((r,i)=>'<div class="rk'+(i<=rank?" got":"")+(i===rank?" cur":"")+'"><span class="n">'+r.n+'</span><span class="small"><span class="num">'+r.exp.toLocaleString()+' EXP</span>　<span class="muted">'+r.cond+'</span></span><span class="small">'+(i<=rank?'<span class="tag gold">獲得</span>':(exp>=r.exp?'':'<span class="muted num">'+Math.round(exp/r.exp*100)+'%</span>')+(c[i]?' <span class="tag">条件は達成</span>':''))+'</span></div>').join("")+'</div></section>');
@@ -3241,7 +3254,7 @@ function renderChikai(){
    row("師範の登場",seg("mfx",[["std","標準"],["low","控えめ"],["min","最小限"]]))+
    '<p class="small muted" style="margin:8px 0">演出の「最小限」では昇格の儀を短い知らせにし、達成の印も押さない。師範の登場の「控えめ」は、復帰・連続達成・週の振り返り・未達成・卒業の時だけ現れる。</p><button class="btn ghost wide sm" data-act="lookReset">外観だけを初期状態に戻す</button></section>')}
   out.push('<section class="sec"><p class="eyebrow">データ設定</p><p class="small muted">保存先：'+(store.kind==="db"?"あなた専用の領域（他の人は閲覧・編集できません）":"この端末のブラウザ内")+'</p><div class="stack" style="gap:8px;margin-top:10px"><button class="btn wide" data-act="tutStart">使い方（チュートリアル）をもう一度見る</button><div class="note small"><p class="muted">保存されている内容</p><p>記録 '+Object.keys(S.days).length+'日分 ・ 修行 '+S.main.tasks.length+' ・ 姿見の写真 '+photoDays().length+'枚'+(S.main.master&&S.main.master.pk?' ・ 師範の写真':'')+(S.main.self0?' ・ 開始時点の写真':'')+'</p><p class="muted">写真は書き出しに含まれない（写真は本人専用の保存領域にだけ置く）。'+(()=>{try{const b=JSON.parse(localStorage.getItem("bushido.backup")||"null");return b?'この端末の控え：'+fmtMD(b.date):''}catch(e){return ''}})()+'</p></div><button class="btn wide" data-act="calAdd">毎朝と夜の合図をカレンダーに入れる</button><button class="btn wide" data-act="export">記録を書き出す（JSON）</button><button class="btn wide" data-act="importOpen">書き出した記録から復元する</button>'+(store.kind==="db"?'<button class="btn wide ghost" data-act="restoreLocal">この端末の控えから復元する</button>':'')+''+(ui.confirmReset?'<div class="banner red small">すべての記録・段位・起請文を消去します。元に戻せません。</div><div class="grid2"><button class="btn" data-act="resetNo">やめる</button><button class="btn red" data-act="resetYes">消去する</button></div>':'<button class="btn red wide" data-act="reset">すべての記録を消去</button>')+'</div><div id="exportOut"></div></section>');
-  {const tn=S.main.tone||"gen";out.push('<section class="sec" id="sec-tone"><p class="eyebrow">師範の言葉づかい</p><div class="chips" role="radiogroup">'+TONES.map(o=>'<button class="chip" role="radio" data-act="setTone" data-v="'+o.v+'" aria-pressed="'+(tn===o.v)+'" aria-checked="'+(tn===o.v)+'">'+o.t+'</button>').join("")+'</div><p class="small muted" style="margin-top:6px">'+esc((TONES.find(o=>o.v===tn)||TONES[1]).s)+'</p></section>')}
+  {const tn=S.main.tone||"gen";out.push('<section class="sec" id="sec-tone"><p class="eyebrow">言葉の厳しさ（見つめ直しの問い）</p><div class="chips" role="radiogroup">'+TONES.map(o=>'<button class="chip" role="radio" data-act="setTone" data-v="'+o.v+'" aria-pressed="'+(tn===o.v)+'" aria-checked="'+(tn===o.v)+'">'+o.t+'</button>').join("")+'</div><p class="small muted" style="margin-top:6px">'+esc((TONES.find(o=>o.v===tn)||TONES[1]).s)+'</p></section>')}
   return out.join("");
 }
 
@@ -3327,7 +3340,7 @@ function mRead(){const m=ui.ob&&ui.ob.m;if(!m)return;const g=id=>{const e=$(id);
 function chipsOn(sel){return [...document.querySelectorAll(sel+' .chip[aria-pressed=true]')].map(b=>b.dataset.v)}
 const A={
   closeSheet:(el,ev)=>{if(ev.target===el||el.tagName==="BUTTON")closeSheet()},
-  obNext:()=>{{const cf=$("#cf-sign");if(cf){const v=cf.value.trim();if(!v){cf.focus();toast("呼び名を記せ","道場や達成証に出る名前");return}ui.ob.sign=v}}if(ui.ob&&ui.ob.retConfirm&&(flowX()[ui.obStep]==="self"||flowX()[ui.obStep]==="m_photo")){ui.ob.retConfirm=false;ui.obStep=flowX().indexOf("confirm");obAfter();return}ui.obStep=Math.min(flowX().length-1,ui.obStep+1);if(flowX()[ui.obStep]==="env2")ui.obStep++;obAfter()},
+  obNext:()=>{if(!S.main.onboarded&&!ui.mflow&&!ui.retake&&flowX()[ui.obStep+1]==="qdone"){A.obQuickDone();return}{const cf=$("#cf-sign");if(cf){const v=cf.value.trim();if(!v){cf.focus();toast("呼び名を記せ","道場や達成証に出る名前");return}ui.ob.sign=v}}if(ui.ob&&ui.ob.retConfirm&&(flowX()[ui.obStep]==="self"||flowX()[ui.obStep]==="m_photo")){ui.ob.retConfirm=false;ui.obStep=flowX().indexOf("confirm");obAfter();return}ui.obStep=Math.min(flowX().length-1,ui.obStep+1);if(flowX()[ui.obStep]==="env2")ui.obStep++;obAfter()},
   envHas:el=>{const e=envTarget();e.has=el.dataset.v;envRefresh()},
   envApp:el=>{const e=envTarget();const a=e.apps=e.apps||[];const i=a.indexOf(el.dataset.v);i<0?a.push(el.dataset.v):a.splice(i,1);e.checks=(e.checks||[]).filter(c=>!/を消した$/.test(c)||a.some(x=>c===x+" を消した"));envRefresh()},
   envChoice:el=>{const e=envTarget();e.choice=el.dataset.v;e.checks=[];e.slot=null;envRefresh()},
@@ -3443,6 +3456,11 @@ const A={
   mChange:()=>{ui.ob.retConfirm=flowX().includes("confirm");ui.obStep=flowX().indexOf("m_pick");obAfter()},
   mflowStart:()=>{const M=S.main;ui.mflow=M.master?"edit":"new";ui.ob={m:Object.assign({},M.master||{}),sign:M.displayName||""};if(!M.master)ui.ob.self={pk:(M.self0&&M.self0.key)||null};ui.obStep=0;obDraft();render();window.scrollTo(0,0)},
   mEditDone:()=>{mCommit(ui.ob);ui.mflow=null;ui.ob={};ui.obStep=0;S.main.obDraft=null;saveMain();tab="chikai";render();window.scrollTo(0,0);toast("師範を改めた","稽古の記録はそのまま");setTimeout(()=>mSay("advice"),600)},
+  obQuickDone:()=>{const ob=ui.ob||{};const k=todayKey();const M=S.main;const pl=planFrom(ob);const t=pl.task;
+    M.onboarded=true;M.viewDefault=M.viewDefault||"min";M.displayName=M.displayName||"";M.features=pl.features;M.notif=pl.notif;applyProfile(pl,true);M.created=M.created||k;
+    if(t&&!M.tasks.some(x=>x.focus))M.tasks.push({id:uid(),cat:t.c,name:t.p.n,minimum:t.p.m||"",unit:t.p.u||"",restDays:t.p.r||[],status:"進行中",focus:true,start:k,settledOn:null,history:[{date:k,change:"開始"}]});
+    M.obAns=obAnsOf(ob);M.tutVer=3;M.tutDone=true;M.tutStep=null;M.firstDay=k;M.prologue=Object.assign({},M.prologue||{},{done:true});
+    ui.mflow=null;M.obDraft=null;ui.ob={};ui.obStep=0;saveMain();tab="dojo";render();window.scrollTo(0,0)},
   vowGo:()=>{const ob=ui.ob;const k=todayKey();const M=S.main;const first=!M.onboarded;const sign=ob.sign||M.displayName||"無名";
     if(first){const pl=planFrom(ob);const t=pl.task;
       M.onboarded=true;M.viewDefault=M.viewDefault||"min";M.displayName=sign;M.features=pl.features;M.notif=pl.notif;applyProfile(pl,true);
@@ -3661,7 +3679,9 @@ const TUT=[
  {ch:6,tab:"dojo",center:true,t:"師範から一言",b:"「今日からが本当の始まりだ。」",next:"次へ"},
  {ch:7,tab:"dojo",center:true,reward:true,m:"よし。基本は教えた。これからは自分の意思で稽古を続けろ。",t:"入門の儀、完了。",b:"道場を開く・一振りを選ぶ・記録する・稽古場・武道録・助言。すべて体験した。",next:"道場へ進む"}
 ];
-function tutChStart(i){const c=TUT[i]&&TUT[i].ch;if(c==null||c===0)return 0;if(c===7)return TUT.length-1;const ch=c===3?2:c;return TUT.findIndex(s=>s.ch===ch)}
+// 第35版：師範の手順（第六章・師範を指す手順）は全編から外す
+const TUT_FULL=TUT.filter(s=>!(s.ch===6||/師範/.test(s.t||"")||/sec-master/.test(s.sel||"")));
+function tutChStart(i){const T=TUT_FULL;const c=T[i]&&T[i].ch;if(c==null||c===0)return 0;if(c===7)return T.length-1;const ch=c===3?2:c;return Math.max(0,T.findIndex(s=>s.ch===ch))}
 function tutSandbox(){if(S.main.tutSnap)return;const k=todayKey();const M=S.main;
   M.tutSnap={key:k,day:S.days[k]?clone(S.days[k]):null,tasks:clone(M.tasks),rankMax:M.rankMax,rankLog:clone(M.rankLog),weeklies:clone(M.weeklies),returns:clone(M.returns||[]),recoveries:clone(M.recoveries||[])};
   S.days[k]={logs:{},mission:null,ritual:{},reflection:null,temptations:[]};saveDay(k);saveMain();ui.shownExp=null}
@@ -3674,8 +3694,8 @@ const TUT_FIRST=[
  {ch:2,tab:"dojo",sel:"#sec-mission .hero-how",t:"やり方は、ここにある",b:"目安の時間と、できない日の軽い版が書いてある。くわしい手順は「やり方をくわしく」から。",next:"次へ"},
  {ch:3,tab:"dojo",sel:"#sec-mission [data-act=mres][data-v=done]",press:true,t:"終わったら「やり切った」",b:"練習だ。押してみろ。本番の記録には残らない。",done:()=>!!(day(todayKey()).mission||{}).result},
  {ch:7,tab:"dojo",center:true,reward:true,m:"よし。あとは毎日、これ一つからだ。",t:"入門の儀、完了。",b:"ほかの機能は、初めて開いた時にその場で案内する。すべての使い方は、誓いの間の「データ管理」からいつでも見直せる。",next:"道場へ進む"}];
-function tutStart(from,full){closeSheet();$("#ceremony").hidden=true;tutRestore();tutSandbox();const steps=(full||S.main.tutFull)?TUT:TUT_FIRST;if(full)S.main.tutFull=true;ui.tutSteps=steps;ui.tutKind="main";
-  ui.tut=from!=null?from:(S.main.tutStep||0);if(!(ui.tut>=0&&ui.tut<steps.length))ui.tut=0;if(steps===TUT)ui.tut=tutChStart(ui.tut);ui.tutSkip=false;ui.tutHelp=false;tab=steps[ui.tut].tab||"dojo";
+function tutStart(from,full){closeSheet();$("#ceremony").hidden=true;tutRestore();tutSandbox();const steps=(full||S.main.tutFull)?TUT_FULL:TUT_FIRST;if(full)S.main.tutFull=true;ui.tutSteps=steps;ui.tutKind="main";
+  ui.tut=from!=null?from:(S.main.tutStep||0);if(!(ui.tut>=0&&ui.tut<steps.length))ui.tut=0;if(steps===TUT_FULL)ui.tut=tutChStart(ui.tut);ui.tutSkip=false;ui.tutHelp=false;tab=steps[ui.tut].tab||"dojo";
   S.main.tutLater=false;S.main.tutStep=ui.tut;S.main.tutFlags=S.main.tutFlags||{};saveMain();render();window.scrollTo(0,0)}
 const HINTS={
  keiko:[{sel:"#sec-pick",t:"稽古場",b:"今日やると良い稽古を一つだけ出している。ほかの稽古は、下の分類（心を整える・身体を鍛える など）を開くと出てくる。",next:"わかった"}],
@@ -3693,7 +3713,7 @@ function tutEnd(later){const kind=ui.tutKind;ui.tut=null;ui.tutSteps=null;$("#tu
 function tutStep(){return ui.tut==null||!ui.tutSteps?null:ui.tutSteps[ui.tut]}
 function tutAdvance(){const prev=ui.tutSteps[ui.tut];if(ui.tutKind==="main"&&prev&&prev.flag){S.main.tutFlags=S.main.tutFlags||{};S.main.tutFlags[prev.flag]=1}
   ui.tut++;ui.tutScrolled=false;ui.tutHelp=false;ui.tutMiss=0;if(ui.tut>=ui.tutSteps.length){tutEnd();return}
-  if(ui.tutKind==="main"){S.main.tutStep=ui.tutSteps===TUT?tutChStart(ui.tut):ui.tut;saveMain()}tutShow()}
+  if(ui.tutKind==="main"){S.main.tutStep=ui.tutSteps===TUT_FULL?tutChStart(ui.tut):ui.tut;saveMain()}tutShow()}
 function tutBackIdx(){const cur=ui.tutSteps[ui.tut];if(!cur||cur.reward)return -1;for(let i=ui.tut-1;i>=0;i--){const s=ui.tutSteps[i];if(s.ch!==cur.ch)return -1;if(s.chap)return -1;if(!s.done&&!s.allow&&(s.tab||"dojo")===tab)return i}return -1}
 function tutCheck(){
   const s=tutStep();if(!s)return;

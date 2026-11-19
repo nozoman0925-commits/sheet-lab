@@ -89,7 +89,7 @@ function missionPlan(k,roll){
   const pick=(list,tg,pref)=>{list=list.filter(m=>!chosen.has(m.t)&&missionAllowed(m,pf,cond)&&m.lv<=cap);tg=Math.min(tg,cap);
     {const fit=list.filter(m=>fitsTime(m)&&fitsClock(m));if(fit.length)list=fit;else{const fc=list.filter(fitsClock);if(fc.length)list=fc}}
     const fresh=list.filter(m=>!recent.has(m.t)&&!shown.has(m.t)&&!(m.q&&m.q!==pref&&recentQ.has(m.q))),fresh1=list.filter(m=>!recent.has(m.t)&&!shown.has(m.t)),fresh2=list.filter(m=>!recent.has(m.t));list=fresh.length?fresh:fresh1.length?fresh1:fresh2.length?fresh2:list;if(!list.length)return null;
-    const w=list.map(m=>{const dd=Math.abs(m.lv-tg);return (.3+score(m))*(dd===0?4:dd===1?2:dd===2?.6:.1)*(1+(pf&&m.q&&pf.score&&pf.score[m.q]!=null?pf.score[m.q]*1.5:0))*(pref&&m.q===pref?6:1)*(yw==="time"?(/^(\d+分|数秒|1分|2分|3分|5分)/.test((MDATA[m.id]||[""])[0])?3:.5):1)});
+    const w=list.map(m=>{const dd=Math.abs(m.lv-tg);return (dd===0?4:dd===1?2:dd===2?.6:.1)*(1+(pf&&m.q&&pf.score&&pf.score[m.q]!=null?pf.score[m.q]*1.5:0))*(pref&&m.q===pref?6:1)*(yw==="time"?(/^(\d+分|数秒|1分|2分|3分|5分)/.test((MDATA[m.id]||[""])[0])?3:.5):1)});
     let x=r()*w.reduce((a,b)=>a+b,0);for(let i=0;i<list.length;i++){x-=w[i];if(x<=0)return list[i]}return list[list.length-1]};
   const detail=(m,why,c)=>{let w=why;if(pf&&m.q&&pf.score&&pf.score[m.q]>=2&&QMAP[m.q])w+="（見つめ直し：「"+QMAP[m.q].q.replace(/[「」]/g,"")+"」）";
     if(c){const cl=catLevel(c,k);if(cl.change==="up")w+=" ・ 3回続けて斬った。難度を上げた";if(cl.change==="down")w+=" ・ 2回続けて斬れなかった。難度を下げた"}return w};
@@ -105,7 +105,8 @@ function missionPlan(k,roll){
   if(out.length<3&&!usedD.has("rel")){const m=pick(MISSIONS[0],3);if(m&&cond!=="bad"){chosen.add(m.t);usedD.add("rel");out.push({c:0,t:m.t,lv:m.lv,id:m.id,why:detail(m,"人間関係と礼節を磨く",null)})}}
   for(const sl of slots){if(out.length>=3)break;if(usedD.has(domOf(sl.c)))continue;const m=pick(MISSIONS[sl.c],target(sl.c),sl.q);if(m){chosen.add(m.t);usedD.add(domOf(sl.c));out.push({c:sl.c,t:m.t,lv:m.lv,id:m.id,why:detail(m,sl.why,sl.c)})}}
   for(const sl of slots){if(out.length>=3)break;const m=pick(MISSIONS[sl.c],target(sl.c),sl.q);if(m){chosen.add(m.t);out.push({c:sl.c,t:m.t,lv:m.lv,id:m.id,why:detail(m,sl.why,sl.c)})}}
-  out.forEach(o=>{const m=MBYID[o.id]||{t:o.t,lv:o.lv,c:o.c};o.score=+score(m,o.c||null).toFixed(3)});
+  // おすすめの順（単純なルール）：目標の分野 → 最近見せていない → 軽い
+  out.forEach(o=>{o.goal=!!(o.c&&goalC.has(o.c));o.fresh=!shown.has(o.t)});
   return{offers:out,forced:false,cond};
 }
 function missionOffer(k,roll){return missionPlan(k,roll).offers}
@@ -367,7 +368,7 @@ function header(){
   const {exp,rank}=syncRank();const next=RANKS[rank+1];
   const cur=RANKS[rank];const pct=next?Math.max(0,Math.min(100,(exp-cur.exp)/(next.exp-cur.exp)*100)):100;
   const wait=next&&exp>=next.exp;
-  return '<header class="top">'+kamon+'<div class="brand">武士道<small>毎日の約束で、己を鍛える</small></div><div class="rankchip"><b>'+cur.n+'</b>'+(rankState()?'<i class="rs">'+rankState()+'</i>':'')+'<span><span id="expn">'+(ui.shownExp!=null&&ui.shownExp<exp?ui.shownExp:exp).toLocaleString()+'</span> EXP'+(next?' / 次 '+next.exp.toLocaleString():'')+'</span></div><button class="help" data-act="help" aria-label="使い方とヘルプ">？</button><div class="hbar" title="'+(next?(wait?next.n+"は修行の条件待ち":next.n+"まで"+Math.round(pct)+"%"):"最高段位")+'"><i style="width:'+(ui.shownPct!=null&&ui.shownExp<exp?ui.shownPct:pct)+'%"></i></div><span id="expfloat" class="expfloat"></span></header>';
+  return '<header class="top">'+kamon+'<div class="brand">武士道<small>己に勝て。言い訳を断て。昨日の己を超えろ。</small></div><div class="rankchip"><b>'+cur.n+'</b>'+(rankState()?'<i class="rs">'+rankState()+'</i>':'')+'<span><span id="expn">'+(ui.shownExp!=null&&ui.shownExp<exp?ui.shownExp:exp).toLocaleString()+'</span> EXP'+(next?' / 次 '+next.exp.toLocaleString():'')+'</span></div><button class="help" data-act="help" aria-label="使い方とヘルプ">？</button><div class="hbar" title="'+(next?(wait?next.n+"は修行の条件待ち":next.n+"まで"+Math.round(pct)+"%"):"最高段位")+'"><i style="width:'+(ui.shownPct!=null&&ui.shownExp<exp?ui.shownPct:pct)+'%"></i></div><span id="expfloat" class="expfloat"></span></header>';
 }
 function render(){applyLook();
   if(plActive()){$("#tabs").hidden=true;$("#app").innerHTML="";plMount();return}if($("#prologue"))plUnmount();

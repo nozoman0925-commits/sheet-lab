@@ -41,7 +41,7 @@ ok("始めた日に「入門の七日・1日目」と今日の目標一つ",w&&w
 await p.click('#tabs [data-tab=dojo]');await p.waitForTimeout(200);await (await p.$('#sec-week1')).scrollIntoViewIfNeeded();await p.screenshot({path:B+'/U7.png'});
 const w3=await p.evaluate(()=>{const T=__T;const M=T.S.main;M.created=T.addDays(T.todayKey(),-2);T.day(M.created).mission={text:"x",result:"done"};T.render();return document.querySelector('#sec-week1').textContent.replace(/\s+/g," ")});
 ok("3日目：1日目の達成に印、今日は「夜の省察を書く」",w3.includes("3日目")&&w3.includes("夜の省察")&&/✓/.test(w3),w3.slice(0,90));
-const ml=await p.evaluate(()=>document.querySelector('#sec-master .mline').textContent);ok("七日の間は、師範が日ごとの言葉をかける",ml.includes("三日目"),ml);
+ok("七日の間も、師範（人物）の言葉は出さない",await p.evaluate(()=>!document.querySelector('#sec-master')));
 const w8=await p.evaluate(()=>{const T=__T;T.S.main.created=T.addDays(T.todayKey(),-8);T.render();return !!document.querySelector('#sec-week1')});ok("8日目からは七日のカードは消える",!w8);
 // 最初の三日は命令を軽く
 const cap=await p.evaluate(()=>{const T=__T;const M=T.S.main;M.created=T.todayKey();let mx=0;for(let r=0;r<80;r++)T.missionPlan(T.todayKey(),r).offers.forEach(o=>{if(!o.opp)mx=Math.max(mx,o.lv)});M.created=T.addDays(T.todayKey(),-30);return mx});

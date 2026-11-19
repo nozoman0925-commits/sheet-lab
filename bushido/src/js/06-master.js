@@ -76,7 +76,7 @@ const ML={
   type:["「{t}」だな。その性質に合った稽古の進め方を示そう。"]}};
 const STREAK_MS=[3,7,14,21,30,50,66,75,100,150,200,365];
 function curMaster(){return (ui.ob&&ui.ob.m&&ui.ob.m.motive)?ui.ob.m:S.main.master||null}
-function mLine(ev,v,m){m=m||S.main.master;if(!m||!ML[m.motive])return null;const a=ML[m.motive][ev];if(!a)return null;let t=a[Math.floor(Math.random()*a.length)];
+function mLine(ev,v,m){if(!MASTER_MODE&&!m)return null;m=m||S.main.master;if(!m||!ML[m.motive])return null;const a=ML[m.motive][ev];if(!a)return null;let t=a[Math.floor(Math.random()*a.length)];
   v=Object.assign({I:m.gender==="male"?"俺":"私"},v||{});return t.replace(/\{(\w)\}/g,(_,k)=>v[k]!=null?v[k]:"")}
 function mArtSVG(m){const mo=MOTIVES[m&&m.motive]||MOTIVES.respect;const c=mo.c;const g=m&&m.gender;
   const back=g==="female"?'<path d="M138 228 Q136 148 200 146 Q264 148 262 228 L272 338 Q200 356 128 338Z" fill="#0b0a08"/>':'';
@@ -92,13 +92,21 @@ function mArtSVG(m){const mo=MOTIVES[m&&m.motive]||MOTIVES.respect;const c=mo.c;
   '<circle cx="282" cy="410" r="20" fill="#15130f" stroke="#c9a24a" stroke-width="2"/><text x="282" y="418" text-anchor="middle" font-size="22" font-weight="800" font-family="serif" fill="#c9a24a">'+mo.k+'</text></svg>'}
 function mArtURL(m){return "data:image/svg+xml;charset=utf-8,"+encodeURIComponent(mArtSVG(m))}
 const SELF_NONE='<svg viewBox="0 0 100 120" aria-hidden="true"><circle cx="50" cy="38" r="20" fill="#8a7d63"/><path d="M12 118 C14 82 30 66 50 66 C70 66 86 82 88 118Z" fill="#8a7d63"/></svg>';
-function mPic(m,cls){if(!m)return '<div class="pf '+(cls||"")+'"><div class="ph-none">'+SELF_NONE+'<span>未設定</span></div></div>';
+function mPic(m,cls){if(!MASTER_MODE)return '<div class="pf kamon-pf '+(cls||"")+'">'+kamon+'</div>';if(!m)return '<div class="pf '+(cls||"")+'"><div class="ph-none">'+SELF_NONE+'<span>未設定</span></div></div>';
   return '<div class="pf '+(cls||"")+'">'+(m.pk?'<img data-pk="'+m.pk+'" data-fb="'+m.motive+'|'+(m.gender||"")+'" alt="師範 '+esc(m.name||"")+' の写真">':'<img src="'+mArtURL(m)+'" alt="師範 '+esc(m.name||"")+' の絵（オリジナル）">')+'</div>'}
 function sPic(pk,cls){return '<div class="pf '+(cls||"")+'">'+(pk?'<img data-pk="'+pk+'" alt="自分の写真">':'<div class="ph-none">'+SELF_NONE+'<span>写真なし</span></div>')+'</div>'}
 async function fillPk(){for(const im of document.querySelectorAll("img[data-pk]")){if(im.getAttribute("src"))continue;im.setAttribute("src","data:image/gif;base64,R0lGODlhAQABAAAAACw=");const u=await photoLoad(im.dataset.pk);
   if(u)im.src=u;else if(im.dataset.fb){const f=im.dataset.fb.split("|");im.src=mArtURL({motive:f[0],gender:f[1]})}else{const d=document.createElement("div");d.className="ph-none";d.innerHTML=SELF_NONE+"<span>写真を読み込めない</span>";im.replaceWith(d)}}}
 function photoDel(k){if(!k)return;delete memPhotos[k];try{if(store.deletePhoto)Promise.resolve(store.deletePhoto(k)).catch(()=>{})}catch(e){}}
-function mSay(ev,v){const m=S.main.master;if(!m||!S.main.onboarded)return;const mf=look().mfx;if(mf==="min")return;if(mf==="low"&&!["ret","grad","streak","weekly","miss"].includes(ev))return;const line=mLine(ev,v);if(!line)return;const el=$("#mtoast");if(!el)return;
+// 第35版：師範（人物）の言葉は出さない。出来事に合った出典つきの格言を、短く見せる
+const MASTER_MODE=false;
+const SAY_TAG={done:"cont",part:"cont",streak:"cont",miss:"fail",ret:"start",stall:"adv",rankup:"humble",grad:"humble",weekly:"learn"};
+function sayQuote(ev){if(!S.main.onboarded)return;const mf=look().mfx;if(mf==="min")return;if(mf==="low"&&!["ret","grad","streak","weekly","miss"].includes(ev))return;
+  const tag=SAY_TAG[ev];if(!tag)return;const pool=QUOTES.map((q,i)=>[q,i]).filter(([q])=>(q[3]||"").split(",").includes(tag));if(!pool.length)return;
+  const [q]=pool[Math.floor(Math.random()*pool.length)];const el=$("#mtoast");if(!el)return;
+  el.style.setProperty("--mc","");el.innerHTML='<div class="mt-kamon" aria-hidden="true">'+kamon+'</div><div><small>格言 ・ '+esc(q[1])+(q[2]?'（'+esc(q[2])+'）':'')+'</small><p>'+esc(q[0])+'</p></div>';
+  el.classList.remove("show");void el.offsetWidth;el.classList.add("show");clearTimeout(timers.mt);timers.mt=setTimeout(()=>el.classList.remove("show"),4200)}
+function mSay(ev,v){if(!MASTER_MODE){sayQuote(ev);return}const m=S.main.master;if(!m||!S.main.onboarded)return;const mf=look().mfx;if(mf==="min")return;if(mf==="low"&&!["ret","grad","streak","weekly","miss"].includes(ev))return;const line=mLine(ev,v);if(!line)return;const el=$("#mtoast");if(!el)return;
   el.style.setProperty("--mc",(MOTIVES[m.motive]||{}).c||"");el.innerHTML=mPic(m)+'<div><small>師範 ・ '+esc(m.name)+'</small><p>'+esc(line)+'</p></div>';fillPk();
   el.classList.remove("show");void el.offsetWidth;el.classList.add("show");clearTimeout(timers.mt);timers.mt=setTimeout(()=>el.classList.remove("show"),4200)}
 /* 16タイプ：伝え方の調整（基本人格は動機で決まる。型は伝え方と提示方法だけを変える） */
@@ -126,7 +134,7 @@ function adviceBody(){const tp=typeOf(S.main.profile);const a=adviceActs();
     else if(a.length>1)out+='<p class="small muted" style="margin-top:8px">選べ（どちらからでもいい）</p><ul class="plan-list">'+a.slice(0,3).map(y=>'<li>'+esc(y.t)+'</li>').join("")+'</ul>';
     else out+='<p class="small muted" style="margin-top:8px">選べ</p><ul class="plan-list"><li>今すぐやる</li><li>時刻を決めて、その時にやる</li></ul>'}
   return out}
-function masterCard(){const M=S.main;const m=M.master;
+function masterCard(){if(!MASTER_MODE)return "";const M=S.main;const m=M.master;
   if(!m)return '<section class="sec fold" id="sec-master"><p class="eyebrow">己の師範</p><h2>師範を迎えよ。</h2><p class="small muted" style="margin-bottom:10px">お前が変わる理由となる人物を一人選び、師範として迎える。稽古の結果に応じて、師範が言葉をかける。今の記録・EXP・段位はそのまま残る。</p><button class="btn gold wide" data-act="mflowStart">師範を選ぶ</button></section>';
   const k=todayKey();const d=day(k);const h=new Date().getHours();const mm=d.mission;let line;
   const tn=tenure();

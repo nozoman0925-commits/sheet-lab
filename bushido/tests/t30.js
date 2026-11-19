@@ -11,5 +11,5 @@ let seen=new Set();for(let i=0;i<90;i++){const s=await p.evaluate(()=>{const c=d
 const fin=await p.evaluate(()=>({tut:window.__T.ui.tut,n:(window.__T.ui.tutSteps||[]).length,done:window.__T.S.main.tutDone}));R.push((bad.length===0?"PASS ":"FAIL ")+W+"×"+H+"・"+label+"：案内が画面からはみ出さない | はみ出し"+bad.length+" "+(bad[0]||""));R.push((fin.done&&fin.tut==null&&seen.size>=minSteps?"PASS ":"FAIL ")+W+"×"+H+"・"+label+"：最後まで進められる | "+seen.size+"ステップ");};
 await run("最初の入門の儀（短い版）",4);
 await p.evaluate(()=>__T.A.tutStart());await p.waitForTimeout(500);
-await run("全編（誓いの間から）",30);
+await run("全編（誓いの間から・師範の手順なし）",25);
 if(errs.length)R.push("FAIL errors "+errs[0]);await p.close()}console.log(R.join("\n"));console.log("errors []");await b.close()})();

@@ -816,6 +816,10 @@ html.tut-lock{overscroll-behavior:none}
 .tag.red{border-color:var(--line)!important;color:var(--muted)!important;background:none!important}
 .quest.miss .mark{border-color:var(--line)!important;color:var(--muted)!important}
 .sec.pick{border-color:var(--gold-dim)}
+#prologue .pl-again{display:none}#prologue[data-act="6"] .pl-again{display:inline-flex}#prologue[data-act="6"] [data-pl=skip]{display:none}
+.mt-kamon .mon{width:40px;height:40px}
+.kamon-pf{display:grid;place-items:center}.kamon-pf .mon{width:70%;height:70%}
+.brand small{white-space:normal!important;overflow:visible!important;text-overflow:clip!important;line-height:1.35;max-width:14em}
 .loading{min-height:70vh;display:grid;place-items:center;color:var(--muted);font-family:var(--display);letter-spacing:.3em}
 .sec{scroll-margin-top:84px}
 .help{width:34px;height:34px;border-radius:50%;border:1px solid var(--line);background:var(--panel);color:var(--muted);font-weight:700;flex:none;margin-left:6px}
