@@ -3,7 +3,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>桜美建設 業務管理</title>
-<meta name="theme-color" content="#4b3526">
+<meta name="theme-color" content="#070b16">
+<script>/* 画面の明るさ：暗い（標準）・明るい・端末に合わせる。描く前に決める（ちらつかないように） */
+(function(){var t='dark';try{t=localStorage.getItem('oubi.theme')||'dark'}catch(e){}
+  if(t==='auto')t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';
+  document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')})();</script>
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="桜美建設">
@@ -899,6 +903,7 @@ main{gap:var(--sp5)}
  .home2 .tdb-sh{display:none}.home2 .tdb-sites{padding-top:6px}.home2 .ft-hsearch,.home2 .sl-ribbon,.home2 .sl-todo{order:1}}
 .toast{font-size:1rem;padding:var(--sp3) var(--sp4)}
 </style>
+<link rel="stylesheet" href="theme-oumitsu.css">
 <link rel="stylesheet" href="mitsu.css">
 <link rel="stylesheet" href="mitsu-host.css">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.js" crossorigin="anonymous"></script>
@@ -2281,6 +2286,8 @@ async function saveCompany(){
 function renderSettings(){
   const co=CO(), dis=me.isOwner?'':'disabled';
   return `<h1>設定</h1>${hlPanel()}
+  <div class="panel" id="set-theme"><h2>画面の明るさ</h2><div class="sub">暗い画面が標準です。営業の画面は、昼（6〜18時）は外で見やすい明るい画面に自動で切り替わります。</div>
+   <div class="mq-links" role="group" aria-label="画面の明るさ">${[['dark','暗い（標準）'],['light','明るい'],['auto','端末に合わせる']].map(([k,l])=>`<button type="button" class="btn${themePref()===k?' pri':''}" data-theme-set="${k}" aria-pressed="${themePref()===k}">${l}</button>`).join('')}</div></div>
   ${window.OUBI_HOST?`<div class="panel" id="set-mitsu"><h2>見積の設定</h2><div class="sub">見積で使う品目・テンプレート・計算式・定型文・端数の決まり、書類に入れるロゴと会社印。</div>
    <div class="mq-links">${[['#/settings/items','品目マスタ'],['#/settings/packages','テンプレート'],['#/settings/formulas','計算式'],['#/settings/snippets','定型文'],['#/settings/rules','計算の決まり'],['#/settings/company','ロゴ・会社印']].map(([h,l])=>`<button type="button" class="btn" data-mopen="${h}">${l}</button>`).join('')}</div></div>`:''}
   <div class="panel" id="set-co"><h2>会社の情報（見積書・契約書・請求書に入ります）</h2>
@@ -2903,6 +2910,7 @@ document.addEventListener('click',e=>{
   if(d.wbpost!==undefined){busyRun('wb',t,postWB);return}
   if(d.wbdel){delWB(d.wbdel);return}
   if(d.wbmore!==undefined){view.wbLim=(view.wbLim||10)+10;const y=window.scrollY;render();window.scrollTo(0,y);return}
+  if(d.themeSet){try{localStorage.setItem('oubi.theme',d.themeSet)}catch(_){}applyTheme();render();toast('画面の明るさを変えました');return}
   if(d.mnew!==undefined&&C){if(window.OUBI_HOST)OUBI_HOST.newForCase(C.id);return}
   if(d.mopen){if(window.OUBI_HOST)OUBI_HOST.open(d.mopen);return}
   if(d.saveco!==undefined){saveCompany();return}
@@ -3117,6 +3125,9 @@ async function init(){
   db.doc('settings/main').onSnapshot(s=>{if(s.exists)settings={targetRate:25,...s.data()}},()=>{});
 }
 /* ===================== 見積（桜ミツ）とのつなぎ：mitsu-bridge.js が使う ===================== */
+function themePref(){try{return localStorage.getItem('oubi.theme')||'dark'}catch(e){return 'dark'}}
+function applyTheme(){let t=themePref();if(t==='auto')t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}
+if(window.matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(themePref()==='auto'){applyTheme();render()}});
 function startMitsu(){if(window.OUBI_HOST)OUBI_HOST.start();else window.OUBI_WANT=true}
 window.OUBI={
   cases:()=>cases, me:()=>me, mode:()=>mode, db:()=>db, assets:()=>assets, settings:()=>settings, booted:()=>booted,

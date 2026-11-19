@@ -1,0 +1,117 @@
+/*
+ * 見た目：桜ミツ（OUMITSU）にそろえる
+ *   暗い画面が標準。設定の「画面の明るさ」で明るい画面・端末に合わせる、も選べる（html の data-theme）
+ *   営業の画面の「外で見やすい明るい画面（昼は自動）」は、営業の画面の中で今までどおり切り替わる
+ *   基準（v18 と同じ）：本文16px以上（14pxは例外）・文字と背景の差 4.5:1 以上・入力欄の枠 3:1 以上
+ * 業務管理の index.html の <style> の後に読む。同じ強さの指定で上書きするため、:root:not([data-theme="light"]) を使う
+ */
+
+/* ---------- 暗い画面（標準） ---------- */
+:root:not([data-theme="light"]) {
+  --bg: #04060d; --bg2: #070b16; --surface: #111a2b; --sunk: #0c1424; --ink: #e9eef8; --muted: #b4bfd3; --line: #24324c;
+  --blue: #8ab8ff; --blue-soft: rgba(77,141,255,.18); --sakura: #ff9fb2; --sakura-soft: rgba(255,122,150,.16); --lav: #c4b5fd; --steel: #8ab8ff;
+  --ok: #5fd0b0; --ok-soft: rgba(95,208,176,.15); --warn: #f2bd5c; --warn-soft: rgba(242,189,92,.15); --bad: #ff8b99; --bad-soft: rgba(255,122,138,.15);
+  --wood: #0a1020; --wood2: #070b16; --on-wood: #e9eef8; --on-wood-mute: #b4bfd3;
+  --grain-a: transparent; --grain-b: transparent; --ctl: #7f90b4; --on-pri: #fff;
+  --pri-a: #2f6ae6; --pri-b: #2350c4;
+  --shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 10px 28px rgba(0,0,0,.45);
+  --f-display: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  color-scheme: dark;
+}
+/* ---------- 明るい画面（選んだとき） ---------- */
+:root[data-theme="light"] {
+  --bg: #eef2f8; --bg2: #e7ecf5; --surface: #ffffff; --sunk: #e9eef6; --ink: #0f1a2e; --muted: #46536b; --line: #d3dbe8;
+  --blue: #2350c4; --blue-soft: #e3ebfb; --sakura: #a8304f; --sakura-soft: #fbe6ec; --lav: #5b45b8; --steel: #2350c4;
+  --ok: #1d6e53; --ok-soft: #e0f3ec; --warn: #7d5100; --warn-soft: #fbf0d9; --bad: #b0263a; --bad-soft: #fbe3e6;
+  --wood: #0e1830; --wood2: #0a1224; --on-wood: #eef3fb; --on-wood-mute: #c3cde0;
+  --grain-a: transparent; --grain-b: transparent; --ctl: #6b7890; --on-pri: #fff;
+  --pri-a: #2f6ae6; --pri-b: #2350c4;
+  --shadow: 0 1px 2px rgba(15,26,46,.06), 0 8px 22px rgba(15,26,46,.08);
+  --f-display: "Hiragino Sans", "Hiragino Kaku Gothic ProN", "Noto Sans JP", "Yu Gothic UI", "Meiryo", system-ui, sans-serif;
+  color-scheme: light;
+}
+
+/* 地：夜空のような紺と、上からの淡い光（桜ミツのオーロラ） */
+:root:not([data-theme="light"]) body {
+  background:
+    radial-gradient(1100px 600px at 85% -10%, rgba(64,120,255,.16), transparent 60%),
+    radial-gradient(900px 520px at 5% 0%, rgba(0,229,255,.07), transparent 60%),
+    radial-gradient(800px 600px at 50% 110%, rgba(139,92,246,.10), transparent 60%),
+    #04060d !important;
+  background-attachment: fixed !important;
+}
+:root[data-theme="light"] body {
+  background: radial-gradient(1100px 600px at 85% -10%, rgba(64,120,255,.10), transparent 60%), #eef2f8 !important;
+  background-attachment: fixed !important;
+}
+
+/* 上の帯・下のボタン：木目をやめ、紺のすりガラス */
+.woodband, .top, nav.tabs {
+  background: color-mix(in srgb, var(--wood) 88%, transparent) !important;
+  backdrop-filter: blur(14px) saturate(140%);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+}
+.top { border-bottom: 1px solid rgba(130,165,255,.18) !important; }
+@media (max-width: 820px) { nav.tabs { border-top: 1px solid rgba(130,165,255,.22) !important; background: color-mix(in srgb, var(--wood) 94%, transparent) !important; } }
+nav.tabs button[aria-current="page"] { background: rgba(77,141,255,.22) !important; color: #fff !important; }
+@media (max-width: 820px) {
+  nav.tabs button { color: var(--on-wood-mute) !important; }
+  nav.tabs button[aria-current="page"] { background: none !important; color: #fff !important; }
+  nav.tabs button[aria-current="page"]::before { background: #8ab8ff !important; }
+}
+/* 家紋：黒い紋を、暗い帯の上では白く */
+.brand .logo-img, .gate-box .logo-img { filter: invert(1); mix-blend-mode: screen; background: transparent; border-radius: 50%; }
+.brand { font-family: var(--f-display); letter-spacing: .08em; }
+.brand small { letter-spacing: .14em; }
+
+/* カード：すりガラスの板（桜ミツのパネル） */
+:root:not([data-theme="light"]) .panel, :root:not([data-theme="light"]) .ccard, :root:not([data-theme="light"]) .launch-btn,
+:root:not([data-theme="light"]) .tdb, :root:not([data-theme="light"]) .staff-card, :root:not([data-theme="light"]) .feed {
+  background: linear-gradient(180deg, rgba(22,31,50,.92), rgba(15,22,38,.92)) !important;
+  border: 1px solid rgba(130,165,255,.14) !important;
+}
+:root:not([data-theme="light"]) .launch-btn:hover, :root:not([data-theme="light"]) .ccard:hover { border-color: rgba(130,165,255,.38) !important; }
+
+/* 主なボタン：青のグラデーションに白い字（白い字との差 4.8:1 以上） */
+.btn.pri, .launch-btn.sales, .gate-go, nav.tabs .plus {
+  background: linear-gradient(135deg, var(--pri-a), var(--pri-b)) !important; border-color: transparent !important; color: #fff !important;
+  box-shadow: 0 6px 18px rgba(47,106,230,.35) !important;
+}
+.launch-btn.sales small, .launch-btn.sales .lb-ic { color: #fff !important; }
+.launch-btn.sales .lb-ic { background: rgba(255,255,255,.16) !important; }
+
+/* 見出し：明朝をやめ、桜ミツと同じゴシック */
+h1, h2, h3, .kpi .l, .big4 span, .launch-btn b, .sec-h h2 { font-family: var(--f-display) !important; letter-spacing: .02em !important; }
+
+/* 見積の画面（.ee）を明るい画面にしたとき：桜ミツの色の決まりを明るい色に入れ替える */
+:root[data-theme="light"] .ee {
+  --bg: #eef2f8; --bg-2: #e7ecf5; --panel: rgba(255,255,255,.96); --panel-solid: #ffffff; --panel-hi: #f3f6fb;
+  --line: rgba(35,80,196,.14); --line-hi: rgba(35,80,196,.28);
+  --text: #0f1a2e; --text-2: #34415a; --muted: #4f5c74; --dim: #4f5c74;
+  --accent: #2350c4; --accent-2: #2350c4; --accent-deep: #2350c4; --accent-soft: rgba(35,80,196,.10);
+  --ok: #1d6e53; --warn: #7d5100; --err: #b0263a;
+  --glass: rgba(255,255,255,.92); --glass-hi: rgba(243,246,251,.96); --glass-line: rgba(35,80,196,.16);
+  color-scheme: light; color: var(--text);
+}
+:root[data-theme="light"] .ee.ee-host { background: transparent; }
+
+/* 青の地に白い字の部品：暗い画面では青が明るいので、主ボタンと同じ濃い青にそろえる（白い字との差 4.8:1 以上） */
+.launch-btn.new, .stp.done .dot, .subtabs button[aria-current="step"], .cal .d.today .dn {
+  background: var(--pri-b) !important; border-color: var(--pri-b) !important; color: #fff !important;
+}
+
+/* 「営業に出る」は暗い画面でも青（カードの上書きより強く） */
+:root .launch-btn.sales.sales, :root:not([data-theme="light"]) .launch-btn.sales {
+  background: linear-gradient(135deg, var(--pri-a), var(--pri-b)) !important; border-color: transparent !important; color: #fff !important;
+}
+/* パソコンの上の帯の中のメニューは、帯と同じ地（別の色の箱にしない） */
+@media (min-width: 821px) { .top nav.tabs { background: none !important; backdrop-filter: none; -webkit-backdrop-filter: none; } }
+/* スマホの下のボタンが6つでも、名前が3行にならないように */
+@media (max-width: 820px) {
+  nav.tabs button { padding-left: 2px !important; padding-right: 2px !important; letter-spacing: 0 !important; min-width: 0; }
+  nav.tabs button span { word-break: keep-all; overflow-wrap: anywhere; }
+}
+/* 画面を切り替えたとき、見出しに移したフォーカス（読み上げ用）は枠を出さない */
+.ee-top h1[tabindex="-1"]:focus { outline: none !important; box-shadow: none !important; }
+/* 明るい画面の見積の画面：選んでいる切り替えボタンは濃い青の字 */
+:root[data-theme="light"] .ee .seg button.on { color: #1b3f9e !important; background: rgba(35,80,196,.12) !important; }

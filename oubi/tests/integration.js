@@ -29,6 +29,12 @@ function aCase(id, over) {
   ok(st.cu.length === 2 && st.cu.includes('山田 太郎') && st.cu.includes('佐藤 花子'), '顧客は工事から作る（同じ名前・電話の工事は1人にまとめる）');
   ok(st.pj.length === 3, '現場（案件）は工事1件ずつ');
   ok(st.me === 'u_tester' && st.members.includes('テスト太郎'), '担当者は業務管理の社員と同じ');
+  ok(await p.evaluate(() => EE.host === true), '桜ミツは「業務管理の中」の動きになっている');
+  await p.evaluate(() => { location.hash = '#/settings/items'; }); await p.waitForTimeout(1200);
+  const tabs = await p.$$eval('#set-tabs [data-tab]', a => a.map(x => x.dataset.tab));
+  ok(!tabs.includes('data') && !tabs.includes('members'), '見積の設定に「データ（全消去）」「担当者」は出さない（共有データを守る）');
+  await p.evaluate(() => { location.hash = '#/settings/data'; }); await p.waitForTimeout(1000);
+  ok(/#\/settings\/items/.test(await p.evaluate(() => location.hash)), '「データ」の画面を直接開いても品目マスタへ移る');
 
   // 工事の「見積と利益」から見積を作る（前の明細を読み込む）
   await p.evaluate(() => OUBI.openCase('c1', 'quote')); await p.waitForTimeout(600);
@@ -66,6 +72,7 @@ function aCase(id, over) {
   const nb = await p.$('[data-act="new-c"]');
   if (nb) {
     await nb.click(); await p.waitForTimeout(500);
+    ok(await p.evaluate(() => !!document.querySelector('#ee-layer .overlay') && document.getElementById('main').inert), '確認の窓は桜ミツの見た目の中に出て、背面は操作できない');
     await p.fill('.overlay [name="name"]', '鈴木 一郎'); await p.click('.overlay [data-s]'); await p.waitForTimeout(1500);
     d = await db();
     ok(Object.values(d.cases).some(c => ((c.lead || {}).company || (c.lead || {}).customer) === '鈴木 一郎'), '見積の画面で登録した顧客は、業務管理の工事（問い合わせ）になる');

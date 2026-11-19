@@ -2,6 +2,7 @@
 .ee-host { position: relative; min-height: calc(100vh - 72px); padding-top: 18px; padding-bottom: calc(var(--navh, 0px) + 32px); }
 .ee-host[hidden] { display: none !important; }
 .ee-host > * { position: relative; z-index: 1; }
+.ee.ee-host { background: transparent !important; }
 .ee-top { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; max-width: 1400px; margin: 0 auto 12px; }
 .ee-ttl { flex: 1 1 220px; min-width: 0; }
 .ee-top h1 { margin: 0; font-size: 26px; font-weight: 700; letter-spacing: .02em; line-height: 1.4; }

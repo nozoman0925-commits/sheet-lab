@@ -20,6 +20,7 @@
 (function () {
   'use strict';
   var EE = window.EE, U = EE.ui;
+  EE.host = true;   // 桜ミツ側の「業務管理の中で動くとき」の切り替え（設定のタブ・確認の窓の置き場所など）
   var O = null;                // 業務管理（window.OUBI）
   var LSK = 'oubi.mitsu.v1';
   var raw = { master: null, docs: {}, homes: {} };
@@ -404,7 +405,7 @@
     var el = document.getElementById('ee-widgets'); if (!el || !ready || !EE.S) return;
     try {
       var v = EE.views.control.render();
-      el.innerHTML = '<div class="ee-home-h"><h2>' + U.esc(v.title || 'ホーム') + '</h2><div class="ee-home-actions">' + (v.actions || '') + '</div></div><div class="view-inner">' + v.html + '</div>';
+      el.innerHTML = '<div class="ee-home-h"><h2>ウィジェット</h2><div class="ee-home-actions">' + (v.actions || '') + '</div></div><div class="view-inner">' + v.html + '</div>';
       var acts = el.querySelector('.ee-home-actions');
       if (v.mount) v.mount(el.querySelector('.view-inner'), acts);
       if (EE.a11y) EE.a11y.enhance(el);
