@@ -117,6 +117,7 @@
         '<a role="menuitem" href="#/settings/members">' + I.users + '担当者を管理</a>' +
         '<a role="menuitem" href="#/settings/data">' + I.download + 'バックアップ</a>' +
         '<button role="menuitem" data-u="splash">' + I.spark + '起動アニメーションを見る</button>' +
+        (EE.auth && EE.auth.current() ? '<button role="menuitem" data-u="signout">' + I.lock + 'サインアウト<small>' + U.esc(EE.auth.current().email) + '</small></button>' : '') +
       '</div>';
     updateCount();
   }
@@ -136,6 +137,12 @@
         EE.fx.pop(document.querySelector('#side-user .avatar'));
         EE.fx.toast(U.me().name + ' として使います（新しく作る見積の担当者になります）');
         if (/^#\/(home)?$/.test(location.hash || '#/home')) show();
+      }
+      if (b && b.dataset.u === 'signout') {
+        toggleUserPop(false);
+        if (EE.views.editor.isDirty() && !confirm('保存していない変更があります。サインアウトしますか？')) return;
+        EE.auth.signOut().then(function () { location.reload(); });
+        return;
       }
       if (b && b.dataset.u === 'splash') { toggleUserPop(false); EE.splash.play({ replay: true, onReveal: intro }); }
       if (e.target.closest('a[role=menuitem]')) toggleUserPop(false);
@@ -263,9 +270,21 @@
     EE.fx.countAll(v);
   }
 
+  /** サインインした人を担当者名簿につなぐ（同じ名前の担当者がいればその人、いなければ追加） */
+  function linkMember(user) {
+    var norm = function (s) { return String(s || '').replace(/[\s　]+/g, ''); };
+    var ms = EE.S.members || (EE.S.members = []);
+    var m = ms.filter(function (x) { return x.accountId === user.id; })[0] || ms.filter(function (x) { return !x.accountId && norm(x.name) === norm(user.name); })[0];
+    if (!m) { m = { id: EE.data.uid('mem'), name: user.name, role: '担当', hue: 200 + (ms.length * 47) % 160 }; ms.push(m); }
+    m.accountId = user.id;
+    EE.S.currentMemberId = m.id;
+    EE.data.save(EE.S);
+  }
+
   function boot(opts) {
     opts = opts || {};
     EE.S = EE.data.load();
+    if (opts.user) linkMember(opts.user);
     renderNav();
     var slot = document.getElementById('brand-crest');
     if (!slot.firstChild) slot.innerHTML = EE.crest.svg({ id: 'brand', className: 'brand-crest', fieldR: 106 });

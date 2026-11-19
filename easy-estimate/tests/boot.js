@@ -12,6 +12,7 @@ const URL = 'file://' + path.join(__dirname, '..', 'index.html') + '#/home';
 (async () => {
   const b = await chromium.launch(); const errs = [];
   const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  require('./_signed-in')(p);   // サインイン済みの状態で開く
   p.on('pageerror', e => errs.push(e.message)); p.on('console', m => { if (m.type() === 'error') errs.push(m.text()); });
   await p.addInitScript(() => { window.__t0 = performance.now(); });
   await p.goto(URL);
