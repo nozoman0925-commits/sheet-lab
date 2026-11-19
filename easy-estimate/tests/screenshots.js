@@ -6,6 +6,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
 (async () => {
   const b = await chromium.launch();
   const p = await b.newPage({ viewport: { width: 1440, height: 900 } });
+  require('./_signed-in')(p);   // サインイン済みの状態で開く
   const errs = [];
   p.on('pageerror', e => errs.push('pageerror: ' + e.message));
   p.on('console', m => { if (m.type() === 'error') errs.push('console: ' + m.text()); });
