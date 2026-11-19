@@ -36,10 +36,11 @@ for(const t of ['keiko','roku','chikai']){await p.click('#tabs [data-tab='+t+']'
   const g=await p.evaluate(()=>[...document.querySelectorAll('#app details.grp')].map(d=>d.querySelector('.gt').textContent+"("+d.querySelectorAll('section').length+")").join("・"));
   const h=await p.evaluate(()=>document.documentElement.scrollHeight);ok(t+"：区画をたたんで短くする",g.length>0,g+" ・ 画面の長さ "+h+"px");await p.screenshot({path:B+'/U6_'+t+'.png',fullPage:true})}
 // 入門の七日
-await p.click('#tabs [data-tab=dojo]');await p.waitForTimeout(200);const w=await p.evaluate(()=>{const T=__T;const M=T.S.main;M.demo=false;M.created=T.todayKey();T.day(T.todayKey()).mission=null;T.render();const c=document.querySelector('#sec-week1');return c?c.innerText.replace(/\s+/g," "):null});
+await p.click('#tabs [data-tab=dojo]');await p.waitForTimeout(200);const w=await p.evaluate(()=>{const T=__T;const M=T.S.main;M.demo=false;M.created=T.todayKey();T.day(T.todayKey()).mission=null;T.render();const c=document.querySelector('#sec-week1');return c?c.textContent.replace(/\s+/g," "):null});
+ok("今日の稽古の中に、入門の日数と今日のコツが一行で出る",(await p.textContent('#sec-todo .w1line')||"").includes("1日目"));
 ok("始めた日に「入門の七日・1日目」と今日の目標一つ",w&&w.includes("1日目")&&w.includes("一太刀を一つ斬る"),w&&w.slice(0,90));
 await p.click('#tabs [data-tab=dojo]');await p.waitForTimeout(200);await (await p.$('#sec-week1')).scrollIntoViewIfNeeded();await p.screenshot({path:B+'/U7.png'});
-const w3=await p.evaluate(()=>{const T=__T;const M=T.S.main;M.created=T.addDays(T.todayKey(),-2);T.day(M.created).mission={text:"x",result:"done"};T.render();return document.querySelector('#sec-week1').innerText.replace(/\s+/g," ")});
+const w3=await p.evaluate(()=>{const T=__T;const M=T.S.main;M.created=T.addDays(T.todayKey(),-2);T.day(M.created).mission={text:"x",result:"done"};T.render();return document.querySelector('#sec-week1').textContent.replace(/\s+/g," ")});
 ok("3日目：1日目の達成に印、今日は「夜の省察を書く」",w3.includes("3日目")&&w3.includes("夜の省察")&&/✓/.test(w3),w3.slice(0,90));
 const ml=await p.evaluate(()=>document.querySelector('#sec-master .mline').textContent);ok("七日の間は、師範が日ごとの言葉をかける",ml.includes("三日目"),ml);
 const w8=await p.evaluate(()=>{const T=__T;T.S.main.created=T.addDays(T.todayKey(),-8);T.render();return !!document.querySelector('#sec-week1')});ok("8日目からは七日のカードは消える",!w8);

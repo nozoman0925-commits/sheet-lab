@@ -8,12 +8,13 @@ await p.click('[data-act=demo]');await p.waitForTimeout(300);await p.click('[dat
 await p.evaluate(()=>{const T=__T;T.ui.grpAll=false;T.ui.grpOpen={};const M=T.S.main;M.demo=false;M.env=null;M.master={motive:"respect",name:"先生",gender:"male",date:T.todayKey()};M.tutVer=3;M.tutDone=true;M.hints={keiko:1,roku:1,chikai:1};M.created=T.addDays(T.todayKey(),-20);T.day(T.todayKey()).mission=null;T.render()});
 // 道場
 const ord=await p.evaluate(()=>[...document.querySelectorAll('#app>.stack>section')].map(e=>e.id));
-ok("道場に開いて見えるのは、今日の帯・一太刀・修行・言葉だけ",JSON.stringify(ord)===JSON.stringify(["sec-todo","sec-mission","sec-quest","sec-quote"]),ord.join(" > "));
-const h=await p.evaluate(()=>document.documentElement.scrollHeight);ok("道場の長さは、ほぼ一画面半まで",h<1400,h+"px");
+ok("道場に開いて見えるのは、今日の稽古・①一太刀・②修行・③ふり返り・言葉",JSON.stringify(ord)===JSON.stringify(["sec-todo","sec-mission","sec-quest","sec-night","sec-quote"]),ord.join(" > "));
+const h=await p.evaluate(()=>document.documentElement.scrollHeight);ok("道場の長さは、ほぼ二画面まで",h<1700,h+"px");
 const grp=await p.evaluate(()=>[...document.querySelectorAll('#app details.grp')].map(d=>d.querySelector('.gt').textContent+":"+d.open));
 ok("ほかの稽古・整えることは、たたんで残す（機能は消さない）",grp.join(",")==="ほかの稽古:false,整えること:false",grp.join(","));
 ok("SNSの関門などは「整えること」の中にある",await p.evaluate(()=>!!document.querySelector('details.grp #sec-env')));
-ok("今日の帯に、同じ項目の大きな行を二度描かない",await p.evaluate(()=>!document.querySelector('#sec-todo .ti')&&document.querySelectorAll('#sec-todo .tiers .tier').length>=3));
+ok("今日の稽古は番号つきの手順（何をするかが平易な言葉で書いてある）",await p.evaluate(()=>{const t=[...document.querySelectorAll('#sec-todo .tier.step .tt')].map(e=>e.textContent);return t.length===3&&t[0].includes("挑戦")&&t[1].includes("習慣")&&t[2].includes("ふり返")}));
+ok("何のアプリかが見出しに書いてある",(await p.textContent('.brand small')).includes("鍛える"));
 await p.click('#sec-todo .tier.t3');await p.waitForTimeout(300);ok("「ほか」を押すと、ほかの稽古が開く",await p.evaluate(()=>document.querySelector('#app details.grp').open));
 ok("端末保存の案内は道場に出さない",await p.evaluate(()=>!/ブラウザ内だけ/.test(document.querySelector('#app').textContent)));
 // 背景

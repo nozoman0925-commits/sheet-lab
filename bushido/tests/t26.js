@@ -23,7 +23,7 @@ const bad=await p.evaluate(()=>{const T=__T;T.day(T.todayKey()).cond="bad";T.ren
 ok("不調の日は、必須の一つだけを見せる",bad===1,bad+"行");
 // 一太刀を斬ると「今日は斬った」
 await p.evaluate(()=>{const T=__T;T.day(T.todayKey()).mission={text:"x",cat:1,lv:1,result:"done"};T.render()});
-ok("一太刀を斬れば「今日は斬った」",(await p.textContent('#sec-todo .todo-next')).includes("斬った"));
+{const nx=await p.textContent('#sec-todo .todo-next');ok("一太刀を斬れば、次にやること（習慣・ふり返り）へ案内する",/毎日の習慣|ふり返ろう|完了/.test(nx)&&await p.evaluate(()=>document.querySelector('#sec-todo .tier.t1').classList.contains('ok')),nx)}
 // 師範は必要な場面だけ
 const ml=await p.evaluate(()=>{const T=__T;T.day(T.todayKey()).mission=null;T.S.main.created=T.addDays(T.todayKey(),-40);T.S.main.tasks=[];T.render();const e=document.querySelector('#sec-master .mline');return e?e.textContent:null});
 ok("何もない日は、師範の一言を出さない",ml===null,String(ml));

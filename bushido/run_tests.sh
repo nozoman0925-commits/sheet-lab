@@ -15,7 +15,7 @@ python3 -m http.server 8765 -d "$OUT/srv" >/dev/null 2>&1 & P1=$!
 python3 -m http.server 8766 -d "$OUT/pwa" >/dev/null 2>&1 & P2=$!
 trap 'kill $P1 $P2 2>/dev/null' EXIT
 sleep 1
-TESTS="t6 t7 t13 t15 t15b t18 t19 t21 t22 t23 t24 t25 t26 t27 t28 t29"
+TESTS="t6 t7 t13 t15 t15b t18 t19 t21 t22 t23 t24 t25 t26 t27 t28 t29 t30"
 SIM=0; SEL=""
 for a in "$@"; do [ "$a" = "--sim" ] && SIM=1 || SEL="$SEL $a"; done
 [ -n "$SEL" ] && TESTS=$SEL

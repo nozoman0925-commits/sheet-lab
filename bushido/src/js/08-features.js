@@ -31,8 +31,8 @@ function anchorDL(filename,blob){try{const u=URL.createObjectURL(blob);const a=d
 
 /* 画面ごとに、毎日見る区画だけを開いて見せる。残りは折りたたみにまとめる */
 const GROUPS={
- dojo:[{t:"ほかの稽古",s:"掟・朝の型・心得・勝利の壺",after:"sec-quote",after2:"sec-quest"},
-  {t:"整えること",s:"一度やれば済む準備・振り返り",cls:"fold",ids:["sec-env","sec-profile","sec-tutresume","sec-rest","sec-life","sec-weekly","sec-yimp"]}],
+ dojo:[{t:"ほかの稽古",s:"掟・朝の型・心得・勝利の壺",after:"sec-quote",after2:"sec-night",after3:"sec-quest"},
+  {t:"整えること",s:"入門の七日・準備・振り返り",cls:"fold",ids:["sec-week1","sec-env","sec-profile","sec-tutresume","sec-rest","sec-life","sec-weekly","sec-yimp"]}],
  keiko:[{t:"ほかの鍛錬",s:"身支度・二十の力・六つの修行・試練",after:"sec-train"}],
  roku:[{t:"能力・戦績・姿見",s:"六つの能力・人生の戦績・姿見の記録",ids:["sec-status","sec-feats","sec-mirror"]},{t:"傾向と履歴",s:"生活の基盤・言い訳・過去の自分・EXP履歴",ids:["sec-base","sec-excuse","sec-refl-list"],ey:["VS ","EXP履歴","再起履歴"]}],
  chikai:[{t:"段位・刀・卒業",ey:["刀の成長","段位","離 ","卒業 ・ "],ids:["sec-grad-m"]},
@@ -41,9 +41,9 @@ const GROUPS={
   {t:"設定",s:"外観・通知・機能・データ",ids:["sec-look","sec-features"],ey:["通知設定","用語集","データ設定"]}]};
 function groupSections(){const G=GROUPS[tab];const st=$("#app .stack");if(!G||!st)return;ui.grpOpen=ui.grpOpen||{};
   G.forEach((g,gi)=>{let els;const kids=[...st.children].filter(e=>e.tagName==="SECTION");
-    if(g.after){const a=document.getElementById(g.after)||document.getElementById(g.after2);const i=a?kids.indexOf(a):-1;els=i>=0?kids.slice(i+1):[]}
+    if(g.after){const a=document.getElementById(g.after)||document.getElementById(g.after2)||document.getElementById(g.after3);const i=a?kids.indexOf(a):-1;els=i>=0?kids.slice(i+1):[]}
     else els=kids.filter(e=>(g.ids||[]).includes(e.id)||(g.cls&&e.classList.contains(g.cls))||(g.ey||[]).some(x=>{const y=e.querySelector(".eyebrow");return y&&y.textContent.indexOf(x)===0}));
-    els=els.filter(e=>!["sec-grad-apply","sec-pain","sec-week1"].includes(e.id));if(!els.length)return;
+    els=els.filter(e=>!["sec-grad-apply","sec-pain"].includes(e.id));if(!els.length)return;
     const d=document.createElement("details");d.className="grp";d.id="grp-"+tab+"-"+gi;d.open=!!(ui.grpOpen[d.id]||ui.grpAll);
     d.innerHTML='<summary><span class="gt">'+g.t+'</span>'+(g.s?'<span class="gs">'+g.s+'</span>':'')+'<span class="gn num">'+els.length+'</span></summary>';
     const box=document.createElement("div");box.className="stack grp-in";els.forEach(e=>box.appendChild(e));d.appendChild(box);st.appendChild(d);

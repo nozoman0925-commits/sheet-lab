@@ -389,8 +389,7 @@ function renderDojo(){
   if(!S.main.profile)out.push('<section class="sec" id="sec-profile" style="border-color:var(--red)"><p class="eyebrow">まだ終えていない</p><h2>まずは自分を見つめ直せ。</h2><p class="small muted" style="margin-bottom:10px">体・眠り・食・欲・身辺・知・行動・心について、'+QCOUNT+'の問いに答える（約5分）。答えから、一太刀の命令と掟をあなた一人のものにする。今の修行と記録はそのまま残る。</p><button class="btn gold wide" data-act="retake">見つめ直す</button></section>');
   if(S.main.tutVer!==3&&S.main.master&&ui.tut==null)out.push('<section class="sec" id="sec-tutresume" style="border-color:var(--gold)"><p class="eyebrow">入門の儀'+(S.main.tutStep?" ・ 途中":"")+'</p><h2>道場の使い方を、師範が教える。</h2><p class="small muted" style="margin-bottom:10px">実際に押して覚える約3分の儀式。練習の操作は本番のEXPや記録に残らない。'+(S.main.tutStep?"中断した章から再開する。":"")+'</p><button class="btn gold wide" data-act="tutResume">'+(S.main.tutStep?"入門の儀を再開する":"入門の儀を始める")+'</button></section>');
   if(painActive())out.push('<section class="sec" id="sec-pain" style="border-color:var(--red)"><p class="eyebrow">安全 ・ '+fmtMD(S.main.painStop.date)+'から</p><h2>体の試練を止めている。</h2><p class="small muted" style="margin-bottom:10px">痛みの申告があったため、体を使う命令は出さない。痛みが続く・強い・しびれがあるときは、医療機関に相談しろ。</p><button class="btn wide" data-act="painClear">痛みが引いた（体の試練を再開する）</button></section>');
-  out.push(masterCard());
-  out.push(week1Card(k));
+  const mCard=masterCard();
   {const y=S.days[addDays(k,-1)];const items=y&&y.prep?y.prep.items.filter(x=>PREP[x]):[];const pc=d.prepCheck;
    if(items.length&&!(pc&&pc.done)){const r=pc?pc.res:{};const ng=items.some(x=>r[x]===0);
     out.push('<section class="sec" id="sec-prep"><p class="eyebrow">昨夜の仕込み ・ 確かめる</p><h2>仕込みは、できていたか。</h2>'+items.map(x=>'<div class="row" style="padding:6px 0;border-top:1px solid var(--line)"><span class="grow small">'+PREP[x]+'</span><button class="btn sm'+(r[x]===1?" gold":"")+'" data-act="prepRes" data-k="'+x+'" data-v="1" aria-pressed="'+(r[x]===1)+'">できていた</button><button class="btn sm'+(r[x]===0?" red":"")+'" data-act="prepRes" data-k="'+x+'" data-v="0" aria-pressed="'+(r[x]===0)+'" style="margin-left:6px">できず</button></div>').join("")+
@@ -406,10 +405,10 @@ function renderDojo(){
   out.push(renderTodo(k,d));
   // 一太刀
   const m=d.mission;
-  if(!m)out.push('<section class="sec mission" id="sec-mission"><p class="eyebrow">今日の'+term("一太刀")+'</p><p class="small muted" style="margin-bottom:10px">三つから一つ選べ。選んだら、今日は変えない。</p><button class="btn gold wide" data-act="setMission">今日の一太刀を受ける</button></section>');
+  if(!m)out.push('<section class="sec mission" id="sec-mission"><p class="eyebrow"><span class="stepno">1</span>今日の挑戦（'+term("一太刀")+'）</p><p class="small muted" style="margin-bottom:10px">三つから一つ選べ。選んだら、今日は変えない。</p><button class="btn gold wide" data-act="setMission">今日の一太刀を受ける</button></section>');
   else{
     const res=m.result;const canFix=m.own&&m.setTs&&Date.now()-m.setTs<10*60e3&&!res;
-    out.push('<section class="sec mission" id="sec-mission"><div class="row"><p class="eyebrow grow" style="margin:0">今日の'+term("一太刀")+'</p>'+(res?'<span class="tag '+(res==="done"?"gold":res==="miss"?"red":"")+'">'+({done:"達成",part:"一部達成",miss:"未達成",postponed:"延期・中止"}[res])+'</span>':'')+'</div><p class="txt">'+esc(m.text)+'</p>'+(m.lv?'<p class="small muted" style="margin:-6px 0 10px"><b class="lvtag">難度'+m.lv+' / 10</b> '+(m.cat!=null&&CAT_SHORT[m.cat]?'分野：'+CAT_SHORT[m.cat]:'')+'</p>':'')+(m.why?'<p class="small" style="margin:-4px 0 8px"><span class="muted">なぜこの命令か：</span>'+esc(m.why)+'</p>':'')+
+    out.push('<section class="sec mission'+(res?" step-done":"")+'" id="sec-mission"><div class="row"><p class="eyebrow grow" style="margin:0"><span class="stepno">'+(res?"✓":"1")+'</span>今日の挑戦（'+term("一太刀")+'）</p>'+(res?'<span class="tag '+(res==="done"?"gold":res==="miss"?"red":"")+'">'+({done:"達成",part:"一部達成",miss:"未達成",postponed:"延期・中止"}[res])+'</span>':'')+'</div><p class="txt">'+esc(m.text)+'</p>'+(m.lv?'<p class="small muted" style="margin:-6px 0 10px"><b class="lvtag">難度'+m.lv+' / 10</b> '+(m.cat!=null&&CAT_SHORT[m.cat]?'分野：'+CAT_SHORT[m.cat]:'')+'</p>':'')+(m.why?'<p class="small" style="margin:-4px 0 8px"><span class="muted">なぜこの命令か：</span>'+esc(m.why)+'</p>':'')+
     (m.mid&&MDATA[m.mid]&&!res?mInfoHTML(m.mid,m.cat,true)+(()=>{const a=mAlt(m);return a?'<p class="small muted" style="margin:6px 0 10px">体調などで実行できない時の代案：「'+esc(a.t)+'」。やり切れば「一部達成」として付けろ。</p>':''})():'')+
     (res==="miss"&&m.missWhy&&MISS_NEXT[m.missWhy]?'<div class="note" style="margin-bottom:10px"><p class="small muted">原因：'+MISS_T[m.missWhy]+'（'+MISS_GROUP[m.missWhy]+'の問題）</p><p class="small">'+MISS_NEXT[m.missWhy].join("")+'</p></div>':'')+(canFix?'<button class="btn ghost sm" data-act="fixMission" style="margin:-6px 0 10px">誤字を直す（決めてから10分以内）</button>':'')+
     (res==="postponed"?'<p class="small muted">理由：'+esc(m.postponeReason)+'</p>':
@@ -418,7 +417,10 @@ function renderDojo(){
   // クエスト
   const qs=activeTasks().filter(t=>k>=t.start);const paused=S.main.tasks.filter(t=>t.status==="一時停止");
   const total=qs.filter(t=>taskOn(t,k)).length;const doneN=qs.filter(t=>{const l=d.logs[t.id];return taskOn(t,k)&&l&&(isDoneState(l.state)||isExcluded(l.state))}).length;
-  out.push('<section class="sec" id="sec-quest"><div class="row" style="margin-bottom:6px"><div class="grow"><p class="eyebrow" style="margin:0">今日のクエスト</p><h2 style="margin:0">毎日の修行</h2></div><span class="num muted">'+doneN+' / '+total+'</span></div><div class="bar" style="margin-bottom:6px"><i style="width:'+(total?doneN/total*100:0)+'%"></i></div>'+(qs.length?qs.map(t=>questRow(t,k)).join(""):paused.length?'<p class="muted small">修行は一時停止中です。稽古場の「設定」から再開できます。停止中の日は、達成率の計算に入りません。</p>':'<p class="muted small">修行がまだありません。稽古場で追加します。</p>')+'</section>');
+  out.push('<section class="sec'+(total&&doneN>=total?" step-done":"")+'" id="sec-quest"><div class="row" style="margin-bottom:6px"><div class="grow"><p class="eyebrow" style="margin:0"><span class="stepno">'+(total&&doneN>=total?"✓":"2")+'</span>毎日の習慣（修行）</p><h2 style="margin:0">毎日の修行</h2></div><span class="num muted">'+doneN+' / '+total+'</span></div><div class="bar" style="margin-bottom:6px"><i style="width:'+(total?doneN/total*100:0)+'%"></i></div>'+(qs.length?qs.map(t=>questRow(t,k)).join(""):paused.length?'<p class="muted small">修行は一時停止中です。稽古場の「設定」から再開できます。停止中の日は、達成率の計算に入りません。</p>':'<p class="muted small">修行がまだありません。稽古場で追加します。</p>')+'</section>');
+  if(!(d.cond==="bad"||painActive())){const rf=d.reflection;out.push('<section class="sec night'+(rf?" step-done":"")+'" id="sec-night"><p class="eyebrow"><span class="stepno">'+(rf?"✓":(total?"3":"2"))+'</span>夜のふり返り（省察）</p>'+
+    (rf?'<p class="small">今日のふり返りは書いた。'+(rf.improve?'明日の改善：'+esc(rf.improve):'')+'</p>':'<p class="small muted" style="margin-bottom:10px">寝る前に30秒。今日の自分を選ぶだけでいい。</p><button class="btn wide" data-act="reflect">ふり返る</button>')+'</section>')}
+  out.push(mCard);out.push(week1Card(k));
   out.push(quoteCard());
   if(feat("okite"))out.push(renderOkite(k,d));
   out.push(ritualSec);
@@ -454,15 +456,20 @@ function renderTodo(k,d){
   rec.push({t:"夜の省察（30秒）",sub:"寝る前に（目安 "+esc(N.night||"")+"）",ok:!!d.reflection,act:'data-act="reflect"',btn:"書く"});
   const recDone=rec.every(x=>x.ok);const st=streak();
   const head=!m?'まず、<b>今日の一太刀</b>を受けよ。':!mRes?'今日の一太刀を、<b>斬れ</b>。':mCut&&(recDone||bad)?'今日の修行は終えた。<br><span class="small" style="font-family:var(--body);font-weight:500;color:var(--gold-hi)">アプリを閉じて、現実で斬れ。今日はもう開かなくていい。</span>':mCut?'今日は<b>斬った</b>。あとは、やれたらでいい。':'記録した。明日、取り返せ。';
-  const chip=(lab,cls,t,ok,act,gold)=>'<button class="tier '+cls+(ok?" ok":"")+(gold&&!ok?" now":"")+'" '+act+'><span class="tl">'+lab+'</span><span class="tt">'+t+'</span><span class="ck" aria-hidden="true">'+(ok?"✓":"")+'</span></button>';
-  const qOk=!qs.length||qDone>=qs.length;
+  const qOk=!qs.length||qDone>=qs.length;const rOk=!!d.reflection;
   const stk=st?'<span class="streak" title="1日だけの空白は許される">継続 '+st+'日</span>':'';
-  return '<section class="sec todo" id="sec-todo"><p class="todo-next">'+head+'</p><div class="tiers">'+
-   chip("必須","t1","一太刀",mRes,m?'data-act="goto" data-v="sec-mission"':'data-act="setMission"',true)+
-   (bad?stk+'</div><p class="small muted" style="margin-top:6px">今日は体を休める日だ。一太刀だけでいい。</p>':
-    (qs.length?chip("推奨","t2","修行 "+qDone+"/"+qs.length,qOk,'data-act="goto" data-v="sec-quest"'):'')+
-    chip("推奨","t2","省察",!!d.reflection,'data-act="reflect"')+
-    chip("任意","t3","ほか",false,'data-act="openGrp"')+stk+'</div>')+'</section>';
+  const steps=[{n:1,lab:"必須",cls:"t1",t:"今日の挑戦を1つやり切る",w:"一太刀",ok:mRes,sub:!m?"まだ選んでいない":!mRes?"「"+esc(m.text)+"」":({done:"達成",part:"一部達成",miss:"未達成",postponed:"延期"}[m.result]||"記録済み"),act:m?'data-act="goto" data-v="sec-mission"':'data-act="setMission"'}];
+  if(!bad){if(qs.length)steps.push({n:2,lab:"推奨",cls:"t2",t:"毎日の習慣をこなす",w:"修行",ok:qOk,sub:qDone+" / "+qs.length+" できた",act:'data-act="goto" data-v="sec-quest"'});
+    steps.push({n:steps.length+1,lab:"推奨",cls:"t2",t:"寝る前に30秒ふり返る",w:"省察",ok:rOk,sub:rOk?"書いた":"目安 "+esc(N.night||"21:30"),act:'data-act="reflect"'})}
+  const doneN=steps.filter(x=>x.ok).length;
+  const now=bad?'今日は体を休める日。<b>挑戦を1つ</b>だけでいい。':!m?'まず、<b>今日の挑戦を1つ選ぼう</b>。':!mRes?'選んだ挑戦を<b>やり切ろう</b>。終わったら「達成」を押す。':(qs.length&&!qOk)?'次は<b>毎日の習慣</b>。やったものから「達成」。':!rOk?'最後に、寝る前に<b>30秒ふり返ろう</b>。':'今日の稽古は<b>完了</b>。アプリを閉じて、現実で斬れ。';
+  const intro=(!S.main.introSeen&&tenure()<=7)?'<div class="today-intro"><p><b>武士道</b>は、毎日の小さな約束を守って自分を鍛えるアプリ。上の順にこなすと経験値（EXP）がたまり、段位が上がる。</p><button class="btn sm ghost" data-act="introSeen">わかった</button></div>':'';
+  const row=x=>'<button class="tier step '+x.cls+(x.ok?" ok":"")+'" '+x.act+'><span class="sn" aria-hidden="true">'+(x.ok?"✓":x.n)+'</span><span class="st"><span class="tt">'+x.t+'</span><span class="ss"><em>'+x.w+'</em> ・ '+x.sub+'</span></span><span class="tl">'+x.lab+'</span></button>';
+  const w1=(()=>{const M=S.main;if(!M.onboarded||M.demo||!M.created)return "";const n=diffDays(M.created,k)+1;if(n<1||n>7||!WEEK1[n-1])return "";return '<p class="w1line">入門'+n+'日目のコツ：<b>'+WEEK1[n-1][0]+'</b></p>'})();
+  return '<section class="sec todo" id="sec-todo">'+intro+'<div class="today-head"><p class="eyebrow">今日の稽古</p><span class="today-n num">'+doneN+' / '+steps.length+'</span>'+stk+'</div>'+
+   '<div class="today-bar" aria-hidden="true">'+steps.map(x=>'<i class="'+(x.ok?"on":"")+'"></i>').join("")+'</div>'+
+   '<p class="todo-next">'+now+'</p>'+w1+'<div class="tiers steps">'+steps.map(row).join("")+
+   (bad?'':'<button class="tier t3 more" data-act="openGrp"><span class="tl">任意</span><span class="tt">ほかの稽古 <small>掟・朝の型・心得</small></span><span class="chev" aria-hidden="true">›</span></button>')+'</div></section>';
 }
 function questRow(t,k){
   const l=logOf(k,t.id);const off=!taskOn(t,k);const st=off?"rest":(l?l.state:"");

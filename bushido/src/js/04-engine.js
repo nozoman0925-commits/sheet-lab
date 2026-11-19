@@ -345,7 +345,7 @@ function header(){
   const {exp,rank}=syncRank();const next=RANKS[rank+1];
   const cur=RANKS[rank];const pct=next?Math.max(0,Math.min(100,(exp-cur.exp)/(next.exp-cur.exp)*100)):100;
   const wait=next&&exp>=next.exp;
-  return '<header class="top">'+kamon+'<div class="brand">武士道<small>THE WAY OF SELF MASTERY</small></div><div class="rankchip"><b>'+cur.n+'</b>'+(rankState()?'<i class="rs">'+rankState()+'</i>':'')+'<span><span id="expn">'+(ui.shownExp!=null&&ui.shownExp<exp?ui.shownExp:exp).toLocaleString()+'</span> EXP'+(next?' / 次 '+next.exp.toLocaleString():'')+'</span></div><button class="help" data-act="help" aria-label="使い方とヘルプ">？</button><div class="hbar" title="'+(next?(wait?next.n+"は修行の条件待ち":next.n+"まで"+Math.round(pct)+"%"):"最高段位")+'"><i style="width:'+(ui.shownPct!=null&&ui.shownExp<exp?ui.shownPct:pct)+'%"></i></div><span id="expfloat" class="expfloat"></span></header>';
+  return '<header class="top">'+kamon+'<div class="brand">武士道<small>毎日の約束で、己を鍛える</small></div><div class="rankchip"><b>'+cur.n+'</b>'+(rankState()?'<i class="rs">'+rankState()+'</i>':'')+'<span><span id="expn">'+(ui.shownExp!=null&&ui.shownExp<exp?ui.shownExp:exp).toLocaleString()+'</span> EXP'+(next?' / 次 '+next.exp.toLocaleString():'')+'</span></div><button class="help" data-act="help" aria-label="使い方とヘルプ">？</button><div class="hbar" title="'+(next?(wait?next.n+"は修行の条件待ち":next.n+"まで"+Math.round(pct)+"%"):"最高段位")+'"><i style="width:'+(ui.shownPct!=null&&ui.shownExp<exp?ui.shownPct:pct)+'%"></i></div><span id="expfloat" class="expfloat"></span></header>';
 }
 function render(){applyLook();
   if(plActive()){$("#tabs").hidden=true;$("#app").innerHTML="";plMount();return}if($("#prologue"))plUnmount();
