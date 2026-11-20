@@ -83,7 +83,7 @@
     var p = c.project, cu = U.findCustomer(p.customerId) || {};
     var daysTxt = c.days == null ? '' : c.days < 0 ? '期限切れ（' + (-c.days) + '日前）' : 'あと ' + c.days + ' 日';
     var nextStage = c.stage < ST.length - 1 ? ST[c.stage + 1] : null;
-    return '<div class="flow-detail-head"><span class="badge blue">' + esc(ST[c.stage].label) + '</span>' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 22) + esc(c.owner.name) + '</span>' : '') +
+    return '<div class="flow-detail-head">' + U.stageBadge(c.stage) + '' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 22) + esc(c.owner.name) + '</span>' : '') +
         '<button class="btn ghost icon sm" data-act="flow-clear" title="選択を解除" style="margin-left:auto">' + I.x + '</button></div>' +
       '<div class="flow-detail-title">' + esc(p.name) + '</div><div class="hint">' + esc(cu.name || '') + ' ' + esc(cu.honorific || '') + '</div>' +
       '<div class="flow-amount num" data-count="' + c.amount + '" data-format="yen">¥0</div><div class="hint">税込' + (c.margin != null ? '　粗利率 ' + U.pct(c.margin) : '') + (c.main ? '　' + esc(c.main.no || '') : '') + '</div>' +
@@ -152,10 +152,10 @@
         '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
           sites.map(function (c) {
             var p = c.project, cu = U.findCustomer(p.customerId) || {};
-            var due = c.stage === 0 && c.valid ? (c.days < 0 ? '<span class="badge err">期限切れ</span>' : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
+            var due = c.stage === 0 && c.valid ? (c.days < 0 ? U.stBadge('alert', '期限切れ') : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
             return '<tr class="clickable" data-href="#/site/' + p.id + '"><td>' + esc(p.name) + '<span class="cell-sub">' + esc(cu.name || '') + '</span></td>' +
               '<td>' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 20) + esc(c.owner.name) + '</span>' : '<span class="hint">未割り当て</span>') + '</td>' +
-              '<td><span class="badge blue">' + esc(ST[c.stage].label) + '</span></td>' +
+              '<td>' + U.stageBadge(c.stage) + '</td>' +
               '<td>' + due + '<span class="cell-sub' + (c.warn ? ' warn-text' : '') + '">' + esc(c.next || '') + '</span></td>' +
               '<td class="r num">' + U.yen(c.amount) + '</td></tr>';
           }).join('') + '</tbody></table></div>' : U.empty({ icon: I.site, text: 'まだ工事がありません', sub: '見積を作るときに工事を選んでも、工事ができます。', btn: '工事を登録する', act: 'new-site' })) + '</div></section>';

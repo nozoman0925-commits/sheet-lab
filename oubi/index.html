@@ -1211,7 +1211,7 @@ function docAmount(c,kind){const o=c[kind]||{};const it=(o.items||[]).filter(r=>
   return N(o.amount)}
 function apprStatus(c,kind){const o=c[kind]||{}, amt=docAmount(c,kind);
   if(amt&&o.date)return'作成済み'; return amt||o.date?'作成中':'未作成'}
-const apprCls=s=>({'作成済み':'ok','作成中':'warn'}[s]||'');
+const apprCls=s=>({'作成済み':'ok','作成中':''}[s]||'');
 const approved=(c,k)=>apprStatus(c,k)==='作成済み';
 const pendingAppr=()=>false;
 
@@ -1252,6 +1252,8 @@ function stageDone(c,i){
 }
 function isLost(c){return (c.result||{}).status==='lost'}
 function curStage(c){if(isLost(c))return 3;for(let i=0;i<9;i++)if(!stageDone(c,i))return i;return 9}
+// 状態の色の表（桜ミツと同じ）：下書き＝灰／確定＝青／期限切れ・要対応＝赤／入金済・完了＝緑。黄は状態ではなく「注意」だけ
+function stageCls(c){if(isLost(c))return'';const i=curStage(c);return i>=9?'ok':i<4?'':'sk'}
 function stageLabel(c){if(isLost(c))return'見送りで終了';const i=curStage(c);return i>=9?'全工程完了':STAGES[i].n}
 function lockOf(c,i){
   if(i>=4&&isLost(c))return'見送りになったため、この工事は終わっています。もう一度営業する場合は「契約になったか」を変えてください。';
@@ -1292,7 +1294,7 @@ function openSheet(){
   I.appr='<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>';
   sh.innerHTML=`<div class="sheet-box" role="dialog" aria-modal="true" aria-label="メニュー"><span class="grab" aria-hidden="true"></span>
    <button type="button" class="sheet-item" data-tab="board">${ic('board')}掲示板<small>${un?`<span class="chip bad">新しい投稿 ${un}</span>`:'社内の連絡・写真'}</small></button>
-   <button type="button" class="sheet-item" data-tab="appr">${ic('appr')}承認<small>${pend?`<span class="chip warn">承認待ち ${pend}</span>`:'見積書・契約書・請求書'}</small></button>
+   <button type="button" class="sheet-item" data-tab="appr">${ic('appr')}承認<small>${pend?`<span class="chip bad">承認待ち ${pend}</span>`:'見積書・契約書・請求書'}</small></button>
    <button type="button" class="sheet-item" data-tab="dash">${ic('dash')}経営状況<small>${al?`要対応 ${al} 件`:'数字と担当者の状況'}</small></button>
    <button type="button" class="sheet-item" data-tab="staff">${ic('staff')}社員<small>${peopleList().length} 名</small></button>
    <button type="button" class="sheet-item" data-tab="settings">${ic('settings')}設定<small>利益率の基準・権限</small></button>
@@ -1944,7 +1946,7 @@ function renderDash(){
   ${window.OUBI_HOST?`<div class="mq-links" role="group" aria-label="見積の数字"><button type="button" class="btn" data-mopen="#/finance">粗利・会計（見積の原価から）</button><button type="button" class="btn" data-mopen="#/analysis">分析（受注率・推移・工事種別）</button><button type="button" class="btn" data-mopen="#/sites">工事の流れ</button></div>`:''}
   <div class="big4"><button type="button" class="c1" data-flag="active"><b>${active.length}</b><span>進行中</span></button><button type="button" class="c2" data-jump="alerts"><b>${al.length}</b><span>要対応</span></button><button type="button" class="c3" data-flag="recv"><b>${payWait}</b><span>入金待ち</span></button><button type="button" class="c4" data-flag="pay"><b>${vendWait}</b><span>支払待ち</span></button></div>
   <section class="panel"><div class="row sb"><h2>今週のスケジュール</h2><button type="button" class="btn sm" data-tab="cal">すべて見る</button></div>
-    ${wk.length?`<div class="week">${wk.slice(0,8).map(w=>`<button type="button" class="wk" data-open="${w.c.id}" data-sec="schedule"><span class="dt"><b>${md(w.d)}</b><small>${W[new Date(w.d).getDay()]}</small></span><span class="bd"><b>${esc(((w.c.lead||{}).siteAddr||'').replace(/^.*?[都道府県]/,'').slice(0,8))} ${esc((w.c.lead||{}).customer||'')}様邸</b><span>${esc((w.c.work||{}).title||'')}</span><span>${esc(w.what)}${(w.c.lead||{}).owner?'（担当 '+esc(pn(w.c.lead.owner))+'）':''}</span></span><span class="chip sk">${esc(stageLabel(w.c))}</span></button>`).join('')}</div>`:'<div class="empty">今後7日間の工程・現地調査はありません。工程表に日付を入れるとここに並びます。</div>'}</section>
+    ${wk.length?`<div class="week">${wk.slice(0,8).map(w=>`<button type="button" class="wk" data-open="${w.c.id}" data-sec="schedule"><span class="dt"><b>${md(w.d)}</b><small>${W[new Date(w.d).getDay()]}</small></span><span class="bd"><b>${esc(((w.c.lead||{}).siteAddr||'').replace(/^.*?[都道府県]/,'').slice(0,8))} ${esc((w.c.lead||{}).customer||'')}様邸</b><span>${esc((w.c.work||{}).title||'')}</span><span>${esc(w.what)}${(w.c.lead||{}).owner?'（担当 '+esc(pn(w.c.lead.owner))+'）':''}</span></span><span class="chip ${stageCls(w.c)}">${esc(stageLabel(w.c))}</span></button>`).join('')}</div>`:'<div class="empty">今後7日間の工程・現地調査はありません。工程表に日付を入れるとここに並びます。</div>'}</section>
   <div class="flow" tabindex="0" role="group" aria-label="工事の9つの段階（横に動かせます）">${STAGES.map((s,i)=>`<div><span class="sn" style="--h:${350-i*14}">${i+1}</span>${s.n}</div>`).join('')}</div>
   ${renderPeopleLoad()}
   ${!cases.length?`<div class="panel"><h2>まだ工事がありません</h2><p class="sub" style="margin:0">お客様の名前と電話番号だけで登録でき、問い合わせから業者への支払いまで1つの画面で進められます。</p><div class="empty-act"><button type="button" class="btn pri" data-new>＋ 新しい工事を登録する</button></div></div>`:''}
@@ -1983,7 +1985,7 @@ function renderList(){
     .sort((a,b)=>(b.no||'').localeCompare(a.no||''));
   const lim=view.lim||60, shown=list.slice(0,lim);
   const apChips=c=>['quote','contract','invoice'].map(k=>{const st=apprStatus(c,k);return st==='未作成'?'':`<span class="chip ${apprCls(st)}" title="${APPR_LABEL[k]}">${APPR_LABEL[k].slice(0,2)}:${st}</span>`}).join(' ');
-  const payChip=x=>x.billed?(x.unreceived<=0?'<span class="chip ok">入金完了</span>':`<span class="chip warn">残 ${yen(x.unreceived)}</span>`):'<span class="chip">請求前</span>';
+  const payChip=x=>x.billed?(x.unreceived<=0?'<span class="chip ok">入金完了</span>':`<span class="chip bad">残 ${yen(x.unreceived)}</span>`):'<span class="chip">請求前</span>';
   const pipe=(c,cs)=>`<div class="pipe" aria-hidden="true">${STAGES.map((_,i)=>`<span class="${isLost(c)&&i>3?'closed':stageDone(c,i)?'done':i===cs?'now':''}"></span>`).join('')}</div>`;
   return `<div class="row sb"><h1>既存工事の確認</h1><div class="row"><button class="btn" type="button" data-tab="docs">書類の一覧</button><button class="btn pri" type="button" data-new>＋ 新規工事の追加</button></div></div>
   ${fl?`<div class="row"><span class="fchip">絞り込み中：${fl.l}（${list.length}件）<button type="button" data-flag="">解除</button></span></div>`:''}
@@ -1998,7 +2000,7 @@ function renderList(){
   </div></details>
   <div class="panel" id="sr" style="padding:8px 14px">
   ${list.length?`<div class="ccards">${shown.map(c=>{const x=calc(c),s=c.schedule||{},cs=curStage(c),L=c.lead||{};
-    return `<button type="button" class="ccard" data-open="${c.id}"><span class="cc-h"><b>${esc(L.customer||'名称未設定')}様</b>${isLost(c)?'<span class="chip">見送り</span>':`<span class="chip sk">${esc(stageLabel(c))}</span>`}</span>
+    return `<button type="button" class="ccard" data-open="${c.id}"><span class="cc-h"><b>${esc(L.customer||'名称未設定')}様</b>${isLost(c)?'<span class="chip">見送り</span>':`<span class="chip ${stageCls(c)}">${esc(stageLabel(c))}</span>`}</span>
      <span class="sub">${esc((c.work||{}).title||'工事名未入力')}${c.archived?' ・ 隠した工事':''}${c.sample?' ・ サンプル':''}</span>${pbar(c)}
      <span class="cc-m"><span class="num">${esc(c.no)}</span><span>担当 ${esc(pn(L.owner)||'未設定')}</span>${s.start?`<span class="num">${md(s.start)}〜${md(s.end)}</span>`:''}${x.contractAmt?`<span class="num">契約 ${yen(x.contractAmt)}</span>`:''}</span>
      <span class="row" style="gap:4px">${apChips(c)} ${payChip(x)}</span></button>`}).join('')}</div>
@@ -2549,7 +2551,7 @@ async function makeDoc(kind,btn){
 /* ② 見積書：桜ミツの見積で作る。明細・金額・日付・番号は、見積を保存すると自動でここに入る */
 function mitsuQuoteBox(){
   const H=window.OUBI_HOST, q=C.quote||{}, ready=H.ready(), docs=ready?H.docsOf(C.id):[];
-  const st=d=>d.status==='issued'?'<span class="chip ok">確定</span>':'<span class="chip">下書き</span>';
+  const st=d=>d.status==='issued'?'<span class="chip sk">確定</span>':'<span class="chip">下書き</span>';
   const rows=docs.slice().sort((a,b)=>String(b.updatedAt||'').localeCompare(String(a.updatedAt||''))).map(d=>{const r=H.calc(d);
     return `<div class="mq-row${q.mitsuDocId===d.id?' main':''}"><div class="mq-tx"><div class="mq-h"><b>${esc(d.no||'（番号は確定時）')}${d.patternLabel?' '+esc(d.patternLabel):''}</b> ${st(d)}${q.mitsuDocId===d.id?' <span class="chip sk">この工事の見積</span>':''}</div>
       <span class="sub">${esc(d.title||'')}　税抜 ${yen(r.subtotal)}・税込 ${yen(r.total)}・粗利率 ${r.marginRate==null?'—':(r.marginRate*100).toFixed(1)+'%'}</span></div>

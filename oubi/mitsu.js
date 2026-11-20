@@ -2162,16 +2162,21 @@
     }
   }
 
-  function statusBadge(doc) {
-    if (doc.status === 'issued') return '<span class="badge blue"><span class="d"></span>発行済み</span>';
-    return '<span class="badge"><span class="d" style="background:var(--muted);box-shadow:none"></span>下書き</span>';
-  }
+  /* 状態の色の表（どの画面も、この表から色を取る。色だけでなく必ず文字も出す）
+     下書き＝灰／確定＝青／期限切れ・要対応＝赤／入金済・完了＝緑。黄は状態ではなく「注意」（チェックの警告）だけに使う */
+  var STATUS = { draft: '', fixed: 'blue', alert: 'err', done: 'ok' };
+  function stBadge(kind, label, extra) { return '<span class="badge ' + (STATUS[kind] || '') + (extra ? ' ' + extra : '') + '"><span class="d"></span>' + esc(label) + '</span>'; }
+  // 工事の段階：見積＝下書き／受注・着工・請求＝確定／完了・入金＝完了
+  function stageKind(i) { var k = (EE.data.STAGES[i] || {}).key; return k === 'estimate' ? 'draft' : (k === 'done' || k === 'paid') ? 'done' : 'fixed'; }
+  function stageBadge(i) { return stBadge(stageKind(i), (EE.data.STAGES[i] || {}).label || ''); }
+
+  function statusBadge(doc) { return doc.status === 'issued' ? stBadge('fixed', '発行済み') : stBadge('draft', '下書き'); }
   function validBadge(doc) {
     var d = daysFromToday(doc.validUntil);
-    if (d == null) return '<span class="badge err">未設定</span>';
-    if (d < 0) return '<span class="badge err">期限切れ</span>';
-    if (d <= 7) return '<span class="badge warn">あと' + d + '日</span>';
-    return '<span class="muted">' + jdate(doc.validUntil) + '</span>';
+    if (d == null) return stBadge('alert', '期限 未設定');
+    if (d < 0) return stBadge('alert', '期限切れ');
+    if (d <= 7) return stBadge('alert', 'あと' + d + '日');
+    return '<span class="muted num">' + jdate(doc.validUntil) + '</span>';
   }
 
   // 空の画面：「まだ○○がありません」＋次に押すボタン1つ（o = {icon, text, sub, btn, href | act, small}）
@@ -2199,7 +2204,7 @@
   EE.ui = { empty: empty, undoable: undoable, esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
     commit: commit, layer: layer, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
     rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
-    readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge };
+    readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge, STATUS: STATUS, stBadge: stBadge, stageKind: stageKind, stageBadge: stageBadge };
 })(this);
 
 
@@ -2924,7 +2929,7 @@
     var p = c.project, cu = U.findCustomer(p.customerId) || {};
     var daysTxt = c.days == null ? '' : c.days < 0 ? '期限切れ（' + (-c.days) + '日前）' : 'あと ' + c.days + ' 日';
     var nextStage = c.stage < ST.length - 1 ? ST[c.stage + 1] : null;
-    return '<div class="flow-detail-head"><span class="badge blue">' + esc(ST[c.stage].label) + '</span>' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 22) + esc(c.owner.name) + '</span>' : '') +
+    return '<div class="flow-detail-head">' + U.stageBadge(c.stage) + '' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 22) + esc(c.owner.name) + '</span>' : '') +
         '<button class="btn ghost icon sm" data-act="flow-clear" title="選択を解除" style="margin-left:auto">' + I.x + '</button></div>' +
       '<div class="flow-detail-title">' + esc(p.name) + '</div><div class="hint">' + esc(cu.name || '') + ' ' + esc(cu.honorific || '') + '</div>' +
       '<div class="flow-amount num" data-count="' + c.amount + '" data-format="yen">¥0</div><div class="hint">税込' + (c.margin != null ? '　粗利率 ' + U.pct(c.margin) : '') + (c.main ? '　' + esc(c.main.no || '') : '') + '</div>' +
@@ -2993,10 +2998,10 @@
         '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
           sites.map(function (c) {
             var p = c.project, cu = U.findCustomer(p.customerId) || {};
-            var due = c.stage === 0 && c.valid ? (c.days < 0 ? '<span class="badge err">期限切れ</span>' : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
+            var due = c.stage === 0 && c.valid ? (c.days < 0 ? U.stBadge('alert', '期限切れ') : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
             return '<tr class="clickable" data-href="#/site/' + p.id + '"><td>' + esc(p.name) + '<span class="cell-sub">' + esc(cu.name || '') + '</span></td>' +
               '<td>' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 20) + esc(c.owner.name) + '</span>' : '<span class="hint">未割り当て</span>') + '</td>' +
-              '<td><span class="badge blue">' + esc(ST[c.stage].label) + '</span></td>' +
+              '<td>' + U.stageBadge(c.stage) + '</td>' +
               '<td>' + due + '<span class="cell-sub' + (c.warn ? ' warn-text' : '') + '">' + esc(c.next || '') + '</span></td>' +
               '<td class="r num">' + U.yen(c.amount) + '</td></tr>';
           }).join('') + '</tbody></table></div>' : U.empty({ icon: I.site, text: 'まだ工事がありません', sub: '見積を作るときに工事を選んでも、工事ができます。', btn: '工事を登録する', act: 'new-site' })) + '</div></section>';
@@ -3131,7 +3136,7 @@
           list.map(function (x) {
             var low = x.rate != null && x.rate < minM;
             return '<tr class="clickable" data-href="#/site/' + x.p.id + '"><td>' + esc(x.p.name) + '<span class="cell-sub">受注 ' + U.jdate(x.p.orderedOn) + '</span></td>' +
-              '<td><span class="badge blue">' + esc(ST[x.stage].label) + '</span></td><td class="r num">' + U.yen(x.total) + '</td><td class="r num">' + U.yen(x.cost) + '</td>' +
+              '<td>' + U.stageBadge(x.stage) + '</td><td class="r num">' + U.yen(x.total) + '</td><td class="r num">' + U.yen(x.cost) + '</td>' +
               '<td class="r num">' + U.yen(x.profit) + '</td><td class="r num"' + (low ? ' style="color:var(--warn)" title="粗利の下限を下回っています"' : '') + '>' + U.pct(x.rate) + '</td></tr>';
           }).join('') + '</tbody></table></div>' : U.empty({ icon: I.yen, text: 'まだ受注した工事がありません', sub: '工事で「受注にする」と、ここに出ます。', btn: '工事の一覧を開く', href: EE.link ? '#/o/list' : '#/sites' })) + '</div></section>' +
       '<p class="hint" data-st style="margin-top:12px">請求書・分割請求・入金消込・支払予定・実行予算は、これから追加します（設定 →「機能ライブラリ」）。</p>';
@@ -6417,7 +6422,7 @@
       return '<a class="folder-tile" href="#/folder/' + m.id + '" title="' + esc(m.name) + 'のファイルを開く">' + folderIcon(m, st.docs.length) +
         '<b>' + esc(m.name) + (m.id === me.id ? ' <span class="badge blue">自分</span>' : '') + '</b>' +
         '<small>' + esc(m.role || '') + '　工事 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</small>' +
-        (st.soon ? '<span class="badge warn fold-flag">期限間近 ' + st.soon + '</span>' : st.drafts ? '<span class="badge fold-flag">下書き ' + st.drafts + '</span>' : '') + '</a>';
+        (st.soon ? U.stBadge('alert', '期限間近 ' + st.soon, 'fold-flag') : st.drafts ? U.stBadge('draft', '下書き ' + st.drafts, 'fold-flag') : '') + '</a>';
     });
     var none = statsFor(NONE);
     if (none.docs.length) tiles.push('<a class="folder-tile" href="#/folder/' + NONE + '">' + folderIcon(null, none.docs.length) + '<b>未割り当て</b><small>担当者のいない書類 ' + none.docs.length + '</small></a>');
@@ -6676,7 +6681,7 @@
       '<div class="ws-title"><span class="kpi-icon" style="width:48px;height:48px">' + I.site + '</span><div style="flex:1;min-width:220px">' +
         '<div class="ws-name">' + esc(p.name) + '</div>' +
         '<div class="hint">' + esc(cu.name || '') + ' ' + esc(cu.honorific || '') + (p.site ? '　' + esc(p.site) : '') + (owner ? '　担当：' + esc(owner.name) : '') + '</div></div>' +
-        '<span class="badge blue">' + esc(ST[si].label) + '</span>' +
+        '' + U.stageBadge(si) + '' +
         '<button class="btn icon ghost' + (pinned ? ' pinned' : '') + '" data-act="pin" aria-pressed="' + pinned + '" title="' + (pinned ? 'お気に入りから外す' : 'お気に入りに追加（ホームの「お気に入りの工事」に出ます）') + '" aria-label="お気に入り">' + I.star + '</button>' +
         '<button class="btn sm" data-act="edit-p">' + I.edit + '工事を編集</button></div>' +
       '<div class="ws-stats">' +
@@ -6720,7 +6725,7 @@
     var cards = docs.map(function (d) {
       var r = U.calcDoc(d), acc = p.acceptedDocId === d.id;
       return '<div class="panel pattern-card' + (sel[d.id] ? ' on' : '') + '" data-st data-doc="' + d.id + '"><div class="panel-b">' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' + (patternBadge(d) || '<span class="badge">パターン名なし</span>') + U.statusBadge(d) + (acc ? '<span class="badge ok">受注</span>' : '') +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' + (patternBadge(d) || '<span class="badge">パターン名なし</span>') + U.statusBadge(d) + (acc ? U.stBadge('fixed', '受注') : '') +
           '<label class="hint" style="margin-left:auto;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" data-pick="' + d.id + '"' + (sel[d.id] ? ' checked' : '') + '>比較</label></div>' +
         '<div style="font-weight:600">' + esc(d.title || '（件名なし）') + '</div><div class="hint num">' + esc(d.no || '（未保存）') + '　' + U.jdate(d.issueDate) + '　明細 ' + d.lines.length + '行</div>' +
         '<div class="pattern-total num">' + U.yen(r.total) + '<small>税込　粗利率 ' + U.pct(r.marginRate) + '</small></div>' +
