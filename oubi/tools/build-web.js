@@ -17,12 +17,7 @@ cp(path.join(EE, 'js'), path.join(OUT, 'js'));
 if (!ART) { try { fs.symlinkSync(path.join(EE, 'vendor'), path.join(OUT, 'vendor')); } catch (e) {} }
 fs.copyFileSync(path.join(OB, 'link.js'), path.join(OUT, 'js', 'oubi-link.js'));
 fs.copyFileSync(path.join(OB, 'mitsu-bridge.js'), path.join(OUT, 'js', 'oubi-bridge.js'));
-fs.writeFileSync(path.join(OUT, 'css', 'oubi-frame.css'),
-`/* 桜ミツ版：業務管理の画面の枠（#/o/… のときだけ見せる） */
-#ob-frame { display: none; flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: transparent; color-scheme: dark; }
-body.ob-on #ob-frame { display: block; }
-body.ob-on #view { display: none; }
-`);
+fs.copyFileSync(path.join(OB, 'web.css'), path.join(OUT, 'css', 'oubi-frame.css'));   // 業務管理の枠・スマホの下のボタン
 
 /* ---- 桜ミツの index.html：枠の見た目・つなぎを足し、起動を「業務管理の準備ができてから」に ---- */
 let ix = fs.readFileSync(path.join(EE, 'index.html'), 'utf8');

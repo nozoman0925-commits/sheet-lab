@@ -1,0 +1,43 @@
+/* 桜ミツ版：業務管理の画面の枠と、スマホの下のボタン（桜ミツの見た目に合わせる） */
+#ob-frame { display: none; flex: 1 1 auto; width: 100%; min-height: 0; border: 0; background: transparent; color-scheme: dark; }
+body.ob-on #ob-frame { display: block; }
+body.ob-on #view { display: none; }
+
+.mnav { display: none; }
+@media (max-width: 760px) {
+  /* 左の列をしまい、画面を全部使う */
+  body.ee-link .app { grid-template-columns: 1fr; }
+  body.ee-link .sidebar { display: none; }
+  body.ee-link .main { padding-bottom: calc(68px + env(safe-area-inset-bottom, 0px)); }
+  body.ee-link .view { padding-bottom: 32px; }
+  .mnav {
+    display: grid; grid-template-columns: repeat(6, 1fr); position: fixed; left: 0; right: 0; bottom: 0; z-index: 60;
+    padding: 6px 4px calc(6px + env(safe-area-inset-bottom, 0px));
+    background: rgba(6, 9, 18, .72); -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%);
+    border-top: 1px solid rgba(186, 230, 253, .14); box-shadow: 0 -12px 30px -16px rgba(0, 0, 0, .8);
+  }
+  .mnav > a, .mnav > button {
+    position: relative; display: grid; justify-items: center; gap: 2px; min-height: 52px; padding: 6px 2px 4px; border: 0; background: none;
+    color: #b4bfd3; font: inherit; font-size: 14px; font-weight: 600; text-decoration: none; cursor: pointer; border-radius: 14px;
+  }
+  .mnav svg { width: 22px; height: 22px; }
+  .mnav .on { color: #fff; }
+  .mnav .on::before { content: ""; position: absolute; top: -6px; left: 50%; transform: translateX(-50%); width: 26px; height: 3px; border-radius: 0 0 3px 3px;
+    background: linear-gradient(90deg, #00E5FF, #3B82F6); box-shadow: 0 0 10px rgba(0, 229, 255, .8); }
+  .mnav .on svg { filter: drop-shadow(0 0 6px rgba(0, 229, 255, .6)); }
+  .mnav > a:focus-visible, .mnav > button:focus-visible { outline: 2px solid #00E5FF; outline-offset: -2px; }
+  .mnav-more {
+    position: absolute; right: 8px; bottom: calc(100% + 8px); min-width: 250px; display: grid; gap: 4px; padding: 8px;
+    background: linear-gradient(160deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .01) 40%), rgba(12, 18, 34, .9);
+    -webkit-backdrop-filter: blur(24px) saturate(165%); backdrop-filter: blur(24px) saturate(165%);
+    border: 1px solid rgba(186, 230, 253, .14); border-radius: 18px; box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .8);
+  }
+  .mnav-more[hidden] { display: none; }
+  .mnav-more a, .mnav-more button { display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 12px; border: 0; border-radius: 12px; background: none;
+    color: #e9eef8; font: inherit; font-size: 16px; text-decoration: none; text-align: left; cursor: pointer; }
+  .mnav-more a:hover, .mnav-more button:hover { background: rgba(130, 165, 255, .1); }
+  .mnav-more svg { width: 20px; height: 20px; }
+  /* 営業の画面は、営業専用の下のボタン（記録・地図・再訪問・順位・もどる）を使う */
+  body.mnav-sales .mnav { display: none; }
+  body.mnav-sales .main { padding-bottom: 0; }
+}

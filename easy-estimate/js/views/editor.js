@@ -187,7 +187,8 @@
     var saved = !!U.findDoc(d.id);
     el.innerHTML = '<span class="site-chips">' + (sib.length ? sib.map(function (x) {
         return '<a class="badge pattern" href="#/edit/' + x.id + '" title="' + esc(x.no + ' ' + (x.title || '')) + '">' + esc(x.patternLabel || x.no) + '</a>'; }).join('') : '<span class="hint">ほかの見積はありません</span>') + '</span>' +
-      '<a class="btn ghost sm" href="#/site/' + d.projectId + '">' + I.docs + '現場ページで比較</a>' +
+      (EE.linkCompare ? (sib.length ? '<button class="btn ghost sm" data-act="cmp-sheet" data-pid="' + esc(d.projectId) + '">' + I.docs + 'お客様向けの比較表</button>' : '')
+        : '<a class="btn ghost sm" href="#/site/' + d.projectId + '">' + I.docs + '現場ページで比較</a>') +
       '<button class="btn sm" data-act="new-pattern"' + (saved ? '' : ' disabled title="一度保存すると、この見積をもとに別パターンを作れます"') + '>' + I.copy + 'この見積をもとに別パターン</button>';
   }
 
@@ -896,6 +897,7 @@
         if (rb) { var an = EE.fx.anim(rb, [{ opacity: 1 }, { opacity: 0, transform: 'translateY(-6px)' }], { duration: 180, fill: 'forwards' }); if (an) an.onfinish = function () { rb.remove(); }; else rb.remove(); }
         return;
       }
+      if (act === 'cmp-sheet' && EE.linkCompare) { EE.linkCompare.open(a.dataset.pid); return; }
       if (act === 'save') save(a);
       else if (act === 'check') openCheck(false);
       else if (act === 'pdf') pdf();

@@ -2557,7 +2557,7 @@ function mitsuQuoteBox(){
   return `<div class="grp"><h3>② 見積書</h3>
    <div class="note">見積は「見積」の画面（品目マスタ・原価・松竹梅・確定）で作ります。保存すると、明細・金額・見積番号・日付がこの工事に入り、上の収支書にも見積の金額と原価が入ります。</div>
    ${!ready?'<p class="sub">見積を読み込んでいます…</p>':rows?`<div class="mq-list">${rows}</div>`:`<p class="sub">この工事の見積はまだありません。${((q.items||[]).length)?'前に入れた明細は、「見積を作る」で読み込みます。':''}</p>`}
-   <div class="row"><button type="button" class="btn pri" data-mnew>＋ ${docs.length?'別の見積を作る':'見積を作る'}</button>${docs.length?'<button type="button" class="btn" data-mopen="#/docs">見積の一覧へ</button>':''}</div>
+   <div class="row"><button type="button" class="btn pri" data-mnew>＋ ${docs.length?'別の見積を作る':'見積を作る'}</button>${docs.length?'<button type="button" class="btn" data-mopen="#/docs">見積の一覧へ</button>':''}${docs.length>=2&&H.compare?'<button type="button" class="btn" data-mcompare>お客様向けの比較表</button>':''}</div>
    ${amt?`<div class="calc"><div><span>小計（税抜）</span><b>${yen(amt)}</b></div><div><span>消費税（10%）</span><b>${yen(Math.floor(amt*0.1))}</b></div><div class="ok"><span>合計（税込）</span><b>${yen(amt+Math.floor(amt*0.1))}</b></div></div>
      <div class="sub">見積番号 ${esc(q.no||'—')}・見積日 ${esc(q.date||'—')}・有効期限 ${esc(q.validUntil||'—')}${q.mitsuIssued?'・<b>確定済み</b>（見積書のPDFは「見積」の画面から出せます）':''}</div>`:''}
    <details><summary class="sub">ほかの資料をつける（PDF・写真）</summary><div class="row sb" style="margin-top:8px"><span class="sub">関連資料</span>${upBtn('quote.files','資料を追加')}</div>${fileList('quote.files')}</details></div>
@@ -2913,6 +2913,7 @@ document.addEventListener('click',e=>{
   if(d.themeSet){try{localStorage.setItem('oubi.theme',d.themeSet)}catch(_){}applyTheme();render();toast('画面の明るさを変えました');return}
   if(d.mnew!==undefined&&C){if(window.OUBI_HOST)OUBI_HOST.newForCase(C.id);return}
   if(d.mopen){if(window.OUBI_HOST)OUBI_HOST.open(d.mopen);return}
+  if(d.mcompare!==undefined&&C){if(window.OUBI_HOST&&OUBI_HOST.compare)OUBI_HOST.compare(C.id);return}
   if(d.saveco!==undefined){saveCompany();return}
   if(d.jump){const el=document.getElementById(d.jump);if(el)el.scrollIntoView({behavior:'smooth',block:'start'});return}
   if(d.tdall!==undefined){view.tdAll=true;const y=window.scrollY;render();window.scrollTo(0,y);return}
