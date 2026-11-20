@@ -302,8 +302,11 @@
     var X = EE.settingsExtra;
     var body = { members: EE.views.folders.membersTab, items: itemsTab, packages: X.templatesTab, formulas: X.formulasTab, snippets: X.snippetsTab, company: companyTab, rules: rulesTab, features: featuresTab, data: dataTab }[tab] || itemsTab;
     // 業務管理の中では、担当者（社員の名簿は業務管理）・データ（全員の共有データの消去）・機能ライブラリ（メニューは業務管理）は出さない
-    var tabs = EE.host ? TABS.filter(function (t) { return ['members', 'data', 'features'].indexOf(t[0]) < 0; }) : TABS;
-    if (EE.host && ['members', 'data', 'features'].indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
+    // 桜ミツ版（EE.link）では、担当者は業務管理の「社員」、データは端末全体のバックアップ（EE.linkBackup）
+    var HIDE = EE.host ? ['members', 'data', 'features'] : EE.link ? ['members'] : [];
+    var tabs = TABS.filter(function (t) { return HIDE.indexOf(t[0]) < 0; }).map(function (t) { return EE.link && t[0] === 'data' ? ['data', 'バックアップ'] : t; });
+    if (HIDE.indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
+    if (EE.link && tab === 'data' && EE.linkBackup) body = EE.linkBackup.html;
     var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
@@ -311,6 +314,7 @@
   }
 
   function mount(view, tab) {
+    if (EE.link && tab === 'data' && EE.linkBackup) EE.linkBackup.mount(view);
     view.addEventListener('click', async function (e) {
       var t = e.target.closest('[data-tab]');
       if (t) { location.hash = '#/settings/' + t.dataset.tab; return; }

@@ -1,0 +1,9 @@
+/* 桜ミツ版：桜ミツの中の枠に入れたときの見た目（見出しの帯・下のメニューは桜ミツの側） */
+html, body { background: transparent !important; }
+html:root body.sl-on.sl-sun { background: #F4F6FA !important; }
+header.top { display: none !important; }
+nav.tabs { display: none !important; }
+body.sl-on nav.tabs { display: flex !important; }        /* 営業の画面の下のボタン（記録・地図・再訪問…）は残す */
+main { padding-top: 8px !important; }
+#set-theme { display: none !important; }                  /* 画面の明るさは桜ミツの決まり（暗い画面） */
+.modebar { display: none !important; }                    /* 「試用モード」の帯は出さない（この端末だけの版） */

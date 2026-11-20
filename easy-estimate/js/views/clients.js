@@ -99,7 +99,7 @@
     var docs = EE.S.documents.filter(function (d) { return d.customerId === c.id; }).sort(function (a, b) { return (b.issueDate || '').localeCompare(a.issueDate || ''); });
     return '<div class="panel-h" style="padding:0 0 12px"><h2 style="font-size:17px">' + esc(c.name) + ' <span class="muted">' + esc(c.honorific) + '</span></h2><div class="spacer"></div>' +
         '<button class="btn sm" data-act="edit-c">' + I.edit + '編集</button>' +
-        (EE.host ? '' : '<button class="btn sm danger" data-act="del-c">' + I.trash + '</button>') +   // 業務管理の中では、顧客は工事の記録なので消さない
+        (EE.host || EE.link ? '' : '<button class="btn sm danger" data-act="del-c">' + I.trash + '</button>') +   // 業務管理の中では、顧客は工事の記録なので消さない
 
         '<button class="btn sm primary" data-act="new-doc">' + I.plus + 'この顧客で見積</button></div>' +
       '<div class="form-grid" style="margin-bottom:18px">' +

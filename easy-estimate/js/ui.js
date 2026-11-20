@@ -63,7 +63,9 @@
     eye: P('<path d="M2.8 12s3.4-6.3 9.2-6.3S21.2 12 21.2 12s-3.4 6.3-9.2 6.3S2.8 12 2.8 12z"/><circle cx="12" cy="12" r="2.8"/>'),
     calc: P('<rect x="5.5" y="3.5" width="13" height="17" rx="2.6"/><path d="M8.6 7.6h6.8"/><circle cx="9" cy="12.2" r=".7"/><circle cx="12" cy="12.2" r=".7"/><circle cx="15" cy="12.2" r=".7"/><circle cx="9" cy="16.2" r=".7"/><circle cx="12" cy="16.2" r=".7"/><circle cx="15" cy="16.2" r=".7"/>'),
     truck: P('<path d="M3.5 7.5a1.5 1.5 0 0 1 1.5-1.5h8.5v10H3.5z"/><path d="M13.5 9.5h3.6l3.4 3.6V16h-7"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/>'),
-    note: P('<path d="M6.5 3.8h11a2 2 0 0 1 2 2v8.5l-5.7 5.9H6.5a2 2 0 0 1-2-2V5.8a2 2 0 0 1 2-2z"/><path d="M13.6 20.1v-3.8a2 2 0 0 1 2-2h3.8"/><path d="M8.5 8.5h7M8.5 12h4.5"/>')
+    note: P('<path d="M6.5 3.8h11a2 2 0 0 1 2 2v8.5l-5.7 5.9H6.5a2 2 0 0 1-2-2V5.8a2 2 0 0 1 2-2z"/><path d="M13.6 20.1v-3.8a2 2 0 0 1 2-2h3.8"/><path d="M8.5 8.5h7M8.5 12h4.5"/>'),
+    walk: P('<circle cx="13" cy="4.6" r="1.8"/><path d="m9.5 21 2.2-6.2M14.6 21l-1.4-5.4-2-2.6 1-4.3-3.7 1.6-1.2 3.5"/><path d="m12.2 8.7 2.4 3.3 3.1 1"/>'),
+    board: P('<rect x="3.5" y="4" width="17" height="12" rx="1.6"/><path d="M7.5 8h6M7.5 11.5h9M9 20l1.8-4M15 20l-1.8-4"/>')
   };
 
   /* ---- 状態 ---- */
@@ -196,10 +198,21 @@
 
   function download(name, text, type) {
     var blob = new Blob([text], { type: type || 'application/json' });
+    // claude.ai の Artifact の中では、ファイルの保存は「downloads」の仕組みを通す（確認の窓が出る）
+    if (root.claude && root.claude.use) {
+      root.claude.use('downloads').then(function (dl) {
+        if (dl) return dl.save({ filename: name, data: blob }).catch(function (e) { if (e && e.code !== 'declined') EE.fx.toast('保存できませんでした（' + (e.message || e.code) + '）', { warn: true }); });
+        plain();
+      }).catch(plain);
+      return;
+    }
+    plain();
+    function plain() {
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    }
   }
 
   function statusBadge(doc) {

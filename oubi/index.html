@@ -3133,7 +3133,7 @@ window.OUBI={
   cases:()=>cases, me:()=>me, mode:()=>mode, db:()=>db, assets:()=>assets, settings:()=>settings, booted:()=>booted,
   people:()=>peopleList(), whoName:id=>whoName(id), canon:id=>canon(id), calc:c=>calc(c), approved:(c,k)=>approved(c,k),
   touch:c=>touch(c), addLog:(c,t)=>addLog(c,t), makeCase:pre=>makeCase(pre), openCase:(id,sec)=>openCase(id,sec), setTab:t=>setTab(t),
-  toast:m=>toast(m), softRender:()=>softRender(),
+  toast:m=>toast(m), softRender:()=>softRender(), cur:()=>({tab:view.tab,caseId:view.caseId,sec:view.sec}), newQuick:()=>openQuick(), go:g=>helpGo(g), todayCounts:()=>{const it=dayItems(today());return {work:it.filter(x=>x.c&&!x.survey).length,sv:it.filter(x=>x.survey).length,rv:it.filter(x=>x.rv).length,wb:it.filter(x=>x.wb).length}},
   markTab:on=>{view.ee=!!on;renderTabs();setNavH()},
   // 自社情報：見積の画面で直した名前・住所・電話などを、業務管理の設定にも入れる（空のものでは消さない）
   async setCompany(co){const n={...(settings.company||{})};Object.keys(co).forEach(k=>{if(co[k])n[k]=co[k]});

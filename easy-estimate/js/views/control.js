@@ -61,8 +61,12 @@
     attention: { name: '注意（要修正・期限切れ）', cat: '注意', sizes: ['m', 'l'], icon: 'bell', href: '#/docs/draft' },
     members: { name: '担当者のファイル', cat: '人員', sizes: ['l', 'm'], icon: 'users' },
     favorites: { name: 'お気に入りの現場', cat: 'お気に入り', sizes: ['m', 's', 'l'], icon: 'star', href: '#/sites' },
-    usage: { name: 'よく使う機能', cat: 'お気に入り', sizes: ['m', 's'], icon: 'spark' }
+    usage: { name: 'よく使う機能', cat: 'お気に入り', sizes: ['m', 's'], icon: 'spark' },
+    // 桜ミツ版（業務管理の機能を入れたもの）だけ
+    today: { name: '今日のボード（工事・現調・再訪問・予定）', cat: '時間', sizes: ['m', 'l', 's'], icon: 'calendar', href: '#/o/cal', link: true },
+    salesgo: { name: '営業に出る', cat: '業務', sizes: ['s', 'm'], icon: 'walk', href: '#/o/sales', link: true }
   };
+  function linkO() { try { var f = root.OUBI_LINK && root.OUBI_LINK.frame(); return f && f.contentWindow && f.contentWindow.OUBI; } catch (e) { return null; } }
   var PLANNED_WIDGETS = [['天気・雨予報', '天候', '外部の天気サービスとの連携が必要（第9期）'], ['地図・訪問ルート', '現場', '地図サービスとの連携が必要（第9期）'],
     ['発注・納品待ち', '発注', '資材・発注の機能と一緒に追加（第4期）'], ['出勤状況・作業予定', '人員', '工程・人員の機能と一緒に追加（第4期）']];
   var COLORS = { blue: ['青', '#3b82f6'], teal: ['青緑', '#14b8a6'], violet: ['紫', '#8b5cf6'], amber: ['琥珀', '#f59e0b'], rose: ['桜', '#f472b6'], slate: ['灰', '#94a3b8'] };
@@ -172,6 +176,17 @@
         return '<div class="w-list">' + (pins.length ? pins.map(function (p) { return '<a class="w-item" href="#/site/' + p.id + '">' + I.star + '<span><b>' + esc(p.name) + '</b><small>' + esc((EE.data.STAGES[EE.data.stageIndex(p.stage || 'estimate')] || {}).label || '') + '</small></span></a>'; }).join('') :
           '<p class="hint">現場ワークスペースの ☆ を押すと、ここに並びます</p>') + '</div>';
       }
+      case 'today': {
+        var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : null;
+        if (!c) return '<p class="hint">読み込んでいます…</p>';
+        var cell = function (l, v, h) { return '<a class="w-item" href="' + h + '"><span class="w-dot"></span><span><b>' + l + '</b><small>今日</small></span><b class="num" style="margin-left:auto;font-size:22px">' + v + '</b></a>'; };
+        return '<div class="w-list">' + cell('工事', c.work, '#/o/cal') + cell('現地調査', c.sv, '#/o/cal') + cell('再訪問', c.rv, '#/o/sales/rv') + cell('予定（ホワイトボード）', c.wb, '#/o/wb') + '</div>';
+      }
+      case 'salesgo': {
+        var o2 = linkO(), c2 = o2 && o2.todayCounts ? o2.todayCounts() : { rv: 0 };
+        return '<a class="btn primary" href="#/o/sales" style="width:100%;justify-content:center;min-height:52px;font-size:17px">' + I.walk + '営業に出る</a>' +
+          '<p class="hint" style="margin-top:10px">開いたらすぐ記録できます。今日の再訪問 ' + c2.rv + ' 件</p>';
+      }
       case 'usage': {
         var top = topUsed(wd.size === 's' ? 3 : 6);
         return '<div class="w-list">' + (top.length ? top.map(function (x) { return '<a class="w-item" href="' + x.href + '"><span class="w-dot"></span><span><b>' + esc(x.name) + '</b><small>' + x.n + ' 回</small></span></a>'; }).join('') : '<p class="hint">使うほど、よく開く画面がここに並びます</p>') + '</div>';
@@ -196,7 +211,7 @@
   }
 
   function setupHTML() {
-    if (EE.host) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
+    if (EE.host || EE.link) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
     var S = EE.S, steps = [
       [!!(S.company.name && S.company.address), '自社情報（会社名・住所・登録番号）を入れる', '#/settings/company', '見積書に載ります'],
       [S.customers.length > 0, '顧客を登録する', '#/clients', '宛先として選べるようになります'],
@@ -228,7 +243,7 @@
 
   function library() {
     var cats = {};
-    Object.keys(TYPES).forEach(function (k) { var t = TYPES[k]; (cats[t.cat] = cats[t.cat] || []).push(k); });
+    Object.keys(TYPES).forEach(function (k) { var t = TYPES[k]; if (t.link && !EE.link) return; (cats[t.cat] = cats[t.cat] || []).push(k); });
     var mt = Object.keys(METRICS);
     U.modal({
       title: 'ウィジェットを追加', wide: true,
