@@ -1,6 +1,6 @@
 /* 見積書（A4）レイアウト：プレビューと印刷で共通 */
 .sheet {
-  width: 210mm; min-height: 297mm; padding: 14mm 14mm 16mm; background: #fff; color: #1a1f2b;
+  width: 210mm; min-height: 297mm; padding: 15mm 18mm 15mm; background: #fff; color: #1a1f2b;   /* 画面の見本も印刷と同じ余白（上下15mm・左右18mm） */
   font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-size: 10pt; line-height: 1.55;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
@@ -29,19 +29,19 @@
 
 .sheet table.items { width: 100%; border-collapse: collapse; margin-top: 5mm; font-size: 8.8pt; }
 .sheet table.items thead { display: table-header-group; }
-.sheet table.items th { background: #1f3f8f; color: #fff; font-weight: 500; padding: 1.6mm 2mm; text-align: center; }
-.sheet table.items td { border-bottom: 1px solid #d5dae5; padding: 1.5mm 2mm; vertical-align: top; }
+.sheet table.items th { background: none; color: #1a1f2b; font-weight: 600; padding: 1.6mm 2mm; text-align: center; border-top: .8pt solid #1a1f2b; border-bottom: .8pt solid #1a1f2b; }
+.sheet table.items td { border-bottom: .3pt solid #b9c0cc; padding: 1.5mm 2mm; vertical-align: top; }   /* 明細の罫線は細い1本線 */
 .sheet table.items tr { page-break-inside: avoid; }
-.sheet table.items tbody tr:nth-child(even) td { background: #f5f7fb; }
 .sheet table.items .r { text-align: right; white-space: nowrap; }
 .sheet table.items .c { text-align: center; white-space: nowrap; }
 .sheet table.items .spec { color: #555; font-size: 8pt; }
 .sheet table.items .mark { color: #1f3f8f; }
-.sheet .bottom { display: grid; grid-template-columns: 1fr 72mm; gap: 8mm; margin-top: 4mm; page-break-inside: avoid; }
+.sheet .bottom { display: grid; grid-template-columns: 1fr 72mm; gap: 8mm; margin-top: 4mm; page-break-inside: avoid; align-items: start; }
 .sheet table.tot { width: 100%; border-collapse: collapse; font-size: 9pt; }
-.sheet table.tot th { text-align: left; font-weight: 500; padding: 1.2mm 2mm; border-bottom: 1px solid #d5dae5; }
-.sheet table.tot td { text-align: right; padding: 1.2mm 2mm; border-bottom: 1px solid #d5dae5; white-space: nowrap; }
-.sheet table.tot tr.g th, .sheet table.tot tr.g td { font-weight: 700; font-size: 10.5pt; border-top: 1.5px solid #1f3f8f; border-bottom: 1.5px solid #1f3f8f; }
+.sheet table.tot th { text-align: left; font-weight: 500; padding: 1.2mm 2mm; border-bottom: .3pt solid #b9c0cc; }
+.sheet table.tot td { text-align: right; padding: 1.2mm 2mm; border-bottom: .3pt solid #b9c0cc; white-space: nowrap; font-variant-numeric: tabular-nums; }
+/* 合計欄だけ太線＋薄い地色 */
+.sheet table.tot tr.g th, .sheet table.tot tr.g td { font-weight: 700; font-size: 10.5pt; background: #eef2fa; border-top: 1.6pt solid #1f3f8f; border-bottom: 1.6pt solid #1f3f8f; }
 .sheet .box { border: 1px solid #c9cfdc; padding: 2.5mm 3mm; font-size: 8.8pt; margin-bottom: 3mm; page-break-inside: avoid; }
 .sheet .box h4 { margin: 0 0 1.5mm; font-size: 8.8pt; color: #1f3f8f; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; }
 .sheet .box table { width: 100%; border-collapse: collapse; }
@@ -52,8 +52,9 @@
 .sheet .draft-mark { position: absolute; right: 0; top: 10mm; font-size: 9pt; color: #b33; border: 1px solid #b33; padding: .5mm 2mm; }
 
 /* 発行元のロゴと会社印（角印） */
-.sheet .from .logo { margin-bottom: 2mm; }
-.sheet .from .logo img { max-width: 60mm; max-height: 20mm; display: block; }
+.sheet .from .logo { margin-bottom: 2mm; height: 14mm; display: flex; align-items: center; }   /* ロゴの場所と大きさは固定 */
+.sheet .from .logo img { max-width: 60mm; max-height: 14mm; display: block; }
+.sheet .from .co-wrap { min-height: 14mm; }
 .sheet .from .crest-logo { display: flex; align-items: center; gap: 2.5mm; color: #111; }
 .sheet .from .crest-logo .sheet-crest { width: 11mm; height: 11mm; flex: none; overflow: visible; }
 .sheet .from .crest-logo .c-field { fill: #fff; }
@@ -61,4 +62,6 @@
 .sheet .from .crest-logo .c-glow, .sheet .from .crest-logo .c-sheen, .sheet .from .crest-logo .c-rayfills { display: none; }
 .sheet .from .crest-logo span { font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-size: 13pt; font-weight: 600; letter-spacing: .14em; }
 .sheet .from .co-wrap { position: relative; }
-.sheet .from .co-wrap .seal { position: absolute; right: -2mm; top: -4mm; width: 21mm; height: 21mm; object-fit: contain; mix-blend-mode: multiply; opacity: .92; }
+.sheet .from .co-wrap .seal { position: absolute; right: 0; top: -3mm; width: 21mm; height: 21mm; object-fit: contain; mix-blend-mode: multiply; opacity: .92; }   /* 印影の場所と大きさは固定 */
+/* 金額・数字は等幅で右揃え */
+.sheet .num, .sheet td.r, .sheet .grand .v { font-variant-numeric: tabular-nums; }

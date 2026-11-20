@@ -43,3 +43,5 @@ body.ob-on #view { display: none; }
   /* 知らせは下のボタンの上に出す */
   body.ee-link .toasts { bottom: calc(78px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; align-items: stretch; }
 }
+
+@media print { .mnav, #ob-frame { display: none !important; } }
