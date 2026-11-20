@@ -113,3 +113,6 @@ body { font-variant-numeric: tabular-nums; }
 /* ボタンの大きさをそろえる（桜ミツ版）：業務管理の画面は 48px・丸ごとの角・左右 12/16px */
 .ft-mic { min-height: 48px !important; padding: 0 12px !important; border-radius: 999px !important; }
 .sl-acc, .sl-sun { border-radius: 999px !important; }
+
+/* あしたの予定・タイムラインの切り替えは、桜ミツの見出しの下のタブで行う */
+.wbseg { display: none !important; }

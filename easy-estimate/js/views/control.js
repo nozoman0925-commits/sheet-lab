@@ -76,7 +76,7 @@
   function preset(role) {
     switch (role) {
       // 桜ミツ版の標準：今日のこと → 数字 → やること → 書類・流れ・お金
-      case 'link': return [w('clock', 'm'), w('today', 'm', { color: 'teal' }), w('salesgo', 's'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
+      case 'link': return [w('clock', 'm'), w('today', 'm', { color: 'teal' }), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
         w('kpi', 's', { metric: 'unpaid', color: 'amber' }), w('kpi', 's', { metric: 'monthOrder' }), w('todo', 'm'), w('recent', 'm'), w('flow', 'l'), w('bars', 'l')];
       case 'sales': return [w('clock', 'm'), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'waiting', color: 'violet' }), w('todo', 'm'), w('quick', 'm'), w('recent', 'l'), w('kpi', 's', { metric: 'overdue', color: 'amber' }), w('kpi', 's', { metric: 'customers', color: 'teal' }), w('usage', 'm')];
       case 'site': return [w('clock', 'm'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'today' }), w('todo', 'm'), w('quick', 'm'), w('events', 'l'), w('favorites', 'm')];
@@ -222,6 +222,20 @@
       (editing ? ' draggable="true"' : '') + ' data-st>' + ctl + title + '<div class="w-body">' + body(wd) + '</div></section>';
   }
 
+  /* 桜ミツ版：ホームの一番上に、よく使う4つの大きなボタン（迷ったらここから） */
+  function launchHTML() {
+    var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : { work: 0, sv: 0, rv: 0 }, nToday = (c.work || 0) + (c.sv || 0) + (c.rv || 0);
+    var L = [
+      ['sales', '#/o/sales', I.walk, '営業に出る', '今日の再訪問 ' + (c.rv || 0) + ' 件'],
+      ['site', '#/o/new', I.site, '工事を登録する', '名前だけでOK'],
+      ['est', '#/w', I.calc, '見積を作る', '「次へ」で進むだけ'],
+      ['cal', '#/o/cal', I.calendar, '今日の予定を見る', '今日 ' + nToday + ' 件']
+    ];
+    return '<nav class="launch" aria-label="よく使うこと" data-st>' + L.map(function (x) {
+      return '<a class="launch-tile lt-' + x[0] + '" href="' + x[1] + '"><span class="lt-ic">' + x[2] + '</span><span class="lt-tx"><b>' + x[3] + '</b><small>' + esc(x[4]) + '</small></span><span class="lt-go" aria-hidden="true">›</span></a>';
+    }).join('') + '</nav>';
+  }
+
   function setupHTML() {
     if (EE.link) return (EE.linkNameBanner ? EE.linkNameBanner() : '') + (EE.linkBackupBanner ? EE.linkBackupBanner() : '');   // 桜ミツ版：名前がまだ無いときだけ「名前を入れてください」
     if (EE.host) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
@@ -237,7 +251,7 @@
 
   function render() {
     if (/[?&]edit/.test(location.hash)) editing = true;
-    var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return editing || !x.hidden; });
+    var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return (editing || !x.hidden) && !(EE.link && x.type === 'salesgo'); });   // 桜ミツ版：「営業に出る」は上の大きなボタンへ
     var bar = '<div class="control-bar" data-st>' +
       '<div class="grow"><div class="hint">' + esc(EE.S.company.name || '桜ミツ') + '　金額はマスタと固定の計算エンジンだけで決まります（AIは使いません）</div></div>' +
       (EE.link ? '' : '<label class="hint" for="home-layout">ホーム</label><select class="input" id="home-layout" style="width:auto">' + h.layouts.map(function (l) { return U.opt(l.key, l.name + (l.time ? '（' + TIMES[l.time].replace(/（.*/, '') + '）' : ''), L.key); }).join('') + '</select>') +
@@ -245,7 +259,7 @@
         : (EE.link ? '<button class="btn ghost sm" data-act="w-edit">' + I.grid + '並べ替え・追加</button>' : '<button class="btn" data-act="w-edit">' + I.grid + 'ホームを編集</button>')) + '</div>';
     var hint = editing ? '<p class="hint control-hint" data-st>ウィジェットをドラッグするか ‹ › で並べ替え、小・中・大で大きさ、目のボタンで表示／非表示、歯車で色・透明度を変えられます。変更はすぐ保存されます。</p>' : '';
     var auto = h.auto ? '<p class="hint" data-st style="margin:-6px 0 12px">時間帯で切り替え中：いまは「' + esc(L.name) + '」</p>' : '';
-    var html = setupHTML() + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
+    var html = setupHTML() + (EE.link && !editing ? launchHTML() : '') + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
       (ws.length ? '' : '<div class="empty">' + I.grid + 'ウィジェットがありません。「ホームを編集」→「ウィジェットを追加」で置けます</div>');
     return { title: 'ホーム', crumb: 'OUMITSU CONTROL', html: html, mount: mount };
   }

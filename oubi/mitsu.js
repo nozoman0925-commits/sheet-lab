@@ -3450,7 +3450,7 @@
   function preset(role) {
     switch (role) {
       // 桜ミツ版の標準：今日のこと → 数字 → やること → 書類・流れ・お金
-      case 'link': return [w('clock', 'm'), w('today', 'm', { color: 'teal' }), w('salesgo', 's'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
+      case 'link': return [w('clock', 'm'), w('today', 'm', { color: 'teal' }), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
         w('kpi', 's', { metric: 'unpaid', color: 'amber' }), w('kpi', 's', { metric: 'monthOrder' }), w('todo', 'm'), w('recent', 'm'), w('flow', 'l'), w('bars', 'l')];
       case 'sales': return [w('clock', 'm'), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'waiting', color: 'violet' }), w('todo', 'm'), w('quick', 'm'), w('recent', 'l'), w('kpi', 's', { metric: 'overdue', color: 'amber' }), w('kpi', 's', { metric: 'customers', color: 'teal' }), w('usage', 'm')];
       case 'site': return [w('clock', 'm'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'today' }), w('todo', 'm'), w('quick', 'm'), w('events', 'l'), w('favorites', 'm')];
@@ -3596,6 +3596,20 @@
       (editing ? ' draggable="true"' : '') + ' data-st>' + ctl + title + '<div class="w-body">' + body(wd) + '</div></section>';
   }
 
+  /* 桜ミツ版：ホームの一番上に、よく使う4つの大きなボタン（迷ったらここから） */
+  function launchHTML() {
+    var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : { work: 0, sv: 0, rv: 0 }, nToday = (c.work || 0) + (c.sv || 0) + (c.rv || 0);
+    var L = [
+      ['sales', '#/o/sales', I.walk, '営業に出る', '今日の再訪問 ' + (c.rv || 0) + ' 件'],
+      ['site', '#/o/new', I.site, '工事を登録する', '名前だけでOK'],
+      ['est', '#/w', I.calc, '見積を作る', '「次へ」で進むだけ'],
+      ['cal', '#/o/cal', I.calendar, '今日の予定を見る', '今日 ' + nToday + ' 件']
+    ];
+    return '<nav class="launch" aria-label="よく使うこと" data-st>' + L.map(function (x) {
+      return '<a class="launch-tile lt-' + x[0] + '" href="' + x[1] + '"><span class="lt-ic">' + x[2] + '</span><span class="lt-tx"><b>' + x[3] + '</b><small>' + esc(x[4]) + '</small></span><span class="lt-go" aria-hidden="true">›</span></a>';
+    }).join('') + '</nav>';
+  }
+
   function setupHTML() {
     if (EE.link) return (EE.linkNameBanner ? EE.linkNameBanner() : '') + (EE.linkBackupBanner ? EE.linkBackupBanner() : '');   // 桜ミツ版：名前がまだ無いときだけ「名前を入れてください」
     if (EE.host) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
@@ -3611,7 +3625,7 @@
 
   function render() {
     if (/[?&]edit/.test(location.hash)) editing = true;
-    var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return editing || !x.hidden; });
+    var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return (editing || !x.hidden) && !(EE.link && x.type === 'salesgo'); });   // 桜ミツ版：「営業に出る」は上の大きなボタンへ
     var bar = '<div class="control-bar" data-st>' +
       '<div class="grow"><div class="hint">' + esc(EE.S.company.name || '桜ミツ') + '　金額はマスタと固定の計算エンジンだけで決まります（AIは使いません）</div></div>' +
       (EE.link ? '' : '<label class="hint" for="home-layout">ホーム</label><select class="input" id="home-layout" style="width:auto">' + h.layouts.map(function (l) { return U.opt(l.key, l.name + (l.time ? '（' + TIMES[l.time].replace(/（.*/, '') + '）' : ''), L.key); }).join('') + '</select>') +
@@ -3619,7 +3633,7 @@
         : (EE.link ? '<button class="btn ghost sm" data-act="w-edit">' + I.grid + '並べ替え・追加</button>' : '<button class="btn" data-act="w-edit">' + I.grid + 'ホームを編集</button>')) + '</div>';
     var hint = editing ? '<p class="hint control-hint" data-st>ウィジェットをドラッグするか ‹ › で並べ替え、小・中・大で大きさ、目のボタンで表示／非表示、歯車で色・透明度を変えられます。変更はすぐ保存されます。</p>' : '';
     var auto = h.auto ? '<p class="hint" data-st style="margin:-6px 0 12px">時間帯で切り替え中：いまは「' + esc(L.name) + '」</p>' : '';
-    var html = setupHTML() + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
+    var html = setupHTML() + (EE.link && !editing ? launchHTML() : '') + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
       (ws.length ? '' : '<div class="empty">' + I.grid + 'ウィジェットがありません。「ホームを編集」→「ウィジェットを追加」で置けます</div>');
     return { title: 'ホーム', crumb: 'OUMITSU CONTROL', html: html, mount: mount };
   }
@@ -7471,7 +7485,7 @@
     if (HIDE.indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
     if (EE.link && tab === 'data' && EE.linkBackup) body = EE.linkBackup.html;
     if (EE.link && tab === 'items' && EE.linkActual) { var ib = body; body = function () { return ib() + EE.linkActual.html(); }; }   // 実績から原価を見直す
-    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + tabs.map(function (t) {
+    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px' + (EE.link ? ';display:none' : '') + '">' + tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
     return { title: '設定', crumb: (tabs.filter(function (t) { return t[0] === tab; })[0] || TABS.filter(function (t) { return t[0] === tab; })[0])[1], html: html, mount: function (v) { mount(v, tab); } };
@@ -7608,9 +7622,8 @@
   };
   // 桜ミツ版（業務管理の機能を入れたもの）の子メニュー
   var LINK_CHILDREN = {
-    sales: [['#/o/sales', '記録'], ['#/o/sales/rv', '再訪問'], ['#/o/sales/rank', 'ランキング']],
-    sites: [['#/o/list', '工事の一覧'], ['#/sites', '流れ（見積→入金）'], ['#/clients', 'お客様'], ['#/o/new', '＋ 新しい工事']],
-    estimate: [['#/new', '＋ 見積を作る'], ['#/docs', '見積の一覧'], ['#/docs/draft', '下書き'], ['#/docs/issued', '確定済み']],
+    // 桜ミツ版：左のメニューには出さず、開いた画面の上にタブで並べる（営業は営業の下のボタン、見積は一覧の中の絞り込みを使う）
+    sites: [['#/o/list', '工事の一覧'], ['#/sites', '流れ（見積→入金）'], ['#/clients', 'お客様']],
     schedule: [['#/o/cal', 'カレンダー'], ['#/o/wb', 'あしたの予定'], ['#/o/board', 'タイムライン']],
     finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の進み・入金'], ['#/analysis', '分析']],
     settings: [['#/settings/items', '工事項目・単価'], ['#/settings/packages', 'テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
@@ -7656,7 +7669,7 @@
     var open = readOpen();
     buildNav();
     nav.innerHTML = NAV.map(function (n, i) {
-      var kids = n.children || [];
+      var kids = EE.link ? [] : (n.children || []);   // 桜ミツ版：左は7項目だけ
       return '<div class="nav-group' + (kids.length && open[n.key] ? ' open' : '') + '" data-g="' + n.key + '" data-st>' +
         '<div class="nav-row">' +
           '<a class="nav-item" href="' + n.href + '" data-nav="' + n.key + '" title="' + n.label + (i < 9 ? '（Alt+' + (i + 1) + '）' : '') + '">' + n.icon + '<span>' + n.label + '</span></a>' +
@@ -7673,6 +7686,18 @@
       var a = e.target.closest('.nav-item');
       if (a) { var g = a.closest('.nav-group'); if (g.querySelector('.nav-sub')) toggleGroup(g.dataset.g, true); }
     });
+  }
+
+  /* 桜ミツ版：今いるメニューの細かい画面を、見出しの下にタブで並べる */
+  function secTabs(nv) {
+    var bar = document.getElementById('sectabs');
+    if (!bar) { bar = document.createElement('nav'); bar.id = 'sectabs'; bar.className = 'sectabs'; bar.setAttribute('aria-label', 'この中の画面'); var tb = document.querySelector('.topbar'); tb.parentNode.insertBefore(bar, tb.nextSibling); }
+    var kids = (nv && nv.children) || [], h = location.hash || '#/home';
+    if (!kids.length) { bar.hidden = true; bar.innerHTML = ''; return; }
+    var on = kids.filter(function (c) { return h === c[0] || h.indexOf(c[0] + '/') === 0; })[0] || (/^#\/(o\/case|site)\//.test(h) ? kids[0] : null);
+    bar.hidden = false;
+    bar.innerHTML = kids.map(function (c) { return '<a href="' + c[0] + '"' + (c === on ? ' class="on" aria-current="page"' : '') + '>' + c[1] + '</a>'; }).join('');
+    var a = bar.querySelector('.on'); if (a && a.scrollIntoView && bar.scrollWidth > bar.clientWidth) a.scrollIntoView({ block: 'nearest', inline: 'center' });
   }
 
   function toggleGroup(key, forceOpen) {
@@ -7698,6 +7723,7 @@
     // 今いる画面の親メニューは開いておく
     var nv = NAV.filter(function (n) { return n.key === i; })[0];
     if (nv && nv.children) toggleGroup(nv.key, true);
+    if (EE.link) secTabs(nv);
     void best;
   }
 
