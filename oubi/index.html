@@ -2356,7 +2356,7 @@ function openMap(p){
   else if(/^lead\.(addr|siteAddr)$/.test(p)&&L.lat&&(!v||v===L.addr||v===L.siteAddr))url=slGmap(L.lat,L.lon); // 営業で測った位置があれば、住所より正確な位置で開く
   else{const q=p==='work.parking'?((L.siteAddr||L.addr||'')+(v?' '+v:'')):v; if(!q.trim()){toast('先に住所を入れてください');if(el)el.focus();return}
     url='https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(q.trim())}
-  const w=window.open(url,'_blank','noopener'); if(!w)location.href=url;
+  openOut(url);
 }
 function listRows(p,title,fields,addLabel){const arr=getP(C,p)||[];
   return `<div class="grp">${arr.map((_,i)=>`<div class="lrow"><div class="lh"><b>${title} ${i+1}</b><button type="button" class="btn sm bad" data-del="${p}" data-i="${i}">削除</button></div><div class="fields">${fields(`${p}.${i}`,i)}</div></div>`).join('')}
@@ -3128,6 +3128,10 @@ async function init(){
 function themePref(){try{return localStorage.getItem('oubi.theme')||'dark'}catch(e){return 'dark'}}
 function applyTheme(){let t=themePref();if(t==='auto')t=window.matchMedia&&matchMedia('(prefers-color-scheme: dark)').matches?'dark':'light';document.documentElement.setAttribute('data-theme',t==='light'?'light':'dark')}
 if(window.matchMedia)matchMedia('(prefers-color-scheme: dark)').addEventListener('change',()=>{if(themePref()==='auto'){applyTheme();render()}});
+/* 外のページ（地図・ナビ）を新しいタブで開く。'noopener' を付けると開けても null が返るため、開けなかったと見なして
+   今の画面ごと移ってしまっていた（v24 までの不具合）。開けなかったときだけ、この画面で開く（桜ミツの枠の中では開かない） */
+function openOut(url){const w=window.open(url,'_blank');if(w){try{w.opener=null}catch(e){}return}
+  if(window.OUBI_EMBED){toast('外のページを開けませんでした。ブラウザの設定で、ポップアップを許可してください');return}location.href=url}
 function startMitsu(){if(window.OUBI_HOST)OUBI_HOST.start();else window.OUBI_WANT=true}
 window.OUBI={
   cases:()=>cases, me:()=>me, mode:()=>mode, db:()=>db, assets:()=>assets, settings:()=>settings, booted:()=>booted,

@@ -10,8 +10,9 @@
   root.OUBI_LINK_MODE = true;
   var EE = root.EE, U = EE.ui;
   var frame = null;
-  function W() { return frame && frame.contentWindow; }
-  function O() { var w = W(); return w && w.OUBI; }
+  // 枠の中が万一よそのページに移っていても止まらない（読めないときは null）
+  function W() { try { var w = frame && frame.contentWindow; return w && w.location.href && w; } catch (e) { return null; } }
+  function O() { try { var w = W(); return w && w.OUBI; } catch (e) { return null; } }
 
   // 業務管理の画面ごとの見出し・メニューの位置
   var PAGES = {
@@ -83,6 +84,11 @@
     frame = document.createElement('iframe');
     frame.id = 'ob-frame'; frame.src = 'oubi.html'; frame.title = '業務管理'; frame.setAttribute('allow', 'geolocation; clipboard-write');
     main.appendChild(frame);
+    // 枠の中がよそのページ（地図など）に移ったら、業務管理の画面に戻す
+    frame.addEventListener('load', function () {
+      var ok = false; try { ok = /oubi\.html/.test(frame.contentWindow.location.href); } catch (e) {}
+      if (!ok) location.reload();   // 見積とのつなぎも含めて、まとめて読み込み直す（記録はこの端末に保存済み）
+    });
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountFrame); else mountFrame();
 

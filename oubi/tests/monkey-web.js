@@ -87,8 +87,8 @@ const seed = { cases: {
         await p.goto(openWeb.BASE + '?splash=off#/home').catch(() => {}); await p.waitForTimeout(3000);
       }
       const fr = frame(); if (fr && !fr._watched) { fr._watched = true; }
-      const fst = fr && await p.evaluate(() => document.body.classList.contains('ob-on')) ? await fr.evaluate(() => { const txt = document.body.innerText || ''; return { bad: [...new Set(txt.match(/NaN|undefined|\[object Object\]|Infinity/g) || [])], over: document.documentElement.scrollWidth > innerWidth + 2 }; }).catch(() => null) : null;
-      if (fst) { fst.bad.forEach(x => pending.push('枠の中に「' + x + '」が表示')); if (fst.over) pending.push('枠の中が横にはみ出す (幅' + vp.width + ')'); }
+      const fst = fr && await p.evaluate(() => document.body.classList.contains('ob-on')) ? await fr.evaluate(() => { if (!window.frameElement || getComputedStyle(window.frameElement).display === 'none') return { bad: [], over: false, near: '' }; const txt = document.body.innerText || ''; const m = txt.search(/NaN|undefined|\[object Object\]|Infinity/); return { bad: [...new Set(txt.match(/NaN|undefined|\[object Object\]|Infinity/g) || [])], over: document.documentElement.scrollWidth > innerWidth + 2, near: m < 0 ? '' : txt.slice(Math.max(0, m - 80), m + 30).replace(/\n/g, '|') }; }).catch(() => null) : null;
+      if (fst) { if (fst.bad.length) console.log('    （枠の中の文字）' + fst.near); fst.bad.forEach(x => pending.push('枠の中に「' + x + '」が表示')); if (fst.over) pending.push('枠の中が横にはみ出す (幅' + vp.width + ')'); }
       const st = await p.evaluate(() => {
         const txt = (document.body.innerText || '');
         const bad = (txt.match(/NaN|undefined|\[object Object\]|Infinity/g) || []);
@@ -109,7 +109,8 @@ const seed = { cases: {
     }
     await ctx.close();
   }
-  await Promise.all(Array.from({ length: PAR }, (_, w) => worker(w)));
+  const ONLY = process.env.ONLY != null ? Number(process.env.ONLY) : null;   // 1つの作業タブだけやり直す（失敗の再現用）
+  await Promise.all(Array.from({ length: PAR }, (_, w) => w).filter(w => ONLY == null || w === ONLY).map(w => worker(w)));
   await b.close();
   console.log(`\n操作 ${done} 回・失敗の種類 ${failures.size}`);
   const out = [...failures.values()].sort((a, b) => b.n - a.n);
