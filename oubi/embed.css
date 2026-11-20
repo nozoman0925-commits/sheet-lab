@@ -91,7 +91,18 @@ body.sl-on nav.tabs button[aria-current="page"]::before { background: linear-gra
 h1, h2, h3 { text-shadow: 0 1px 10px rgba(0, 0, 0, .6); letter-spacing: .02em !important; }
 
 /* 業務管理のホームは桜ミツのホーム（ウィジェット）に替わるので、枠の中では描かない */
-body[data-obtab="home"] main { visibility: hidden; }
+body[data-obtab="home"] main { display: none !important; }
 
 /* 会社の情報は桜ミツの「自社情報」の1か所で直す（業務管理の設定の同じ欄は出さない） */
 #set-co { display: none !important; }
+
+/* ---------- 営業の画面の「外で見やすい明るい画面」（昼は自動）：地も板も明るく戻す ---------- */
+html:root:not(.x) body.sl-on.sl-sun, html:root:not(.x) body.sl-on.sl-sun main, html:root:not(.x) body.sl-on.sl-sun #main { background: #F4F6FA !important; }
+body.sl-sun { --glass: rgba(255, 255, 255, .96); --glass-line: #B4C0D6; --ink: #0B1324; --muted: #3E4C66; --surface: #FFFFFF; --sunk: #E9EEF6; --line: #B4C0D6; }
+body.sl-sun h1, body.sl-sun h2, body.sl-sun h3 { color: #0B1324 !important; text-shadow: none !important; }
+body.sl-sun .sl input, body.sl-sun .sl textarea, body.sl-sun input, body.sl-sun textarea, body.sl-sun select { background: #FFFFFF !important; color: #0B1324 !important; border-color: #6B7FA6 !important; }
+body.sl-sun .btn, body.sl-sun .sl-mini, body.sl-sun .chipbtn { background: #FFFFFF !important; color: #0B1324 !important; border-color: #6B7FA6 !important; }
+body.sl-sun .btn.pri, body.sl-sun .chipbtn.on, body.sl-sun .sl-mini[aria-pressed="true"], body.sl-sun .sl .seg button[aria-pressed="true"] { background: #1F5BC6 !important; color: #fff !important; box-shadow: none !important; }
+body.sl-sun .panel, body.sl-sun .sl-hud, body.sl-sun .sl-det, body.sl-sun .sl-rv, body.sl-sun .sl-aw, body.sl-sun .sl-me, body.sl-sun .sl .empty, body.sl-sun .sl-k { box-shadow: 0 1px 2px rgba(15, 26, 46, .08), 0 8px 22px rgba(15, 26, 46, .08) !important; -webkit-backdrop-filter: none; backdrop-filter: none; }
+body.sl-sun .sl-bar, body.sl-sun .sl-mb, body.sl-sun .sl-prev, body.sl-sun .sl-badge { background: #E9EEF6 !important; }
+body.sl-sun .chip { background: #E9EEF6 !important; border-color: #B4C0D6; color: #0B1324; }

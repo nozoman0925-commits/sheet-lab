@@ -75,6 +75,9 @@
   var n = 0; function w(type, size, extra) { n++; return Object.assign({ id: 'w' + n + Math.random().toString(36).slice(2, 6), type: type, size: size, color: 'blue', alpha: 70, hidden: false }, extra || {}); }
   function preset(role) {
     switch (role) {
+      // 桜ミツ版の標準：今日のこと → 数字 → やること → 書類・流れ・お金
+      case 'link': return [w('clock', 'm'), w('today', 'm', { color: 'teal' }), w('salesgo', 's'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
+        w('kpi', 's', { metric: 'unpaid', color: 'amber' }), w('kpi', 's', { metric: 'monthOrder' }), w('todo', 'm'), w('recent', 'm'), w('flow', 'l'), w('bars', 'l')];
       case 'sales': return [w('clock', 'm'), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'waiting', color: 'violet' }), w('todo', 'm'), w('quick', 'm'), w('recent', 'l'), w('kpi', 's', { metric: 'overdue', color: 'amber' }), w('kpi', 's', { metric: 'customers', color: 'teal' }), w('usage', 'm')];
       case 'site': return [w('clock', 'm'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'today' }), w('todo', 'm'), w('quick', 'm'), w('events', 'l'), w('favorites', 'm')];
       case 'office': return [w('clock', 'm'), w('kpi', 's', { metric: 'unpaid', color: 'violet' }), w('kpi', 's', { metric: 'waiting' }), w('attention', 'm'), w('quick', 'm'), w('recent', 'l'), w('members', 'l')];
@@ -90,6 +93,15 @@
   function home() {
     var S = EE.S, me = U.me(); S.homes = S.homes || {};
     var h = S.homes[me.id];
+    // 桜ミツ版：ホームは標準の1型だけ（役割の型・時間帯の切り替えは出さない。並べ替え・追加は「ホームを並べ替え」から）
+    if (EE.link) {
+      if (!h || !h.layouts.some(function (l) { return l.key === 'main'; })) {
+        h = S.homes[me.id] = { active: 'main', auto: false, layouts: [{ key: 'main', name: 'ホーム', time: '', widgets: preset('link') }] };
+        U.commit();
+      }
+      h.active = 'main'; h.auto = false;
+      return h;
+    }
     if (!h) {
       h = S.homes[me.id] = { active: roleOf(me), auto: false, layouts: Object.keys(ROLE_NAMES).map(function (k) { return { key: k, name: ROLE_NAMES[k], time: '', widgets: preset(k) }; }) };
       U.commit();
@@ -134,7 +146,7 @@
           '<div class="w-kpi-value num" data-count="' + v + '" data-format="' + m.fmt + '">0</div><div class="w-kpi-foot">' + esc(m.foot) + '</div></a>';
       }
       case 'todo': {
-        var items = [];
+        var items = EE.link && EE.linkTodo ? EE.linkTodo() : [];   // 桜ミツ版：期限が近い見積・入金待ち・バックアップ
         EE.views.schedule.overdue().slice(0, 3).forEach(function (e) { items.push({ warn: true, t: e.title, s: '期限切れ（' + U.jdate(e.date) + '）', href: e.href }); });
         EE.views.schedule.upcoming(0).forEach(function (e) { items.push({ t: e.title, s: '今日・' + e.label, href: e.href }); });
         EE.insight.cases().filter(function (c) { return c.project.id && c.stage < 5; }).sort(function (a, b) { return (b.warn ? 1 : 0) - (a.warn ? 1 : 0); }).slice(0, 6).forEach(function (c) {
@@ -211,7 +223,7 @@
   }
 
   function setupHTML() {
-    if (EE.link) return EE.linkNameBanner ? EE.linkNameBanner() : '';   // 桜ミツ版：名前がまだ無いときだけ「名前を入れてください」
+    if (EE.link) return (EE.linkNameBanner ? EE.linkNameBanner() : '') + (EE.linkBackupBanner ? EE.linkBackupBanner() : '');   // 桜ミツ版：名前がまだ無いときだけ「名前を入れてください」
     if (EE.host) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
     var S = EE.S, steps = [
       [!!(S.company.name && S.company.address), '自社情報（会社名・住所・登録番号）を入れる', '#/settings/company', '見積書に載ります'],
@@ -228,9 +240,9 @@
     var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return editing || !x.hidden; });
     var bar = '<div class="control-bar" data-st>' +
       '<div class="grow"><div class="hint">' + esc(EE.S.company.name || '桜ミツ') + '　金額はマスタと固定の計算エンジンだけで決まります（AIは使いません）</div></div>' +
-      '<label class="hint" for="home-layout">ホーム</label><select class="input" id="home-layout" style="width:auto">' + h.layouts.map(function (l) { return U.opt(l.key, l.name + (l.time ? '（' + TIMES[l.time].replace(/（.*/, '') + '）' : ''), L.key); }).join('') + '</select>' +
-      (editing ? '<button class="btn" data-act="w-add">' + I.plus + 'ウィジェットを追加</button><button class="btn" data-act="w-more">' + I.gear + 'このホーム</button><button class="btn primary" data-act="w-done">' + I.check + '完了</button>'
-        : '<button class="btn" data-act="w-edit">' + I.grid + 'ホームを編集</button>') + '</div>';
+      (EE.link ? '' : '<label class="hint" for="home-layout">ホーム</label><select class="input" id="home-layout" style="width:auto">' + h.layouts.map(function (l) { return U.opt(l.key, l.name + (l.time ? '（' + TIMES[l.time].replace(/（.*/, '') + '）' : ''), L.key); }).join('') + '</select>') +
+      (editing ? '<button class="btn" data-act="w-add">' + I.plus + 'ウィジェットを追加</button>' + (EE.link ? '<button class="btn ghost" data-act="w-reset">' + I.refresh + '標準に戻す</button>' : '<button class="btn" data-act="w-more">' + I.gear + 'このホーム</button>') + '<button class="btn primary" data-act="w-done">' + I.check + '完了</button>'
+        : (EE.link ? '<button class="btn ghost sm" data-act="w-edit">' + I.grid + '並べ替え・追加</button>' : '<button class="btn" data-act="w-edit">' + I.grid + 'ホームを編集</button>')) + '</div>';
     var hint = editing ? '<p class="hint control-hint" data-st>ウィジェットをドラッグするか ‹ › で並べ替え、小・中・大で大きさ、目のボタンで表示／非表示、歯車で色・透明度を変えられます。変更はすぐ保存されます。</p>' : '';
     var auto = h.auto ? '<p class="hint" data-st style="margin:-6px 0 12px">時間帯で切り替え中：いまは「' + esc(L.name) + '」</p>' : '';
     var html = setupHTML() + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
@@ -341,6 +353,7 @@
         if (a.dataset.act === 'w-done') { editing = false; if (/\?edit/.test(location.hash)) EE.app.replaceRoute('#/home'); rerender(); return; }
         if (a.dataset.act === 'w-add') { library(); return; }
         if (a.dataset.act === 'w-more') { more(); return; }
+        if (a.dataset.act === 'w-reset') { (async function () { if (!(await U.confirmBox('ホームを標準の並びに戻しますか？', '戻す', { danger: true }))) return; layout().widgets = preset('link'); save(); rerender(); })(); return; }
       }
       var b = e.target.closest('[data-w]');
       if (b) {

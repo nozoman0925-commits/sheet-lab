@@ -22,7 +22,8 @@
     docsOf: function (id) { var h = H(); return h ? h.docsOf(id) : []; },
     calc: function (d) { var h = H(); return h ? h.calc(d) : { subtotal: 0, total: 0, marginRate: null }; },
     newForCase: function (id) { var h = H(); if (h) h.newForCase(id); },
-    open: function (hash) { var h = H(); if (h) h.open(hash); }
+    open: function (hash) { var h = H(); if (h) h.open(hash); },
+    compare: function (id) { var P2 = P && P.EE; if (P2 && P2.linkCompare) P2.linkCompare.open(id); }
   };
   window.SUPA_AFTER_RENDER = function (tab) {
     document.body.setAttribute('data-obtab', tab);   // 業務管理のホームは描かない（桜ミツのホームに替わる）
