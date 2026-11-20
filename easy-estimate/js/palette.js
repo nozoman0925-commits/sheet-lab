@@ -11,6 +11,14 @@
   var norm = function (s) { return String(s || '').normalize('NFKC').toLowerCase().replace(/[\s・、。]/g, ''); };
 
   /* 業務の言葉 → 画面（機能一覧にない、よく使う操作） */
+  var LINK_ACTIONS = [
+    ['営業に出る（訪問を記録）', '#/o/sales', '営業 訪問 飛び込み 記録 不在 見込み'], ['再訪問の予定を見る', '#/o/sales/rv', '再訪問 また行く'],
+    ['営業のランキング', '#/o/sales/rank', 'ランキング 賞 一番乗り'], ['工事の一覧（9工程）', '#/o/list', '工事 既存 一覧 工程 進み具合'],
+    ['新しい工事を登録（問い合わせ）', '#/o/new', '問い合わせ 新規 工事 登録'], ['カレンダー（工事・現地調査・予定）', '#/o/cal', 'カレンダー 予定 現地調査 工事日'],
+    ['ホワイトボード（あしたの予定）', '#/o/wb', 'ホワイトボード あした 明日 予定'], ['タイムライン（社内の投稿）', '#/o/board', 'タイムライン 投稿 掲示板'],
+    ['工事の経営（進行中・入金待ち）', '#/o/dash', '経営 入金待ち 要対応'], ['社員', '#/o/staff', '社員 職人 名簿'], ['業務の設定（目標の粗利率など）', '#/o/settings', '目標 粗利率 設定'],
+    ['この端末の記録のバックアップ', '#/settings/data', 'バックアップ 保存 戻す 復元 機種変更']
+  ];
   var ACTIONS = [
     ['新しい見積を作る', '#/new', '見積 作成 新規 つくる'],
     ['外構の見積を作る（文章から）', '#/new/text', '外構 フェンス 文章'],
@@ -39,6 +47,8 @@
     var q = norm(qRaw), out = [], S = EE.S;
     function add(group, label, sub, href, extra, text) { var s = score(q, (text || '') + ' ' + label + ' ' + (sub || '')); if (s) out.push(Object.assign({ group: group, label: label, sub: sub, href: href, s: s }, extra || {})); }
     ACTIONS.forEach(function (a) { add('操作', a[0], '', a[1], { icon: 'spark' }, a[2]); });
+    // 桜ミツ版：業務管理の機能
+    if (EE.link) LINK_ACTIONS.forEach(function (a) { add('操作', a[0], '', a[1], { icon: 'spark' }, a[2]); });
     EE.features.FEATURES.forEach(function (f) {
       var sec = EE.features.sectionOf(f.section) || {};
       add('機能', f.name, sec.label + (f.status === 'planned' ? '・準備中（第' + f.phase + '期で追加）' : ''), f.href, { icon: f.status === 'planned' ? 'clock' : (sec.icon || 'grid'), planned: f.status === 'planned' }, f.words);

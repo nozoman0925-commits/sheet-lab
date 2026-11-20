@@ -20,7 +20,12 @@
 (function () {
   'use strict';
   var EE = window.EE, U = EE.ui;
-  EE.host = true;   // 桜ミツ側の「業務管理の中で動くとき」の切り替え（設定のタブ・確認の窓の置き場所など）
+  // 2つの使い方：
+  //  host … 業務管理の中に桜ミツを入れる（業務管理版）。EE.host
+  //  link … 桜ミツの中に業務管理を枠で入れる（桜ミツ版）。EE.link。画面の切り替えは桜ミツが自分で行う
+  var LINK = !!window.OUBI_LINK_MODE;
+  if (LINK) EE.link = true; else EE.host = true;
+  var migrating = false;
   var O = null;                // 業務管理（window.OUBI）
   var LSK = 'oubi.mitsu.v1';
   var raw = { master: null, docs: {}, homes: {} };
@@ -100,9 +105,9 @@
   }
 
   function people() {
-    var list = O.people().map(function (p) { return { id: p.id, name: p.name, role: p.kind === 'login' ? '社員' : '職人・社員', hue: hue(p.id) }; });
+    var list = O.people().map(function (p) { return { id: p.id, accountId: p.id, name: p.name, role: p.kind === 'login' ? '社員' : '職人・社員', hue: hue(p.id) }; });
     var me = O.me();
-    if (me && me.id && !list.some(function (m) { return m.id === (O.canon(me.id) || me.id); })) list.unshift({ id: O.canon(me.id) || me.id, name: O.whoName(me.id), role: '社員', hue: hue(me.id) });
+    if (me && me.id && !list.some(function (m) { return m.id === (O.canon(me.id) || me.id); })) list.unshift({ id: O.canon(me.id) || me.id, accountId: O.canon(me.id) || me.id, name: O.whoName(me.id), role: '社員', hue: hue(me.id) });
     if (!list.length) list.push({ id: 'local', name: 'あなた', role: '管理者', hue: 217 });
     return list;
   }
@@ -121,8 +126,15 @@
   function masterOf(s) { var m = {}; Object.keys(s).forEach(function (k) { if (!MASTER_SKIP[k]) m[k] = s[k]; }); return m; }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
+  /** 桜ミツ版：前の桜ミツ（この端末の easy-estimate:v1）の見積・顧客・案件を引き継ぐ（最初の1回だけ。元のデータは消さない） */
+  function oldState() {
+    if (!LINK) return null;
+    try { var raw0 = localStorage.getItem('easy-estimate:v1'); if (!raw0) return null; var o = JSON.parse(raw0); return o && (o.schema === 1 || o.schema === 2) ? EE.data.migrate(o) : null; }
+    catch (e) { return null; }
+  }
   function build() {
-    var s = raw.master ? clone(raw.master) : EE.data.initialState();
+    var old = !raw.master ? oldState() : null;
+    var s = raw.master ? clone(raw.master) : old ? clone(masterOf(old)) : EE.data.initialState();
     var fresh = !raw.master;
     s.sampleCleanup = 'done'; s.companyPreset = s.companyPreset || '';
     var fc = fromCases();
@@ -132,6 +144,16 @@
     var h = raw.homes[s.currentMemberId] || {};
     s.homes = {}; if (h.home) s.homes[s.currentMemberId] = clone(h.home);
     s.ui = h.ui ? clone(h.ui) : {};
+    if (old) {
+      // 顧客・案件は工事として作り直す（保存のときに adoptNew が工事を作り、見積の宛先を付け替える）
+      migrating = true;
+      s.customers = s.customers.concat(old.customers || []);
+      s.projects = s.projects.concat((old.projects || []).map(function (p) { var x = clone(p); x.oldStage = true; return x; }));
+      s.documents = s.documents.concat(old.documents || []);
+      var om = (old.members || []).filter(function (m) { return m.accountId === s.currentMemberId; })[0];
+      if (om && old.homes && old.homes[om.id]) s.homes[s.currentMemberId] = clone(old.homes[om.id]);
+      if (old.ui) s.ui = clone(old.ui);
+    }
     s = EE.data.migrate(s);
     s.members = people(); s.currentMemberId = meId();
     mergeCompany(s.company);
@@ -212,13 +234,14 @@
       c.work = c.work || {}; c.work.title = p.name || c.work.title || '';
       if (p.site) c.lead.siteAddr = p.site; if (p.ownerId) c.lead.owner = p.ownerId;
       c.mitsu = Object.assign({}, c.mitsu, { acceptedDocId: p.acceptedDocId || null, notes: p.notes || [] });
+      if (p.oldStage) stageToCase(c, p, s);
       O.touch(c);
       remap['prj:' + p.id] = c.id;
     });
     // 書類の宛先・案件を、作った工事に付け替える
     var changed = false;
     s.documents.forEach(function (d) {
-      if (d.status === 'issued') return;
+      if (d.status === 'issued' && !migrating) return;   // 確定した見積は付け替えない（前の桜ミツから引き継ぐときだけは、工事に結び付ける）
       if (remap['prj:' + d.projectId]) { d.projectId = remap['prj:' + d.projectId]; changed = true; }
       var rc = remap[d.customerId];
       if (rc) { d.customerId = rc.cust; if (!d.projectId || !known[d.projectId]) d.projectId = rc.caseId; changed = true; }
@@ -233,6 +256,21 @@
     }
   }
 
+  /** 前の桜ミツの案件の段階（受注・着工・完了・請求・入金）を、工事の記録に写す */
+  function stageToCase(c, p, s) {
+    var si = EE.data.stageIndex(p.stage || 'estimate');
+    if (p.note) c.work.summary = p.note;
+    if (si >= 1) c.result = Object.assign({}, c.result, { status: 'won', wonDate: p.orderedOn || '' });
+    c.schedule = c.schedule || { steps: [], prep: {}, changes: [] };
+    if (p.startedOn) c.schedule.start = p.startedOn;
+    if (p.doneOn) c.schedule.end = p.doneOn;
+    if (p.invoicedOn) c.invoice = Object.assign({ files: [] }, c.invoice, { date: p.invoicedOn });
+    if (si >= 5) {
+      var acc = (s.documents || []).filter(function (d) { return d.id === p.acceptedDocId; })[0], amt = acc ? U.calcDoc(acc).total : 0;
+      if (amt) c.payments = [{ kind: '残金', bill: amt, billDate: p.invoicedOn || '', date: p.paidOn || '', amount: amt }];
+    }
+    O.addLog(c, '前の桜ミツの案件から引き継ぎ（段階：' + ((EE.data.STAGES[si] || {}).label || '見積') + '）');
+  }
   function writeCases(s) {
     var touched = {};
     // 顧客の変更 → その顧客の工事すべての顧客情報へ
@@ -322,7 +360,8 @@
       if (a && /INPUT|TEXTAREA|SELECT/.test(a.tagName) && a.closest('.ee')) { refreshSoon(); return; }
       if (U.topModal && U.topModal()) { refreshSoon(); return; }
       merge();
-      if (active()) { if (!editing()) EE.app.rerender(); }
+      if (LINK) { if (!editing() && !/^#\/o\//.test(location.hash)) EE.app.rerender(); }
+      else if (active()) { if (!editing()) EE.app.rerender(); }
       else if (homeMounted()) mountHome();
     }, 400);
   }
@@ -420,6 +459,7 @@
     ready = true;
     EE.S = build();
     if (!raw.master) { save(EE.S); }
+    if (LINK) { booted = true; waiters.splice(0).forEach(function (f) { f(); }); return; }   // 桜ミツ版：起動は桜ミツの側（whenReady で待つ）
     EE.app.boot({ host: true });
     // 業務管理のホームに入れたウィジェットは、描き直しのときもそこへ
     var rer = EE.app.rerender;
@@ -429,9 +469,9 @@
     route();
     if (homeMounted()) mountHome();
   }
-  function start() {
+  function start(o) {
     if (started) return; started = true;
-    O = window.OUBI;
+    O = o || window.OUBI;
     host = document.getElementById('ee-host');
     EE.data.load = function () { return EE.S || build(); };
     EE.data.save = save;
@@ -447,7 +487,7 @@
     listen('mitsu', function (rows) { var m = rows.filter(function (r) { return r.id === 'master'; })[0]; raw.master = m ? m.data : raw.master; got.master = true; if (ready && m) refreshSoon(); check(); });
     listen('mitsu_docs', function (rows) { var d = {}; rows.forEach(function (r) { d[r.id] = r.data; }); raw.docs = d; got.docs = true; if (ready) refreshSoon(); check(); });
     listen('mitsu_home', function (rows) { rows.forEach(function (r) { raw.homes[r.id] = r.data; }); got.homes = true; check(); });
-    window.addEventListener('hashchange', route);
+    if (!LINK) window.addEventListener('hashchange', route);
   }
 
   window.OUBI_HOST = {
@@ -455,6 +495,7 @@
     /** 業務管理の工事が変わったとき（他の人の変更を含む） */
     casesChanged: function () { if (ready) refreshSoon(); else check(); },
     booted: function () { check(); },
+    whenReady: whenReady,
     active: active,
     leaveTo: leaveTo,
     mountHome: function () { whenReady(mountHome); },
@@ -484,5 +525,5 @@
     },
     open: function (hash) { whenReady(function () { if (location.hash === hash) route(); else location.hash = hash; }); }
   };
-  if (window.OUBI_WANT) start();
+  if (window.OUBI_WANT && !LINK) start();
 })();

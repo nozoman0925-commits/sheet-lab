@@ -2001,7 +2001,9 @@
     eye: P('<path d="M2.8 12s3.4-6.3 9.2-6.3S21.2 12 21.2 12s-3.4 6.3-9.2 6.3S2.8 12 2.8 12z"/><circle cx="12" cy="12" r="2.8"/>'),
     calc: P('<rect x="5.5" y="3.5" width="13" height="17" rx="2.6"/><path d="M8.6 7.6h6.8"/><circle cx="9" cy="12.2" r=".7"/><circle cx="12" cy="12.2" r=".7"/><circle cx="15" cy="12.2" r=".7"/><circle cx="9" cy="16.2" r=".7"/><circle cx="12" cy="16.2" r=".7"/><circle cx="15" cy="16.2" r=".7"/>'),
     truck: P('<path d="M3.5 7.5a1.5 1.5 0 0 1 1.5-1.5h8.5v10H3.5z"/><path d="M13.5 9.5h3.6l3.4 3.6V16h-7"/><circle cx="7.5" cy="17" r="1.8"/><circle cx="16.5" cy="17" r="1.8"/>'),
-    note: P('<path d="M6.5 3.8h11a2 2 0 0 1 2 2v8.5l-5.7 5.9H6.5a2 2 0 0 1-2-2V5.8a2 2 0 0 1 2-2z"/><path d="M13.6 20.1v-3.8a2 2 0 0 1 2-2h3.8"/><path d="M8.5 8.5h7M8.5 12h4.5"/>')
+    note: P('<path d="M6.5 3.8h11a2 2 0 0 1 2 2v8.5l-5.7 5.9H6.5a2 2 0 0 1-2-2V5.8a2 2 0 0 1 2-2z"/><path d="M13.6 20.1v-3.8a2 2 0 0 1 2-2h3.8"/><path d="M8.5 8.5h7M8.5 12h4.5"/>'),
+    walk: P('<circle cx="13" cy="4.6" r="1.8"/><path d="m9.5 21 2.2-6.2M14.6 21l-1.4-5.4-2-2.6 1-4.3-3.7 1.6-1.2 3.5"/><path d="m12.2 8.7 2.4 3.3 3.1 1"/>'),
+    board: P('<rect x="3.5" y="4" width="17" height="12" rx="1.6"/><path d="M7.5 8h6M7.5 11.5h9M9 20l1.8-4M15 20l-1.8-4"/>')
   };
 
   /* ---- 状態 ---- */
@@ -2134,10 +2136,21 @@
 
   function download(name, text, type) {
     var blob = new Blob([text], { type: type || 'application/json' });
+    // claude.ai の Artifact の中では、ファイルの保存は「downloads」の仕組みを通す（確認の窓が出る）
+    if (root.claude && root.claude.use) {
+      root.claude.use('downloads').then(function (dl) {
+        if (dl) return dl.save({ filename: name, data: blob }).catch(function (e) { if (e && e.code !== 'declined') EE.fx.toast('保存できませんでした（' + (e.message || e.code) + '）', { warn: true }); });
+        plain();
+      }).catch(plain);
+      return;
+    }
+    plain();
+    function plain() {
     var a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = name;
     document.body.appendChild(a); a.click(); a.remove();
     setTimeout(function () { URL.revokeObjectURL(a.href); }, 1000);
+    }
   }
 
   function statusBadge(doc) {
@@ -2328,11 +2341,28 @@
 
   function settings() { var s = EE.S || {}; s.ui = s.ui || {}; s.ui.navHidden = s.ui.navHidden || {}; return s.ui; }
   /** メニューに出す業務のまとまり（準備中のものと、利用者が隠したものは出さない） */
+  /* 桜ミツ版（EE.link）：業務管理の機能（営業・工事・カレンダー・ホワイトボード）をメニューに足す。並び・形は桜ミツのまま */
+  var LINK_SECTIONS = {
+    sales: { key: 'sales', label: '営業', icon: 'walk', href: '#/o/sales', note: '訪問の記録・再訪問・ランキング', after: 'home' },
+    board: { key: 'board', label: 'ホワイトボード', icon: 'board', href: '#/o/wb', note: 'あしたの予定・タイムライン', after: 'schedule' }
+  };
+  function linkSections() {
+    var out = [];
+    SECTIONS.forEach(function (s) {
+      var x = s;
+      if (s.key === 'schedule') x = Object.assign({}, s, { href: '#/o/cal', note: '工事・現地調査・再訪問・予定' });
+      if (s.key === 'sites') x = Object.assign({}, s, { note: '工事の9工程・写真・契約・請求' });
+      out.push(x);
+      Object.keys(LINK_SECTIONS).forEach(function (k) { if (LINK_SECTIONS[k].after === s.key) out.push(LINK_SECTIONS[k]); });
+    });
+    return out;
+  }
+  function allSections() { return EE.link ? linkSections() : SECTIONS; }
   function navSections() {
     var hid = EE.S ? settings().navHidden : {};
-    return SECTIONS.filter(function (s) { return !s.planned && !hid[s.key]; });
+    return allSections().filter(function (s) { return !s.planned && !hid[s.key]; });
   }
-  function sectionOf(key) { return SECTIONS.filter(function (s) { return s.key === key; })[0]; }
+  function sectionOf(key) { return allSections().filter(function (s) { return s.key === key; })[0]; }
 
   root.EE.features = { SECTIONS: SECTIONS, FEATURES: FEATURES, navSections: navSections, sectionOf: sectionOf, settings: settings };
 })(this);
@@ -2879,6 +2909,7 @@
     var p = U.findProject(projectId); if (!p) return;
     // 業務管理の中では、段階（受注・着工・完了・請求・入金）は工事の画面で記録する
     if (EE.host && root.OUBI) { root.OUBI.openCase(p.id); return; }
+    if (EE.link) { location.hash = '#/o/case/' + p.id; return; }
     var ST = EE.data.STAGES, si = EE.data.stageIndex(p.stage), next = ST[si + 1]; if (!next) return;
     var docs = EE.S.documents.filter(function (d) { return d.projectId === p.id; });
     if (next.key === 'order') {
@@ -3364,8 +3395,12 @@
     attention: { name: '注意（要修正・期限切れ）', cat: '注意', sizes: ['m', 'l'], icon: 'bell', href: '#/docs/draft' },
     members: { name: '担当者のファイル', cat: '人員', sizes: ['l', 'm'], icon: 'users' },
     favorites: { name: 'お気に入りの現場', cat: 'お気に入り', sizes: ['m', 's', 'l'], icon: 'star', href: '#/sites' },
-    usage: { name: 'よく使う機能', cat: 'お気に入り', sizes: ['m', 's'], icon: 'spark' }
+    usage: { name: 'よく使う機能', cat: 'お気に入り', sizes: ['m', 's'], icon: 'spark' },
+    // 桜ミツ版（業務管理の機能を入れたもの）だけ
+    today: { name: '今日のボード（工事・現調・再訪問・予定）', cat: '時間', sizes: ['m', 'l', 's'], icon: 'calendar', href: '#/o/cal', link: true },
+    salesgo: { name: '営業に出る', cat: '業務', sizes: ['s', 'm'], icon: 'walk', href: '#/o/sales', link: true }
   };
+  function linkO() { try { var f = root.OUBI_LINK && root.OUBI_LINK.frame(); return f && f.contentWindow && f.contentWindow.OUBI; } catch (e) { return null; } }
   var PLANNED_WIDGETS = [['天気・雨予報', '天候', '外部の天気サービスとの連携が必要（第9期）'], ['地図・訪問ルート', '現場', '地図サービスとの連携が必要（第9期）'],
     ['発注・納品待ち', '発注', '資材・発注の機能と一緒に追加（第4期）'], ['出勤状況・作業予定', '人員', '工程・人員の機能と一緒に追加（第4期）']];
   var COLORS = { blue: ['青', '#3b82f6'], teal: ['青緑', '#14b8a6'], violet: ['紫', '#8b5cf6'], amber: ['琥珀', '#f59e0b'], rose: ['桜', '#f472b6'], slate: ['灰', '#94a3b8'] };
@@ -3475,6 +3510,17 @@
         return '<div class="w-list">' + (pins.length ? pins.map(function (p) { return '<a class="w-item" href="#/site/' + p.id + '">' + I.star + '<span><b>' + esc(p.name) + '</b><small>' + esc((EE.data.STAGES[EE.data.stageIndex(p.stage || 'estimate')] || {}).label || '') + '</small></span></a>'; }).join('') :
           '<p class="hint">現場ワークスペースの ☆ を押すと、ここに並びます</p>') + '</div>';
       }
+      case 'today': {
+        var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : null;
+        if (!c) return '<p class="hint">読み込んでいます…</p>';
+        var cell = function (l, v, h) { return '<a class="w-item" href="' + h + '"><span class="w-dot"></span><span><b>' + l + '</b><small>今日</small></span><b class="num" style="margin-left:auto;font-size:22px">' + v + '</b></a>'; };
+        return '<div class="w-list">' + cell('工事', c.work, '#/o/cal') + cell('現地調査', c.sv, '#/o/cal') + cell('再訪問', c.rv, '#/o/sales/rv') + cell('予定（ホワイトボード）', c.wb, '#/o/wb') + '</div>';
+      }
+      case 'salesgo': {
+        var o2 = linkO(), c2 = o2 && o2.todayCounts ? o2.todayCounts() : { rv: 0 };
+        return '<a class="btn primary" href="#/o/sales" style="width:100%;justify-content:center;min-height:52px;font-size:17px">' + I.walk + '営業に出る</a>' +
+          '<p class="hint" style="margin-top:10px">開いたらすぐ記録できます。今日の再訪問 ' + c2.rv + ' 件</p>';
+      }
       case 'usage': {
         var top = topUsed(wd.size === 's' ? 3 : 6);
         return '<div class="w-list">' + (top.length ? top.map(function (x) { return '<a class="w-item" href="' + x.href + '"><span class="w-dot"></span><span><b>' + esc(x.name) + '</b><small>' + x.n + ' 回</small></span></a>'; }).join('') : '<p class="hint">使うほど、よく開く画面がここに並びます</p>') + '</div>';
@@ -3499,7 +3545,7 @@
   }
 
   function setupHTML() {
-    if (EE.host) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
+    if (EE.host || EE.link) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
     var S = EE.S, steps = [
       [!!(S.company.name && S.company.address), '自社情報（会社名・住所・登録番号）を入れる', '#/settings/company', '見積書に載ります'],
       [S.customers.length > 0, '顧客を登録する', '#/clients', '宛先として選べるようになります'],
@@ -3531,7 +3577,7 @@
 
   function library() {
     var cats = {};
-    Object.keys(TYPES).forEach(function (k) { var t = TYPES[k]; (cats[t.cat] = cats[t.cat] || []).push(k); });
+    Object.keys(TYPES).forEach(function (k) { var t = TYPES[k]; if (t.link && !EE.link) return; (cats[t.cat] = cats[t.cat] || []).push(k); });
     var mt = Object.keys(METRICS);
     U.modal({
       title: 'ウィジェットを追加', wide: true,
@@ -6191,7 +6237,7 @@
     var docs = EE.S.documents.filter(function (d) { return d.customerId === c.id; }).sort(function (a, b) { return (b.issueDate || '').localeCompare(a.issueDate || ''); });
     return '<div class="panel-h" style="padding:0 0 12px"><h2 style="font-size:17px">' + esc(c.name) + ' <span class="muted">' + esc(c.honorific) + '</span></h2><div class="spacer"></div>' +
         '<button class="btn sm" data-act="edit-c">' + I.edit + '編集</button>' +
-        (EE.host ? '' : '<button class="btn sm danger" data-act="del-c">' + I.trash + '</button>') +   // 業務管理の中では、顧客は工事の記録なので消さない
+        (EE.host || EE.link ? '' : '<button class="btn sm danger" data-act="del-c">' + I.trash + '</button>') +   // 業務管理の中では、顧客は工事の記録なので消さない
 
         '<button class="btn sm primary" data-act="new-doc">' + I.plus + 'この顧客で見積</button></div>' +
       '<div class="form-grid" style="margin-bottom:18px">' +
@@ -6322,7 +6368,7 @@
     var none = statsFor(NONE);
     if (none.docs.length) tiles.push('<a class="folder-tile" href="#/folder/' + NONE + '">' + folderIcon(null, none.docs.length) + '<b>未割り当て</b><small>担当者のいない書類 ' + none.docs.length + '</small></a>');
     // 業務管理の中では、社員は業務管理の「社員一覧」で増やす
-    if (!EE.host) tiles.push('<a class="folder-tile add" href="#/settings/members" title="担当者を追加">' +
+    if (!EE.host && !EE.link) tiles.push('<a class="folder-tile add" href="#/settings/members" title="担当者を追加">' +
       '<span class="fold-add">' + I.plus + '</span><b>担当者を追加</b><small>設定 → 担当者</small></a>');
     return '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>担当者のファイル</h2><span class="sub">担当者ごとの現場と書類。クリックでいつでも開けます</span></div>' +
       '<div class="panel-b"><div class="folder-grid">' + tiles.join('') + '</div></div></section>';
@@ -7358,8 +7404,11 @@
     var X = EE.settingsExtra;
     var body = { members: EE.views.folders.membersTab, items: itemsTab, packages: X.templatesTab, formulas: X.formulasTab, snippets: X.snippetsTab, company: companyTab, rules: rulesTab, features: featuresTab, data: dataTab }[tab] || itemsTab;
     // 業務管理の中では、担当者（社員の名簿は業務管理）・データ（全員の共有データの消去）・機能ライブラリ（メニューは業務管理）は出さない
-    var tabs = EE.host ? TABS.filter(function (t) { return ['members', 'data', 'features'].indexOf(t[0]) < 0; }) : TABS;
-    if (EE.host && ['members', 'data', 'features'].indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
+    // 桜ミツ版（EE.link）では、担当者は業務管理の「社員」、データは端末全体のバックアップ（EE.linkBackup）
+    var HIDE = EE.host ? ['members', 'data', 'features'] : EE.link ? ['members'] : [];
+    var tabs = TABS.filter(function (t) { return HIDE.indexOf(t[0]) < 0; }).map(function (t) { return EE.link && t[0] === 'data' ? ['data', 'バックアップ'] : t; });
+    if (HIDE.indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
+    if (EE.link && tab === 'data' && EE.linkBackup) body = EE.linkBackup.html;
     var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
@@ -7367,6 +7416,7 @@
   }
 
   function mount(view, tab) {
+    if (EE.link && tab === 'data' && EE.linkBackup) EE.linkBackup.mount(view);
     view.addEventListener('click', async function (e) {
       var t = e.target.closest('[data-tab]');
       if (t) { location.hash = '#/settings/' + t.dataset.tab; return; }
@@ -7493,12 +7543,22 @@
     settings: [['#/settings/members', '担当者'], ['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'],
       ['#/settings/snippets', '定型文'], ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/settings/features', '機能ライブラリ'], ['#/settings/data', 'データ・拡張']]
   };
+  // 桜ミツ版（業務管理の機能を入れたもの）の子メニュー
+  var LINK_CHILDREN = {
+    sales: [['#/o/sales', '営業に出る（記録）'], ['#/o/sales/rv', '再訪問'], ['#/o/sales/rank', 'ランキング']],
+    sites: [['#/sites', '現場の流れ'], ['#/o/list', '工事の一覧（9工程）'], ['#/o/new', '新しい工事を登録']],
+    schedule: [['#/o/cal', 'カレンダー'], ['#/schedule', '見積の期限・入金日']],
+    board: [['#/o/wb', 'あしたの予定'], ['#/o/board', 'タイムライン']],
+    finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の経営']],
+    settings: [['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
+      ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/o/settings', '業務の設定'], ['#/o/staff', '社員'], ['#/settings/features', '機能ライブラリ'], ['#/settings/data', 'バックアップ']]
+  };
   var NAV = [];
   function buildNav() {
-    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: CHILDREN[s.key] }; });
+    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: (EE.link && LINK_CHILDREN[s.key]) || CHILDREN[s.key] }; });
     return NAV;
   }
-  function navOrder(key) { var i = -1; EE.features.SECTIONS.forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
+  function navOrder(key) { var i = -1; EE.features.navSections().forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
   var CHEV = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m7 9.8 5 4.8 5-4.8"/></svg>';
   var OPEN_KEY = 'oumitsu:nav-open';
 
@@ -7512,13 +7572,15 @@
       case 'edit': return { nav: 'docs', view: function () { return EE.views.editor.render(p[1]); } };
       case 'clients': return { nav: 'clients', view: function () { return EE.views.clients.render(); } };
       case 'sites': return { nav: 'sites', view: function () { return EE.views.sites.render(); } };
-      case 'site': return { nav: 'sites', view: function () { return EE.views.site.render(p[1], p[2]); } };
+      case 'site': if (EE.link && root.OUBI_LINK) return root.OUBI_LINK.route(['case', p[1], p[2]]); return { nav: 'sites', view: function () { return EE.views.site.render(p[1], p[2]); } };
       case 'schedule': return { nav: 'schedule', view: function () { return EE.views.schedule.render(); } };
       case 'finance': return { nav: 'finance', view: function () { return EE.views.finance.render(); } };
       case 'analysis': return { nav: 'analysis', view: function () { return EE.views.analysis.render(); } };
       case 'procure': return { nav: 'home', view: function () { return EE.views.planned.render('procure'); } };
       case 'folder': return { nav: 'home', view: function () { return EE.views.folders.render(p[1]); } };
       case 'settings': return { nav: 'settings', view: function () { return EE.views.settings.render(p[1]); } };
+      // 桜ミツ版：業務管理の画面（枠の中に出す。#/o/<画面>[/<工事ID など>]）
+      case 'o': if (EE.link && root.OUBI_LINK) return root.OUBI_LINK.route(p.slice(1)); return { nav: 'home', view: function () { return EE.views.control.render(); } };
       default: return { nav: 'home', view: function () { return EE.views.control.render(); } };
     }
   }
@@ -7647,6 +7709,7 @@
       if (EE.views.control) EE.views.control.track(location.hash);   // よく使う機能（ホームのウィジェット）
       view = document.getElementById('view'); // 切り替えの途中で差し替わっていても今の要素を使う
       current = r.view();
+      document.body.classList.toggle('ob-on', !!current.oubi);   // 桜ミツ版：業務管理の枠を出す画面
       currentNav = r.nav;
       setActive(r.nav);
       document.getElementById('title').textContent = current.title;
@@ -7850,6 +7913,7 @@
   EE.app = { renderNav: function () { var nav = document.getElementById('nav'); var fresh = nav.cloneNode(false); nav.parentNode.replaceChild(fresh, nav); renderNav(); setActive(currentNav); }, renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
     duplicate: duplicate, finalizeDoc: finalizeDoc, newWith: newWith, takePrefill: takePrefill,
     // 業務管理の中で動くときに使う
+    setNav: function (k) { currentNav = k; setActive(k); },
     route: function (force) { if (!force && lastHash === location.hash && current) return; onHash(); }, lastHash: function () { return lastHash; },
     discardCurrent: function () { if (current && current.discard) current.discard(); if (current) current.guard = null; } };
 })(this);
@@ -7869,6 +7933,14 @@
   var norm = function (s) { return String(s || '').normalize('NFKC').toLowerCase().replace(/[\s・、。]/g, ''); };
 
   /* 業務の言葉 → 画面（機能一覧にない、よく使う操作） */
+  var LINK_ACTIONS = [
+    ['営業に出る（訪問を記録）', '#/o/sales', '営業 訪問 飛び込み 記録 不在 見込み'], ['再訪問の予定を見る', '#/o/sales/rv', '再訪問 また行く'],
+    ['営業のランキング', '#/o/sales/rank', 'ランキング 賞 一番乗り'], ['工事の一覧（9工程）', '#/o/list', '工事 既存 一覧 工程 進み具合'],
+    ['新しい工事を登録（問い合わせ）', '#/o/new', '問い合わせ 新規 工事 登録'], ['カレンダー（工事・現地調査・予定）', '#/o/cal', 'カレンダー 予定 現地調査 工事日'],
+    ['ホワイトボード（あしたの予定）', '#/o/wb', 'ホワイトボード あした 明日 予定'], ['タイムライン（社内の投稿）', '#/o/board', 'タイムライン 投稿 掲示板'],
+    ['工事の経営（進行中・入金待ち）', '#/o/dash', '経営 入金待ち 要対応'], ['社員', '#/o/staff', '社員 職人 名簿'], ['業務の設定（目標の粗利率など）', '#/o/settings', '目標 粗利率 設定'],
+    ['この端末の記録のバックアップ', '#/settings/data', 'バックアップ 保存 戻す 復元 機種変更']
+  ];
   var ACTIONS = [
     ['新しい見積を作る', '#/new', '見積 作成 新規 つくる'],
     ['外構の見積を作る（文章から）', '#/new/text', '外構 フェンス 文章'],
@@ -7897,6 +7969,8 @@
     var q = norm(qRaw), out = [], S = EE.S;
     function add(group, label, sub, href, extra, text) { var s = score(q, (text || '') + ' ' + label + ' ' + (sub || '')); if (s) out.push(Object.assign({ group: group, label: label, sub: sub, href: href, s: s }, extra || {})); }
     ACTIONS.forEach(function (a) { add('操作', a[0], '', a[1], { icon: 'spark' }, a[2]); });
+    // 桜ミツ版：業務管理の機能
+    if (EE.link) LINK_ACTIONS.forEach(function (a) { add('操作', a[0], '', a[1], { icon: 'spark' }, a[2]); });
     EE.features.FEATURES.forEach(function (f) {
       var sec = EE.features.sectionOf(f.section) || {};
       add('機能', f.name, sec.label + (f.status === 'planned' ? '・準備中（第' + f.phase + '期で追加）' : ''), f.href, { icon: f.status === 'planned' ? 'clock' : (sec.icon || 'grid'), planned: f.status === 'planned' }, f.words);

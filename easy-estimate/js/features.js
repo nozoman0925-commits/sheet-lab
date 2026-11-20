@@ -96,11 +96,28 @@
 
   function settings() { var s = EE.S || {}; s.ui = s.ui || {}; s.ui.navHidden = s.ui.navHidden || {}; return s.ui; }
   /** メニューに出す業務のまとまり（準備中のものと、利用者が隠したものは出さない） */
+  /* 桜ミツ版（EE.link）：業務管理の機能（営業・工事・カレンダー・ホワイトボード）をメニューに足す。並び・形は桜ミツのまま */
+  var LINK_SECTIONS = {
+    sales: { key: 'sales', label: '営業', icon: 'walk', href: '#/o/sales', note: '訪問の記録・再訪問・ランキング', after: 'home' },
+    board: { key: 'board', label: 'ホワイトボード', icon: 'board', href: '#/o/wb', note: 'あしたの予定・タイムライン', after: 'schedule' }
+  };
+  function linkSections() {
+    var out = [];
+    SECTIONS.forEach(function (s) {
+      var x = s;
+      if (s.key === 'schedule') x = Object.assign({}, s, { href: '#/o/cal', note: '工事・現地調査・再訪問・予定' });
+      if (s.key === 'sites') x = Object.assign({}, s, { note: '工事の9工程・写真・契約・請求' });
+      out.push(x);
+      Object.keys(LINK_SECTIONS).forEach(function (k) { if (LINK_SECTIONS[k].after === s.key) out.push(LINK_SECTIONS[k]); });
+    });
+    return out;
+  }
+  function allSections() { return EE.link ? linkSections() : SECTIONS; }
   function navSections() {
     var hid = EE.S ? settings().navHidden : {};
-    return SECTIONS.filter(function (s) { return !s.planned && !hid[s.key]; });
+    return allSections().filter(function (s) { return !s.planned && !hid[s.key]; });
   }
-  function sectionOf(key) { return SECTIONS.filter(function (s) { return s.key === key; })[0]; }
+  function sectionOf(key) { return allSections().filter(function (s) { return s.key === key; })[0]; }
 
   root.EE.features = { SECTIONS: SECTIONS, FEATURES: FEATURES, navSections: navSections, sectionOf: sectionOf, settings: settings };
 })(this);

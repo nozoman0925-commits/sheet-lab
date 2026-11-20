@@ -24,12 +24,22 @@
     settings: [['#/settings/members', '担当者'], ['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'],
       ['#/settings/snippets', '定型文'], ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/settings/features', '機能ライブラリ'], ['#/settings/data', 'データ・拡張']]
   };
+  // 桜ミツ版（業務管理の機能を入れたもの）の子メニュー
+  var LINK_CHILDREN = {
+    sales: [['#/o/sales', '営業に出る（記録）'], ['#/o/sales/rv', '再訪問'], ['#/o/sales/rank', 'ランキング']],
+    sites: [['#/sites', '現場の流れ'], ['#/o/list', '工事の一覧（9工程）'], ['#/o/new', '新しい工事を登録']],
+    schedule: [['#/o/cal', 'カレンダー'], ['#/schedule', '見積の期限・入金日']],
+    board: [['#/o/wb', 'あしたの予定'], ['#/o/board', 'タイムライン']],
+    finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の経営']],
+    settings: [['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
+      ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/o/settings', '業務の設定'], ['#/o/staff', '社員'], ['#/settings/features', '機能ライブラリ'], ['#/settings/data', 'バックアップ']]
+  };
   var NAV = [];
   function buildNav() {
-    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: CHILDREN[s.key] }; });
+    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: (EE.link && LINK_CHILDREN[s.key]) || CHILDREN[s.key] }; });
     return NAV;
   }
-  function navOrder(key) { var i = -1; EE.features.SECTIONS.forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
+  function navOrder(key) { var i = -1; EE.features.navSections().forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
   var CHEV = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m7 9.8 5 4.8 5-4.8"/></svg>';
   var OPEN_KEY = 'oumitsu:nav-open';
 
@@ -43,13 +53,15 @@
       case 'edit': return { nav: 'docs', view: function () { return EE.views.editor.render(p[1]); } };
       case 'clients': return { nav: 'clients', view: function () { return EE.views.clients.render(); } };
       case 'sites': return { nav: 'sites', view: function () { return EE.views.sites.render(); } };
-      case 'site': return { nav: 'sites', view: function () { return EE.views.site.render(p[1], p[2]); } };
+      case 'site': if (EE.link && root.OUBI_LINK) return root.OUBI_LINK.route(['case', p[1], p[2]]); return { nav: 'sites', view: function () { return EE.views.site.render(p[1], p[2]); } };
       case 'schedule': return { nav: 'schedule', view: function () { return EE.views.schedule.render(); } };
       case 'finance': return { nav: 'finance', view: function () { return EE.views.finance.render(); } };
       case 'analysis': return { nav: 'analysis', view: function () { return EE.views.analysis.render(); } };
       case 'procure': return { nav: 'home', view: function () { return EE.views.planned.render('procure'); } };
       case 'folder': return { nav: 'home', view: function () { return EE.views.folders.render(p[1]); } };
       case 'settings': return { nav: 'settings', view: function () { return EE.views.settings.render(p[1]); } };
+      // 桜ミツ版：業務管理の画面（枠の中に出す。#/o/<画面>[/<工事ID など>]）
+      case 'o': if (EE.link && root.OUBI_LINK) return root.OUBI_LINK.route(p.slice(1)); return { nav: 'home', view: function () { return EE.views.control.render(); } };
       default: return { nav: 'home', view: function () { return EE.views.control.render(); } };
     }
   }
@@ -178,6 +190,7 @@
       if (EE.views.control) EE.views.control.track(location.hash);   // よく使う機能（ホームのウィジェット）
       view = document.getElementById('view'); // 切り替えの途中で差し替わっていても今の要素を使う
       current = r.view();
+      document.body.classList.toggle('ob-on', !!current.oubi);   // 桜ミツ版：業務管理の枠を出す画面
       currentNav = r.nav;
       setActive(r.nav);
       document.getElementById('title').textContent = current.title;
@@ -381,6 +394,7 @@
   EE.app = { renderNav: function () { var nav = document.getElementById('nav'); var fresh = nav.cloneNode(false); nav.parentNode.replaceChild(fresh, nav); renderNav(); setActive(currentNav); }, renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
     duplicate: duplicate, finalizeDoc: finalizeDoc, newWith: newWith, takePrefill: takePrefill,
     // 業務管理の中で動くときに使う
+    setNav: function (k) { currentNav = k; setActive(k); },
     route: function (force) { if (!force && lastHash === location.hash && current) return; onHash(); }, lastHash: function () { return lastHash; },
     discardCurrent: function () { if (current && current.discard) current.discard(); if (current) current.guard = null; } };
 })(this);
