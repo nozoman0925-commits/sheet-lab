@@ -1,1 +1,23 @@
-[]
+[
+ {
+  "msg": "枠の中が横にはみ出す (幅390)",
+  "n": 72,
+  "trail": [
+   "none → Escape",
+   "click [枠] input ",
+   "select [枠] select えらぶ2026年10月2026年11月2 = 2026-12",
+   "click button その他",
+   "click [枠] input ",
+   "click button その他",
+   "click [枠] input ",
+   "click [枠] button その他参考0",
+   "click [枠] button 声",
+   "key Control+z",
+   "click [枠] button 搬入経路0",
+   "click [枠] button ←"
+  ],
+  "worker": 1,
+  "width": 390,
+  "step": 2539
+ }
+]
