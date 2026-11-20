@@ -7,7 +7,7 @@
  */
 (function (root) {
   'use strict';
-  var ACT = { 'edit-item': '編集', 'edit-pkg': '編集', 'edit-f': '編集', 'edit-snip': '編集', 'edit-member': '編集', 'edit-p': '案件を編集', 'edit-c': '顧客を編集',
+  var ACT = { 'edit-item': '編集', 'edit-pkg': '編集', 'edit-f': '編集', 'edit-snip': '編集', 'edit-member': '編集', 'edit-p': '工事を編集', 'edit-c': '顧客を編集',
     'del-c': '顧客を削除', del: '削除', 'del-adj': '調整を削除', up: '上へ移動', down: '下へ移動', dup: '複製', rev: '修正見積を作る', duplicate: '複製', 'del-item': '削除' };
 
   function nameOf(el) {

@@ -2,7 +2,7 @@
  * 分析
  *  - 月ごとの見積の件数（直近12か月）
  *  - 月別×工事種別のヒートマップ（件数／金額、カーソルでその月の件数と合計額）と工事種別ごとの合計
- *  - 受注率（見積を出した現場のうち受注した割合）と、担当者別・工事種別の見積・受注
+ *  - 受注率（見積を出した工事のうち受注した割合）と、担当者別・工事種別の見積・受注
  * 数字はすべて保存データと計算エンジンから集計するだけ（推計はしない）。
  */
 (function (root) {
@@ -35,7 +35,7 @@
     }).join('') : '<p class="hint">まだ書類がありません</p>');
   }
 
-  /** 受注率：見積がある現場のうち、受注（受注以降の段階）になった割合 */
+  /** 受注率：見積がある工事のうち、受注（受注以降の段階）になった割合 */
   function conversion() {
     var cs = EE.insight.cases().filter(function (c) { return c.project.id && c.docs.length; });
     var won = cs.filter(function (c) { return c.stage >= 1; });
@@ -54,7 +54,7 @@
 
   function table(rows) {
     if (!rows.length) return '<p class="hint">まだデータがありません</p>';
-    return '<table class="table"><thead><tr><th></th><th class="r">見積した現場</th><th class="r">受注</th><th class="r">受注率</th><th class="r">受注額（税込）</th></tr></thead><tbody>' + rows.map(function (r) {
+    return '<table class="table"><thead><tr><th></th><th class="r">見積した工事</th><th class="r">受注</th><th class="r">受注率</th><th class="r">受注額（税込）</th></tr></thead><tbody>' + rows.map(function (r) {
       return '<tr><td>' + esc(r.label) + '</td><td class="r num">' + r.n + '</td><td class="r num">' + r.won + '</td><td class="r num">' + U.pct(r.n ? r.won / r.n : 0) + '</td><td class="r num">' + U.yen(r.amount) + '</td></tr>';
     }).join('') + '</tbody></table>';
   }
@@ -66,7 +66,7 @@
         '<section class="panel" data-st><div class="panel-h"><h2>見積の件数</h2><span class="sub">直近12か月・発行日</span></div><div class="panel-b"><div id="a-trend"></div></div></section>' +
         '<section class="panel kpi" data-st><div class="kpi-label"><span class="kpi-icon">' + I.trend + '</span>受注率</div>' +
           '<div class="kpi-value num" data-count="' + Math.round(C.rate * 1000) / 10 + '" data-format="pct">0</div>' +
-          '<div class="kpi-foot">見積を出した現場 ' + C.n + ' 件のうち、受注 ' + C.won + ' 件</div></section>' +
+          '<div class="kpi-foot">見積を出した工事 ' + C.n + ' 件のうち、受注 ' + C.won + ' 件</div></section>' +
       '</div>' +
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>月別 × 工事種別</h2><span class="sub">直近12か月・書類の発行日で集計</span><div class="spacer"></div>' +
         '<div class="seg" id="a-hm">' + [['count', '件数'], ['amount', '金額']].map(function (x) { return '<button class="' + (HM === x[0] ? 'on' : '') + '" data-hm="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
@@ -76,7 +76,7 @@
         '<section class="panel" data-st><div class="panel-h"><h2>担当者別</h2></div><div class="panel-b table-scroll">' + table(C.byOwner) + '</div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>工事種別</h2></div><div class="panel-b table-scroll">' + table(C.byCat) + '</div></section>' +
       '</div>';
-    return { title: '分析', crumb: '経営・現場データ', html: html, mount: mount };
+    return { title: '分析', crumb: '経営・工事データ', html: html, mount: mount };
   }
 
   function mount(view) {

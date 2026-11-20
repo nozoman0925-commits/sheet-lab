@@ -11,7 +11,7 @@
  *             { id, code, kind, name, spec, unit, unitPrice, unitCost, taxCategory, costType, active, updatedAt }
  *   packages: 標準工事パッケージ { id, name, note, lines:[{ itemId, qty }] }
  *   customers:{ id, kind:'corp'|'person', name, honorific, contact, zip, address, tel, email }
- *   projects: 案件 { id, customerId, name, site, note }
+ *   projects: 工事 { id, customerId, name, site, note }
  *   documents:書類 { id, type:'estimate', no, rev, parentId, status:'draft'|'issued',
  *                    customerId, projectId, title, issueDate, validUntil,
  *                    deliveryPlace, deliveryTerm, paymentTerms, notes,
@@ -70,7 +70,7 @@
     };
   }
 
-  /* 以前の版で最初から入れていたサンプル（架空の会社・顧客・案件・見積・担当者）。保存データから一度だけ取り除くのに使う */
+  /* 以前の版で最初から入れていたサンプル（架空の会社・顧客・工事・見積・担当者）。保存データから一度だけ取り除くのに使う */
   var SAMPLE_COMPANY = { name: '株式会社サンプル住設', invoiceRegNo: 'T1234567890123', zip: '150-0001', address: '東京都渋谷区神宮前1-2-3 EEビル4F', tel: '03-1234-5678',
     email: 'info@example.jp', rep: '代表取締役 青木 誠', license: '東京都知事許可（般-6）第000000号', bank: '○○銀行 渋谷支店 普通 1234567 カ）サンプルジュウセツ' };
   var SAMPLE_CUS = ['cus_sample', 'cus_yamada', 'cus_midori'], SAMPLE_MEM = ['mem_aoki', 'mem_sakurai', 'mem_tanaka'];
@@ -78,7 +78,7 @@
 
   /**
    * サンプルを取り除く（一度だけ。s.sampleCleanup = 'done' を付ける）
-   * 消すもの：決まったIDのサンプル顧客・案件と、それらに付いた書類、アカウントに紐づいていないサンプル担当者、
+   * 消すもの：決まったIDのサンプル顧客・工事と、それらに付いた書類、アカウントに紐づいていないサンプル担当者、
    *           サンプルのままの自社情報。自分で作った顧客・書類・マスタはそのまま。
    */
   function stripSample(s) {
@@ -181,7 +181,7 @@
     s.members = [
       { id: 'mem_aoki', name: '青木 誠', role: '管理者', hue: 217 },
       { id: 'mem_sakurai', name: '桜井 美和', role: '営業', hue: 199 },
-      { id: 'mem_tanaka', name: '田中 健', role: '現場管理', hue: 232 }
+      { id: 'mem_tanaka', name: '田中 健', role: '工事管理', hue: 232 }
     ];
     s.currentMemberId = 'mem_aoki';
     s.projects = [
@@ -204,7 +204,7 @@
       issueDate: addDays(t, -3), validUntil: addDays(t, 4) });
     e2.lines = lines([['itm_p002', 1], ['itm_k004', 1], ['itm_m004', 2], ['itm_l003', 0.5], ['itm_e001', 1]]);
     e2.patternLabel = 'A案';
-    // 同じ現場の別パターン（床の張替えなし・最小限の工事）
+    // 同じ工事の別パターン（床の張替えなし・最小限の工事）
     var e5 = newEstimate(s, { customerId: 'cus_yamada', projectId: 'prj_yamada', title: '1階トイレ改修工事',
       issueDate: addDays(t, -2), validUntil: addDays(t, 28) });
     e5.lines = lines([['itm_p002', 1], ['itm_k004', 1], ['itm_e001', 1]]);
@@ -222,7 +222,7 @@
     e4.lines[2].unitPrice = 15000; // 当時の単価
     e4.adjustments = [{ id: 'adj_e4', type: 'overhead', label: '諸経費', mode: 'rate', rateBp: 500, scope: 'all' }];
 
-    // 過去半年分の案件（ホームの月別グラフ・フロー図・顧客の月別ヒートマップ用のサンプル）
+    // 過去半年分の工事（ホームの月別グラフ・フロー図・顧客の月別ヒートマップ用のサンプル）
     var extra = [
       ['過去A', 'cus_sample', 'サンプル不動産 102号室 クロス張替え', 'naisou', 'mem_sakurai', -150, 'paid', [['itm_m001', 36], ['itm_k001', 36], ['itm_e002', 1]]],
       ['過去B', 'cus_midori', 'みどり建設 倉庫 外壁塗装', 'tosou', 'mem_tanaka', -128, 'paid', [['itm_ts01', 180], ['itm_ts02', 140], ['itm_ts05', 140], ['itm_ts06', 140], ['itm_ts07', 140], ['itm_ts10', 180]]],
@@ -255,7 +255,7 @@
       extraDocs.push(d);
     });
     s.projects.forEach(function (p) { if (!p.stage) p.stage = 'estimate'; });
-    // 発行済みの見積がある既存サンプル案件の段階
+    // 発行済みの見積がある既存サンプル工事の段階
     s.projects.filter(function (p) { return p.id === 'prj_haitsu'; }).forEach(function (p) { p.stage = 'order'; p.acceptedDocId = e1.id; p.orderedOn = addDays(t, -6); });
 
     var calc = root.EE.engine.calc;
@@ -274,7 +274,7 @@
     return s;
   }
 
-  /** 案件の段階（ホームの案件フロー図）。受注以降は「どの見積で受注したか」と日付を持つ */
+  /** 工事の段階（ホームの工事フロー図）。受注以降は「どの見積で受注したか」と日付を持つ */
   var STAGES = [
     { key: 'estimate', label: '見積', next: '送信前チェックを通して、見積を送る' },
     { key: 'order', label: '受注', next: '着工日と職人の手配を決める' },
@@ -388,7 +388,7 @@
 
   /**
    * 担当者（作成者）の名簿。以前の版の「利用者1人」のデータは、その人を最初の担当者にして
-   * 担当者の無い書類・案件をその人に割り当てる（既存データは消さない）
+   * 担当者の無い書類・工事をその人に割り当てる（既存データは消さない）
    */
   function ensureMembers(s) {
     if (Array.isArray(s.members) && s.members.length) {

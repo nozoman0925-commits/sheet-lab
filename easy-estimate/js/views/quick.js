@@ -12,12 +12,12 @@
     { key: 'voice', title: '音声から', desc: 'スマホやPCの音声入力で話した内容を文字にして、文章と同じように明細にします', icon: 'mic' },
     { key: 'pdf', title: 'PDFから', desc: '他社や過去の見積書・請求書のPDFを読み取り、自社の見積書に変換します', icon: I.file },
     { key: 'photo', title: '写真から', desc: '紙の見積書や手書きメモを撮影し、文字を読み取って明細にします', icon: 'camera' },
-    { key: 'past', title: '過去の見積から', desc: '似た案件の見積を探して、必要な明細だけ流用します', icon: I.copy },
+    { key: 'past', title: '過去の見積から', desc: '似た工事の見積を探して、必要な明細だけ流用します', icon: I.copy },
     { key: 'template', title: 'テンプレートから', desc: '工事の種類を選び、標準の明細から必要なものに印を付けます', icon: I.box },
     { key: 'edit', title: '通常入力', desc: '空の見積書から、マスタを検索して明細を追加します', icon: I.plus }
   ];
-  var MIC = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="8.6" y="3.2" width="6.8" height="11" rx="3.4"/><path d="M5.5 11.2a6.5 6.5 0 0 0 13 0M12 17.7v2.8"/></svg>';
-  var CAM = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7.5h.8a1.5 1.5 0 0 0 1.3-.8l.6-1.1a1.5 1.5 0 0 1 1.3-.8h3a1.5 1.5 0 0 1 1.3.8l.6 1.1a1.5 1.5 0 0 0 1.3.8h.8a3 3 0 0 1 3 3V16a3 3 0 0 1-3 3h-11a3 3 0 0 1-3-3v-5.5a3 3 0 0 1 3-3z"/><circle cx="12" cy="13" r="3.2"/></svg>';
+  var MIC = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8.6" y="3.2" width="6.8" height="11" rx="3.4"/><path d="M5.5 11.2a6.5 6.5 0 0 0 13 0M12 17.7v2.8"/></svg>';
+  var CAM = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7.5h.8a1.5 1.5 0 0 0 1.3-.8l.6-1.1a1.5 1.5 0 0 1 1.3-.8h3a1.5 1.5 0 0 1 1.3.8l.6 1.1a1.5 1.5 0 0 0 1.3.8h.8a3 3 0 0 1 3 3V16a3 3 0 0 1-3 3h-11a3 3 0 0 1-3-3v-5.5a3 3 0 0 1 3-3z"/><circle cx="12" cy="13" r="3.2"/></svg>';
   function icon(m) { return m.icon === 'mic' ? MIC : m.icon === 'camera' ? CAM : m.icon; }
 
   function catName(id) { var c = (EE.S.categories || []).filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; }
@@ -210,7 +210,7 @@
           return '<button class="check info" data-tpl="' + p.id + '" style="grid-template-columns:22px 1fr;text-align:left;cursor:pointer;color:inherit;' + (tplSel === p.id ? 'border-color:var(--accent)' : '') + '"><span class="ic">' + p.lines.length + '</span>' +
             '<div><div class="t">' + esc(p.name) + '</div><div class="d">' + esc(catName(p.category)) + (p.note ? '　' + esc(p.note) : '') + '</div></div></button>';
         }).join('') : '<div class="empty">テンプレートがありません</div>') + '</div>' +
-        '<a class="btn ghost" style="width:100%;margin-top:10px" href="#/settings/packages">' + I.edit + 'テンプレートを編集</a></div></section>' +
+        '<a class="btn ghost" style="width:100%;margin-top:10px" href="#/settings/packages">' + I.edit + 'テンプレートを編集する</a></div></section>' +
         '<section class="panel" data-st><div class="panel-b" id="t-detail"><div class="empty">' + I.box + '左からテンプレートを選んでください</div></div></section></div>';
     return { title: 'テンプレートから見積もり作成', crumb: 'かんたん見積もり作成', html: html, mount: mountTemplate };
   }

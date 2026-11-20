@@ -22,7 +22,7 @@
   /*
    * アイコン：ポップで丸いシルエット（太めの線・丸い線端と角・角丸の図形）。色は currentColor のまま
    */
-  var P = function (d) { return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+  var P = function (d) { return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
   var I = {
     home: P('<path d="M4 11.4 10.9 5.5a1.7 1.7 0 0 1 2.2 0L20 11.4"/><path d="M6 10.2v8.1A2.2 2.2 0 0 0 8.2 20.5h7.6a2.2 2.2 0 0 0 2.2-2.2v-8.1"/><path d="M10 20.5v-3.7a2 2 0 0 1 4 0v3.7"/>'),
     docs: P('<path d="M8 3.5h5.3a2 2 0 0 1 1.4.6l3.7 3.7a2 2 0 0 1 .6 1.4v8.8a2.5 2.5 0 0 1-2.5 2.5H8a2.5 2.5 0 0 1-2.5-2.5V6A2.5 2.5 0 0 1 8 3.5z"/><path d="M13.5 3.8v2.7a2 2 0 0 0 2 2h2.7"/><path d="M9 13h5.5M9 16.5h3.5"/>'),

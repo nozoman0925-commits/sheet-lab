@@ -26,10 +26,12 @@ function scan(what) {
     if ((what === 'money' || what === 'all') && /\d+\.\d{2,}\s?%/.test(t)) out.money.push('％の小数が2桁以上: 「' + t.slice(0, 30) + '」');
     if (what === 'terms' || what === 'all') {
       if (/案件/.test(t)) out.terms.push('「案件」: ' + t.slice(0, 40));
-      if (/現場/.test(t) && !/現場(住所|の住所|の写真|写真|で|に|の様子|調査|管理費|監督|への|まで|の場所|に入|周辺)/.test(t) && !/現地/.test(t)) out.terms.push('「現場」: ' + t.slice(0, 40));
+      if (/現場/.test(t) && !/現場(住所|の住所|の写真|写真|で|に|の様子|調査|管理費|監督|への|まで|の場所|に入|周辺|のもの)/.test(t) && !/(現地|今日行く現場|あなたの現場)/.test(t)) out.terms.push('「現場」: ' + t.slice(0, 40));
     }
-    if ((what === 'buttons' || what === 'all') && (e.tagName === 'BUTTON' || (e.tagName === 'A' && e.classList.contains('btn')))) {
-      const lab = (e.innerText || '').trim().replace(/\s+/g, ' ');
+    // 押して実行するボタンだけ（切り替え・絞り込み・タブ・選ぶもの・メニューは数えない）
+    const isToggle = e.getAttribute('role') === 'tab' || e.hasAttribute('aria-pressed') || e.hasAttribute('aria-selected') || e.closest('.seg, .wbseg, .scope, .subtabs, .tabs, nav, [role=tablist], [role=group], .chips, .filt, .mnav, .pal-list, .mcal, .cal, .stepnav, .sl-res, .sl-cards, .res-pick, .help-list, .w-lib, .quick-row, .sheet-box, .heat, .ws-tabs, .control-bar select') || e.dataset.tab != null || e.dataset.sec != null || e.dataset.day != null || e.dataset.dayact != null || e.dataset.sort != null || e.dataset.f != null || e.dataset.hcat != null || e.dataset.mv != null || e.classList.contains('chipbtn') || e.classList.contains('dn');
+    if ((what === 'buttons' || what === 'all') && !isToggle && (e.tagName === 'BUTTON' || (e.tagName === 'A' && e.classList.contains('btn')))) {
+      const lab = (e.innerText || '').trim().replace(/\s+/g, ' ').replace(/\s*(Ctrl|⌘)\s?\S+$/, '').replace(/（[^）]*）$/, '');   // キーの案内・かっこの補足は除く
       if (lab && lab.length > 1 && !/(る|す|く|ぐ|む|ぶ|ぬ|う|つ|へ|に|を|開く|ます|して|する|戻す|消す|出す|入れる|追加|保存|確定|作成|閉じる|検索|一覧へ|次へ|前へ|›|‹|→|←)$/.test(lab) && !/^[\d\s/年月日時分（）()・+＋−\-%％:：.]+$/.test(lab) && lab.length < 16) out.buttons.push(lab);
     }
   });

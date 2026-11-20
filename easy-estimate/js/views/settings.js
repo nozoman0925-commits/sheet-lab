@@ -37,9 +37,9 @@
         '<select class="input" id="m-cat" style="width:auto"><option value="">工事カテゴリー：すべて</option>' + (EE.S.categories || []).map(function (c) { return U.opt(c.id, c.name, mf.cat); }).join('') + '</select>' +
         '<div class="seg" id="m-kind">' + [['all', 'すべて']].concat(Object.keys(K).map(function (k) { return [k, K[k]]; })).map(function (k) {
           return '<button data-kind="' + k[0] + '" class="' + (mf.kind === k[0] ? 'on' : '') + '">' + k[1] + '</button>'; }).join('') + '</div>' +
-        '<button class="btn" data-act="csv-out">' + I.download + 'CSV書き出し</button>' +
+        '<button class="btn" data-act="csv-out">' + I.download + 'CSVで書き出す</button>' +
         '<label class="btn">' + I.upload + 'CSV取り込み<input type="file" accept=".csv,text/csv" id="csv-in" hidden></label>' +
-        '<button class="btn primary" data-act="new-item">' + I.plus + 'マスタを登録</button>' +
+        '<button class="btn primary" data-act="new-item">' + I.plus + 'マスタに登録する</button>' +
       '</div><div id="m-table">' + itemRows() + '</div></div></section>' +
       '<p class="hint" data-st style="margin-top:12px">単価を変えても、作成済みの見積の単価は変わりません。送信前チェックで「マスタ単価と違う」と知らせるので、必要な見積だけ「最新単価に更新」してください。<br>使っている品目は削除せず「使用停止」にすると、過去の見積を壊さずに検索候補から外せます。</p>';
   }
@@ -73,8 +73,8 @@
       ((it.priceHistory || []).length ? '<div class="label" style="margin:14px 0 6px">価格の履歴（過去の見積の単価は変わりません）</div>' +
         '<table class="table"><tbody>' + it.priceHistory.slice().reverse().slice(0, 8).map(function (h) {
           return '<tr><td class="num muted">' + esc(h.from) + ' から</td><td class="r num">単価 ' + U.yen(h.unitPrice) + '</td><td class="r num muted">原価 ' + U.yen(h.unitCost) + '</td></tr>'; }).join('') + '</tbody></table>' : '') + (used ? '<p class="hint" style="margin-top:12px">この品目は見積で使われています。削除の代わりに「使用中」のチェックを外すと検索候補から外れます。</p>' : ''),
-      foot: (isNew || used ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div>' +
-        '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: (isNew || used ? '' : '<button class="btn danger" data-del>' + I.trash + '削除する</button>') + '<div class="spacer"></div>' +
+        '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         function upd() {
           var p = Number(el.querySelector('[name=unitPrice]').value), c = Number(el.querySelector('[name=unitCost]').value);
@@ -226,7 +226,7 @@
           '<span class="hint">画像を選ばないときは、家紋と会社名でロゴを作ります。</span></div>' +
         '<div class="asset"><div class="label">会社印・角印（正方形・推奨 500×500px）</div><div class="asset-box seal">' + (c.seal ? '<img src="' + c.seal + '" alt="登録した会社印">' : '<span class="hint">未登録</span>') + '</div>' +
           '<div class="asset-actions"><label class="btn sm">' + I.upload + '画像を選ぶ<input type="file" accept="image/png,image/jpeg,image/webp" id="up-seal" hidden></label>' +
-          (c.seal ? '<button class="btn sm ghost" data-act="del-seal">削除</button>' : '') + '</div>' +
+          (c.seal ? '<button class="btn sm ghost" data-act="del-seal">削除する</button>' : '') + '</div>' +
           '<label class="chk"><input type="checkbox" id="show-seal"' + (c.showSeal !== false ? ' checked' : '') + '> 見積書に角印を押す（会社名の上に重ねる）</label>' +
           '<span class="hint">背景が透明か白の画像がきれいに出ます。画像はこのブラウザの中にだけ保存されます。</span></div>' +
       '</div></div></section>';
@@ -263,7 +263,7 @@
         return '<button data-v="' + m[0] + '" class="' + (val === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div>';
     };
     return '<section class="panel" data-st style="max-width:920px"><div class="panel-h"><h2>計算ルール</h2><span class="sub">金額はすべてこのルールと登録マスタだけで決まります</span></div><div class="panel-b"><div class="form-grid">' +
-      '<div class="field c6"><label>明細金額（数量×単価）の端数</label>' + seg('lineRounding', s.lineRounding) + '<span class="hint">1.5人工×26,001円 などで円未満が出たときの扱い</span></div>' +
+      '<div class="field c6"><label>明細金額（数量×単価）の端数</label>' + seg('lineRounding', s.lineRounding) + '<span class="hint">1.5人工×¥26,001 などで1円未満が出たときの扱い</span></div>' +
       '<div class="field c6"><label>消費税の端数</label>' + seg('taxRounding', s.taxRounding) + '<span class="hint">インボイス制度に合わせ、1書類につき税率ごとに1回だけ端数処理します</span></div>' +
       '<div class="field c6"><label>諸経費（率）の端数</label>' + seg('overheadRounding', s.overheadRounding || 'floor') + '</div>' +
       '<div class="field c6"><label>値引き（率）の端数</label>' + seg('discountRounding', s.discountRounding || 'ceil') + '<span class="hint">計算順序：明細 → 諸経費 → 値引き → 端数調整 → 消費税</span></div>' +

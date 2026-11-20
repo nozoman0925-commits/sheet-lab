@@ -77,13 +77,13 @@
           '<select class="input" id="f-sort" style="width:auto">' +
             U.opt('issue-desc', '発行日が新しい順', F.sort) + U.opt('issue-asc', '発行日が古い順', F.sort) + U.opt('amount-desc', '金額が大きい順', F.sort) + U.opt('valid-asc', '有効期限が近い順', F.sort) +
           '</select>' +
-          '<button class="btn" id="d-print" disabled>' + I.pdf + '選んだ書類をまとめてPDF</button>' +
-          '<a class="btn primary" href="#/new">' + I.plus + '新規見積</a>' +
+          '<button class="btn" id="d-print" disabled>' + I.pdf + '選んだ書類をまとめてPDFにする</button>' +
+          '<a class="btn primary" href="#/new">' + I.plus + '見積を作る</a>' +
         '</div>' +
         '<div class="toolbar" style="margin-bottom:6px">' +
           '<span class="label">取引年月日</span><input class="input" type="date" id="f-from" value="' + F.from + '" style="width:160px"><span class="hint">〜</span><input class="input" type="date" id="f-to" value="' + F.to + '" style="width:160px">' +
           '<span class="label" style="margin-left:10px">取引金額</span><input class="input num" type="number" id="f-min" placeholder="下限" value="' + F.min + '" style="width:130px"><span class="hint">〜</span><input class="input num" type="number" id="f-max" placeholder="上限" value="' + F.max + '" style="width:130px">' +
-          '<button class="btn ghost sm" id="f-clear">条件をクリア</button>' +
+          '<button class="btn ghost sm" id="f-clear">条件を消す</button>' +
         '</div>' +
       '</div>' +
       '<div id="doc-table" style="padding:0 8px 8px">' + tableHTML() + '</div></div></div>' +
@@ -122,7 +122,7 @@
           '<div class="sum-row"><span>発行日</span><span class="num">' + U.jdate(d.issueDate) + '</span></div>' +
           '<div class="sum-row"><span>有効期限</span><span>' + (d.status === 'issued' ? '<span class="num">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</span></div>' +
           '<div class="sum-row"><span>担当</span><span>' + (m ? '<span class="owner-chip">' + U.avatar(m, 20) + esc(m.name) + '</span>' : '<span class="hint">未割り当て</span>') + '</span></div>' +
-          (pj ? '<div class="sum-row"><span>現場</span><a class="site-link" href="#/site/' + pj.id + '">' + esc(pj.name) + '</a></div>' : '') +
+          (pj ? '<div class="sum-row"><span>工事</span><a class="site-link" href="#/site/' + pj.id + '">' + esc(pj.name) + '</a></div>' : '') +
           '<div style="display:flex;gap:8px;margin-top:14px"><a class="btn sm primary" href="#/edit/' + d.id + '">' + I.edit + '開く</a><button class="btn sm" data-act="flip">' + I.refresh + '裏を見る</button></div>' +
         '</div><div class="flip-hint">カードをクリックすると裏返して、明細の要点と履歴を表示します</div></div>' +
       '<div class="flip-face flip-back panel"><div class="panel-h"><h3>明細の要点</h3><span class="sub">金額の大きい順</span><div class="spacer"></div><span class="hint">' + d.lines.length + '行</span></div>' +
@@ -185,7 +185,7 @@
     });
     function selCount() {
       var n = Object.keys(SEL).filter(function (k) { return SEL[k] && U.findDoc(k); }).length;
-      var b = document.getElementById('d-print'); b.disabled = !n; b.innerHTML = I.pdf + (n ? n + '件をまとめてPDF' : '選んだ書類をまとめてPDF');
+      var b = document.getElementById('d-print'); b.disabled = !n; b.innerHTML = I.pdf + (n ? n + '件をまとめてPDFにする' : '選んだ書類をまとめてPDFにする');
     }
     selCount();
     view.addEventListener('change', function (e) {

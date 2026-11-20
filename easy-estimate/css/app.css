@@ -33,6 +33,7 @@
 html, body { height: 100%; }
 body {
   margin: 0;
+  font-variant-numeric: tabular-nums;   /* 数字はすべて等幅（一覧で桁がそろう） */
   font-family: var(--font);
   font-size: 14px;
   line-height: 1.6;

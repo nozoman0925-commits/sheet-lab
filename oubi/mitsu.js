@@ -933,9 +933,9 @@
     }
     if (doc.projectId) {
       var pj = (ctx.projects || []).filter(function (p) { return p.id === doc.projectId; })[0];
-      if (!pj) add('warn', 'project-missing', '案件データが見つかりません', '', { area: 'header', field: 'projectId' });
+      if (!pj) add('warn', 'project-missing', '工事データが見つかりません', '', { area: 'header', field: 'projectId' });
       else if (pj.customerId && pj.customerId !== doc.customerId) {
-        add('error', 'project-customer', '案件と宛先の顧客が一致しません', '案件「' + pj.name + '」は別の顧客に紐づいています。', { area: 'header', field: 'projectId' });
+        add('error', 'project-customer', '工事と宛先の顧客が一致しません', '工事「' + pj.name + '」は別の顧客に紐づいています。', { area: 'header', field: 'projectId' });
       }
     }
     if (!doc.title || !String(doc.title).trim()) {
@@ -1035,10 +1035,10 @@
       }
     }
 
-    // ---- 6b. 同じ現場のパターン ----
+    // ---- 6b. 同じ工事のパターン ----
     if (doc.projectId && doc.patternLabel) {
       var same = (ctx.documents || []).filter(function (d) { return d.id !== doc.id && d.projectId === doc.projectId && d.patternLabel === doc.patternLabel; });
-      if (same.length) add('info', 'dup-pattern', '同じ現場に「' + doc.patternLabel + '」が ' + (same.length + 1) + ' 件あります', 'お客様に送るときに見分けが付くよう、パターン名を変えるとわかりやすくなります。', { area: 'header', field: 'patternLabel' });
+      if (same.length) add('info', 'dup-pattern', '同じ工事に「' + doc.patternLabel + '」が ' + (same.length + 1) + ' 件あります', 'お客様に送るときに見分けが付くよう、パターン名を変えるとわかりやすくなります。', { area: 'header', field: 'patternLabel' });
     }
 
     // ---- 7. 書類番号 ----
@@ -1293,7 +1293,7 @@
  *             { id, code, kind, name, spec, unit, unitPrice, unitCost, taxCategory, costType, active, updatedAt }
  *   packages: 標準工事パッケージ { id, name, note, lines:[{ itemId, qty }] }
  *   customers:{ id, kind:'corp'|'person', name, honorific, contact, zip, address, tel, email }
- *   projects: 案件 { id, customerId, name, site, note }
+ *   projects: 工事 { id, customerId, name, site, note }
  *   documents:書類 { id, type:'estimate', no, rev, parentId, status:'draft'|'issued',
  *                    customerId, projectId, title, issueDate, validUntil,
  *                    deliveryPlace, deliveryTerm, paymentTerms, notes,
@@ -1352,7 +1352,7 @@
     };
   }
 
-  /* 以前の版で最初から入れていたサンプル（架空の会社・顧客・案件・見積・担当者）。保存データから一度だけ取り除くのに使う */
+  /* 以前の版で最初から入れていたサンプル（架空の会社・顧客・工事・見積・担当者）。保存データから一度だけ取り除くのに使う */
   var SAMPLE_COMPANY = { name: '株式会社サンプル住設', invoiceRegNo: 'T1234567890123', zip: '150-0001', address: '東京都渋谷区神宮前1-2-3 EEビル4F', tel: '03-1234-5678',
     email: 'info@example.jp', rep: '代表取締役 青木 誠', license: '東京都知事許可（般-6）第000000号', bank: '○○銀行 渋谷支店 普通 1234567 カ）サンプルジュウセツ' };
   var SAMPLE_CUS = ['cus_sample', 'cus_yamada', 'cus_midori'], SAMPLE_MEM = ['mem_aoki', 'mem_sakurai', 'mem_tanaka'];
@@ -1360,7 +1360,7 @@
 
   /**
    * サンプルを取り除く（一度だけ。s.sampleCleanup = 'done' を付ける）
-   * 消すもの：決まったIDのサンプル顧客・案件と、それらに付いた書類、アカウントに紐づいていないサンプル担当者、
+   * 消すもの：決まったIDのサンプル顧客・工事と、それらに付いた書類、アカウントに紐づいていないサンプル担当者、
    *           サンプルのままの自社情報。自分で作った顧客・書類・マスタはそのまま。
    */
   function stripSample(s) {
@@ -1463,7 +1463,7 @@
     s.members = [
       { id: 'mem_aoki', name: '青木 誠', role: '管理者', hue: 217 },
       { id: 'mem_sakurai', name: '桜井 美和', role: '営業', hue: 199 },
-      { id: 'mem_tanaka', name: '田中 健', role: '現場管理', hue: 232 }
+      { id: 'mem_tanaka', name: '田中 健', role: '工事管理', hue: 232 }
     ];
     s.currentMemberId = 'mem_aoki';
     s.projects = [
@@ -1486,7 +1486,7 @@
       issueDate: addDays(t, -3), validUntil: addDays(t, 4) });
     e2.lines = lines([['itm_p002', 1], ['itm_k004', 1], ['itm_m004', 2], ['itm_l003', 0.5], ['itm_e001', 1]]);
     e2.patternLabel = 'A案';
-    // 同じ現場の別パターン（床の張替えなし・最小限の工事）
+    // 同じ工事の別パターン（床の張替えなし・最小限の工事）
     var e5 = newEstimate(s, { customerId: 'cus_yamada', projectId: 'prj_yamada', title: '1階トイレ改修工事',
       issueDate: addDays(t, -2), validUntil: addDays(t, 28) });
     e5.lines = lines([['itm_p002', 1], ['itm_k004', 1], ['itm_e001', 1]]);
@@ -1504,7 +1504,7 @@
     e4.lines[2].unitPrice = 15000; // 当時の単価
     e4.adjustments = [{ id: 'adj_e4', type: 'overhead', label: '諸経費', mode: 'rate', rateBp: 500, scope: 'all' }];
 
-    // 過去半年分の案件（ホームの月別グラフ・フロー図・顧客の月別ヒートマップ用のサンプル）
+    // 過去半年分の工事（ホームの月別グラフ・フロー図・顧客の月別ヒートマップ用のサンプル）
     var extra = [
       ['過去A', 'cus_sample', 'サンプル不動産 102号室 クロス張替え', 'naisou', 'mem_sakurai', -150, 'paid', [['itm_m001', 36], ['itm_k001', 36], ['itm_e002', 1]]],
       ['過去B', 'cus_midori', 'みどり建設 倉庫 外壁塗装', 'tosou', 'mem_tanaka', -128, 'paid', [['itm_ts01', 180], ['itm_ts02', 140], ['itm_ts05', 140], ['itm_ts06', 140], ['itm_ts07', 140], ['itm_ts10', 180]]],
@@ -1537,7 +1537,7 @@
       extraDocs.push(d);
     });
     s.projects.forEach(function (p) { if (!p.stage) p.stage = 'estimate'; });
-    // 発行済みの見積がある既存サンプル案件の段階
+    // 発行済みの見積がある既存サンプル工事の段階
     s.projects.filter(function (p) { return p.id === 'prj_haitsu'; }).forEach(function (p) { p.stage = 'order'; p.acceptedDocId = e1.id; p.orderedOn = addDays(t, -6); });
 
     var calc = root.EE.engine.calc;
@@ -1556,7 +1556,7 @@
     return s;
   }
 
-  /** 案件の段階（ホームの案件フロー図）。受注以降は「どの見積で受注したか」と日付を持つ */
+  /** 工事の段階（ホームの工事フロー図）。受注以降は「どの見積で受注したか」と日付を持つ */
   var STAGES = [
     { key: 'estimate', label: '見積', next: '送信前チェックを通して、見積を送る' },
     { key: 'order', label: '受注', next: '着工日と職人の手配を決める' },
@@ -1670,7 +1670,7 @@
 
   /**
    * 担当者（作成者）の名簿。以前の版の「利用者1人」のデータは、その人を最初の担当者にして
-   * 担当者の無い書類・案件をその人に割り当てる（既存データは消さない）
+   * 担当者の無い書類・工事をその人に割り当てる（既存データは消さない）
    */
   function ensureMembers(s) {
     if (Array.isArray(s.members) && s.members.length) {
@@ -1822,7 +1822,7 @@
     if (btn._eeTimer) clearTimeout(btn._eeTimer);
     if (btn._eeHtml == null) btn._eeHtml = btn.innerHTML;
     btn.classList.add('done');
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5fd0b0" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" style="stroke-dasharray:24;stroke-dashoffset:24;animation:draw .3s forwards"/></svg>' + (label || '保存しました');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5fd0b0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" style="stroke-dasharray:24;stroke-dashoffset:24;animation:draw .3s forwards"/></svg>' + (label || '保存しました');
     anim(btn, [{ boxShadow: '0 0 0 0 rgba(95,208,176,.6)' }, { boxShadow: '0 0 0 8px rgba(95,208,176,0)' }], { duration: 420, fill: 'none' });
     btn._eeTimer = setTimeout(function () {
       btn.classList.remove('done'); btn.innerHTML = btn._eeHtml; btn._eeHtml = null;
@@ -1841,7 +1841,7 @@
     t.className = 'toast' + (opts.warn ? ' warn' : '');
     t.innerHTML = '<span class="ck">' + (opts.warn
       ? '<b>!</b>'
-      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>') +
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>') +
       '</span><span></span>';
     t.lastChild.textContent = msg;
     if (opts.action) {
@@ -1960,7 +1960,7 @@
   /*
    * アイコン：ポップで丸いシルエット（太めの線・丸い線端と角・角丸の図形）。色は currentColor のまま
    */
-  var P = function (d) { return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
+  var P = function (d) { return '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">' + d + '</svg>'; };
   var I = {
     home: P('<path d="M4 11.4 10.9 5.5a1.7 1.7 0 0 1 2.2 0L20 11.4"/><path d="M6 10.2v8.1A2.2 2.2 0 0 0 8.2 20.5h7.6a2.2 2.2 0 0 0 2.2-2.2v-8.1"/><path d="M10 20.5v-3.7a2 2 0 0 1 4 0v3.7"/>'),
     docs: P('<path d="M8 3.5h5.3a2 2 0 0 1 1.4.6l3.7 3.7a2 2 0 0 1 .6 1.4v8.8a2.5 2.5 0 0 1-2.5 2.5H8a2.5 2.5 0 0 1-2.5-2.5V6A2.5 2.5 0 0 1 8 3.5z"/><path d="M13.5 3.8v2.7a2 2 0 0 0 2 2h2.7"/><path d="M9 13h5.5M9 16.5h3.5"/>'),
@@ -2182,7 +2182,7 @@
  */
 (function (root) {
   'use strict';
-  var ACT = { 'edit-item': '編集', 'edit-pkg': '編集', 'edit-f': '編集', 'edit-snip': '編集', 'edit-member': '編集', 'edit-p': '案件を編集', 'edit-c': '顧客を編集',
+  var ACT = { 'edit-item': '編集', 'edit-pkg': '編集', 'edit-f': '編集', 'edit-snip': '編集', 'edit-member': '編集', 'edit-p': '工事を編集', 'edit-c': '顧客を編集',
     'del-c': '顧客を削除', del: '削除', 'del-adj': '調整を削除', up: '上へ移動', down: '下へ移動', dup: '複製', rev: '修正見積を作る', duplicate: '複製', 'del-item': '削除' };
 
   function nameOf(el) {
@@ -2259,13 +2259,13 @@
   var SECTIONS = [
     { key: 'home', label: 'ホーム', icon: 'home', href: '#/home', note: '自分専用の操作盤' },
     { key: 'clients', label: '顧客', icon: 'users', href: '#/clients', note: '問い合わせ・営業' },
-    { key: 'sites', label: '現場', icon: 'site', href: '#/sites', note: '調査・施工・検査' },
+    { key: 'sites', label: '工事', icon: 'site', href: '#/sites', note: '調査・施工・検査' },
     { key: 'estimate', label: '見積・積算', icon: 'calc', href: '#/new', note: '計算・提案・契約' },
     { key: 'schedule', label: 'スケジュール', icon: 'calendar', href: '#/schedule', note: '工程・人員・予定' },
     { key: 'procure', label: '資材・発注', icon: 'truck', href: '#/procure', note: '材料・業者・在庫', planned: 4 },
     { key: 'finance', label: '経営・会計', icon: 'yen', href: '#/finance', note: '利益・請求・入金' },
     { key: 'docs', label: '書類', icon: 'docs', href: '#/docs', note: 'すべての書類' },
-    { key: 'analysis', label: '分析', icon: 'trend', href: '#/analysis', note: '経営・現場データ' },
+    { key: 'analysis', label: '分析', icon: 'trend', href: '#/analysis', note: '経営・工事データ' },
     { key: 'settings', label: '設定', icon: 'gear', href: '#/settings/items', note: 'マスタ・権限・連携' }
   ];
 
@@ -2276,16 +2276,16 @@
     ['home', 'ホームの編集（ウィジェットの追加・並べ替え）', R, '#/home?edit', 'ウィジェット 追加 配置 カスタマイズ'],
     ['home', '担当者ごとのファイル', R, '#/home', 'フォルダ 担当 ファイル'],
     ['clients', '顧客の登録・一覧', R, '#/clients', '顧客 お客様 取引先 施主'],
-    ['clients', '顧客メモ・直近の案件', R, '#/clients', 'メモ 注意点'],
+    ['clients', '顧客メモ・直近の工事', R, '#/clients', 'メモ 注意点'],
     ['clients', '月別×工事種別ヒートマップ', R, '#/analysis', 'ヒートマップ'],
     ['clients', '問い合わせ受付', 3, '', '問い合わせ 電話 紹介 流入'],
     ['clients', '顧客対応履歴・タイムライン', 3, '', '対応履歴 タイムライン 連絡'],
     ['clients', '追客リマインダー', 3, '', '追客 リマインダー フォロー'],
     ['clients', '顧客の重複検知', 3, '', '重複'],
-    ['sites', '現場一覧・案件フロー', R, '#/sites', '現場 案件 フロー 進捗 一覧'],
-    ['sites', '現場ワークスペース', R, '#/sites', 'ワークスペース 現場カルテ 概要'],
+    ['sites', '工事の一覧・流れ', R, '#/sites', '工事 工事 フロー 進捗 一覧'],
+    ['sites', '工事ワークスペース', R, '#/sites', 'ワークスペース 工事カルテ 概要'],
     ['sites', '現場写真', R, '#/sites', '写真 現場写真 施工前 施工後 ビフォーアフター'],
-    ['sites', '現場メモ・履歴', R, '#/sites', 'メモ 連絡 履歴'],
+    ['sites', '工事メモ・履歴', R, '#/sites', 'メモ 連絡 履歴'],
     ['sites', '現地調査シート', 3, '', '現地調査 調査 チェックリスト'],
     ['sites', '写真への書き込み・採寸図', 3, '', '書き込み 寸法 採寸'],
     ['sites', '安全・品質・検査', 7, '', 'KY 安全 品質 検査 是正 ヒヤリハット'],
@@ -2311,7 +2311,7 @@
     ['procure', '在庫管理', 4, '', '在庫 資材 材料'],
     ['finance', '入金・粗利のメーター', R, '#/finance', '入金率 粗利率 未入金'],
     ['finance', '月別の見積・受注・入金', R, '#/finance', '月別 売上 受注額 入金額'],
-    ['finance', '案件別の粗利', R, '#/finance', '案件別 損益 粗利 利益'],
+    ['finance', '工事別の粗利', R, '#/finance', '工事別 損益 粗利 利益'],
     ['finance', '請求書・分割請求', 6, '', '請求 請求書 着手金 中間金'],
     ['finance', '入金消込・未入金通知', 6, '', '入金 消込 未入金 督促'],
     ['finance', '実行予算・実績原価', 5, '', '実行予算 原価 予算超過'],
@@ -2342,7 +2342,7 @@
   function settings() { var s = EE.S || {}; s.ui = s.ui || {}; s.ui.navHidden = s.ui.navHidden || {}; return s.ui; }
   /** メニューに出す業務のまとまり（準備中のものと、利用者が隠したものは出さない） */
   /* 桜ミツ版（EE.link）：業務管理の機能を入れても、メニューは7つに絞る（同じ種類の画面を2つ並べない）
-     顧客・現場の流れ・工事の一覧 → 工事／書類 → 見積／カレンダー・ホワイトボード → 予定／粗利・工事の経営・分析 → 経営 */
+     顧客・工事の流れ・工事の一覧 → 工事／書類 → 見積／カレンダー・ホワイトボード → 予定／粗利・工事の経営・分析 → 経営 */
   var LINK_SECTIONS = [
     { key: 'home', label: 'ホーム', icon: 'home', href: '#/home', note: '今日のこと・数字' },
     { key: 'sales', label: '営業', icon: 'walk', href: '#/o/sales', note: '訪問の記録・再訪問・ランキング' },
@@ -2389,7 +2389,8 @@
     return '<div class="logo crest-logo">' + EE.crest.svg({ id: 'shl-' + String(key || 'x').replace(/\W/g, ''), className: 'sheet-crest', fieldR: 106 }) + '<span>' + esc(co.name || '') + '</span></div>';
   }
 
-  function sheetHTML(doc) {
+  function sheetHTML(doc, opts) {
+    opts = opts || {};
     var S = EE.S, sn = doc.status === 'issued' && doc.snap;
     // 確定済みの書類は、確定時の写し（宛名・自社情報・工事場所）で作る。後から顧客や自社情報を変えても送ったものと同じになる
     var co = sn ? sn.company : S.company;
@@ -2437,7 +2438,11 @@
       (b.discount ? '<tr><td>値引き・端数調整</td><td class="r num">' + yen(b.discount) + '</td></tr>' : '');
 
     var title = '御見積書' + (doc.patternLabel ? '（' + doc.patternLabel + '）' : '') + (doc.rev ? '（第' + doc.rev + '版）' : '');
-    return '<div class="sheet">' +
+    // 2ページ目以降の上に、宛先と件名の小さい見出しを繰り返す（1ページ目は本文にあるので出さない）
+    var css = function (t) { return '"' + String(t).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n<>]/g, ' ') + '"'; };
+    var run = (cust.name || '') + (cust.honorific ? ' ' + cust.honorific : '') + '　／　' + (doc.title || '') + '　／　' + (doc.no ? 'No. ' + doc.no : '');
+    var runCss = opts.many ? '' : '<style>@page { @top-left { content: ' + css(run) + '; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; font-size: 8pt; color: #555; } } @page :first { @top-left { content: none; } }</style>';
+    return runCss + '<div class="sheet">' +
       '<div class="head" style="grid-template-columns:1fr"><h1>' + esc(title) + '</h1>' +
       '<div class="meta sans num">No. ' + esc(doc.no) + '<br>発行日 ' + U.jdate(doc.issueDate) + '</div></div>' +
       '<div class="head">' +
@@ -2539,7 +2544,7 @@
   /** 複数の書類を1回の印刷（1つのPDF）にまとめる */
   function printMany(docs) {
     var pr = document.getElementById('print-root');
-    pr.innerHTML = docs.map(function (d, i) { return '<div style="' + (i ? 'page-break-before:always;break-before:page' : '') + '">' + sheetHTML(d) + '</div>'; }).join('');
+    pr.innerHTML = docs.map(function (d, i) { return '<div style="' + (i ? 'page-break-before:always;break-before:page' : '') + '">' + sheetHTML(d, { many: true }) + '</div>'; }).join('');
     var oldTitle = document.title;
     document.title = '見積書_' + docs.length + '件_' + EE.data.today();
     setTimeout(function () { root.print(); document.title = oldTitle; pr.innerHTML = ''; }, 50);
@@ -2729,12 +2734,12 @@
     return best;
   }
 
-  /** 案件（現場）ごとの状況。現場に属さない見積は1件ずつ「見積」段階の案件として扱う */
+  /** 工事ごとの状況。工事に属さない見積は1件ずつ「見積」段階の工事として扱う */
   function cases() {
     var S = EE.S, out = [];
     S.projects.forEach(function (p) {
       var docs = S.documents.filter(function (d) { return d.projectId === p.id; });
-      if (!docs.length && (p.stage || 'estimate') === 'estimate') return;   // 見積の無い登録だけの現場は出さない
+      if (!docs.length && (p.stage || 'estimate') === 'estimate') return;   // 見積の無い登録だけの工事は出さない
       out.push(build(p, docs));
     });
     S.documents.filter(function (d) { return !d.projectId || !U.findProject(d.projectId); }).forEach(function (d) {
@@ -2804,10 +2809,10 @@
 
 /* ---- views/sites.js ---- */
 /*
- * 現場（案件フロー＋現場一覧）
- *  - 上：案件フロー図（見積 → 受注 → 着工 → 完了 → 請求 → 入金）。点＝案件、色＝担当者。
- *    期間・工事種別・段階で絞り込み、1件選ぶとその案件だけが強調され、右に金額・期限・次の行動が出る
- *  - 下：現場一覧（現場名・担当・状態・次の期限だけ）。開くと現場ワークスペース（js/views/site.js）
+ * 工事（工事フロー＋工事一覧）
+ *  - 上：工事フロー図（見積 → 受注 → 着工 → 完了 → 請求 → 入金）。点＝工事、色＝担当者。
+ *    期間・工事種別・段階で絞り込み、1件選ぶとその工事だけが強調され、右に金額・期限・次の行動が出る
+ *  - 下：工事一覧（工事名・担当・状態・次の期限だけ）。開くと工事ワークスペース（js/views/site.js）
  * 一覧は判断する場所、ワークスペースは作業する場所（構想 3-④）
  */
 (function (root) {
@@ -2816,7 +2821,7 @@
   var F = { period: '6m', cat: '', stage: '' };
   var selId = null;
 
-  /* ---------- 案件フロー図 ---------- */
+  /* ---------- 工事フロー図 ---------- */
   var VB_W = 1000, VB_H = 360, NODE_Y = 180;
   function nodeX(i) { return 80 + i * 168; }
   function nodeY(i) { return NODE_Y + (i % 2 ? -22 : 22); }   // ゆるい波形
@@ -2848,7 +2853,7 @@
     list.forEach(function (c) { byStage[c.stage].push(c); });
     var nodes = ST.map(function (s, i) {
       var cs = byStage[i], amt = cs.reduce(function (a, c) { return a + c.amount; }, 0);
-      var up = i % 2 === 1;   // 波の上側にある節は、ラベルを上に・案件の点を下に置く
+      var up = i % 2 === 1;   // 波の上側にある節は、ラベルを上に・工事の点を下に置く
       return '<g class="flow-node" data-stage="' + i + '">' +
         '<circle cx="' + nodeX(i) + '" cy="' + nodeY(i) + '" r="27" class="flow-ring"/>' +
         '<circle cx="' + nodeX(i) + '" cy="' + nodeY(i) + '" r="18" class="flow-core"/>' +
@@ -2870,7 +2875,7 @@
       });
       if (cs.length > 9) dots += '<text x="' + nodeX(i) + '" y="' + (nodeY(i) + (up ? 166 : -152)) + '" text-anchor="middle" class="flow-amt">ほか ' + (cs.length - 9) + ' 件</text>';
     });
-    return '<svg class="flow" viewBox="0 0 ' + VB_W + ' ' + VB_H + '" role="img" aria-label="案件フロー：見積から入金まで">' +
+    return '<svg class="flow" viewBox="0 0 ' + VB_W + ' ' + VB_H + '" role="img" aria-label="工事フロー：見積から入金まで">' +
       segs + flows + nodes + dots + '</svg>';
   }
 
@@ -2879,11 +2884,11 @@
     var ST = EE.data.STAGES;
     if (!c) {
       var total = list.reduce(function (a, x) { return a + x.amount; }, 0);
-      return '<div class="label">表示中の案件</div><div class="kpi-value num" data-count="' + list.length + '" data-format="int">0</div>' +
+      return '<div class="label">表示中の工事</div><div class="kpi-value num" data-count="' + list.length + '" data-format="int">0</div>' +
         '<div class="hint">合計 ' + U.yen(total) + '（受注前は最新の見積、受注後は受注した見積の金額）</div><div class="sep"></div>' +
         ST.map(function (s, i) { var n = list.filter(function (x) { return x.stage === i; }).length;
           return '<div class="sum-row"><span>' + esc(s.label) + '</span><span class="num">' + n + ' 件</span></div>'; }).join('') +
-        '<p class="hint" style="margin-top:12px">図の点をクリックすると、その案件が拡大されてここに詳細が出ます。点の色は担当者の色です。</p>';
+        '<p class="hint" style="margin-top:12px">図の点をクリックすると、その工事が拡大されてここに詳細が出ます。点の色は担当者の色です。</p>';
     }
     var p = c.project, cu = U.findCustomer(p.customerId) || {};
     var daysTxt = c.days == null ? '' : c.days < 0 ? '期限切れ（' + (-c.days) + '日前）' : 'あと ' + c.days + ' 日';
@@ -2897,7 +2902,7 @@
       '<div class="sum-row"><span>見積の数</span><span class="num">' + c.docs.length + ' 件</span></div>' +
       '<div class="next-action' + (c.warn ? ' warn' : '') + '"><div class="label">次の行動</div><div>' + esc(c.next) + '</div></div>' +
       '<div class="flow-detail-actions">' +
-        (p.id ? '<a class="btn sm" href="#/site/' + p.id + '">' + I.home + '現場ページ</a>' : '') +
+        (p.id ? '<a class="btn sm" href="#/site/' + p.id + '">' + I.home + '工事ページ</a>' : '') +
         (c.main ? '<a class="btn sm" href="#/edit/' + c.main.id + '">' + I.edit + '見積を開く</a>' : '') +
         (p.id && nextStage ? '<button class="btn sm primary" data-act="flow-advance" data-id="' + p.id + '">' + I.check + nextStage.label + 'にする</button>' : '') +
       '</div>';
@@ -2912,11 +2917,11 @@
     var ST = EE.data.STAGES, si = EE.data.stageIndex(p.stage), next = ST[si + 1]; if (!next) return;
     var docs = EE.S.documents.filter(function (d) { return d.projectId === p.id; });
     if (next.key === 'order') {
-      if (!docs.length) { EE.fx.toast('この現場には見積がありません', { warn: true }); return; }
+      if (!docs.length) { EE.fx.toast('この工事には見積がありません', { warn: true }); return; }
       var issued = docs.filter(function (d) { return d.status === 'issued'; });
       var pick = (issued.length ? issued : docs).sort(function (a, b) { return (b.issueDate || '').localeCompare(a.issueDate || ''); });
       var ok = await U.confirmBox('「' + p.name + '」を受注にします。\n受注した見積：' + (pick[0].patternLabel ? pick[0].patternLabel + '　' : '') + (pick[0].no || '') + '（' + U.yen(U.calcDoc(pick[0]).total) + '）' +
-        (pick.length > 1 ? '\n※別の見積で受注した場合は、現場ページで選び直せます。' : ''), '受注にする');
+        (pick.length > 1 ? '\n※別の見積で受注した場合は、工事ページで選び直せます。' : ''), '受注にする');
       if (!ok) return;
       p.acceptedDocId = pick[0].id; p.orderedOn = EE.data.today();
     } else {
@@ -2940,21 +2945,21 @@
     var sites = list.filter(function (c) { return c.project.id; }).sort(function (a, b) { return (b.lastDate || '').localeCompare(a.lastDate || ''); });
     var ST = EE.data.STAGES;
     var html =
-      '<div class="toolbar" data-st style="margin-bottom:14px"><div class="grow"><div class="hint">案件の今の段階と次の行動。現場を開くと、見積・写真・書類・原価・メモがまとまっています</div></div>' +
-        '<button class="btn" data-act="new-site">' + I.plus + '現場を登録</button>' +
+      '<div class="toolbar" data-st style="margin-bottom:14px"><div class="grow"><div class="hint">工事の今の段階と次の行動。工事を開くと、見積・写真・書類・原価・メモがまとまっています</div></div>' +
+        '<button class="btn" data-act="new-site">' + I.plus + '工事を登録する</button>' +
         '<a class="btn primary" href="#/new">' + I.spark + 'かんたん見積もり作成</a></div>' +
       '<div class="flow-filters" data-st>' +
         '<div class="seg" id="f-period">' + periods.map(function (p) { return '<button data-v="' + p[0] + '" class="' + (F.period === p[0] ? 'on' : '') + '">' + p[1] + '</button>'; }).join('') + '</div>' +
         '<select class="input" id="f-cat" style="width:auto">' + U.opt('', '工事種別：すべて', F.cat) + (S.categories || []).map(function (c) { return U.opt(c.id, c.name, F.cat); }).join('') + '</select>' +
         '<select class="input" id="f-stage" style="width:auto">' + U.opt('', '段階：すべて', F.stage) + ST.map(function (s, i) { return U.opt(String(i), s.label, F.stage); }).join('') + '</select>' +
-        '<span class="hint" style="margin-left:auto">' + list.length + ' 件の案件</span></div>' +
+        '<span class="hint" style="margin-left:auto">' + list.length + ' 件の工事</span></div>' +
       '<div class="flow-grid">' +
-        '<section class="panel flow-panel" data-st><div class="panel-h"><h2>案件フロー</h2><span class="sub">見積 → 受注 → 着工 → 完了 → 請求 → 入金</span></div>' +
+        '<section class="panel flow-panel" data-st><div class="panel-h"><h2>工事フロー</h2><span class="sub">見積 → 受注 → 着工 → 完了 → 請求 → 入金</span></div>' +
           '<div class="panel-b"><div id="flow-wrap">' + flowSVG(list) + '</div></div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>詳細</h2></div><div class="panel-b" id="flow-detail">' + detailHTML(list) + '</div></section>' +
       '</div>' +
-      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>現場一覧</h2><span class="sub">' + sites.length + ' 件</span></div>' +
-        '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>現場名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
+      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>工事一覧</h2><span class="sub">' + sites.length + ' 件</span></div>' +
+        '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
           sites.map(function (c) {
             var p = c.project, cu = U.findCustomer(p.customerId) || {};
             var due = c.stage === 0 && c.valid ? (c.days < 0 ? '<span class="badge err">期限切れ</span>' : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
@@ -2963,9 +2968,9 @@
               '<td><span class="badge blue">' + esc(ST[c.stage].label) + '</span></td>' +
               '<td>' + due + '<span class="cell-sub' + (c.warn ? ' warn-text' : '') + '">' + esc(c.next || '') + '</span></td>' +
               '<td class="r num">' + U.yen(c.amount) + '</td></tr>';
-          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.site + 'まだ現場がありません。「現場を登録」か、見積を作るときに案件を選ぶと現場ができます</div>') + '</div></section>';
+          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.site + 'まだ工事がありません。「工事を登録」か、見積を作るときに工事を選ぶと工事ができます</div>') + '</div></section>';
 
-    return { title: '現場', crumb: '調査・施工・検査', html: html, mount: mount };
+    return { title: '工事', crumb: '調査・施工・検査', html: html, mount: mount };
   }
 
   function select(view, id) {
@@ -2998,7 +3003,7 @@
       if (e.target.id === 'f-cat') { F.cat = e.target.value; EE.app.rerender(); }
       if (e.target.id === 'f-stage') { F.stage = e.target.value; EE.app.rerender(); }
     });
-    // 点にカーソル：案件名と金額
+    // 点にカーソル：工事名と金額
     var cases = filteredCases();
     view.querySelectorAll('.flow-case').forEach(function (g) {
       g.addEventListener('pointermove', function (e) {
@@ -3022,7 +3027,7 @@
  *  - 今月の数字（見積・受注・入金・粗利率）
  *  - 入金率・粗利率・未入金割合のメーター
  *  - 月別の見積額・受注額・入金額（月順・金額順・粗利順・件数順）
- *  - 案件別の粗利（受注した見積で計算）
+ *  - 工事別の粗利（受注した見積で計算）
  * 金額はすべて計算エンジンの結果を足すだけ。請求書・入金消込・実行予算は構想の第5〜6期で追加する。
  */
 (function (root) {
@@ -3077,11 +3082,11 @@
       '<div class="grid kpis">' +
         kpi(I.docs, '今月の見積総額', M.estimate, 'yen', M.count + ' 件（発行日）') +
         kpi(I.check, '今月の受注額', M.ordered, 'yen', '受注した見積の税込') +
-        kpi(I.yen, '今月の入金額', M.paid, 'yen', '入金にした案件') +
+        kpi(I.yen, '今月の入金額', M.paid, 'yen', '入金にした工事') +
         kpi(I.chart, '今月の平均粗利率', Math.round(M.margin * 1000) / 10, 'pct', '税抜ベース') +
       '</div>' +
       '<div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);margin-top:18px">' +
-        '<section class="panel" data-st><div class="panel-h"><h2>入金と粗利</h2><span class="sub">受注した案件の金額から計算</span></div><div class="panel-b"><div class="rings">' +
+        '<section class="panel" data-st><div class="panel-h"><h2>入金と粗利</h2><span class="sub">受注した工事の金額から計算</span></div><div class="panel-b"><div class="rings">' +
           EE.charts.ring(R.paid, '入金率', U.yen(R.paidAmt) + ' / ' + U.yen(R.orderedAmt), '#3987e5') +
           EE.charts.ring(R.margin, '粗利率', 'すべての見積（税抜）', '#199e70') +
           EE.charts.ring(R.unpaid, '未入金の割合', '請求済みのうち ' + U.yen(R.unpaidAmt), '#9085e9') +
@@ -3090,14 +3095,14 @@
           '<div class="seg" id="bar-sort">' + [['month', '月順'], ['amount', '金額順'], ['profit', '粗利順'], ['count', '件数順']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (sortKey === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div></div>' +
           '<div class="panel-b"><div id="bars"></div></div></section>' +
       '</div>' +
-      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>案件別の粗利</h2><span class="sub">受注した見積で計算（見積上の粗利。実際の原価は第5期の「実績原価」で追加）</span></div>' +
-        '<div class="panel-b" style="padding-top:6px">' + (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th>現場</th><th>段階</th><th class="r">受注額（税込）</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead><tbody>' +
+      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>工事別の粗利</h2><span class="sub">受注した見積で計算（見積上の粗利。実際の原価は第5期の「実績原価」で追加）</span></div>' +
+        '<div class="panel-b" style="padding-top:6px">' + (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th>工事</th><th>段階</th><th class="r">受注額（税込）</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead><tbody>' +
           list.map(function (x) {
             var low = x.rate != null && x.rate < minM;
             return '<tr class="clickable" data-href="#/site/' + x.p.id + '"><td>' + esc(x.p.name) + '<span class="cell-sub">受注 ' + U.jdate(x.p.orderedOn) + '</span></td>' +
               '<td><span class="badge blue">' + esc(ST[x.stage].label) + '</span></td><td class="r num">' + U.yen(x.total) + '</td><td class="r num">' + U.yen(x.cost) + '</td>' +
               '<td class="r num">' + U.yen(x.profit) + '</td><td class="r num"' + (low ? ' style="color:var(--warn)" title="粗利の下限を下回っています"' : '') + '>' + U.pct(x.rate) + '</td></tr>';
-          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.yen + 'まだ受注した案件がありません。現場で「受注にする」と、ここに出ます</div>') + '</div></section>' +
+          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.yen + 'まだ受注した工事がありません。工事で「受注にする」と、ここに出ます</div>') + '</div></section>' +
       '<p class="hint" data-st style="margin-top:12px">請求書・分割請求・入金消込・支払予定・実行予算は、これから追加します（設定 →「機能ライブラリ」）。</p>';
     return { title: '経営・会計', crumb: '利益・請求・入金', html: html, mount: mount };
   }
@@ -3125,7 +3130,7 @@
  * 分析
  *  - 月ごとの見積の件数（直近12か月）
  *  - 月別×工事種別のヒートマップ（件数／金額、カーソルでその月の件数と合計額）と工事種別ごとの合計
- *  - 受注率（見積を出した現場のうち受注した割合）と、担当者別・工事種別の見積・受注
+ *  - 受注率（見積を出した工事のうち受注した割合）と、担当者別・工事種別の見積・受注
  * 数字はすべて保存データと計算エンジンから集計するだけ（推計はしない）。
  */
 (function (root) {
@@ -3158,7 +3163,7 @@
     }).join('') : '<p class="hint">まだ書類がありません</p>');
   }
 
-  /** 受注率：見積がある現場のうち、受注（受注以降の段階）になった割合 */
+  /** 受注率：見積がある工事のうち、受注（受注以降の段階）になった割合 */
   function conversion() {
     var cs = EE.insight.cases().filter(function (c) { return c.project.id && c.docs.length; });
     var won = cs.filter(function (c) { return c.stage >= 1; });
@@ -3177,7 +3182,7 @@
 
   function table(rows) {
     if (!rows.length) return '<p class="hint">まだデータがありません</p>';
-    return '<table class="table"><thead><tr><th></th><th class="r">見積した現場</th><th class="r">受注</th><th class="r">受注率</th><th class="r">受注額（税込）</th></tr></thead><tbody>' + rows.map(function (r) {
+    return '<table class="table"><thead><tr><th></th><th class="r">見積した工事</th><th class="r">受注</th><th class="r">受注率</th><th class="r">受注額（税込）</th></tr></thead><tbody>' + rows.map(function (r) {
       return '<tr><td>' + esc(r.label) + '</td><td class="r num">' + r.n + '</td><td class="r num">' + r.won + '</td><td class="r num">' + U.pct(r.n ? r.won / r.n : 0) + '</td><td class="r num">' + U.yen(r.amount) + '</td></tr>';
     }).join('') + '</tbody></table>';
   }
@@ -3189,7 +3194,7 @@
         '<section class="panel" data-st><div class="panel-h"><h2>見積の件数</h2><span class="sub">直近12か月・発行日</span></div><div class="panel-b"><div id="a-trend"></div></div></section>' +
         '<section class="panel kpi" data-st><div class="kpi-label"><span class="kpi-icon">' + I.trend + '</span>受注率</div>' +
           '<div class="kpi-value num" data-count="' + Math.round(C.rate * 1000) / 10 + '" data-format="pct">0</div>' +
-          '<div class="kpi-foot">見積を出した現場 ' + C.n + ' 件のうち、受注 ' + C.won + ' 件</div></section>' +
+          '<div class="kpi-foot">見積を出した工事 ' + C.n + ' 件のうち、受注 ' + C.won + ' 件</div></section>' +
       '</div>' +
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>月別 × 工事種別</h2><span class="sub">直近12か月・書類の発行日で集計</span><div class="spacer"></div>' +
         '<div class="seg" id="a-hm">' + [['count', '件数'], ['amount', '金額']].map(function (x) { return '<button class="' + (HM === x[0] ? 'on' : '') + '" data-hm="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
@@ -3199,7 +3204,7 @@
         '<section class="panel" data-st><div class="panel-h"><h2>担当者別</h2></div><div class="panel-b table-scroll">' + table(C.byOwner) + '</div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>工事種別</h2></div><div class="panel-b table-scroll">' + table(C.byCat) + '</div></section>' +
       '</div>';
-    return { title: '分析', crumb: '経営・現場データ', html: html, mount: mount };
+    return { title: '分析', crumb: '経営・工事データ', html: html, mount: mount };
   }
 
   function mount(view) {
@@ -3223,7 +3228,7 @@
 /*
  * スケジュール（予定・期限カレンダー）
  * 今あるデータから「いつ何があるか」を集める：見積の有効期限・受注／着工／完了／請求／入金の日。
- * 月のカレンダーと、期限切れ・今後14日の一覧。予定を押すと現場か見積を開く。
+ * 月のカレンダーと、期限切れ・今後14日の一覧。予定を押すと工事か見積を開く。
  * 工程表・職人の割り当て・作業日報は構想の第4期で追加する。
  */
 (function (root) {
@@ -3289,7 +3294,7 @@
             (up.length ? up.map(function (e) { return '<div class="ev-row"><span class="num">' + U.jdate(e.date) + '</span>' + item(e) + '</div>'; }).join('') : '<p class="hint">予定はありません</p>') + '</div></section>' +
         '</div>' +
       '</div>' +
-      '<p class="hint" data-st style="margin-top:12px">見積の有効期限と、現場の受注・着工・完了・請求・入金の日を表示しています。工程表・職人の割り当て・作業日報はこれから追加します（設定 →「機能ライブラリ」）。</p>';
+      '<p class="hint" data-st style="margin-top:12px">見積の有効期限と、工事の受注・着工・完了・請求・入金の日を表示しています。工程表・職人の割り当て・作業日報はこれから追加します（設定 →「機能ライブラリ」）。</p>';
     return { title: 'スケジュール', crumb: '工程・人員・予定', html: html, mount: mount };
   }
 
@@ -3334,7 +3339,7 @@
 /*
  * ホーム＝OUMITSU CONTROL（ウィジェット式の操作盤）
  *  - ウィジェットを追加・削除・並べ替え（ドラッグ、または ← → ボタン）・サイズ（小・中・大）・表示/非表示・色と透明度
- *  - 経営者用・営業用・現場用・事務用のホームを最初から用意。名前を付けて保存でき、時間帯で自動的に切り替えられる
+ *  - 経営者用・営業用・工事用・事務用のホームを最初から用意。名前を付けて保存でき、時間帯で自動的に切り替えられる
  *  - ウィジェットを押すと該当の画面へ直接移動
  *  - 「よく使う機能」は画面を開いた回数から自動で並べる（提案だけ。勝手に配置は変えない）
  * 保存先：EE.S.homes[担当者ID] = { active, auto, layouts: [{ key, name, time, widgets: [{ id, type, size, color, alpha, hidden, metric }] }] }
@@ -3347,15 +3352,15 @@
 
   /* ---------- 数字（KPI）の種類 ---------- */
   var METRICS = {
-    active: { label: '進行中の案件', icon: 'site', href: '#/sites', fmt: 'int', foot: '受注〜請求の現場' },
+    active: { label: '進行中の工事', icon: 'site', href: '#/sites', fmt: 'int', foot: '受注〜請求の工事' },
     today: { label: '今日の予定', icon: 'calendar', href: '#/schedule', fmt: 'int', foot: '期限・受注・着工など' },
     drafts: { label: '未対応の見積', icon: 'edit', href: '#/docs/draft', fmt: 'int', foot: '下書きのまま' },
     waiting: { label: '回答待ち', icon: 'clock', href: '#/docs/issued', fmt: 'int', foot: '確定して受注前' },
-    unpaid: { label: '入金確認待ち', icon: 'yen', href: '#/finance', fmt: 'int', foot: '請求済みの現場' },
+    unpaid: { label: '入金確認待ち', icon: 'yen', href: '#/finance', fmt: 'int', foot: '請求済みの工事' },
     overdue: { label: '期限切れの見積', icon: 'bell', href: '#/schedule', fmt: 'int', foot: '再見積・確認が必要', warn: true },
     monthEst: { label: '今月の見積額', icon: 'docs', href: '#/finance', fmt: 'yen', foot: '発行日ベース・税込' },
     monthOrder: { label: '今月の受注額', icon: 'check', href: '#/finance', fmt: 'yen', foot: '受注した見積・税込' },
-    monthPaid: { label: '今月の入金額', icon: 'yen', href: '#/finance', fmt: 'yen', foot: '入金にした現場' },
+    monthPaid: { label: '今月の入金額', icon: 'yen', href: '#/finance', fmt: 'yen', foot: '入金にした工事' },
     margin: { label: '今月の平均粗利率', icon: 'chart', href: '#/finance', fmt: 'pct', foot: '税抜ベース' },
     lowMargin: { label: '粗利の下限割れ', icon: 'bell', href: '#/finance', fmt: 'int', foot: '下書きの見積', warn: true },
     customers: { label: '顧客', icon: 'users', href: '#/clients', fmt: 'int', foot: '登録している顧客' }
@@ -3387,20 +3392,20 @@
     todo: { name: '今日やること', cat: '業務', sizes: ['m', 'l'], icon: 'check', href: '#/sites' },
     quick: { name: 'クイック操作', cat: 'お気に入り', sizes: ['m', 'l'], icon: 'grid' },
     events: { name: '今後の予定', cat: '時間', sizes: ['m', 'l'], icon: 'calendar', href: '#/schedule' },
-    flow: { name: '案件フロー', cat: '案件', sizes: ['l', 'm'], icon: 'site', href: '#/sites' },
+    flow: { name: '工事フロー', cat: '工事', sizes: ['l', 'm'], icon: 'site', href: '#/sites' },
     bars: { name: '月別の見積・受注・入金', cat: 'お金', sizes: ['l', 'm'], icon: 'trend', href: '#/finance' },
     rings: { name: '入金と粗利', cat: 'お金', sizes: ['m', 'l'], icon: 'yen', href: '#/finance' },
     recent: { name: '最近の書類', cat: '見積', sizes: ['m', 'l'], icon: 'docs', href: '#/docs' },
     attention: { name: '注意（要修正・期限切れ）', cat: '注意', sizes: ['m', 'l'], icon: 'bell', href: '#/docs/draft' },
     members: { name: '担当者のファイル', cat: '人員', sizes: ['l', 'm'], icon: 'users' },
-    favorites: { name: 'お気に入りの現場', cat: 'お気に入り', sizes: ['m', 's', 'l'], icon: 'star', href: '#/sites' },
+    favorites: { name: 'お気に入りの工事', cat: 'お気に入り', sizes: ['m', 's', 'l'], icon: 'star', href: '#/sites' },
     usage: { name: 'よく使う機能', cat: 'お気に入り', sizes: ['m', 's'], icon: 'spark' },
     // 桜ミツ版（業務管理の機能を入れたもの）だけ
     today: { name: '今日のボード（工事・現調・再訪問・予定）', cat: '時間', sizes: ['m', 'l', 's'], icon: 'calendar', href: '#/o/cal', link: true },
     salesgo: { name: '営業に出る', cat: '業務', sizes: ['s', 'm'], icon: 'walk', href: '#/o/sales', link: true }
   };
   function linkO() { try { var f = root.OUBI_LINK && root.OUBI_LINK.frame(); return f && f.contentWindow && f.contentWindow.OUBI; } catch (e) { return null; } }
-  var PLANNED_WIDGETS = [['天気・雨予報', '天候', '外部の天気サービスとの連携が必要（第9期）'], ['地図・訪問ルート', '現場', '地図サービスとの連携が必要（第9期）'],
+  var PLANNED_WIDGETS = [['天気・雨予報', '天候', '外部の天気サービスとの連携が必要（第9期）'], ['地図・訪問ルート', '工事', '地図サービスとの連携が必要（第9期）'],
     ['発注・納品待ち', '発注', '資材・発注の機能と一緒に追加（第4期）'], ['出勤状況・作業予定', '人員', '工程・人員の機能と一緒に追加（第4期）']];
   var COLORS = { blue: ['青', '#3b82f6'], teal: ['青緑', '#14b8a6'], violet: ['紫', '#8b5cf6'], amber: ['琥珀', '#f59e0b'], rose: ['桜', '#f472b6'], slate: ['灰', '#94a3b8'] };
 
@@ -3418,10 +3423,10 @@
         w('todo', 'm'), w('quick', 'm'), w('flow', 'l'), w('rings', 'm'), w('kpi', 's', { metric: 'monthOrder' }), w('kpi', 's', { metric: 'margin', color: 'teal' }), w('bars', 'l'), w('members', 'l')];
     }
   }
-  var ROLE_NAMES = { owner: '経営者用', sales: '営業用', site: '現場用', office: '事務用' };
+  var ROLE_NAMES = { owner: '経営者用', sales: '営業用', site: '工事用', office: '事務用' };
   var TIMES = { '': '指定なし', morning: '朝（5〜11時）', day: '昼（11〜17時）', night: '夜（17〜5時）' };
   function timeNow() { var h = new Date().getHours(); return h >= 5 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'day' : 'night'; }
-  function roleOf(m) { var r = (m && m.role) || ''; return /営業/.test(r) ? 'sales' : /現場|職人|工事/.test(r) ? 'site' : /事務|経理/.test(r) ? 'office' : 'owner'; }
+  function roleOf(m) { var r = (m && m.role) || ''; return /営業/.test(r) ? 'sales' : /工事|職人|工事/.test(r) ? 'site' : /事務|経理/.test(r) ? 'office' : 'owner'; }
 
   function home() {
     var S = EE.S, me = U.me(); S.homes = S.homes || {};
@@ -3448,7 +3453,7 @@
   }
 
   /* ---------- 使った回数（よく使う機能） ---------- */
-  var ROUTE_NAMES = { home: 'ホーム', clients: '顧客', sites: '現場', site: '現場ワークスペース', new: '見積を作る', edit: '見積の編集', schedule: 'スケジュール', finance: '経営・会計', docs: '書類', analysis: '分析', settings: '設定' };
+  var ROUTE_NAMES = { home: 'ホーム', clients: '顧客', sites: '工事', site: '工事ワークスペース', new: '見積を作る', edit: '見積の編集', schedule: 'スケジュール', finance: '経営・会計', docs: '書類', analysis: '分析', settings: '設定' };
   var ROUTE_HREF = { clients: '#/clients', sites: '#/sites', new: '#/new', schedule: '#/schedule', finance: '#/finance', docs: '#/docs', analysis: '#/analysis', settings: '#/settings/items' };
   function track(hash) {
     var k = (hash || '').replace(/^#\/?/, '').split(/[/?]/)[0] || 'home';
@@ -3491,7 +3496,7 @@
         }).join('') : '<p class="hint">今日やることはありません</p>') + '</div>';
       }
       case 'quick': {
-        var Q = [['見積', '#/new', 'calc'], ['顧客', '#/clients', 'users'], ['現場', '#/sites', 'site'], ['予定', '#/schedule', 'calendar'], ['計算式', '#/settings/formulas', 'calc'], ['書類', '#/docs', 'docs'], ['検索', '#palette', 'search'], ['その他', '#/settings/features', 'grid']];
+        var Q = [['見積', '#/new', 'calc'], ['顧客', '#/clients', 'users'], ['工事', '#/sites', 'site'], ['予定', '#/schedule', 'calendar'], ['計算式', '#/settings/formulas', 'calc'], ['書類', '#/docs', 'docs'], ['検索', '#palette', 'search'], ['その他', '#/settings/features', 'grid']];
         return '<div class="w-quick">' + Q.map(function (q) { return '<a href="' + q[1] + '"' + (q[1] === '#palette' ? ' data-palette' : '') + '>' + I[q[2]] + '<span>' + q[0] + '</span></a>'; }).join('') + '</div>';
       }
       case 'events': {
@@ -3519,7 +3524,7 @@
       case 'favorites': {
         var pins = (EE.features.settings().pins || []).map(function (id) { return U.findProject(id); }).filter(Boolean);
         return '<div class="w-list">' + (pins.length ? pins.map(function (p) { return '<a class="w-item" href="#/site/' + p.id + '">' + I.star + '<span><b>' + esc(p.name) + '</b><small>' + esc((EE.data.STAGES[EE.data.stageIndex(p.stage || 'estimate')] || {}).label || '') + '</small></span></a>'; }).join('') :
-          '<p class="hint">現場ワークスペースの ☆ を押すと、ここに並びます</p>') + '</div>';
+          '<p class="hint">工事ワークスペースの ☆ を押すと、ここに並びます</p>') + '</div>';
       }
       case 'today': {
         var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : null;
@@ -3809,13 +3814,13 @@
           '<select class="input" id="f-sort" style="width:auto">' +
             U.opt('issue-desc', '発行日が新しい順', F.sort) + U.opt('issue-asc', '発行日が古い順', F.sort) + U.opt('amount-desc', '金額が大きい順', F.sort) + U.opt('valid-asc', '有効期限が近い順', F.sort) +
           '</select>' +
-          '<button class="btn" id="d-print" disabled>' + I.pdf + '選んだ書類をまとめてPDF</button>' +
-          '<a class="btn primary" href="#/new">' + I.plus + '新規見積</a>' +
+          '<button class="btn" id="d-print" disabled>' + I.pdf + '選んだ書類をまとめてPDFにする</button>' +
+          '<a class="btn primary" href="#/new">' + I.plus + '見積を作る</a>' +
         '</div>' +
         '<div class="toolbar" style="margin-bottom:6px">' +
           '<span class="label">取引年月日</span><input class="input" type="date" id="f-from" value="' + F.from + '" style="width:160px"><span class="hint">〜</span><input class="input" type="date" id="f-to" value="' + F.to + '" style="width:160px">' +
           '<span class="label" style="margin-left:10px">取引金額</span><input class="input num" type="number" id="f-min" placeholder="下限" value="' + F.min + '" style="width:130px"><span class="hint">〜</span><input class="input num" type="number" id="f-max" placeholder="上限" value="' + F.max + '" style="width:130px">' +
-          '<button class="btn ghost sm" id="f-clear">条件をクリア</button>' +
+          '<button class="btn ghost sm" id="f-clear">条件を消す</button>' +
         '</div>' +
       '</div>' +
       '<div id="doc-table" style="padding:0 8px 8px">' + tableHTML() + '</div></div></div>' +
@@ -3854,7 +3859,7 @@
           '<div class="sum-row"><span>発行日</span><span class="num">' + U.jdate(d.issueDate) + '</span></div>' +
           '<div class="sum-row"><span>有効期限</span><span>' + (d.status === 'issued' ? '<span class="num">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</span></div>' +
           '<div class="sum-row"><span>担当</span><span>' + (m ? '<span class="owner-chip">' + U.avatar(m, 20) + esc(m.name) + '</span>' : '<span class="hint">未割り当て</span>') + '</span></div>' +
-          (pj ? '<div class="sum-row"><span>現場</span><a class="site-link" href="#/site/' + pj.id + '">' + esc(pj.name) + '</a></div>' : '') +
+          (pj ? '<div class="sum-row"><span>工事</span><a class="site-link" href="#/site/' + pj.id + '">' + esc(pj.name) + '</a></div>' : '') +
           '<div style="display:flex;gap:8px;margin-top:14px"><a class="btn sm primary" href="#/edit/' + d.id + '">' + I.edit + '開く</a><button class="btn sm" data-act="flip">' + I.refresh + '裏を見る</button></div>' +
         '</div><div class="flip-hint">カードをクリックすると裏返して、明細の要点と履歴を表示します</div></div>' +
       '<div class="flip-face flip-back panel"><div class="panel-h"><h3>明細の要点</h3><span class="sub">金額の大きい順</span><div class="spacer"></div><span class="hint">' + d.lines.length + '行</span></div>' +
@@ -3917,7 +3922,7 @@
     });
     function selCount() {
       var n = Object.keys(SEL).filter(function (k) { return SEL[k] && U.findDoc(k); }).length;
-      var b = document.getElementById('d-print'); b.disabled = !n; b.innerHTML = I.pdf + (n ? n + '件をまとめてPDF' : '選んだ書類をまとめてPDF');
+      var b = document.getElementById('d-print'); b.disabled = !n; b.innerHTML = I.pdf + (n ? n + '件をまとめてPDFにする' : '選んだ書類をまとめてPDFにする');
     }
     selCount();
     view.addEventListener('change', function (e) {
@@ -4099,18 +4104,18 @@
           '<div class="panel-b"><div class="form-grid">' +
             '<div class="field c6"><label class="req">宛先（顧客）</label><div style="display:flex;gap:8px"><select class="input" data-f="customerId"' + dis + '>' + custOpts + '</select>' +
               (lk ? '' : '<button class="btn icon" data-act="quick-customer" title="顧客を新規登録">' + I.plus + '</button>') + '</div></div>' +
-            '<div class="field c6"><label>案件</label><select class="input" data-f="projectId"' + dis + '>' + projectOptions() + '</select></div>' +
+            '<div class="field c6"><label>工事</label><select class="input" data-f="projectId"' + dis + '>' + projectOptions() + '</select></div>' +
             '<div class="field c4"><label>担当者</label><select class="input" data-f="ownerId"' + dis + '>' + U.memberOptions(d.ownerId || '', '（未割り当て）') + '</select></div>' +
             '<div class="field c8"><label class="req">件名</label><input class="input" data-f="title" value="' + esc(d.title) + '" placeholder="例：〇〇様邸 浴室改修工事"' + dis + '></div>' +
-            '<div class="field c4"><label>パターン名（同じ現場の別案）</label><input class="input" data-f="patternLabel" list="pattern-list" value="' + esc(d.patternLabel || '') + '" placeholder="例：A案、グレードアップ案"' + dis + '>' +
+            '<div class="field c4"><label>パターン名（同じ工事の別案）</label><input class="input" data-f="patternLabel" list="pattern-list" value="' + esc(d.patternLabel || '') + '" placeholder="例：A案、グレードアップ案"' + dis + '>' +
               '<datalist id="pattern-list"><option>A案</option><option>B案</option><option>C案</option><option>標準プラン</option><option>グレードアップ案</option><option>お値打ち案</option></datalist></div>' +
-            '<div class="field c8"><label>この現場の見積</label><div id="site-hint" class="site-hint"></div></div>' +
+            '<div class="field c8"><label>この工事の見積</label><div id="site-hint" class="site-hint"></div></div>' +
             '<div class="field c3"><label class="req">発行日</label><input class="input" type="date" data-f="issueDate" value="' + esc(d.issueDate) + '"' + dis + '></div>' +
             '<div class="field c3"><label class="req">有効期限</label><input class="input" type="date" data-f="validUntil" value="' + esc(d.validUntil) + '"' + dis + '></div>' +
             '<div class="field c6"><label>有効期限（発行日から）</label><div class="seg" id="valid-quick">' +
               [14, 30, 60, 90].map(function (n) { return '<button data-days="' + n + '"' + dis + '>+' + n + '日</button>'; }).join('') + '</div></div>' +
             '<div class="field c4"><label>受渡期日</label><input class="input" data-f="deliveryTerm" value="' + esc(d.deliveryTerm) + '"' + dis + '></div>' +
-            '<div class="field c4"><label>受渡場所</label><input class="input" data-f="deliveryPlace" value="' + esc(d.deliveryPlace) + '" placeholder="空欄なら案件の現場住所"' + dis + '></div>' +
+            '<div class="field c4"><label>受渡場所</label><input class="input" data-f="deliveryPlace" value="' + esc(d.deliveryPlace) + '" placeholder="空欄なら工事の現場住所"' + dis + '></div>' +
             '<div class="field c4"><label style="display:flex;justify-content:space-between">支払条件' + (lk ? '' : '<a href="#" data-act="snip" data-target="paymentTerms" style="color:var(--accent-2)">定型文</a>') + '</label><input class="input" data-f="paymentTerms" value="' + esc(d.paymentTerms) + '"' + dis + '></div>' +
             '<div class="field c12"><label style="display:flex;justify-content:space-between">備考・条件（PDFに載ります）' + (lk ? '' : '<a href="#" data-act="snip" data-target="notes" style="color:var(--accent-2)">定型文を挿入</a>') + '</label><textarea class="input" data-f="notes" rows="2"' + dis + '>' + esc(d.notes) + '</textarea></div>' +
           '</div></div></section>' +
@@ -4133,9 +4138,9 @@
                 return ps.length ? '<optgroup label="' + esc(c.name) + '">' + ps.map(function (p) { return U.opt(p.id, p.name + '（' + p.lines.filter(function (l) { return !l.optional; }).length + '行）', ''); }).join('') + '</optgroup>' : '';
               }).join('') + S.packages.filter(function (p) { return !(S.categories || []).some(function (c) { return c.id === p.category; }); }).map(function (p) { return U.opt(p.id, p.name, ''); }).join('') + '</select>' +
               '<div class="grow"></div>' +
-              '<button class="btn sm" data-act="add-adj" data-type="overhead">' + I.plus + '諸経費</button>' +
-              '<button class="btn sm" data-act="add-adj" data-type="discount">' + I.plus + '値引き</button>' +
-              '<button class="btn sm" data-act="add-adj" data-type="roundoff">' + I.plus + '端数調整</button>' +
+              '<button class="btn sm" data-act="add-adj" data-type="overhead">' + I.plus + '諸経費を足す</button>' +
+              '<button class="btn sm" data-act="add-adj" data-type="discount">' + I.plus + '値引きを足す</button>' +
+              '<button class="btn sm" data-act="add-adj" data-type="roundoff">' + I.plus + '端数を調整する</button>' +
             '</div>' +
             '<div class="toolbar" id="bulk-bar" hidden style="margin-bottom:10px;padding:8px 10px;border:1px solid rgba(77,141,255,.3);border-radius:10px;background:rgba(77,141,255,.07)">' +
               '<b id="bulk-n">0行を選択</b><div class="grow"></div>' +
@@ -4156,9 +4161,9 @@
       title: ED.isNew ? '新規見積' : (lk ? '見積書（発行済み）' : '見積書の編集'),
       crumb: d.no || '新規',
       actions: lk
-        ? '<button class="btn" data-act="duplicate">' + I.copy + '複製して新規</button><button class="btn primary" data-act="pdf">' + I.pdf + 'PDF出力</button>'
+        ? '<button class="btn" data-act="duplicate">' + I.copy + '複製して新しく作る</button><button class="btn primary" data-act="pdf">' + I.pdf + 'PDFを出す</button>'
         : '<span id="save-state" class="hint">' + (ED.dirty ? '<span class="dirty-dot"></span>未保存の変更' : (ED.isNew ? '' : '<span class="saved-mark">保存済み</span>')) + '</span>' +
-          '<button class="btn" data-act="save" id="btn-save">' + I.save + '保存 <kbd>Ctrl S</kbd></button>',
+          '<button class="btn" data-act="save" id="btn-save">' + I.save + '保存する <kbd>Ctrl S</kbd></button>',
       html: html,
       mount: mount,
       guard: function () { return ED && ED.dirty; },
@@ -4166,18 +4171,18 @@
     };
   }
 
-  /** 同じ現場（案件）の見積とパターンを表示し、別パターン作成・比較へつなぐ */
+  /** 同じ工事の見積とパターンを表示し、別パターン作成・比較へつなぐ */
   function renderSiteHint() {
     var el = document.getElementById('site-hint'); if (!el) return;
     var d = ED.doc;
-    if (!d.projectId || !U.findProject(d.projectId)) { el.innerHTML = '<span class="hint">案件（現場）を選ぶと、同じ現場の見積がここに並びます</span>'; return; }
+    if (!d.projectId || !U.findProject(d.projectId)) { el.innerHTML = '<span class="hint">工事を選ぶと、同じ工事の見積がここに並びます</span>'; return; }
     var sib = EE.views.site.docsOf(d.projectId).filter(function (x) { return x.id !== d.id; });
     var saved = !!U.findDoc(d.id);
     el.innerHTML = '<span class="site-chips">' + (sib.length ? sib.map(function (x) {
         return '<a class="badge pattern" href="#/edit/' + x.id + '" title="' + esc(x.no + ' ' + (x.title || '')) + '">' + esc(x.patternLabel || x.no) + '</a>'; }).join('') : '<span class="hint">ほかの見積はありません</span>') + '</span>' +
       (EE.linkCompare ? (sib.length ? '<button class="btn ghost sm" data-act="cmp-sheet" data-pid="' + esc(d.projectId) + '">' + I.docs + 'お客様向けの比較表</button>' : '')
-        : '<a class="btn ghost sm" href="#/site/' + d.projectId + '">' + I.docs + '現場ページで比較</a>') +
-      '<button class="btn sm" data-act="new-pattern"' + (saved ? '' : ' disabled title="一度保存すると、この見積をもとに別パターンを作れます"') + '>' + I.copy + 'この見積をもとに別パターン</button>';
+        : '<a class="btn ghost sm" href="#/site/' + d.projectId + '">' + I.docs + '工事ページで比較</a>') +
+      '<button class="btn sm" data-act="new-pattern"' + (saved ? '' : ' disabled title="一度保存すると、この見積をもとに別パターンを作れます"') + '>' + I.copy + 'この見積をもとに別パターンを作る</button>';
   }
 
   function projectOptions() {
@@ -4206,14 +4211,14 @@
       '<section class="panel" data-st id="sec-check"><div class="panel-h"><h2>送信前チェック</h2><div class="spacer"></div><div class="check-sum" id="check-sum"></div></div>' +
         '<div class="panel-b"><div class="checks" id="check-mini"></div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">' +
-          '<button class="btn" data-act="check">' + I.check + 'チェック一覧</button>' +
-          '<button class="btn primary" data-act="pdf">' + I.pdf + 'PDF出力</button>' +
+          '<button class="btn" data-act="check">' + I.check + 'チェックを見る</button>' +
+          '<button class="btn primary" data-act="pdf">' + I.pdf + 'PDFを出す</button>' +
         '</div>' +
-        (lk ? '' : '<button class="btn ghost" style="width:100%;margin-top:8px" data-act="issue">' + I.stamp + '発行確定（以後は編集不可）</button>') +
+        (lk ? '' : '<button class="btn ghost" style="width:100%;margin-top:8px" data-act="issue">' + I.stamp + '発行を確定する（以後は編集できません）</button>') +
       '</div></section>';
   }
 
-  var CALC_ICON = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.2" width="14" height="17.6" rx="3.4"/><rect x="8.2" y="6.4" width="7.6" height="3.4" rx="1.4"/><path d="M8.6 13.4h.1M12 13.4h.1M15.4 13.4h.1M8.6 16.8h.1M12 16.8h.1M15.4 16.8h.1"/></svg>';
+  var CALC_ICON = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.2" width="14" height="17.6" rx="3.4"/><rect x="8.2" y="6.4" width="7.6" height="3.4" rx="1.4"/><path d="M8.6 13.4h.1M12 13.4h.1M15.4 13.4h.1M8.6 16.8h.1M12 16.8h.1M15.4 16.8h.1"/></svg>';
 
   function lineRowHTML(l, i, r) {
     var lk = locked();
@@ -4374,7 +4379,7 @@
     var ic = c.level === 'error' ? '!' : c.level === 'warn' ? '!' : 'i';
     return '<div class="check ' + c.level + '" data-ci="' + (i == null ? '' : i) + '"><span class="ic">' + ic + '</span><div><div class="t">' + esc(c.title) + '</div>' +
       (c.detail ? '<div class="d">' + esc(c.detail) + '</div>' : '') + '</div>' +
-      '<button class="btn ghost sm" data-goto=\'' + esc(JSON.stringify(c.target)) + '\'>該当箇所</button></div>';
+      '<button class="btn ghost sm" data-goto=\'' + esc(JSON.stringify(c.target)) + '\'>該当箇所を見る</button></div>';
   }
 
   function highlightFields(list) {
@@ -5106,12 +5111,12 @@
     { key: 'voice', title: '音声から', desc: 'スマホやPCの音声入力で話した内容を文字にして、文章と同じように明細にします', icon: 'mic' },
     { key: 'pdf', title: 'PDFから', desc: '他社や過去の見積書・請求書のPDFを読み取り、自社の見積書に変換します', icon: I.file },
     { key: 'photo', title: '写真から', desc: '紙の見積書や手書きメモを撮影し、文字を読み取って明細にします', icon: 'camera' },
-    { key: 'past', title: '過去の見積から', desc: '似た案件の見積を探して、必要な明細だけ流用します', icon: I.copy },
+    { key: 'past', title: '過去の見積から', desc: '似た工事の見積を探して、必要な明細だけ流用します', icon: I.copy },
     { key: 'template', title: 'テンプレートから', desc: '工事の種類を選び、標準の明細から必要なものに印を付けます', icon: I.box },
     { key: 'edit', title: '通常入力', desc: '空の見積書から、マスタを検索して明細を追加します', icon: I.plus }
   ];
-  var MIC = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="8.6" y="3.2" width="6.8" height="11" rx="3.4"/><path d="M5.5 11.2a6.5 6.5 0 0 0 13 0M12 17.7v2.8"/></svg>';
-  var CAM = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7.5h.8a1.5 1.5 0 0 0 1.3-.8l.6-1.1a1.5 1.5 0 0 1 1.3-.8h3a1.5 1.5 0 0 1 1.3.8l.6 1.1a1.5 1.5 0 0 0 1.3.8h.8a3 3 0 0 1 3 3V16a3 3 0 0 1-3 3h-11a3 3 0 0 1-3-3v-5.5a3 3 0 0 1 3-3z"/><circle cx="12" cy="13" r="3.2"/></svg>';
+  var MIC = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="8.6" y="3.2" width="6.8" height="11" rx="3.4"/><path d="M5.5 11.2a6.5 6.5 0 0 0 13 0M12 17.7v2.8"/></svg>';
+  var CAM = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6.5 7.5h.8a1.5 1.5 0 0 0 1.3-.8l.6-1.1a1.5 1.5 0 0 1 1.3-.8h3a1.5 1.5 0 0 1 1.3.8l.6 1.1a1.5 1.5 0 0 0 1.3.8h.8a3 3 0 0 1 3 3V16a3 3 0 0 1-3 3h-11a3 3 0 0 1-3-3v-5.5a3 3 0 0 1 3-3z"/><circle cx="12" cy="13" r="3.2"/></svg>';
   function icon(m) { return m.icon === 'mic' ? MIC : m.icon === 'camera' ? CAM : m.icon; }
 
   function catName(id) { var c = (EE.S.categories || []).filter(function (x) { return x.id === id; })[0]; return c ? c.name : ''; }
@@ -5304,7 +5309,7 @@
           return '<button class="check info" data-tpl="' + p.id + '" style="grid-template-columns:22px 1fr;text-align:left;cursor:pointer;color:inherit;' + (tplSel === p.id ? 'border-color:var(--accent)' : '') + '"><span class="ic">' + p.lines.length + '</span>' +
             '<div><div class="t">' + esc(p.name) + '</div><div class="d">' + esc(catName(p.category)) + (p.note ? '　' + esc(p.note) : '') + '</div></div></button>';
         }).join('') : '<div class="empty">テンプレートがありません</div>') + '</div>' +
-        '<a class="btn ghost" style="width:100%;margin-top:10px" href="#/settings/packages">' + I.edit + 'テンプレートを編集</a></div></section>' +
+        '<a class="btn ghost" style="width:100%;margin-top:10px" href="#/settings/packages">' + I.edit + 'テンプレートを編集する</a></div></section>' +
         '<section class="panel" data-st><div class="panel-b" id="t-detail"><div class="empty">' + I.box + '左からテンプレートを選んでください</div></div></section></div>';
     return { title: 'テンプレートから見積もり作成', crumb: 'かんたん見積もり作成', html: html, mount: mountTemplate };
   }
@@ -6151,13 +6156,13 @@
 
 
 /* ---- views/clients.js ---- */
-/* 顧客・案件 */
+/* 顧客・工事 */
 (function (root) {
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var sel = null, q = '';
 
-  /** 顧客ごとの直近の案件（書類の発行日が新しい順） */
+  /** 顧客ごとの直近の工事（書類の発行日が新しい順） */
   function recentProject(c) {
     var best = null, bd = '';
     EE.S.projects.forEach(function (p) {
@@ -6184,7 +6189,7 @@
         '<div class="field c6"><label>メール</label><input class="input" name="email" value="' + esc(c.email) + '"></div>' +
         '<div class="field c12"><label>メモ（一覧にも出ます）</label><textarea class="input" name="memo" placeholder="例：見積は紙でも郵送希望。支払いは月末締め翌月末">' + esc(c.memo || '') + '</textarea></div>' +
       '</div>',
-      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         var kind = el.querySelector('[name=kind]'), hon = el.querySelector('[name=honorific]');
         kind.onchange = function () { hon.value = kind.value === 'corp' ? '御中' : '様'; EE.fx.pulse(hon); };
@@ -6207,14 +6212,14 @@
     var isNew = !p;
     p = p || { id: EE.data.uid('prj'), customerId: customerId || '', name: '', site: '', note: '', ownerId: EE.S.currentMemberId || '' };
     U.modal({
-      title: isNew ? '案件を登録' : '案件を編集',
+      title: isNew ? '工事を登録' : '工事を編集',
       body: '<div class="form-grid">' +
         '<div class="field c12"><label class="req">顧客</label><select class="input" name="customerId">' + EE.S.customers.map(function (c) { return U.opt(c.id, c.name, p.customerId); }).join('') + '</select></div>' +
-        '<div class="field c12"><label class="req">案件名</label><input class="input" name="name" value="' + esc(p.name) + '" autofocus></div>' +
-        '<div class="field c12"><label>担当者（この現場の担当）</label><select class="input" name="ownerId">' + U.memberOptions(p.ownerId || '', '（未割り当て）') + '</select></div>' +
+        '<div class="field c12"><label class="req">工事名</label><input class="input" name="name" value="' + esc(p.name) + '" autofocus></div>' +
+        '<div class="field c12"><label>担当者（この工事の担当）</label><select class="input" name="ownerId">' + U.memberOptions(p.ownerId || '', '（未割り当て）') + '</select></div>' +
         '<div class="field c12"><label>現場住所（工事場所）</label><input class="input" name="site" value="' + esc(p.site) + '"></div>' +
         '<div class="field c12"><label>メモ</label><textarea class="input" name="note">' + esc(p.note) + '</textarea></div></div>',
-      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         el.querySelector('[data-c]').onclick = function () { api.close(); };
         el.querySelector('[data-s]').onclick = function () {
@@ -6223,7 +6228,7 @@
           Object.assign(p, v);
           if (isNew) EE.S.projects.push(p);
           U.commit(); api.close();
-          EE.fx.toast(isNew ? '案件を登録しました' : '保存しました');
+          EE.fx.toast(isNew ? '工事を登録しました' : '保存しました');
           if (onSaved) onSaved(p);
         };
       }
@@ -6251,23 +6256,23 @@
     var pjs = EE.S.projects.filter(function (p) { return p.customerId === c.id; });
     var docs = EE.S.documents.filter(function (d) { return d.customerId === c.id; }).sort(function (a, b) { return (b.issueDate || '').localeCompare(a.issueDate || ''); });
     return '<div class="panel-h" style="padding:0 0 12px"><h2 style="font-size:17px">' + esc(c.name) + ' <span class="muted">' + esc(c.honorific) + '</span></h2><div class="spacer"></div>' +
-        '<button class="btn sm" data-act="edit-c">' + I.edit + '編集</button>' +
+        '<button class="btn sm" data-act="edit-c">' + I.edit + '編集する</button>' +
         (EE.host || EE.link ? '' : '<button class="btn sm danger" data-act="del-c">' + I.trash + '</button>') +   // 業務管理の中では、顧客は工事の記録なので消さない
 
-        '<button class="btn sm primary" data-act="new-doc">' + I.plus + 'この顧客で見積</button></div>' +
+        '<button class="btn sm primary" data-act="new-doc">' + I.plus + 'この顧客で見積を作る</button></div>' +
       '<div class="form-grid" style="margin-bottom:18px">' +
         [['担当者', c.contact], ['住所', (c.zip ? '〒' + c.zip + ' ' : '') + c.address], ['電話', c.tel], ['メール', c.email]].map(function (x) {
           return '<div class="field c6"><span class="label">' + x[0] + '</span><span>' + (esc(x[1]) || '<span class="hint">—</span>') + '</span></div>';
         }).join('') +
         '<div class="field c12"><span class="label">メモ</span><span style="white-space:pre-wrap">' + (esc(c.memo || '') || '<span class="hint">—（編集から書けます）</span>') + '</span></div></div>' +
-      '<div class="panel-h" style="padding:0 0 8px"><h3>案件</h3><div class="spacer"></div><button class="btn sm" data-act="new-p">' + I.plus + '案件を追加</button></div>' +
+      '<div class="panel-h" style="padding:0 0 8px"><h3>工事</h3><div class="spacer"></div><button class="btn sm" data-act="new-p">' + I.plus + '工事を追加</button></div>' +
       (pjs.length ? '<table class="table" style="margin-bottom:18px"><tbody>' + pjs.map(function (p) {
         var pm = U.findMember(p.ownerId);
         var pc = EE.views.site.docsOf(p.id).length;
         return '<tr class="clickable" data-href="#/site/' + p.id + '" data-st><td>' + esc(p.name) + (pc ? ' <span class="badge">見積 ' + pc + '件</span>' : '') + '<span class="cell-sub">' + esc(p.site || '') + (pm ? '　担当：' + esc(pm.name) : '') + '</span></td><td class="r"><div class="row-actions">' +
-          '<button class="btn ghost sm" data-act="p-doc" data-pid="' + p.id + '">' + I.plus + '見積</button>' +
+          '<button class="btn ghost sm" data-act="p-doc" data-pid="' + p.id + '">' + I.plus + '見積を作る</button>' +
           '<button class="btn ghost icon sm" data-act="edit-p" data-pid="' + p.id + '">' + I.edit + '</button></div></td></tr>';
-      }).join('') + '</tbody></table>' : '<p class="hint" style="margin:0 0 18px">案件はまだありません</p>') +
+      }).join('') + '</tbody></table>' : '<p class="hint" style="margin:0 0 18px">工事はまだありません</p>') +
       '<div class="panel-h" style="padding:0 0 8px"><h3>この顧客の書類</h3></div>' +
       (docs.length ? '<table class="table"><tbody>' + docs.map(function (d) {
         return '<tr class="clickable" data-href="#/edit/' + d.id + '" data-st><td class="num">' + esc(d.no) + '</td><td>' + esc(d.title) + '</td><td class="num muted">' + U.jdate(d.issueDate) + '</td><td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td></tr>';
@@ -6278,7 +6283,7 @@
     if (!sel && EE.S.customers[0]) sel = EE.S.customers[0].id;
     var html = '<div class="grid" style="grid-template-columns:minmax(280px,380px) minmax(0,1fr)">' +
       '<section class="panel" data-st><div class="panel-h"><h2>顧客</h2><span class="sub">' + EE.S.customers.length + '件</span><div class="spacer"></div>' +
-        '<button class="btn sm primary" data-act="new-c">' + I.plus + '登録</button></div>' +
+        '<button class="btn sm primary" data-act="new-c">' + I.plus + '登録する</button></div>' +
         '<div class="panel-b"><div class="search" style="margin-bottom:10px">' + I.search + '<input class="input" id="c-q" placeholder="名称・住所で検索" value="' + esc(q) + '"></div><div id="c-list">' + listHTML() + '</div></div></section>' +
       '<section class="panel" data-st><div class="panel-b" id="c-detail">' + detailHTML() + '</div></section></div>';
     return { title: '顧客', crumb: '問い合わせ・営業', html: html, mount: mount };
@@ -6307,7 +6312,7 @@
           if (EE.S.documents.some(function (d) { return d.customerId === c.id; })) {
             EE.fx.toast('書類がある顧客は削除できません（書類の宛先が消えるため）', { warn: true, ms: 3500 }); return;
           }
-          if (!(await U.confirmBox('「' + c.name + '」と、その案件を削除しますか？', '削除する', { danger: true }))) return;
+          if (!(await U.confirmBox('「' + c.name + '」と、その工事を削除しますか？', '削除する', { danger: true }))) return;
           EE.S.customers.splice(EE.S.customers.indexOf(c), 1);
           EE.S.projects = EE.S.projects.filter(function (p) { return p.customerId !== c.id; });
           U.commit(); sel = null; EE.app.rerender(); break;
@@ -6327,8 +6332,8 @@
 /* ---- views/folders.js ---- */
 /*
  * 担当者ごとのファイル
- * - ホームに担当者の人数分のフォルダを並べ、開くとその人の担当現場と書類がまとめて見られる
- * - 担当現場 = 案件の担当者がその人の現場 ＋ その人が担当の書類がある現場
+ * - ホームに担当者の人数分のフォルダを並べ、開くとその人の担当工事と書類がまとめて見られる
+ * - 担当工事 = 工事の担当者がその人の工事 ＋ その人が担当の書類がある工事
  * - 担当者（作成者）の名簿の登録・編集
  */
 (function (root) {
@@ -6377,7 +6382,7 @@
       var st = statsFor(m.id);
       return '<a class="folder-tile" href="#/folder/' + m.id + '" title="' + esc(m.name) + 'のファイルを開く">' + folderIcon(m, st.docs.length) +
         '<b>' + esc(m.name) + (m.id === me.id ? ' <span class="badge blue">自分</span>' : '') + '</b>' +
-        '<small>' + esc(m.role || '') + '　現場 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</small>' +
+        '<small>' + esc(m.role || '') + '　工事 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</small>' +
         (st.soon ? '<span class="badge warn fold-flag">期限間近 ' + st.soon + '</span>' : st.drafts ? '<span class="badge fold-flag">下書き ' + st.drafts + '</span>' : '') + '</a>';
     });
     var none = statsFor(NONE);
@@ -6385,11 +6390,11 @@
     // 業務管理の中では、社員は業務管理の「社員一覧」で増やす
     if (!EE.host && !EE.link) tiles.push('<a class="folder-tile add" href="#/settings/members" title="担当者を追加">' +
       '<span class="fold-add">' + I.plus + '</span><b>担当者を追加</b><small>設定 → 担当者</small></a>');
-    return '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>担当者のファイル</h2><span class="sub">担当者ごとの現場と書類。クリックでいつでも開けます</span></div>' +
+    return '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>担当者のファイル</h2><span class="sub">担当者ごとの工事と書類。クリックでいつでも開けます</span></div>' +
       '<div class="panel-b"><div class="folder-grid">' + tiles.join('') + '</div></div></section>';
   }
 
-  /** フォルダの中身：担当現場ごとの書類 */
+  /** フォルダの中身：担当工事ごとの書類 */
   function render(id) {
     var m = id === NONE ? null : U.findMember(id);
     if (id !== NONE && !m) return { title: '見つかりません', html: '<div class="panel panel-b empty">担当者が見つかりません。</div>' };
@@ -6411,23 +6416,23 @@
       var c = U.findCustomer(p.customerId) || {};
       var list = docsBy[p.id] || [];
       var pOwner = p.ownerId && U.findMember(p.ownerId);
-      var note = pOwner && pOwner.id !== id ? '<span class="badge">現場の担当：' + esc(pOwner.name) + '</span>' : '';
-      return '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.home + '</span><h3><a href="#/site/' + p.id + '" class="site-link">' + esc(p.name) + '</a></h3><div class="spacer"></div>' + note + '<a class="btn ghost sm" href="#/site/' + p.id + '">現場ページ</a></div>' +
-        '<div class="panel-b"><div class="hint" style="margin-bottom:10px">' + esc(c.name || '') + ' ' + esc(c.honorific || '') + (p.site ? '　現場：' + esc(p.site) : '') + '</div>' +
+      var note = pOwner && pOwner.id !== id ? '<span class="badge">工事の担当：' + esc(pOwner.name) + '</span>' : '';
+      return '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.home + '</span><h3><a href="#/site/' + p.id + '" class="site-link">' + esc(p.name) + '</a></h3><div class="spacer"></div>' + note + '<a class="btn ghost sm" href="#/site/' + p.id + '">工事ページ</a></div>' +
+        '<div class="panel-b"><div class="hint" style="margin-bottom:10px">' + esc(c.name || '') + ' ' + esc(c.honorific || '') + (p.site ? '　工事：' + esc(p.site) : '') + '</div>' +
         (list.length ? '<table class="table"><tbody>' + docRows(list) + '</tbody></table>' : '<p class="hint">まだ書類はありません</p>') +
-        '<div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn sm" data-new-site="' + p.id + '">' + I.plus + 'この現場で見積を作る</button></div></div></section>';
+        '<div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn sm" data-new-site="' + p.id + '">' + I.plus + 'この工事で見積を作る</button></div></div></section>';
     }).join('');
     if (docsBy._none) {
-      cards += '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.file + '</span><h3>現場の登録がない書類</h3></div><div class="panel-b">' +
+      cards += '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.file + '</span><h3>工事の登録がない書類</h3></div><div class="panel-b">' +
         '<table class="table"><tbody>' + docRows(docsBy._none) + '</tbody></table>' +
-        '<p class="hint" style="margin:10px 0 0">見積の「案件」を選ぶと、ここから現場ごとのまとまりに移ります。</p></div></section>';
+        '<p class="hint" style="margin:10px 0 0">見積の「工事」を選ぶと、ここから工事ごとのまとまりに移ります。</p></div></section>';
     }
     var head = '<section class="panel" data-st><div class="panel-b folder-head">' +
         (m ? U.avatar(m, 56) : '<span class="avatar" style="--hue:220;width:56px;height:56px;filter:grayscale(1)">？</span>') +
         '<div style="flex:1;min-width:200px"><div style="font-size:20px;font-weight:650">' + esc(m ? m.name : '未割り当て') + (m && m.id === U.me().id ? ' <span class="badge blue">自分</span>' : '') + '</div>' +
           '<div class="hint">' + esc(m ? (m.role || '') : '担当者が決まっていない書類です。見積の「担当者」を選ぶと、その人のファイルに移ります') + '</div></div>' +
         '<div class="folder-stats">' +
-          '<div><small>担当現場</small><b class="num" data-count="' + st.projectIds.length + '" data-format="int">0</b></div>' +
+          '<div><small>担当工事</small><b class="num" data-count="' + st.projectIds.length + '" data-format="int">0</b></div>' +
           '<div><small>書類</small><b class="num" data-count="' + st.docs.length + '" data-format="int">0</b></div>' +
           '<div><small>下書き</small><b class="num" data-count="' + st.drafts + '" data-format="int">0</b></div>' +
           '<div><small>今月の見積（税込）</small><b class="num" data-count="' + st.month + '" data-format="yen">¥0</b></div>' +
@@ -6437,7 +6442,7 @@
         (m ? '<button class="btn" data-act="edit-member">' + I.edit + '担当者の情報</button>' : '') +
         '<button class="btn" data-act="docs-list">' + I.docs + '書類一覧で見る</button>' +
         '<button class="btn primary" data-act="new-doc">' + I.plus + (m ? esc(m.name) + 'の担当で見積を作る' : '見積を作る') + '</button></div>' +
-      (cards ? '<div class="site-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'まだ担当の現場・書類はありません</div></section>');
+      (cards ? '<div class="site-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'まだ担当の工事・書類はありません</div></section>');
     return {
       title: (m ? m.name : '未割り当て') + 'のファイル', crumb: '担当者のファイル', html: html,
       mount: function (view) {
@@ -6463,13 +6468,13 @@
     U.modal({
       title: isNew ? '担当者を追加' : '担当者の情報',
       body: '<div class="form-grid"><div class="field c6"><label class="req">名前</label><input class="input" name="name" value="' + esc(d.name) + '" placeholder="例：桜井 美和" autofocus></div>' +
-        '<div class="field c6"><label>役割</label><input class="input" name="role" value="' + esc(d.role || '') + '" placeholder="例：営業、事務、現場管理"></div>' +
+        '<div class="field c6"><label>役割</label><input class="input" name="role" value="' + esc(d.role || '') + '" placeholder="例：営業、事務、工事管理"></div>' +
         '<div class="field c12"><label>アイコンとフォルダの色</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + HUES.map(function (h) {
           return '<label class="hue-pick"><input type="radio" name="hue" value="' + h + '"' + (d.hue === h ? ' checked' : '') + '>' + U.avatar({ name: d.name || '？', hue: h }) + '</label>'; }).join('') + '</div></div></div>' +
-        (st ? '<p class="hint" style="margin-top:12px">担当：現場 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</p>' : '') +
+        (st ? '<p class="hint" style="margin-top:12px">担当：工事 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</p>' : '') +
         '<p class="hint">この版はログインのない1台用です。担当者は「誰が作った・担当している書類か」を分けるための名簿で、パスワードや権限はありません（設計書の範囲）。</p>',
       foot: (isNew || U.members().length <= 1 ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div>' +
-        '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+        '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         el.querySelector('[name=name]').addEventListener('input', function (e) {
           el.querySelectorAll('.hue-pick .avatar').forEach(function (a) { a.textContent = U.initial(e.target.value || '？'); });
@@ -6478,7 +6483,7 @@
         var del = el.querySelector('[data-del]');
         if (del) del.onclick = async function () {
           var s2 = statsFor(d.id);
-          if (!(await U.confirmBox('「' + d.name + '」を名簿から削除しますか？\n担当の書類 ' + s2.docs.length + ' 件・現場は消えず、「未割り当て」に移ります。', '削除する', { danger: true }))) return;
+          if (!(await U.confirmBox('「' + d.name + '」を名簿から削除しますか？\n担当の書類 ' + s2.docs.length + ' 件・工事は消えず、「未割り当て」に移ります。', '削除する', { danger: true }))) return;
           EE.S.members = EE.S.members.filter(function (x) { return x.id !== d.id; });
           EE.S.documents.forEach(function (x) { if (x.ownerId === d.id) x.ownerId = ''; });
           EE.S.projects.forEach(function (x) { if (x.ownerId === d.id) x.ownerId = ''; });
@@ -6504,9 +6509,9 @@
   /** 設定・マスタ →「担当者」 */
   function membersTab() {
     var me = U.me();
-    return '<div class="toolbar" data-st><div class="grow hint">見積を作る人・現場を担当する人の名簿です。ホームに一人ずつファイル（フォルダ）が並び、担当現場と書類をすぐ開けます。<br>サイドバー下の名前から「担当者を切り替え」ると、新しく作る見積がその人の担当になります。</div>' +
+    return '<div class="toolbar" data-st><div class="grow hint">見積を作る人・工事を担当する人の名簿です。ホームに一人ずつファイル（フォルダ）が並び、担当工事と書類をすぐ開けます。<br>サイドバー下の名前から「担当者を切り替え」ると、新しく作る見積がその人の担当になります。</div>' +
       '<button class="btn primary" data-act="new-member">' + I.plus + '担当者を追加</button></div>' +
-      '<section class="panel" data-st><div class="panel-b"><table class="table"><thead><tr><th></th><th>名前</th><th>役割</th><th class="r">担当現場</th><th class="r">書類</th><th></th></tr></thead><tbody>' +
+      '<section class="panel" data-st><div class="panel-b"><table class="table"><thead><tr><th></th><th>名前</th><th>役割</th><th class="r">担当工事</th><th class="r">書類</th><th></th></tr></thead><tbody>' +
       U.members().map(function (m) {
         var st = statsFor(m.id);
         return '<tr data-st><td style="width:46px">' + U.avatar(m) + '</td><td>' + esc(m.name) + (m.id === me.id ? ' <span class="badge blue">使用中</span>' : '') + '</td><td class="muted">' + esc(m.role || '') + '</td>' +
@@ -6522,8 +6527,8 @@
 
 /* ---- views/site.js ---- */
 /*
- * 現場ワークスペース：現場を開けば全部そろう（概要・見積・写真・書類・原価・メモと履歴）
- * 見積タブ：1つの現場（案件）に作った見積をパターン別（A案・B案…）に並べ、比べる
+ * 工事ワークスペース：工事を開けば全部そろう（概要・見積・写真・書類・原価・メモと履歴）
+ * 見積タブ：1つの工事に作った見積をパターン別（A案・B案…）に並べ、比べる
  * - 修正見積（同じ見積の新しい版）とは別物。パターンはそれぞれ独立した見積書
  * - 比較表：明細の行をマスタ品目でそろえ、パターンごとの数量・金額の違いを色で示す
  */
@@ -6531,7 +6536,7 @@
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  var picked = {};   // 比較に入れるパターン（現場ごと）
+  var picked = {};   // 比較に入れるパターン（工事ごと）
 
   function docsOf(projectId) {
     return EE.S.documents.filter(function (d) { return d.projectId === projectId; })
@@ -6548,7 +6553,7 @@
     return '別案';
   }
 
-  /** 見積から、同じ現場の別パターンを作る（明細は最新のマスタ単価で写す） */
+  /** 見積から、同じ工事の別パターンを作る（明細は最新のマスタ単価で写す） */
   function newPattern(srcId) {
     var src = U.findDoc(srcId);
     if (!src) return;
@@ -6564,7 +6569,7 @@
     d.patternOf = src.id;
     d.sourceLabel = (src.patternLabel || src.no) + ' をもとに ' + label + ' を作成';
     EE.app.newWith(d);
-    EE.fx.toast('「' + label + '」を作りました。明細を変えて保存してください（現場の見積 ' + (siblings.length + 1) + ' 件目）');
+    EE.fx.toast('「' + label + '」を作りました。明細を変えて保存してください（工事の見積 ' + (siblings.length + 1) + ' 件目）');
   }
 
   function patternBadge(d) {
@@ -6610,15 +6615,15 @@
       '<p class="hint" style="margin-top:8px">色の付いた行は、パターンによって数量や金額が違う明細です。</p>';
   }
 
-  /* ================= 現場ワークスペース ================= */
+  /* ================= 工事ワークスペース ================= */
   var TABS = [['overview', '概要'], ['estimate', '見積'], ['photos', '写真'], ['docs', '書類'], ['cost', '原価'], ['notes', 'メモ・履歴']];
   var PHASES = { before: '施工前', during: '施工中', after: '施工後', survey: '現地調査', '': 'その他' };
 
   /** 注意事項（決まったルールで出す。AIは使わない） */
   function cautions(p, c, docs, photoCount) {
     var out = [], ST = EE.data.STAGES, si = c ? c.stage : 0, minM = EE.S.settings.minMargin || 0;
-    if (!p.site) out.push(['warn', '現場住所が未登録です', '案件を編集から入れると、見積書の工事場所に入ります']);
-    if (!p.ownerId) out.push(['warn', '担当者が決まっていません', '案件を編集から選べます']);
+    if (!p.site) out.push(['warn', '現場住所が未登録です', '工事を編集から入れると、見積書の工事場所に入ります']);
+    if (!p.ownerId) out.push(['warn', '担当者が決まっていません', '工事を編集から選べます']);
     docs.filter(function (d) { return d.status !== 'issued'; }).forEach(function (d) {
       var s = EE.check.summary(U.checkDoc(d)); if (s.error) out.push(['error', '「' + (d.title || '見積') + (d.patternLabel ? '（' + d.patternLabel + '）' : '') + '」に要修正 ' + s.error + ' 件', '見積を開いて送信前チェックを確認してください']);
       var r = U.calcDoc(d); if (r.subtotal > 0 && r.marginRate < minM) out.push(['warn', '「' + (d.title || '見積') + '」の粗利率が下限（' + Math.round(minM * 100) + '%）を下回っています', '粗利率 ' + U.pct(r.marginRate)]);
@@ -6638,8 +6643,8 @@
         '<div class="ws-name">' + esc(p.name) + '</div>' +
         '<div class="hint">' + esc(cu.name || '') + ' ' + esc(cu.honorific || '') + (p.site ? '　' + esc(p.site) : '') + (owner ? '　担当：' + esc(owner.name) : '') + '</div></div>' +
         '<span class="badge blue">' + esc(ST[si].label) + '</span>' +
-        '<button class="btn icon ghost' + (pinned ? ' pinned' : '') + '" data-act="pin" aria-pressed="' + pinned + '" title="' + (pinned ? 'お気に入りから外す' : 'お気に入りに追加（ホームの「お気に入りの現場」に出ます）') + '" aria-label="お気に入り">' + I.star + '</button>' +
-        '<button class="btn sm" data-act="edit-p">' + I.edit + '案件を編集</button></div>' +
+        '<button class="btn icon ghost' + (pinned ? ' pinned' : '') + '" data-act="pin" aria-pressed="' + pinned + '" title="' + (pinned ? 'お気に入りから外す' : 'お気に入りに追加（ホームの「お気に入りの工事」に出ます）') + '" aria-label="お気に入り">' + I.star + '</button>' +
+        '<button class="btn sm" data-act="edit-p">' + I.edit + '工事を編集</button></div>' +
       '<div class="ws-stats">' +
         '<div><small>' + (si >= 1 ? '受注金額' : '見積金額') + '（税込）</small><b class="num" data-count="' + amt + '" data-format="yen">¥0</b></div>' +
         '<div><small>予定粗利率</small><b class="num">' + (rate != null ? U.pct(rate) : '—') + '</b></div>' +
@@ -6650,7 +6655,7 @@
   }
 
   function tabsHTML(p, tab) {
-    return '<nav class="ws-tabs" data-st role="tablist" aria-label="現場の情報">' + TABS.map(function (t) {
+    return '<nav class="ws-tabs" data-st role="tablist" aria-label="工事の情報">' + TABS.map(function (t) {
       return '<a role="tab" aria-selected="' + (t[0] === tab) + '" class="' + (t[0] === tab ? 'on' : '') + '" href="#/site/' + p.id + '/' + t[0] + '">' + esc(t[1]) + '</a>';
     }).join('') + '</nav>';
   }
@@ -6658,7 +6663,7 @@
   function overviewTab(p, c, docs) {
     var ST = EE.data.STAGES, si = c ? c.stage : 0, next = ST[si + 1];
     return '<div class="grid" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)">' +
-      '<section class="panel" data-st><div class="panel-h"><h2>この現場の注意事項</h2></div><div class="panel-b"><div class="checks" id="ws-cautions"><p class="hint">確認中…</p></div></div></section>' +
+      '<section class="panel" data-st><div class="panel-h"><h2>この工事の注意事項</h2></div><div class="panel-b"><div class="checks" id="ws-cautions"><p class="hint">確認中…</p></div></div></section>' +
       '<section class="panel" data-st><div class="panel-h"><h2>次の行動</h2></div><div class="panel-b">' +
         '<div class="next-action' + (c && c.warn ? ' warn' : '') + '"><div>' + esc(c ? c.next : '見積を作る') + '</div></div>' +
         '<div class="flow-detail-actions" style="margin-top:12px">' +
@@ -6673,7 +6678,7 @@
   function estimateTab(p, docs) {
     var sel = picked[p.id] || (picked[p.id] = {});
     if (!Object.keys(sel).length) {
-      // 最初は「パターン名が付いた見積どうし」を比べる（同じ現場の別工事は外しておく）
+      // 最初は「パターン名が付いた見積どうし」を比べる（同じ工事の別工事は外しておく）
       var labeled = docs.filter(function (d) { return d.patternLabel; });
       (labeled.length >= 2 ? labeled : docs).slice(0, 4).forEach(function (d) { sel[d.id] = true; });
     }
@@ -6690,10 +6695,10 @@
           '<a class="btn sm" href="#/edit/' + d.id + '">' + I.edit + '開く</a><button class="btn sm" data-act="pattern-from" data-id="' + d.id + '">' + I.copy + 'これをもとに別パターン</button></div>' +
       '</div></div>';
     }).join('');
-    return '<div class="toolbar" data-st><div class="grow hint">同じ現場に、条件や仕様を変えた見積をパターン（A案・B案…）として何枚でも作れます。それぞれ独立した見積書です。</div>' +
+    return '<div class="toolbar" data-st><div class="grow hint">同じ工事に、条件や仕様を変えた見積をパターン（A案・B案…）として何枚でも作れます。それぞれ独立した見積書です。</div>' +
         '<button class="btn" data-act="pattern-blank">' + I.plus + '空のパターンを作る</button>' +
         (docs.length ? '<button class="btn primary" data-act="pattern-from" data-id="' + docs[docs.length - 1].id + '">' + I.copy + '最新の見積をもとに別パターン</button>' : '') + '</div>' +
-      (docs.length ? '<div class="pattern-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'この現場の見積はまだありません</div></section>') +
+      (docs.length ? '<div class="pattern-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'この工事の見積はまだありません</div></section>') +
       (docs.length > 1 ? '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>パターンの比較</h2><span class="sub">' + chosen.length + '件を比較中</span></div><div class="panel-b" id="cmp">' + compareHTML(chosen) + '</div></section>' : '');
   }
 
@@ -6706,8 +6711,8 @@
   }
 
   function docsTab(p, docs) {
-    if (!docs.length) return '<section class="panel" data-st><div class="empty">' + I.docs + 'この現場の書類はまだありません</div></section>';
-    return '<section class="panel" data-st><div class="panel-h"><h2>この現場の書類</h2><span class="sub">' + docs.length + ' 件</span></div><div class="panel-b table-scroll"><table class="table"><thead><tr><th>番号</th><th>件名</th><th>発行日</th><th class="r">金額（税込）</th><th>状態</th><th>PDF</th></tr></thead><tbody>' +
+    if (!docs.length) return '<section class="panel" data-st><div class="empty">' + I.docs + 'この工事の書類はまだありません</div></section>';
+    return '<section class="panel" data-st><div class="panel-h"><h2>この工事の書類</h2><span class="sub">' + docs.length + ' 件</span></div><div class="panel-b table-scroll"><table class="table"><thead><tr><th>番号</th><th>件名</th><th>発行日</th><th class="r">金額（税込）</th><th>状態</th><th>PDF</th></tr></thead><tbody>' +
       docs.map(function (d) {
         var pdf = (d.history || []).filter(function (h) { return /PDF出力/.test(h.action); }).length;
         return '<tr class="clickable" data-href="#/edit/' + d.id + '"><td class="num">' + esc(d.no || '（未保存）') + '</td><td>' + patternBadge(d) + ' ' + esc(d.title || '') + '</td><td class="num">' + U.jdate(d.issueDate) + '</td><td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td><td class="num">' + (pdf ? pdf + '回' : '—') + '</td></tr>';
@@ -6740,7 +6745,7 @@
     ev.sort(function (a, b) { return (b.at || '').localeCompare(a.at || ''); });
     return '<div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)">' +
       '<section class="panel" data-st><div class="panel-h"><h2>メモを残す</h2></div><div class="panel-b">' +
-        '<textarea class="input" id="ws-note" placeholder="例：駐車は前面道路不可。近くのコインパーキングを使う" aria-label="現場のメモ"></textarea>' +
+        '<textarea class="input" id="ws-note" placeholder="例：駐車は前面道路不可。近くのコインパーキングを使う" aria-label="工事のメモ"></textarea>' +
         '<div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn primary" data-act="add-note">' + I.save + '記録する</button></div></div></section>' +
       '<section class="panel" data-st><div class="panel-h"><h2>履歴</h2><span class="sub">' + ev.length + ' 件</span></div><div class="panel-b"><ol class="timeline">' +
         (ev.length ? ev.slice(0, 60).map(function (e) { return '<li class="' + (e.memo ? 'memo' : '') + '"><span class="num hint">' + (e.at ? U.jdate(e.at.slice(0, 10)) + ' ' + e.at.slice(11, 16) : '') + '</span><span>' + (e.memo ? '<b>メモ</b>' + (e.who ? '（' + esc(e.who) + '）' : '') + '：' : '') + esc(e.t) + '</span></li>'; }).join('') : '<li class="hint">まだ履歴はありません</li>') +
@@ -6749,14 +6754,14 @@
 
   function render(projectId, tab) {
     var p = U.findProject(projectId);
-    if (!p) return { title: '見つかりません', html: '<div class="panel panel-b empty">現場（案件）が見つかりません。</div>' };
+    if (!p) return { title: '見つかりません', html: '<div class="panel panel-b empty">工事が見つかりません。</div>' };
     tab = TABS.some(function (t) { return t[0] === tab; }) ? tab : 'overview';
     var docs = docsOf(p.id);
     var c = EE.insight.cases().filter(function (x) { return x.project.id === p.id; })[0];
     var body = tab === 'estimate' ? estimateTab(p, docs) : tab === 'photos' ? photosTab(p) : tab === 'docs' ? docsTab(p, docs) : tab === 'cost' ? costTab(p, c) : tab === 'notes' ? notesTab(p, docs) : overviewTab(p, c, docs);
     var html = header(p, c, docs) + tabsHTML(p, tab) + '<div class="ws-body">' + body + '</div>';
     return {
-      title: p.name, crumb: '現場ワークスペース', html: html,
+      title: p.name, crumb: '工事ワークスペース', html: html,
       mount: function (view) {
         EE.fx.countAll(view);
         var phFilter = 'all';
@@ -6816,7 +6821,7 @@
             case 'pin':
               var ui = EE.features.settings(); ui.pins = ui.pins || [];
               var i = ui.pins.indexOf(p.id); if (i >= 0) ui.pins.splice(i, 1); else ui.pins.push(p.id);
-              U.commit(); EE.fx.toast(i >= 0 ? 'お気に入りから外しました' : 'お気に入りに追加しました（ホームの「お気に入りの現場」）'); EE.app.rerender(); break;
+              U.commit(); EE.fx.toast(i >= 0 ? 'お気に入りから外しました' : 'お気に入りに追加しました（ホームの「お気に入りの工事」）'); EE.app.rerender(); break;
             case 'add-note':
               var t = view.querySelector('#ws-note').value.trim(); if (!t) { EE.fx.shake(view.querySelector('#ws-note')); return; }
               p.notes = (p.notes || []).concat([{ at: new Date().toISOString(), text: t, who: U.me().name }]); U.commit(); EE.fx.toast('記録しました'); EE.app.rerender(); break;
@@ -6866,7 +6871,7 @@
     var S = EE.S;
     var cats = (S.categories || []);
     return '<div class="toolbar" data-st><div class="grow hint">工事の種類ごとの標準明細です。「かんたん見積もり作成」と見積画面から呼び出せます。<br>「参考候補」の明細は最初は外した状態で出ます。キーワードは文章・音声から作るときのテンプレート判定に使います。</div>' +
-      '<button class="btn" data-act="cats">' + I.edit + '工事カテゴリー</button><button class="btn primary" data-act="new-pkg">' + I.plus + 'テンプレートを作成</button></div>' +
+      '<button class="btn" data-act="cats">' + I.edit + '工事カテゴリーを編集する</button><button class="btn primary" data-act="new-pkg">' + I.plus + 'テンプレートを作成する</button></div>' +
       cats.concat([{ id: '__none', name: 'カテゴリーなし' }]).map(function (c) {
         var list = S.packages.filter(function (p) { return c.id === '__none' ? !cats.some(function (x) { return x.id === p.category; }) : p.category === c.id; });
         if (!list.length) return '';
@@ -6917,7 +6922,7 @@
         '<div class="field c3"><label>メモ</label><input class="input" name="note" value="' + esc(draft.note) + '"></div></div>' +
         '<div class="label" style="margin-bottom:8px">明細（マスタ＋標準数量）</div><div id="pl">' + linesHTML() + '</div>' +
         '<button class="btn sm" data-add>' + I.plus + '行を追加</button>',
-      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         var pl = el.querySelector('#pl');
         pl.addEventListener('change', function (e) {
@@ -6965,7 +6970,7 @@
     U.modal({
       title: '工事カテゴリー', wide: true,
       body: '<p class="hint" style="margin-top:0">文章・音声から見積を作るとき、キーワードでカテゴリーを判定します。工事項目マスターの分類にも使います。</p><div id="cl">' + rows() + '</div><button class="btn sm" data-add>' + I.plus + 'カテゴリーを追加</button>',
-      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         var cl = el.querySelector('#cl');
         cl.addEventListener('input', function (e) { var r = e.target.closest('[data-i]'); var c = cats[r.dataset.i];
@@ -7025,7 +7030,7 @@
         '<div class="label" style="margin:14px 0 8px">入力（入力名を式の中で使います。単位が m の入力は、使うときに mm / cm でも入れられます）</div><div id="fi">' + inputsHTML() + '</div>' +
         '<button class="btn sm" data-add>' + I.plus + '入力を追加</button>' +
         '<div class="sum-total" style="margin-top:14px"><div class="label">試しの計算</div><div class="big num" id="f-out" style="font-size:22px">—</div><div class="hint" id="f-err"></div></div>',
-      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         var fi = el.querySelector('#fi');
         function test() {
@@ -7079,7 +7084,7 @@
       body: '<div class="form-grid"><div class="field c6"><label>種類</label><select class="input" name="kind">' + U.options(K, x.kind) + '</select></div>' +
         '<div class="field c6"><label class="req">見出し</label><input class="input" name="title" value="' + esc(x.title) + '" autofocus></div>' +
         '<div class="field c12"><label class="req">本文</label><textarea class="input" name="body" rows="4">' + esc(x.body) + '</textarea></div></div>',
-      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         el.querySelector('[data-c]').onclick = function () { api.close(); };
         var del = el.querySelector('[data-del]');
@@ -7154,9 +7159,9 @@
         '<select class="input" id="m-cat" style="width:auto"><option value="">工事カテゴリー：すべて</option>' + (EE.S.categories || []).map(function (c) { return U.opt(c.id, c.name, mf.cat); }).join('') + '</select>' +
         '<div class="seg" id="m-kind">' + [['all', 'すべて']].concat(Object.keys(K).map(function (k) { return [k, K[k]]; })).map(function (k) {
           return '<button data-kind="' + k[0] + '" class="' + (mf.kind === k[0] ? 'on' : '') + '">' + k[1] + '</button>'; }).join('') + '</div>' +
-        '<button class="btn" data-act="csv-out">' + I.download + 'CSV書き出し</button>' +
+        '<button class="btn" data-act="csv-out">' + I.download + 'CSVで書き出す</button>' +
         '<label class="btn">' + I.upload + 'CSV取り込み<input type="file" accept=".csv,text/csv" id="csv-in" hidden></label>' +
-        '<button class="btn primary" data-act="new-item">' + I.plus + 'マスタを登録</button>' +
+        '<button class="btn primary" data-act="new-item">' + I.plus + 'マスタに登録する</button>' +
       '</div><div id="m-table">' + itemRows() + '</div></div></section>' +
       '<p class="hint" data-st style="margin-top:12px">単価を変えても、作成済みの見積の単価は変わりません。送信前チェックで「マスタ単価と違う」と知らせるので、必要な見積だけ「最新単価に更新」してください。<br>使っている品目は削除せず「使用停止」にすると、過去の見積を壊さずに検索候補から外せます。</p>';
   }
@@ -7190,8 +7195,8 @@
       ((it.priceHistory || []).length ? '<div class="label" style="margin:14px 0 6px">価格の履歴（過去の見積の単価は変わりません）</div>' +
         '<table class="table"><tbody>' + it.priceHistory.slice().reverse().slice(0, 8).map(function (h) {
           return '<tr><td class="num muted">' + esc(h.from) + ' から</td><td class="r num">単価 ' + U.yen(h.unitPrice) + '</td><td class="r num muted">原価 ' + U.yen(h.unitCost) + '</td></tr>'; }).join('') + '</tbody></table>' : '') + (used ? '<p class="hint" style="margin-top:12px">この品目は見積で使われています。削除の代わりに「使用中」のチェックを外すと検索候補から外れます。</p>' : ''),
-      foot: (isNew || used ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div>' +
-        '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: (isNew || used ? '' : '<button class="btn danger" data-del>' + I.trash + '削除する</button>') + '<div class="spacer"></div>' +
+        '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         function upd() {
           var p = Number(el.querySelector('[name=unitPrice]').value), c = Number(el.querySelector('[name=unitCost]').value);
@@ -7343,7 +7348,7 @@
           '<span class="hint">画像を選ばないときは、家紋と会社名でロゴを作ります。</span></div>' +
         '<div class="asset"><div class="label">会社印・角印（正方形・推奨 500×500px）</div><div class="asset-box seal">' + (c.seal ? '<img src="' + c.seal + '" alt="登録した会社印">' : '<span class="hint">未登録</span>') + '</div>' +
           '<div class="asset-actions"><label class="btn sm">' + I.upload + '画像を選ぶ<input type="file" accept="image/png,image/jpeg,image/webp" id="up-seal" hidden></label>' +
-          (c.seal ? '<button class="btn sm ghost" data-act="del-seal">削除</button>' : '') + '</div>' +
+          (c.seal ? '<button class="btn sm ghost" data-act="del-seal">削除する</button>' : '') + '</div>' +
           '<label class="chk"><input type="checkbox" id="show-seal"' + (c.showSeal !== false ? ' checked' : '') + '> 見積書に角印を押す（会社名の上に重ねる）</label>' +
           '<span class="hint">背景が透明か白の画像がきれいに出ます。画像はこのブラウザの中にだけ保存されます。</span></div>' +
       '</div></div></section>';
@@ -7380,7 +7385,7 @@
         return '<button data-v="' + m[0] + '" class="' + (val === m[0] ? 'on' : '') + '">' + m[1] + '</button>'; }).join('') + '</div>';
     };
     return '<section class="panel" data-st style="max-width:920px"><div class="panel-h"><h2>計算ルール</h2><span class="sub">金額はすべてこのルールと登録マスタだけで決まります</span></div><div class="panel-b"><div class="form-grid">' +
-      '<div class="field c6"><label>明細金額（数量×単価）の端数</label>' + seg('lineRounding', s.lineRounding) + '<span class="hint">1.5人工×26,001円 などで円未満が出たときの扱い</span></div>' +
+      '<div class="field c6"><label>明細金額（数量×単価）の端数</label>' + seg('lineRounding', s.lineRounding) + '<span class="hint">1.5人工×¥26,001 などで1円未満が出たときの扱い</span></div>' +
       '<div class="field c6"><label>消費税の端数</label>' + seg('taxRounding', s.taxRounding) + '<span class="hint">インボイス制度に合わせ、1書類につき税率ごとに1回だけ端数処理します</span></div>' +
       '<div class="field c6"><label>諸経費（率）の端数</label>' + seg('overheadRounding', s.overheadRounding || 'floor') + '</div>' +
       '<div class="field c6"><label>値引き（率）の端数</label>' + seg('discountRounding', s.discountRounding || 'ceil') + '<span class="hint">計算順序：明細 → 諸経費 → 値引き → 端数調整 → 消費税</span></div>' +
@@ -7576,7 +7581,7 @@
     return NAV;
   }
   function navOrder(key) { var i = -1; EE.features.navSections().forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
-  var CHEV = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="m7 9.8 5 4.8 5-4.8"/></svg>';
+  var CHEV = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m7 9.8 5 4.8 5-4.8"/></svg>';
   var OPEN_KEY = 'oumitsu:nav-open';
 
   var current = null, currentNav = 'home', skipNext = false, lastHash = '', prefill = null;
@@ -7948,7 +7953,7 @@
 /* ---- palette.js ---- */
 /*
  * 全機能検索（コマンドパレット）：Ctrl+K（Mac は ⌘K）で開く
- *  - 機能（準備中のものは「第N期で追加」と表示）・顧客・現場・書類・工事項目を横断して探す
+ *  - 機能（準備中のものは「第N期で追加」と表示）・顧客・工事・書類・工事項目を横断して探す
  *  - 業務の言葉（未入金・期限切れ・今日の予定・新しい見積…）からも、該当の画面へ直接移動
  *  - ↑↓ で選び、Enter で開く。Esc で閉じる
  * 検索は文字の一致だけ（AIは使わない）。
@@ -7970,14 +7975,14 @@
   var ACTIONS = [
     ['新しい見積を作る', '#/new', '見積 作成 新規 つくる'],
     ['外構の見積を作る（文章から）', '#/new/text', '外構 フェンス 文章'],
-    ['未入金の現場を見る', '#/finance', '未入金 入金待ち 請求済み 督促'],
+    ['未入金の工事を見る', '#/finance', '未入金 入金待ち 請求済み 督促'],
     ['期限切れの見積を見る', '#/schedule', '期限切れ 有効期限 期限'],
     ['今日の予定を見る', '#/schedule', '今日 予定 スケジュール'],
     ['下書きの見積を見る', '#/docs/draft', '下書き 未確定 未対応'],
     ['確定済み（送った）見積を見る', '#/docs/issued', '確定 送った 発行済み 回答待ち'],
     ['顧客を登録する', '#/clients', '顧客 登録 新規'],
     ['ホームを編集する', '#/home?edit', 'ホーム ウィジェット 編集 カスタマイズ'],
-    ['現場写真を登録する（現場を開いて「写真」）', '#/sites', '写真 現場写真 撮影'],
+    ['現場写真を登録する（工事を開いて「写真」）', '#/sites', '写真 現場写真 撮影'],
     ['先月の売上・粗利を見る', '#/finance', '先月 売上 粗利 月別'],
     ['自社情報・会社印を変える', '#/settings/company', '会社 自社 角印 ロゴ']
   ];
@@ -8003,11 +8008,11 @@
     });
     if (q) {
       S.customers.forEach(function (c) { add('顧客', c.name + ' ' + (c.honorific || ''), c.address || c.tel || '', '#/clients', { icon: 'users', cid: c.id }, c.contact + ' ' + c.tel + ' ' + (c.memo || '')); });
-      S.projects.forEach(function (p) { add('現場', p.name, (U.findCustomer(p.customerId) || {}).name || '', '#/site/' + p.id, { icon: 'site' }, p.site + ' ' + (p.note || '')); });
+      S.projects.forEach(function (p) { add('工事', p.name, (U.findCustomer(p.customerId) || {}).name || '', '#/site/' + p.id, { icon: 'site' }, p.site + ' ' + (p.note || '')); });
       S.documents.forEach(function (d) { add('書類', (d.title || '（件名なし）') + (d.patternLabel ? '（' + d.patternLabel + '）' : ''), (d.no || '') + '　' + U.yen(U.calcDoc(d).total), '#/edit/' + d.id, { icon: 'docs' }, d.no + ' ' + (U.docCustomer(d).name || '')); });
       S.items.forEach(function (it) { add('工事項目', it.name, it.code + '　' + U.yen(it.unitPrice) + '/' + it.unit, '#/settings/items', { icon: 'box' }, it.code + ' ' + (it.synonyms || []).join(' ')); });
     }
-    var order = { '操作': 0, '機能': 1, '現場': 2, '顧客': 3, '書類': 4, '工事項目': 5 };
+    var order = { '操作': 0, '機能': 1, '工事': 2, '顧客': 3, '書類': 4, '工事項目': 5 };
     out.sort(function (a, b) { return (b.s - a.s) || (a.planned ? 1 : 0) - (b.planned ? 1 : 0) || order[a.group] - order[b.group]; });
     return out.slice(0, q ? 40 : 14);
   }

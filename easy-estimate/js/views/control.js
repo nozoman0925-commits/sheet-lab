@@ -1,7 +1,7 @@
 /*
  * ホーム＝OUMITSU CONTROL（ウィジェット式の操作盤）
  *  - ウィジェットを追加・削除・並べ替え（ドラッグ、または ← → ボタン）・サイズ（小・中・大）・表示/非表示・色と透明度
- *  - 経営者用・営業用・現場用・事務用のホームを最初から用意。名前を付けて保存でき、時間帯で自動的に切り替えられる
+ *  - 経営者用・営業用・工事用・事務用のホームを最初から用意。名前を付けて保存でき、時間帯で自動的に切り替えられる
  *  - ウィジェットを押すと該当の画面へ直接移動
  *  - 「よく使う機能」は画面を開いた回数から自動で並べる（提案だけ。勝手に配置は変えない）
  * 保存先：EE.S.homes[担当者ID] = { active, auto, layouts: [{ key, name, time, widgets: [{ id, type, size, color, alpha, hidden, metric }] }] }
@@ -14,15 +14,15 @@
 
   /* ---------- 数字（KPI）の種類 ---------- */
   var METRICS = {
-    active: { label: '進行中の案件', icon: 'site', href: '#/sites', fmt: 'int', foot: '受注〜請求の現場' },
+    active: { label: '進行中の工事', icon: 'site', href: '#/sites', fmt: 'int', foot: '受注〜請求の工事' },
     today: { label: '今日の予定', icon: 'calendar', href: '#/schedule', fmt: 'int', foot: '期限・受注・着工など' },
     drafts: { label: '未対応の見積', icon: 'edit', href: '#/docs/draft', fmt: 'int', foot: '下書きのまま' },
     waiting: { label: '回答待ち', icon: 'clock', href: '#/docs/issued', fmt: 'int', foot: '確定して受注前' },
-    unpaid: { label: '入金確認待ち', icon: 'yen', href: '#/finance', fmt: 'int', foot: '請求済みの現場' },
+    unpaid: { label: '入金確認待ち', icon: 'yen', href: '#/finance', fmt: 'int', foot: '請求済みの工事' },
     overdue: { label: '期限切れの見積', icon: 'bell', href: '#/schedule', fmt: 'int', foot: '再見積・確認が必要', warn: true },
     monthEst: { label: '今月の見積額', icon: 'docs', href: '#/finance', fmt: 'yen', foot: '発行日ベース・税込' },
     monthOrder: { label: '今月の受注額', icon: 'check', href: '#/finance', fmt: 'yen', foot: '受注した見積・税込' },
-    monthPaid: { label: '今月の入金額', icon: 'yen', href: '#/finance', fmt: 'yen', foot: '入金にした現場' },
+    monthPaid: { label: '今月の入金額', icon: 'yen', href: '#/finance', fmt: 'yen', foot: '入金にした工事' },
     margin: { label: '今月の平均粗利率', icon: 'chart', href: '#/finance', fmt: 'pct', foot: '税抜ベース' },
     lowMargin: { label: '粗利の下限割れ', icon: 'bell', href: '#/finance', fmt: 'int', foot: '下書きの見積', warn: true },
     customers: { label: '顧客', icon: 'users', href: '#/clients', fmt: 'int', foot: '登録している顧客' }
@@ -54,20 +54,20 @@
     todo: { name: '今日やること', cat: '業務', sizes: ['m', 'l'], icon: 'check', href: '#/sites' },
     quick: { name: 'クイック操作', cat: 'お気に入り', sizes: ['m', 'l'], icon: 'grid' },
     events: { name: '今後の予定', cat: '時間', sizes: ['m', 'l'], icon: 'calendar', href: '#/schedule' },
-    flow: { name: '案件フロー', cat: '案件', sizes: ['l', 'm'], icon: 'site', href: '#/sites' },
+    flow: { name: '工事フロー', cat: '工事', sizes: ['l', 'm'], icon: 'site', href: '#/sites' },
     bars: { name: '月別の見積・受注・入金', cat: 'お金', sizes: ['l', 'm'], icon: 'trend', href: '#/finance' },
     rings: { name: '入金と粗利', cat: 'お金', sizes: ['m', 'l'], icon: 'yen', href: '#/finance' },
     recent: { name: '最近の書類', cat: '見積', sizes: ['m', 'l'], icon: 'docs', href: '#/docs' },
     attention: { name: '注意（要修正・期限切れ）', cat: '注意', sizes: ['m', 'l'], icon: 'bell', href: '#/docs/draft' },
     members: { name: '担当者のファイル', cat: '人員', sizes: ['l', 'm'], icon: 'users' },
-    favorites: { name: 'お気に入りの現場', cat: 'お気に入り', sizes: ['m', 's', 'l'], icon: 'star', href: '#/sites' },
+    favorites: { name: 'お気に入りの工事', cat: 'お気に入り', sizes: ['m', 's', 'l'], icon: 'star', href: '#/sites' },
     usage: { name: 'よく使う機能', cat: 'お気に入り', sizes: ['m', 's'], icon: 'spark' },
     // 桜ミツ版（業務管理の機能を入れたもの）だけ
     today: { name: '今日のボード（工事・現調・再訪問・予定）', cat: '時間', sizes: ['m', 'l', 's'], icon: 'calendar', href: '#/o/cal', link: true },
     salesgo: { name: '営業に出る', cat: '業務', sizes: ['s', 'm'], icon: 'walk', href: '#/o/sales', link: true }
   };
   function linkO() { try { var f = root.OUBI_LINK && root.OUBI_LINK.frame(); return f && f.contentWindow && f.contentWindow.OUBI; } catch (e) { return null; } }
-  var PLANNED_WIDGETS = [['天気・雨予報', '天候', '外部の天気サービスとの連携が必要（第9期）'], ['地図・訪問ルート', '現場', '地図サービスとの連携が必要（第9期）'],
+  var PLANNED_WIDGETS = [['天気・雨予報', '天候', '外部の天気サービスとの連携が必要（第9期）'], ['地図・訪問ルート', '工事', '地図サービスとの連携が必要（第9期）'],
     ['発注・納品待ち', '発注', '資材・発注の機能と一緒に追加（第4期）'], ['出勤状況・作業予定', '人員', '工程・人員の機能と一緒に追加（第4期）']];
   var COLORS = { blue: ['青', '#3b82f6'], teal: ['青緑', '#14b8a6'], violet: ['紫', '#8b5cf6'], amber: ['琥珀', '#f59e0b'], rose: ['桜', '#f472b6'], slate: ['灰', '#94a3b8'] };
 
@@ -85,10 +85,10 @@
         w('todo', 'm'), w('quick', 'm'), w('flow', 'l'), w('rings', 'm'), w('kpi', 's', { metric: 'monthOrder' }), w('kpi', 's', { metric: 'margin', color: 'teal' }), w('bars', 'l'), w('members', 'l')];
     }
   }
-  var ROLE_NAMES = { owner: '経営者用', sales: '営業用', site: '現場用', office: '事務用' };
+  var ROLE_NAMES = { owner: '経営者用', sales: '営業用', site: '工事用', office: '事務用' };
   var TIMES = { '': '指定なし', morning: '朝（5〜11時）', day: '昼（11〜17時）', night: '夜（17〜5時）' };
   function timeNow() { var h = new Date().getHours(); return h >= 5 && h < 11 ? 'morning' : h >= 11 && h < 17 ? 'day' : 'night'; }
-  function roleOf(m) { var r = (m && m.role) || ''; return /営業/.test(r) ? 'sales' : /現場|職人|工事/.test(r) ? 'site' : /事務|経理/.test(r) ? 'office' : 'owner'; }
+  function roleOf(m) { var r = (m && m.role) || ''; return /営業/.test(r) ? 'sales' : /工事|職人|工事/.test(r) ? 'site' : /事務|経理/.test(r) ? 'office' : 'owner'; }
 
   function home() {
     var S = EE.S, me = U.me(); S.homes = S.homes || {};
@@ -115,7 +115,7 @@
   }
 
   /* ---------- 使った回数（よく使う機能） ---------- */
-  var ROUTE_NAMES = { home: 'ホーム', clients: '顧客', sites: '現場', site: '現場ワークスペース', new: '見積を作る', edit: '見積の編集', schedule: 'スケジュール', finance: '経営・会計', docs: '書類', analysis: '分析', settings: '設定' };
+  var ROUTE_NAMES = { home: 'ホーム', clients: '顧客', sites: '工事', site: '工事ワークスペース', new: '見積を作る', edit: '見積の編集', schedule: 'スケジュール', finance: '経営・会計', docs: '書類', analysis: '分析', settings: '設定' };
   var ROUTE_HREF = { clients: '#/clients', sites: '#/sites', new: '#/new', schedule: '#/schedule', finance: '#/finance', docs: '#/docs', analysis: '#/analysis', settings: '#/settings/items' };
   function track(hash) {
     var k = (hash || '').replace(/^#\/?/, '').split(/[/?]/)[0] || 'home';
@@ -158,7 +158,7 @@
         }).join('') : '<p class="hint">今日やることはありません</p>') + '</div>';
       }
       case 'quick': {
-        var Q = [['見積', '#/new', 'calc'], ['顧客', '#/clients', 'users'], ['現場', '#/sites', 'site'], ['予定', '#/schedule', 'calendar'], ['計算式', '#/settings/formulas', 'calc'], ['書類', '#/docs', 'docs'], ['検索', '#palette', 'search'], ['その他', '#/settings/features', 'grid']];
+        var Q = [['見積', '#/new', 'calc'], ['顧客', '#/clients', 'users'], ['工事', '#/sites', 'site'], ['予定', '#/schedule', 'calendar'], ['計算式', '#/settings/formulas', 'calc'], ['書類', '#/docs', 'docs'], ['検索', '#palette', 'search'], ['その他', '#/settings/features', 'grid']];
         return '<div class="w-quick">' + Q.map(function (q) { return '<a href="' + q[1] + '"' + (q[1] === '#palette' ? ' data-palette' : '') + '>' + I[q[2]] + '<span>' + q[0] + '</span></a>'; }).join('') + '</div>';
       }
       case 'events': {
@@ -186,7 +186,7 @@
       case 'favorites': {
         var pins = (EE.features.settings().pins || []).map(function (id) { return U.findProject(id); }).filter(Boolean);
         return '<div class="w-list">' + (pins.length ? pins.map(function (p) { return '<a class="w-item" href="#/site/' + p.id + '">' + I.star + '<span><b>' + esc(p.name) + '</b><small>' + esc((EE.data.STAGES[EE.data.stageIndex(p.stage || 'estimate')] || {}).label || '') + '</small></span></a>'; }).join('') :
-          '<p class="hint">現場ワークスペースの ☆ を押すと、ここに並びます</p>') + '</div>';
+          '<p class="hint">工事ワークスペースの ☆ を押すと、ここに並びます</p>') + '</div>';
       }
       case 'today': {
         var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : null;
