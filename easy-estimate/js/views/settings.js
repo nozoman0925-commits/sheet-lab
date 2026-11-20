@@ -309,7 +309,7 @@
     if (HIDE.indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
     if (EE.link && tab === 'data' && EE.linkBackup) body = EE.linkBackup.html;
     if (EE.link && tab === 'items' && EE.linkActual) { var ib = body; body = function () { return ib() + EE.linkActual.html(); }; }   // 実績から原価を見直す
-    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + tabs.map(function (t) {
+    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px' + (EE.link ? ';display:none' : '') + '">' + tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
     return { title: '設定', crumb: (tabs.filter(function (t) { return t[0] === tab; })[0] || TABS.filter(function (t) { return t[0] === tab; })[0])[1], html: html, mount: function (v) { mount(v, tab); } };

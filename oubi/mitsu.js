@@ -3196,7 +3196,7 @@
     var max = tot.length ? tot[0][HM] : 0;
     view.querySelector('#a-heat-sum').innerHTML = '<div class="label" style="margin-bottom:10px">工事種別ごとの合計（12か月）</div>' + (tot.length ? tot.map(function (t) {
       return '<div class="hs-row"><span>' + esc(t.label) + '</span><b class="num">' + (HM === 'count' ? t.count + '件' : U.yen(t.amount)) + '</b><i style="--w:' + Math.round(t[HM] / max * 100) + '%"></i></div>';
-    }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: '#/new' }));
+    }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' }));
   }
 
   /** 受注率：見積がある工事のうち、受注（受注以降の段階）になった割合 */
@@ -3217,7 +3217,7 @@
   }
 
   function table(rows) {
-    if (!rows.length) return U.empty({ small: 1, text: 'まだ集計できる見積がありません', btn: '見積を作る', href: '#/new' });
+    if (!rows.length) return U.empty({ small: 1, text: 'まだ集計できる見積がありません', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' });
     return '<table class="table"><thead><tr><th></th><th class="r">見積した工事</th><th class="r">受注</th><th class="r">受注率</th><th class="r">受注額（税込）</th></tr></thead><tbody>' + rows.map(function (r) {
       return '<tr><td>' + esc(r.label) + '</td><td class="r num">' + r.n + '</td><td class="r num">' + r.won + '</td><td class="r num">' + U.pct(r.n ? r.won / r.n : 0) + '</td><td class="r num">' + U.yen(r.amount) + '</td></tr>';
     }).join('') + '</tbody></table>';
@@ -3450,7 +3450,7 @@
   function preset(role) {
     switch (role) {
       // 桜ミツ版の標準：今日のこと → 数字 → やること → 書類・流れ・お金
-      case 'link': return [w('clock', 'm'), w('today', 'm', { color: 'teal' }), w('salesgo', 's'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
+      case 'link': return [w('clock', 'm'), w('today', 'm', { color: 'teal' }), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
         w('kpi', 's', { metric: 'unpaid', color: 'amber' }), w('kpi', 's', { metric: 'monthOrder' }), w('todo', 'm'), w('recent', 'm'), w('flow', 'l'), w('bars', 'l')];
       case 'sales': return [w('clock', 'm'), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'waiting', color: 'violet' }), w('todo', 'm'), w('quick', 'm'), w('recent', 'l'), w('kpi', 's', { metric: 'overdue', color: 'amber' }), w('kpi', 's', { metric: 'customers', color: 'teal' }), w('usage', 'm')];
       case 'site': return [w('clock', 'm'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'today' }), w('todo', 'm'), w('quick', 'm'), w('events', 'l'), w('favorites', 'm')];
@@ -3548,7 +3548,7 @@
       case 'recent': {
         var docs = S.documents.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); }).slice(0, wd.size === 'l' ? 6 : 4);
         return '<div class="w-list">' + (docs.length ? docs.map(function (d) { var c = U.docCustomer(d);
-          return '<a class="w-item" href="#/edit/' + d.id + '"><span class="w-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc(c.name || '宛先未設定') + '　' + U.yen(U.calcDoc(d).total) + '</small></span>' + U.statusBadge(d) + '</a>'; }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: '#/new' })) + '</div>';
+          return '<a class="w-item" href="#/edit/' + d.id + '"><span class="w-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc(c.name || '宛先未設定') + '　' + U.yen(U.calcDoc(d).total) + '</small></span>' + U.statusBadge(d) + '</a>'; }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' })) + '</div>';
       }
       case 'attention': {
         var at = S.documents.filter(function (d) { return d.status !== 'issued'; }).map(function (d) { return { d: d, s: EE.check.summary(U.checkDoc(d)) }; }).filter(function (x) { return x.s.error || x.s.warn; }).slice(0, 5);
@@ -3596,6 +3596,20 @@
       (editing ? ' draggable="true"' : '') + ' data-st>' + ctl + title + '<div class="w-body">' + body(wd) + '</div></section>';
   }
 
+  /* 桜ミツ版：ホームの一番上に、よく使う4つの大きなボタン（迷ったらここから） */
+  function launchHTML() {
+    var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : { work: 0, sv: 0, rv: 0 }, nToday = (c.work || 0) + (c.sv || 0) + (c.rv || 0);
+    var L = [
+      ['sales', '#/o/sales', I.walk, '営業に出る', '今日の再訪問 ' + (c.rv || 0) + ' 件'],
+      ['site', '#/o/new', I.site, '工事を登録する', '名前だけでOK'],
+      ['est', '#/w', I.calc, '見積を作る', '「次へ」で進むだけ'],
+      ['cal', '#/o/cal', I.calendar, '今日の予定を見る', '今日 ' + nToday + ' 件']
+    ];
+    return '<nav class="launch" aria-label="よく使うこと" data-st>' + L.map(function (x) {
+      return '<a class="launch-tile lt-' + x[0] + '" href="' + x[1] + '"><span class="lt-ic">' + x[2] + '</span><span class="lt-tx"><b>' + x[3] + '</b><small>' + esc(x[4]) + '</small></span><span class="lt-go" aria-hidden="true">›</span></a>';
+    }).join('') + '</nav>';
+  }
+
   function setupHTML() {
     if (EE.link) return (EE.linkNameBanner ? EE.linkNameBanner() : '') + (EE.linkBackupBanner ? EE.linkBackupBanner() : '');   // 桜ミツ版：名前がまだ無いときだけ「名前を入れてください」
     if (EE.host) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
@@ -3611,7 +3625,7 @@
 
   function render() {
     if (/[?&]edit/.test(location.hash)) editing = true;
-    var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return editing || !x.hidden; });
+    var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return (editing || !x.hidden) && !(EE.link && x.type === 'salesgo'); });   // 桜ミツ版：「営業に出る」は上の大きなボタンへ
     var bar = '<div class="control-bar" data-st>' +
       '<div class="grow"><div class="hint">' + esc(EE.S.company.name || '桜ミツ') + '　金額はマスタと固定の計算エンジンだけで決まります（AIは使いません）</div></div>' +
       (EE.link ? '' : '<label class="hint" for="home-layout">ホーム</label><select class="input" id="home-layout" style="width:auto">' + h.layouts.map(function (l) { return U.opt(l.key, l.name + (l.time ? '（' + TIMES[l.time].replace(/（.*/, '') + '）' : ''), L.key); }).join('') + '</select>') +
@@ -3619,7 +3633,7 @@
         : (EE.link ? '<button class="btn ghost sm" data-act="w-edit">' + I.grid + '並べ替え・追加</button>' : '<button class="btn" data-act="w-edit">' + I.grid + 'ホームを編集</button>')) + '</div>';
     var hint = editing ? '<p class="hint control-hint" data-st>ウィジェットをドラッグするか ‹ › で並べ替え、小・中・大で大きさ、目のボタンで表示／非表示、歯車で色・透明度を変えられます。変更はすぐ保存されます。</p>' : '';
     var auto = h.auto ? '<p class="hint" data-st style="margin:-6px 0 12px">時間帯で切り替え中：いまは「' + esc(L.name) + '」</p>' : '';
-    var html = setupHTML() + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
+    var html = setupHTML() + (EE.link && !editing ? launchHTML() : '') + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
       (ws.length ? '' : '<div class="empty">' + I.grid + 'ウィジェットがありません。「ホームを編集」→「ウィジェットを追加」で置けます</div>');
     return { title: 'ホーム', crumb: 'OUMITSU CONTROL', html: html, mount: mount };
   }
@@ -3812,7 +3826,7 @@
   function tableHTML() {
     var list = rows();
     if (!list.length) return EE.S.documents.length ? '<div class="empty">' + I.search + '<p class="empty-t">条件に合う見積がありません</p><button class="btn primary sm" type="button" data-fclear>条件を消す</button></div>'
-      : U.empty({ icon: I.docs, text: 'まだ見積がありません', sub: '最初の1枚を作ると、ここに並びます。', btn: '見積を作る', href: '#/new' });
+      : U.empty({ icon: I.docs, text: 'まだ見積がありません', sub: '最初の1枚を作ると、ここに並びます。', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' });
     var total = list.reduce(function (s, x) { return s + x.r.total; }, 0);
     return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>担当</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {
@@ -5188,6 +5202,7 @@
   /* ================ ハブ ================ */
   function hub() {
     var html = '<div class="hint" data-st style="margin-bottom:16px">どの方法で始めても、最後は同じ見積書の画面で確認・修正できます。金額はすべてマスタと計算エンジンで決まります。</div>' +
+      (EE.link ? '<a class="panel quick-wz" data-st href="#/w"><span class="lt-ic">' + I.calc + '</span><span><b>「次へ」で進めて作る（おすすめ）</b><small>工事を選ぶ → 中身 → 金額の確認 → PDF。迷ったらこれ</small></span><span class="lt-go" aria-hidden="true">›</span></a>' : '') +
       '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">' +
       METHODS.map(function (m) {
         return '<a class="panel kpi quick-card" data-st href="#/new/' + m.key + '"><div class="kpi-label"><span class="kpi-icon">' + icon(m) + '</span><b style="color:var(--text);font-size:15px">' + m.title + '</b></div>' +
@@ -5520,6 +5535,196 @@
 
   EE.views = EE.views || {};
   EE.views.quick = { render: render, openDraft: openDraft, setText: function (t) { lastText = t; R = null; } };
+})(this);
+
+
+/* ---- views/wizard.js ---- */
+/*
+ * 見積を「次へ」で進めて作る（#/w）
+ *   1 どの工事？ → 2 中身（テンプレート・文章・白紙）→ 3 金額を確かめる → 4 できあがり（PDF）
+ *   1画面に1つのことだけ。細かく直したいときは「くわしく編集する」で、いつもの見積の画面へ。
+ *   金額はいつもと同じマスタと計算エンジンで決まる（AIは使わない）。
+ */
+(function (root) {
+  'use strict';
+  var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
+  var STEPS = ['工事を選ぶ', '中身を決める', '金額を確かめる', 'できあがり'];
+  var W = fresh();
+  function fresh() { return { projectId: '', q: '', mode: '', tpl: '', text: '', docId: '' }; }
+  function linkO() { try { var f = root.OUBI_LINK && root.OUBI_LINK.frame(); return f && f.contentWindow && f.contentWindow.OUBI; } catch (e) { return null; } }
+  function proj() { return EE.S.projects.filter(function (p) { return p.id === W.projectId; })[0] || null; }
+  function doc() { return EE.S.documents.filter(function (d) { return d.id === W.docId; })[0] || null; }
+
+  function stepper(n) {
+    return '<ol class="wz-steps" aria-label="見積を作る流れ">' + STEPS.map(function (s, i) {
+      return '<li class="' + (i + 1 === n ? 'on' : i + 1 < n ? 'done' : '') + '"' + (i + 1 === n ? ' aria-current="step"' : '') + '><span class="num">' + (i + 1) + '</span>' + s + '</li>';
+    }).join('') + '</ol>';
+  }
+  function foot(n, nextOk, nextLabel) {
+    return '<div class="wz-foot">' + (n > 1 ? '<a class="btn" href="#/w/' + (n - 1) + '">‹ 前へ戻る</a>' : '<a class="btn ghost" href="#/new">ほかの作り方（PDF・写真など）</a>') +
+      '<div class="spacer"></div>' +
+      '<button class="btn primary wz-next" type="button" data-wz="next"' + (nextOk ? '' : ' disabled') + '>' + (nextLabel || '次へ') + ' ›</button></div>';
+  }
+  function page(n, q, body, nextOk, nextLabel) {
+    return '<div class="wz" data-step="' + n + '">' + stepper(n) + '<section class="panel wz-card" data-st><h2 class="wz-q">' + q + '</h2>' + body + '</section>' + foot(n, nextOk, nextLabel) + '</div>';
+  }
+
+  /* ---------- 1 どの工事？ ---------- */
+  function step1() {
+    var nq = U.norm(W.q || '');
+    var list = EE.S.projects.slice().sort(function (a, b) { return String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || '')); })
+      .filter(function (p) { var c = U.findCustomer(p.customerId) || {}; return !nq || U.norm((p.name || '') + (c.name || '')).indexOf(nq) >= 0; }).slice(0, 8);
+    var body = '<p class="wz-help">見積を出す工事を選んでください。まだ登録していない工事は、下でお客様の名前を入れるだけで作れます。</p>' +
+      (EE.S.projects.length > 4 ? '<input class="input wz-search" id="wz-q" type="search" placeholder="お客様の名前・工事名で探す" value="' + esc(W.q || '') + '" aria-label="工事を探す">' : '') +
+      '<div class="wz-list" role="radiogroup" aria-label="工事">' + (list.length ? list.map(function (p) {
+        var c = U.findCustomer(p.customerId) || {}, on = p.id === W.projectId;
+        return '<button type="button" class="wz-opt' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" data-pj="' + p.id + '"><span class="wz-dot"></span><span><b>' + esc(p.name || '（工事名なし）') + '</b><small>' + esc(c.name ? c.name + ' 様' : '') + '</small></span></button>';
+      }).join('') : '<p class="hint">' + (nq ? '見つかりません。名前を変えて探すか、下で新しく作ってください。' : 'まだ工事がありません。下で新しく作ってください。') + '</p>') + '</div>' +
+      '<div class="wz-new"><b>新しい工事で作る</b><div class="wz-new-row"><input class="input" id="wz-cust" placeholder="お客様の名前（例：山田 太郎）" aria-label="お客様の名前">' +
+      '<input class="input" id="wz-title" placeholder="工事名（なくてもよい。例：外壁塗装）" aria-label="工事名"></div></div>';
+    return page(1, 'どの工事の見積ですか？', body, !!W.projectId);
+  }
+
+  /* ---------- 2 中身 ---------- */
+  function step2() {
+    if (!proj()) { location.replace('#/w/1'); return page(1, '', '', false); }
+    var M = [['tpl', I.box || I.calc, 'テンプレートから', 'よくある工事のひな形から選ぶ'], ['text', I.spark || I.edit, '文章で書く', '「外壁塗装 30坪 足場あり」のように書くと明細になります'], ['blank', I.plus, '白紙から', '品目をあとで自分で入れる']];
+    var body = '<p class="wz-help">「' + esc(proj().name || '') + '」の見積の中身を、どうやって入れますか？</p>' +
+      '<div class="wz-modes" role="radiogroup" aria-label="入れ方">' + M.map(function (m) {
+        var on = W.mode === m[0];
+        return '<button type="button" class="wz-mode' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" data-mode="' + m[0] + '"><span class="wz-ic">' + m[1] + '</span><b>' + m[2] + '</b><small>' + m[3] + '</small></button>';
+      }).join('') + '</div>';
+    if (W.mode === 'tpl') {
+      body += '<div class="wz-sub"><b>テンプレートを選んでください</b><div class="wz-tpls">' + EE.S.packages.map(function (p) {
+        var on = W.tpl === p.id;
+        return '<button type="button" class="wz-opt' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" data-tpl="' + p.id + '"><span class="wz-dot"></span><span><b>' + esc(p.name) + '</b><small>' + esc(p.category || '') + '・' + p.lines.length + '品目</small></span></button>';
+      }).join('') + '</div></div>';
+    } else if (W.mode === 'text') {
+      body += '<div class="wz-sub"><label for="wz-text"><b>工事の内容を書いてください</b></label><textarea class="input" id="wz-text" rows="4" placeholder="例：外壁塗装 延床30坪。足場、高圧洗浄、シリコン上塗り、付帯部">' + esc(W.text || '') + '</textarea></div>';
+    }
+    var ok = W.mode === 'blank' || (W.mode === 'tpl' && !!W.tpl) || (W.mode === 'text' && !!(W.text || '').trim());
+    return page(2, '見積の中身はどうやって入れますか？', body, ok, '明細を作る');
+  }
+
+  /* ---------- 3 金額 ---------- */
+  function step3() {
+    var d = doc(); if (!d) { location.replace('#/w/2'); return page(2, '', '', false); }
+    var r = U.calcDoc(d), am = {}; (r.lines || []).forEach(function (x) { am[x.lineId] = x.amount; });
+    var rows = d.lines.map(function (l) {
+      return '<tr data-line="' + l.lineId + '"><td><b>' + esc(l.name || '') + '</b>' + (l.spec ? '<div class="hint">' + esc(l.spec) + '</div>' : '') + '</td>' +
+        '<td class="r"><div class="wz-qty"><button type="button" class="btn icon sm" data-q="-1" aria-label="' + esc(l.name || '') + 'の数量を減らす">−</button><input class="input num" data-qty value="' + U.num(l.qty) + '" inputmode="decimal" aria-label="' + esc(l.name || '') + 'の数量"><button type="button" class="btn icon sm" data-q="1" aria-label="' + esc(l.name || '') + 'の数量を増やす">＋</button></div></td>' +
+        '<td>' + esc(l.unit || '') + '</td><td class="r num">' + U.yen(l.unitPrice) + '</td><td class="r num"><b>' + U.yen(am[l.lineId] || 0) + '</b></td></tr>';
+    }).join('');
+    var body = '<p class="wz-help">数量は − ＋ で変えられます。単価や品目を変えたいときは「くわしく編集する」へ。</p>' +
+      (d.lines.length ? '<div class="table-wrap"><table class="table wz-table"><thead><tr><th>品目</th><th class="r">数量</th><th>単位</th><th class="r">単価</th><th class="r">金額</th></tr></thead><tbody>' + rows + '</tbody></table></div>'
+        : U.empty({ small: 1, text: 'まだ明細がありません', sub: '白紙から始めたときは、くわしい画面で品目を入れます。', btn: 'くわしく編集する', href: '#/edit/' + d.id })) +
+      '<div class="wz-sum"><div><span>小計（税抜）</span><b class="num">' + U.yen(r.subtotal) + '</b></div><div><span>消費税</span><b class="num">' + U.yen(r.tax) + '</b></div>' +
+      '<div class="wz-total"><span>合計（税込）</span><b class="num">' + U.yen(r.total) + '</b></div><div><span>粗利率</span><b class="num">' + U.pct(r.marginRate) + '</b></div></div>' +
+      '<p style="margin:14px 0 0"><a class="btn ghost" href="#/edit/' + d.id + '">' + I.edit + 'くわしく編集する</a></p>';
+    return page(3, '金額を確かめましょう', body, d.lines.length > 0);
+  }
+
+  /* ---------- 4 できあがり ---------- */
+  function step4() {
+    var d = doc(); if (!d) { location.replace('#/w/1'); return page(1, '', '', false); }
+    var r = U.calcDoc(d), c = U.findCustomer(d.customerId) || {};
+    var body = '<div class="wz-done"><span class="wz-ok">' + I.check + '</span><div><b>' + esc(d.title || '見積') + '</b><small>' + esc(c.name ? c.name + ' 様' : '') + '　合計（税込）<b class="num">' + U.yen(r.total) + '</b></small></div></div>' +
+      '<p class="wz-help">見積は下書きとして保存しました。お客様に出すときは、送る前のチェックをしてからPDFにします。</p>' +
+      '<div class="wz-actions"><button type="button" class="btn primary" data-wz="pdf">' + I.pdf + '送る前のチェックをしてPDFを出す</button>' +
+      '<a class="btn" href="#/edit/' + d.id + '">' + I.edit + 'くわしく編集する</a><a class="btn ghost" href="#/docs">見積の一覧を見る</a><button type="button" class="btn ghost" data-wz="again">' + I.plus + 'もう1つ作る</button></div>';
+    return '<div class="wz" data-step="4">' + stepper(4) + '<section class="panel wz-card" data-st><h2 class="wz-q">できあがりました</h2>' + body + '</section>' +
+      '<div class="wz-foot"><a class="btn" href="#/w/3">‹ 前へ戻る</a></div></div>';
+  }
+
+  /* ---------- 動き ---------- */
+  function makeDoc() {
+    var p = proj(); if (!p) return null;
+    var rows = [], adj = [], sourceLabel = '';
+    if (W.mode === 'tpl') {
+      var t = EE.S.packages.filter(function (x) { return x.id === W.tpl; })[0];
+      if (t) { rows = t.lines.filter(function (l) { return !l.optional; }).map(function (l) { return { itemId: l.itemId, qty: l.qty }; }); adj = t.adjustments || []; sourceLabel = 'テンプレート「' + t.name + '」から作成'; }
+    } else if (W.mode === 'text') {
+      var res = EE.parse.parse(W.text, { items: EE.S.items, templates: EE.S.packages, categories: EE.S.categories, customers: EE.S.customers });
+      rows = (res.rows || []).filter(function (r) { return r.include !== false; }); adj = (res.adjustments || []).filter(function (a) { return a.include !== false; }); sourceLabel = '文章から作成';
+    }
+    var d = doc();
+    if (!d || d.status === 'issued') { d = EE.data.newEstimate(EE.S, { projectId: p.id, customerId: p.customerId, title: p.name, ownerId: U.me().id }); EE.S.documents.push(d); W.docId = d.id; }
+    d.lines = [];
+    rows.forEach(function (r) { var it = U.findItem(r.itemId); if (!it) return; var q = Number(r.qty); if (!isFinite(q) || q <= 0) q = it.stdQty || 1; var ln = EE.data.lineFromItem(it, q); if (r.source) ln.inputSource = r.source; d.lines.push(ln); });
+    d.adjustments = adj.map(function (a) { return { id: EE.data.uid('adj'), type: a.type, label: a.label || (a.type === 'overhead' ? '諸経費' : '値引き'), mode: a.mode || 'rate', rateBp: a.rateBp || 0, amount: a.amount || 0, taxCategory: a.taxCategory || 'std10', scope: 'all', unit: a.unit }; });
+    if (sourceLabel) d.sourceLabel = sourceLabel;
+    d.updatedAt = new Date().toISOString();
+    U.commit();
+    return d;
+  }
+  // 新しい工事：桜ミツ版は業務管理の工事として作り、見積の工事・お客様ができるのを待つ
+  function newProject(cust, title, done) {
+    var o = linkO();
+    if (o && o.makeCase) {
+      var c = o.makeCase({ customer: cust }); if (title) c.work.title = title; o.touch(c);
+      var tries = 0; (function wait() {
+        var p = EE.S.projects.filter(function (x) { return x.id === c.id; })[0];
+        if (p) return done(p);
+        if (++tries > 60) { EE.fx.toast('工事を作れませんでした。もう一度押してください'); return done(null); }
+        setTimeout(wait, 100);
+      })();
+      return;
+    }
+    var cu = { id: EE.data.uid('cus'), name: cust, contact: '', address: '', createdAt: new Date().toISOString() }; EE.S.customers.push(cu);
+    var pj = { id: EE.data.uid('prj'), customerId: cu.id, name: title || (cust + '様 工事'), stage: 'estimate', createdAt: new Date().toISOString() }; EE.S.projects.push(pj);
+    U.commit(); done(pj);
+  }
+  function go(n) { location.hash = '#/w/' + n; }
+
+  function mount(view) {
+    view.addEventListener('click', function (e) {
+      var t;
+      if ((t = e.target.closest('[data-pj]'))) { W.projectId = t.dataset.pj; W.docId = ''; EE.app.rerender(); return; }
+      if ((t = e.target.closest('[data-mode]'))) { W.mode = t.dataset.mode; EE.app.rerender(); var x = view.querySelector('#wz-text'); if (x) x.focus(); return; }
+      if ((t = e.target.closest('[data-tpl]'))) { W.tpl = t.dataset.tpl; EE.app.rerender(); return; }
+      if ((t = e.target.closest('[data-q]'))) {
+        var tr = t.closest('tr'), d = doc(), l = d && d.lines.filter(function (x) { return x.lineId === tr.dataset.line; })[0]; if (!l) return;
+        l.qty = Math.max(0, Math.round((Number(l.qty) + Number(t.dataset.q)) * 100) / 100); d.updatedAt = new Date().toISOString(); U.commit(); EE.app.rerender(); return;
+      }
+      if ((t = e.target.closest('[data-wz]'))) {
+        var a = t.dataset.wz, step = Number(view.querySelector('.wz').dataset.step);
+        if (a === 'again') { W = fresh(); go(1); return; }
+        if (a === 'pdf') { var id = W.docId; location.hash = '#/edit/' + id; setTimeout(function () { var b = document.querySelector('#view [data-act="pdf"]'); if (b) b.click(); }, 700); return; }
+        if (a === 'next') {
+          if (step === 1) { if (W.projectId) go(2); return; }
+          if (step === 2) { EE.fx.busy(t, function () { var d = makeDoc(); if (d) { EE.fx.toast('明細を ' + d.lines.length + ' 行作りました'); go(3); } }); return; }
+          if (step === 3) { go(4); return; }
+        }
+      }
+    });
+    view.addEventListener('input', function (e) {
+      if (e.target.id === 'wz-q') { W.q = e.target.value; var pos = e.target.selectionStart; EE.app.rerender(); var q = document.getElementById('wz-q'); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (er) {} } return; }
+      if (e.target.id === 'wz-text') { W.text = e.target.value; var nx = view.querySelector('[data-wz="next"]'); if (nx) nx.disabled = !W.text.trim(); return; }
+      if (e.target.id === 'wz-cust') { var n2 = view.querySelector('[data-wz="next"]'); if (n2) n2.disabled = !(W.projectId || e.target.value.trim()); }
+    });
+    view.addEventListener('change', function (e) {
+      if (!e.target.hasAttribute('data-qty')) return;
+      var tr = e.target.closest('tr'), d = doc(), l = d && d.lines.filter(function (x) { return x.lineId === tr.dataset.line; })[0]; if (!l) return;
+      var v = Number(String(e.target.value).replace(/[^\d.]/g, '')); if (!isFinite(v) || v < 0) { EE.fx.shake(e.target); return; }
+      l.qty = v; d.updatedAt = new Date().toISOString(); U.commit(); EE.app.rerender();
+    });
+    // 1：名前を入れて「次へ」なら、新しい工事を作ってから進む
+    var nx = view.querySelector('.wz[data-step="1"] [data-wz="next"]');
+    if (nx) nx.addEventListener('click', function (e) {
+      var cu = view.querySelector('#wz-cust'), name = cu && cu.value.trim();
+      if (!name) return;
+      e.stopImmediatePropagation();
+      EE.fx.busy(nx, function () { return new Promise(function (ok) { newProject(name, (view.querySelector('#wz-title').value || '').trim(), function (p) { ok(); if (p) { W.projectId = p.id; W.docId = ''; EE.fx.toast('「' + p.name + '」を登録しました'); go(2); } }); }); });
+    }, true);
+  }
+
+  function render(n) {
+    n = Number(n) || 1;
+    var html = n === 2 ? step2() : n === 3 ? step3() : n === 4 ? step4() : step1();
+    return { title: '見積を作る', crumb: 'ステップ ' + n + ' / 4　' + STEPS[n - 1], html: html, mount: mount };
+  }
+  EE.views = EE.views || {};
+  EE.views.wizard = { render: render, reset: function () { W = fresh(); } };
 })(this);
 
 
@@ -7471,7 +7676,7 @@
     if (HIDE.indexOf(tab) >= 0) { tab = 'items'; body = itemsTab; }
     if (EE.link && tab === 'data' && EE.linkBackup) body = EE.linkBackup.html;
     if (EE.link && tab === 'items' && EE.linkActual) { var ib = body; body = function () { return ib() + EE.linkActual.html(); }; }   // 実績から原価を見直す
-    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px">' + tabs.map(function (t) {
+    var html = '<div class="seg" data-st id="set-tabs" style="margin-bottom:18px' + (EE.link ? ';display:none' : '') + '">' + tabs.map(function (t) {
       return '<button data-tab="' + t[0] + '" class="' + (tab === t[0] ? 'on' : '') + '">' + t[1] + '</button>'; }).join('') + '</div>' +
       '<div id="set-body">' + body() + '</div>';
     return { title: '設定', crumb: (tabs.filter(function (t) { return t[0] === tab; })[0] || TABS.filter(function (t) { return t[0] === tab; })[0])[1], html: html, mount: function (v) { mount(v, tab); } };
@@ -7608,9 +7813,8 @@
   };
   // 桜ミツ版（業務管理の機能を入れたもの）の子メニュー
   var LINK_CHILDREN = {
-    sales: [['#/o/sales', '記録'], ['#/o/sales/rv', '再訪問'], ['#/o/sales/rank', 'ランキング']],
-    sites: [['#/o/list', '工事の一覧'], ['#/sites', '流れ（見積→入金）'], ['#/clients', 'お客様'], ['#/o/new', '＋ 新しい工事']],
-    estimate: [['#/new', '＋ 見積を作る'], ['#/docs', '見積の一覧'], ['#/docs/draft', '下書き'], ['#/docs/issued', '確定済み']],
+    // 桜ミツ版：左のメニューには出さず、開いた画面の上にタブで並べる（営業は営業の下のボタン、見積は一覧の中の絞り込みを使う）
+    sites: [['#/o/list', '工事の一覧'], ['#/sites', '流れ（見積→入金）'], ['#/clients', 'お客様']],
     schedule: [['#/o/cal', 'カレンダー'], ['#/o/wb', 'あしたの予定'], ['#/o/board', 'タイムライン']],
     finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の進み・入金'], ['#/analysis', '分析']],
     settings: [['#/settings/items', '工事項目・単価'], ['#/settings/packages', 'テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
@@ -7618,7 +7822,7 @@
   };
   var NAV = [];
   function buildNav() {
-    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: (EE.link && LINK_CHILDREN[s.key]) || CHILDREN[s.key] }; });
+    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: EE.link ? LINK_CHILDREN[s.key] : CHILDREN[s.key] }; });
     return NAV;
   }
   function navOrder(key) { var i = -1; EE.features.navSections().forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
@@ -7631,6 +7835,7 @@
     var p = (hash || '').replace(/^#\/?/, '').split('?')[0].split('/');
     switch (p[0]) {
       case 'docs': return { nav: 'docs', view: function () { return EE.views.docs.render(p[1]); } };
+      case 'w': return { nav: 'estimate', view: function () { return EE.views.wizard.render(p[1]); } };   // 見積を「次へ」で進めて作る
       case 'new': return { nav: 'estimate', view: function () { return p[1] === 'edit' ? EE.views.editor.render(null) : EE.views.quick.render(p[1]); } };
       case 'edit': return { nav: 'docs', view: function () { return EE.views.editor.render(p[1]); } };
       case 'clients': return { nav: 'clients', view: function () { return EE.views.clients.render(); } };
@@ -7656,7 +7861,7 @@
     var open = readOpen();
     buildNav();
     nav.innerHTML = NAV.map(function (n, i) {
-      var kids = n.children || [];
+      var kids = EE.link ? [] : (n.children || []);   // 桜ミツ版：左は7項目だけ
       return '<div class="nav-group' + (kids.length && open[n.key] ? ' open' : '') + '" data-g="' + n.key + '" data-st>' +
         '<div class="nav-row">' +
           '<a class="nav-item" href="' + n.href + '" data-nav="' + n.key + '" title="' + n.label + (i < 9 ? '（Alt+' + (i + 1) + '）' : '') + '">' + n.icon + '<span>' + n.label + '</span></a>' +
@@ -7673,6 +7878,18 @@
       var a = e.target.closest('.nav-item');
       if (a) { var g = a.closest('.nav-group'); if (g.querySelector('.nav-sub')) toggleGroup(g.dataset.g, true); }
     });
+  }
+
+  /* 桜ミツ版：今いるメニューの細かい画面を、見出しの下にタブで並べる */
+  function secTabs(nv) {
+    var bar = document.getElementById('sectabs');
+    if (!bar) { bar = document.createElement('nav'); bar.id = 'sectabs'; bar.className = 'sectabs'; bar.setAttribute('aria-label', 'この中の画面'); var tb = document.querySelector('.topbar'); tb.parentNode.insertBefore(bar, tb.nextSibling); }
+    var kids = (nv && nv.children) || [], h = location.hash || '#/home';
+    if (!kids.length) { bar.hidden = true; bar.innerHTML = ''; return; }
+    var on = kids.filter(function (c) { return h === c[0] || h.indexOf(c[0] + '/') === 0; })[0] || (/^#\/(o\/case|site)\//.test(h) ? kids[0] : null);
+    bar.hidden = false;
+    bar.innerHTML = kids.map(function (c) { return '<a href="' + c[0] + '"' + (c === on ? ' class="on" aria-current="page"' : '') + '>' + c[1] + '</a>'; }).join('');
+    var a = bar.querySelector('.on'); if (a && a.scrollIntoView && bar.scrollWidth > bar.clientWidth) a.scrollIntoView({ block: 'nearest', inline: 'center' });
   }
 
   function toggleGroup(key, forceOpen) {
@@ -7698,6 +7915,7 @@
     // 今いる画面の親メニューは開いておく
     var nv = NAV.filter(function (n) { return n.key === i; })[0];
     if (nv && nv.children) toggleGroup(nv.key, true);
+    if (EE.link) secTabs(nv);
     void best;
   }
 

@@ -52,6 +52,7 @@
   /* ================ ハブ ================ */
   function hub() {
     var html = '<div class="hint" data-st style="margin-bottom:16px">どの方法で始めても、最後は同じ見積書の画面で確認・修正できます。金額はすべてマスタと計算エンジンで決まります。</div>' +
+      (EE.link ? '<a class="panel quick-wz" data-st href="#/w"><span class="lt-ic">' + I.calc + '</span><span><b>「次へ」で進めて作る（おすすめ）</b><small>工事を選ぶ → 中身 → 金額の確認 → PDF。迷ったらこれ</small></span><span class="lt-go" aria-hidden="true">›</span></a>' : '') +
       '<div class="grid" style="grid-template-columns:repeat(auto-fill,minmax(260px,1fr))">' +
       METHODS.map(function (m) {
         return '<a class="panel kpi quick-card" data-st href="#/new/' + m.key + '"><div class="kpi-label"><span class="kpi-icon">' + icon(m) + '</span><b style="color:var(--text);font-size:15px">' + m.title + '</b></div>' +

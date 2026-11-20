@@ -14,7 +14,7 @@ const OUT = path.join(__dirname, '..');
 // 業務管理の中では使わないもの：起動の演出（splash）・ログイン（auth・login）。ログインは業務管理の合言葉を使う
 const JS = ['crest', 'engine', 'parse', 'docparse', 'filestore', 'check', 'catalog', 'data', 'fx', 'ui', 'a11y', 'features', 'print', 'charts', 'insight',
   'views/sites', 'views/finance', 'views/analysis', 'views/schedule', 'views/planned', 'views/control', 'views/docs', 'views/editor', 'calc-tool',
-  'views/quick', 'views/importer', 'views/clients', 'views/folders', 'views/site', 'views/settings-extra', 'views/settings', 'app', 'palette'];
+  'views/quick', 'views/wizard', 'views/importer', 'views/clients', 'views/folders', 'views/site', 'views/settings-extra', 'views/settings', 'app', 'palette'];
 const CSS = ['app', 'sheet', 'aurora', 'pop', 'voyage', 'control'];
 
 let js = '/* 自動生成（oubi/tools/build-mitsu.js）。直すときは easy-estimate/js を直して作り直す */\n';

@@ -26,9 +26,8 @@
   };
   // 桜ミツ版（業務管理の機能を入れたもの）の子メニュー
   var LINK_CHILDREN = {
-    sales: [['#/o/sales', '記録'], ['#/o/sales/rv', '再訪問'], ['#/o/sales/rank', 'ランキング']],
-    sites: [['#/o/list', '工事の一覧'], ['#/sites', '流れ（見積→入金）'], ['#/clients', 'お客様'], ['#/o/new', '＋ 新しい工事']],
-    estimate: [['#/new', '＋ 見積を作る'], ['#/docs', '見積の一覧'], ['#/docs/draft', '下書き'], ['#/docs/issued', '確定済み']],
+    // 桜ミツ版：左のメニューには出さず、開いた画面の上にタブで並べる（営業は営業の下のボタン、見積は一覧の中の絞り込みを使う）
+    sites: [['#/o/list', '工事の一覧'], ['#/sites', '流れ（見積→入金）'], ['#/clients', 'お客様']],
     schedule: [['#/o/cal', 'カレンダー'], ['#/o/wb', 'あしたの予定'], ['#/o/board', 'タイムライン']],
     finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の進み・入金'], ['#/analysis', '分析']],
     settings: [['#/settings/items', '工事項目・単価'], ['#/settings/packages', 'テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
@@ -36,7 +35,7 @@
   };
   var NAV = [];
   function buildNav() {
-    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: (EE.link && LINK_CHILDREN[s.key]) || CHILDREN[s.key] }; });
+    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: EE.link ? LINK_CHILDREN[s.key] : CHILDREN[s.key] }; });
     return NAV;
   }
   function navOrder(key) { var i = -1; EE.features.navSections().forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
@@ -49,6 +48,7 @@
     var p = (hash || '').replace(/^#\/?/, '').split('?')[0].split('/');
     switch (p[0]) {
       case 'docs': return { nav: 'docs', view: function () { return EE.views.docs.render(p[1]); } };
+      case 'w': return { nav: 'estimate', view: function () { return EE.views.wizard.render(p[1]); } };   // 見積を「次へ」で進めて作る
       case 'new': return { nav: 'estimate', view: function () { return p[1] === 'edit' ? EE.views.editor.render(null) : EE.views.quick.render(p[1]); } };
       case 'edit': return { nav: 'docs', view: function () { return EE.views.editor.render(p[1]); } };
       case 'clients': return { nav: 'clients', view: function () { return EE.views.clients.render(); } };
@@ -74,7 +74,7 @@
     var open = readOpen();
     buildNav();
     nav.innerHTML = NAV.map(function (n, i) {
-      var kids = n.children || [];
+      var kids = EE.link ? [] : (n.children || []);   // 桜ミツ版：左は7項目だけ
       return '<div class="nav-group' + (kids.length && open[n.key] ? ' open' : '') + '" data-g="' + n.key + '" data-st>' +
         '<div class="nav-row">' +
           '<a class="nav-item" href="' + n.href + '" data-nav="' + n.key + '" title="' + n.label + (i < 9 ? '（Alt+' + (i + 1) + '）' : '') + '">' + n.icon + '<span>' + n.label + '</span></a>' +
@@ -91,6 +91,18 @@
       var a = e.target.closest('.nav-item');
       if (a) { var g = a.closest('.nav-group'); if (g.querySelector('.nav-sub')) toggleGroup(g.dataset.g, true); }
     });
+  }
+
+  /* 桜ミツ版：今いるメニューの細かい画面を、見出しの下にタブで並べる */
+  function secTabs(nv) {
+    var bar = document.getElementById('sectabs');
+    if (!bar) { bar = document.createElement('nav'); bar.id = 'sectabs'; bar.className = 'sectabs'; bar.setAttribute('aria-label', 'この中の画面'); var tb = document.querySelector('.topbar'); tb.parentNode.insertBefore(bar, tb.nextSibling); }
+    var kids = (nv && nv.children) || [], h = location.hash || '#/home';
+    if (!kids.length) { bar.hidden = true; bar.innerHTML = ''; return; }
+    var on = kids.filter(function (c) { return h === c[0] || h.indexOf(c[0] + '/') === 0; })[0] || (/^#\/(o\/case|site)\//.test(h) ? kids[0] : null);
+    bar.hidden = false;
+    bar.innerHTML = kids.map(function (c) { return '<a href="' + c[0] + '"' + (c === on ? ' class="on" aria-current="page"' : '') + '>' + c[1] + '</a>'; }).join('');
+    var a = bar.querySelector('.on'); if (a && a.scrollIntoView && bar.scrollWidth > bar.clientWidth) a.scrollIntoView({ block: 'nearest', inline: 'center' });
   }
 
   function toggleGroup(key, forceOpen) {
@@ -116,6 +128,7 @@
     // 今いる画面の親メニューは開いておく
     var nv = NAV.filter(function (n) { return n.key === i; })[0];
     if (nv && nv.children) toggleGroup(nv.key, true);
+    if (EE.link) secTabs(nv);
     void best;
   }
 
