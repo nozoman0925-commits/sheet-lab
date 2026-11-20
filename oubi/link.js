@@ -168,9 +168,7 @@
     return out.sort(function (a, b) { return (b.warn ? 1 : 0) - (a.warn ? 1 : 0) || (a.n || 0) - (b.n || 0); });
   }
   EE.linkTodo = function () {
-    var items = dueItems().slice(0, 6);
-    var bk = backupAge(); if (bk.need) items.unshift({ warn: true, t: 'この端末の記録のバックアップ', s: bk.text, href: '#/settings/data' });
-    return items;
+    return dueItems().slice(0, 6);   // バックアップの知らせは、ホームの上の1か所だけ（重ねて出さない）
   };
   // 営業の再訪問の一覧へ（同じものは1回だけ。済んだもの・消したものは作り直さない）
   var rvBusy = false;
@@ -210,7 +208,6 @@
       '<span style="color:var(--warn)">' + U.I.bell + '</span><span style="color:var(--text-2);flex:1;min-width:200px">' + U.esc(b.text) + '。ときどき保存してください。</span>' +
       '<a class="btn sm primary" href="#/settings/data">' + U.I.download + 'バックアップする</a></div>';
   };
-  setTimeout(function () { var b = backupAge(); if (b.need && EE.fx) EE.fx.toast(b.text + '（設定 → 自分の名前・バックアップ）', { warn: true, ms: 6000 }); }, 6000);
 
   /* ---- 3) 実績原価を単価マスタへ（完工した工事の実際の原価から、品目の原価を見直す） ---- */
   var ACT_TYPE = function (t) { return t === 'other' ? 'expense' : t; };

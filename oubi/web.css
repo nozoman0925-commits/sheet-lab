@@ -40,4 +40,6 @@ body.ob-on #view { display: none; }
   /* 営業の画面は、営業専用の下のボタン（記録・地図・再訪問・順位・もどる）を使う */
   body.mnav-sales .mnav { display: none; }
   body.mnav-sales .main { padding-bottom: 0; }
+  /* 知らせは下のボタンの上に出す */
+  body.ee-link .toasts { bottom: calc(78px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; align-items: stretch; }
 }
