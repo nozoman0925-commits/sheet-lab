@@ -1833,9 +1833,18 @@
   function shake(el) { anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'none' }], { duration: 300, fill: 'none' }); }
   function pulse(el) { anim(el, [{ boxShadow: '0 0 0 0 rgba(77,141,255,.55)' }, { boxShadow: '0 0 0 10px rgba(77,141,255,0)' }], { duration: 500, fill: 'none' }); }
 
-  /** トースト（右下）。action を渡すと「元に戻す」などのボタンが付く */
+  /** 時間のかかる操作：0.3秒をこえたら、押したボタンに「処理中」の印を出す（すぐ終わるときは何も出さない） */
+  function busy(btn, fn) {
+    var t = setTimeout(function () { if (btn) { btn.classList.add('is-busy'); btn.setAttribute('aria-busy', 'true'); } }, 300);
+    var done = function () { clearTimeout(t); if (btn) { btn.classList.remove('is-busy'); btn.removeAttribute('aria-busy'); } };
+    return Promise.resolve().then(fn).then(function (v) { done(); return v; }, function (e) { done(); throw e; });
+  }
+
+  /** トースト（右下）。action を渡すと「元に戻す」などのボタンが付く。直してほしい知らせ（〜ください・できませんでした）は自動で「！」の形に */
+  var WARN_RE = /^⚠|できません|ませんでした|ください|ありません。|必要です|すぎます/;
   function toast(msg, opts) {
     opts = opts || {};
+    if (opts.warn == null && WARN_RE.test(msg)) opts.warn = true;
     var box = document.querySelector('.toasts');
     var t = document.createElement('div');
     t.className = 'toast' + (opts.warn ? ' warn' : '');
@@ -1931,7 +1940,7 @@
 
   root.EE = root.EE || {};
   root.EE.fx = { bindAmbient: bindAmbient, burst: burst, anim: anim, stagger: stagger, pageIn: pageIn, pageOut: pageOut, countUp: countUp, countAll: countAll,
-    retarget: retarget, ripple: ripple, success: success, pop: pop, shake: shake, pulse: pulse, toast: toast, fmt: fmt, reduce: reduce };
+    retarget: retarget, ripple: ripple, success: success, pop: pop, shake: shake, pulse: pulse, toast: toast, busy: busy, fmt: fmt, reduce: reduce };
 })(this);
 
 
@@ -2153,22 +2162,49 @@
     }
   }
 
-  function statusBadge(doc) {
-    if (doc.status === 'issued') return '<span class="badge blue"><span class="d"></span>発行済み</span>';
-    return '<span class="badge"><span class="d" style="background:var(--muted);box-shadow:none"></span>下書き</span>';
-  }
+  /* 状態の色の表（どの画面も、この表から色を取る。色だけでなく必ず文字も出す）
+     下書き＝灰／確定＝青／期限切れ・要対応＝赤／入金済・完了＝緑。黄は状態ではなく「注意」（チェックの警告）だけに使う */
+  var STATUS = { draft: '', fixed: 'blue', alert: 'err', done: 'ok' };
+  function stBadge(kind, label, extra) { return '<span class="badge ' + (STATUS[kind] || '') + (extra ? ' ' + extra : '') + '"><span class="d"></span>' + esc(label) + '</span>'; }
+  // 工事の段階：見積＝下書き／受注・着工・請求＝確定／完了・入金＝完了
+  function stageKind(i) { var k = (EE.data.STAGES[i] || {}).key; return k === 'estimate' ? 'draft' : (k === 'done' || k === 'paid') ? 'done' : 'fixed'; }
+  function stageBadge(i) { return stBadge(stageKind(i), (EE.data.STAGES[i] || {}).label || ''); }
+
+  function statusBadge(doc) { return doc.status === 'issued' ? stBadge('fixed', '発行済み') : stBadge('draft', '下書き'); }
   function validBadge(doc) {
     var d = daysFromToday(doc.validUntil);
-    if (d == null) return '<span class="badge err">未設定</span>';
-    if (d < 0) return '<span class="badge err">期限切れ</span>';
-    if (d <= 7) return '<span class="badge warn">あと' + d + '日</span>';
-    return '<span class="muted">' + jdate(doc.validUntil) + '</span>';
+    if (d == null) return stBadge('alert', '期限 未設定');
+    if (d < 0) return stBadge('alert', '期限切れ');
+    if (d <= 7) return stBadge('alert', 'あと' + d + '日');
+    return '<span class="muted num">' + jdate(doc.validUntil) + '</span>';
   }
 
-  EE.ui = { esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
+  // 空の画面：「まだ○○がありません」＋次に押すボタン1つ（o = {icon, text, sub, btn, href | act, small}）
+  function empty(o) {
+    var b = !o.btn ? '' : o.href ? '<a class="btn primary sm" href="' + o.href + '">' + esc(o.btn) + '</a>'
+      : '<button class="btn primary sm" type="button" data-act="' + o.act + '">' + esc(o.btn) + '</button>';
+    return '<div class="empty' + (o.small ? ' sm' : '') + '">' + (o.icon || '') + '<p class="empty-t">' + esc(o.text) + '</p>' + (o.sub ? '<p class="empty-s">' + esc(o.sub) + '</p>' : '') + b + '</div>';
+  }
+
+  /** 消す・まとめて変えるなどの前に呼ぶ：S の keys を控えておき、終わったら返り値を呼ぶと「元に戻す」付きの知らせを出す */
+  function undoable(msg, keys) {
+    var snap = {}; keys.forEach(function (k) { snap[k] = JSON.parse(JSON.stringify(EE.S[k])); });
+    return function () {
+      EE.fx.toast(msg, { action: { label: '元に戻す', run: function () {
+        keys.forEach(function (k) {   // 同じ入れ物の中身を戻す（ほかの画面が持っている参照もそのまま使える）
+          var cur = EE.S[k], v = snap[k];
+          if (Array.isArray(cur)) cur.splice.apply(cur, [0, cur.length].concat(v));
+          else if (cur && typeof cur === 'object') { Object.keys(cur).forEach(function (x) { delete cur[x]; }); Object.assign(cur, v); }
+          else EE.S[k] = v;
+        }); commit(); if (EE.app && EE.app.rerender) EE.app.rerender(); EE.fx.toast('元に戻しました');
+      } } });
+    };
+  }
+
+  EE.ui = { empty: empty, undoable: undoable, esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
     commit: commit, layer: layer, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
     rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
-    readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge };
+    readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge, STATUS: STATUS, stBadge: stBadge, stageKind: stageKind, stageBadge: stageBadge };
 })(this);
 
 
@@ -2893,7 +2929,7 @@
     var p = c.project, cu = U.findCustomer(p.customerId) || {};
     var daysTxt = c.days == null ? '' : c.days < 0 ? '期限切れ（' + (-c.days) + '日前）' : 'あと ' + c.days + ' 日';
     var nextStage = c.stage < ST.length - 1 ? ST[c.stage + 1] : null;
-    return '<div class="flow-detail-head"><span class="badge blue">' + esc(ST[c.stage].label) + '</span>' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 22) + esc(c.owner.name) + '</span>' : '') +
+    return '<div class="flow-detail-head">' + U.stageBadge(c.stage) + '' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 22) + esc(c.owner.name) + '</span>' : '') +
         '<button class="btn ghost icon sm" data-act="flow-clear" title="選択を解除" style="margin-left:auto">' + I.x + '</button></div>' +
       '<div class="flow-detail-title">' + esc(p.name) + '</div><div class="hint">' + esc(cu.name || '') + ' ' + esc(cu.honorific || '') + '</div>' +
       '<div class="flow-amount num" data-count="' + c.amount + '" data-format="yen">¥0</div><div class="hint">税込' + (c.margin != null ? '　粗利率 ' + U.pct(c.margin) : '') + (c.main ? '　' + esc(c.main.no || '') : '') + '</div>' +
@@ -2962,13 +2998,13 @@
         '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
           sites.map(function (c) {
             var p = c.project, cu = U.findCustomer(p.customerId) || {};
-            var due = c.stage === 0 && c.valid ? (c.days < 0 ? '<span class="badge err">期限切れ</span>' : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
+            var due = c.stage === 0 && c.valid ? (c.days < 0 ? U.stBadge('alert', '期限切れ') : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
             return '<tr class="clickable" data-href="#/site/' + p.id + '"><td>' + esc(p.name) + '<span class="cell-sub">' + esc(cu.name || '') + '</span></td>' +
               '<td>' + (c.owner ? '<span class="owner-chip">' + U.avatar(c.owner, 20) + esc(c.owner.name) + '</span>' : '<span class="hint">未割り当て</span>') + '</td>' +
-              '<td><span class="badge blue">' + esc(ST[c.stage].label) + '</span></td>' +
+              '<td>' + U.stageBadge(c.stage) + '</td>' +
               '<td>' + due + '<span class="cell-sub' + (c.warn ? ' warn-text' : '') + '">' + esc(c.next || '') + '</span></td>' +
               '<td class="r num">' + U.yen(c.amount) + '</td></tr>';
-          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.site + 'まだ工事がありません。「工事を登録」か、見積を作るときに工事を選ぶと工事ができます</div>') + '</div></section>';
+          }).join('') + '</tbody></table></div>' : U.empty({ icon: I.site, text: 'まだ工事がありません', sub: '見積を作るときに工事を選んでも、工事ができます。', btn: '工事を登録する', act: 'new-site' })) + '</div></section>';
 
     return { title: '工事', crumb: '調査・施工・検査', html: html, mount: mount };
   }
@@ -3100,9 +3136,9 @@
           list.map(function (x) {
             var low = x.rate != null && x.rate < minM;
             return '<tr class="clickable" data-href="#/site/' + x.p.id + '"><td>' + esc(x.p.name) + '<span class="cell-sub">受注 ' + U.jdate(x.p.orderedOn) + '</span></td>' +
-              '<td><span class="badge blue">' + esc(ST[x.stage].label) + '</span></td><td class="r num">' + U.yen(x.total) + '</td><td class="r num">' + U.yen(x.cost) + '</td>' +
+              '<td>' + U.stageBadge(x.stage) + '</td><td class="r num">' + U.yen(x.total) + '</td><td class="r num">' + U.yen(x.cost) + '</td>' +
               '<td class="r num">' + U.yen(x.profit) + '</td><td class="r num"' + (low ? ' style="color:var(--warn)" title="粗利の下限を下回っています"' : '') + '>' + U.pct(x.rate) + '</td></tr>';
-          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.yen + 'まだ受注した工事がありません。工事で「受注にする」と、ここに出ます</div>') + '</div></section>' +
+          }).join('') + '</tbody></table></div>' : U.empty({ icon: I.yen, text: 'まだ受注した工事がありません', sub: '工事で「受注にする」と、ここに出ます。', btn: '工事の一覧を開く', href: EE.link ? '#/o/list' : '#/sites' })) + '</div></section>' +
       '<p class="hint" data-st style="margin-top:12px">請求書・分割請求・入金消込・支払予定・実行予算は、これから追加します（設定 →「機能ライブラリ」）。</p>';
     return { title: '経営・会計', crumb: '利益・請求・入金', html: html, mount: mount };
   }
@@ -3160,7 +3196,7 @@
     var max = tot.length ? tot[0][HM] : 0;
     view.querySelector('#a-heat-sum').innerHTML = '<div class="label" style="margin-bottom:10px">工事種別ごとの合計（12か月）</div>' + (tot.length ? tot.map(function (t) {
       return '<div class="hs-row"><span>' + esc(t.label) + '</span><b class="num">' + (HM === 'count' ? t.count + '件' : U.yen(t.amount)) + '</b><i style="--w:' + Math.round(t[HM] / max * 100) + '%"></i></div>';
-    }).join('') : '<p class="hint">まだ書類がありません</p>');
+    }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: '#/new' }));
   }
 
   /** 受注率：見積がある工事のうち、受注（受注以降の段階）になった割合 */
@@ -3181,7 +3217,7 @@
   }
 
   function table(rows) {
-    if (!rows.length) return '<p class="hint">まだデータがありません</p>';
+    if (!rows.length) return U.empty({ small: 1, text: 'まだ集計できる見積がありません', btn: '見積を作る', href: '#/new' });
     return '<table class="table"><thead><tr><th></th><th class="r">見積した工事</th><th class="r">受注</th><th class="r">受注率</th><th class="r">受注額（税込）</th></tr></thead><tbody>' + rows.map(function (r) {
       return '<tr><td>' + esc(r.label) + '</td><td class="r num">' + r.n + '</td><td class="r num">' + r.won + '</td><td class="r num">' + U.pct(r.n ? r.won / r.n : 0) + '</td><td class="r num">' + U.yen(r.amount) + '</td></tr>';
     }).join('') + '</tbody></table>';
@@ -3476,7 +3512,7 @@
         return '<div class="w-clock"><div class="w-date">' + (d.getMonth() + 1) + '月' + d.getDate() + '日（' + WD[d.getDay()] + '）</div>' +
           '<div class="w-time num" data-clock>' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + '</div>' +
           '<div class="w-greet">' + greet() + '、' + esc(U.me().name) + 'さん</div>' +
-          (next ? '<a class="w-next" href="' + next.href + '"><span class="label">次の予定</span><span>' + U.jdate(next.date) + '　' + esc(next.label) + '・' + esc(next.title) + '</span></a>' : '<div class="w-next hint">次の予定はありません</div>') + '</div>';
+          (next ? '<a class="w-next" href="' + next.href + '"><span class="label">次の予定</span><span>' + U.jdate(next.date) + '　' + esc(next.label) + '・' + esc(next.title) + '</span></a>' : '<a class="w-next" href="' + (EE.link ? '#/o/cal' : '#/schedule') + '"><span class="label">次の予定</span><span>まだありません　予定を開く ›</span></a>') + '</div>';
       }
       case 'kpi': {
         var m = METRICS[wd.metric] || METRICS.active, v = metricValue(wd.metric);
@@ -3493,7 +3529,7 @@
         items = items.slice(0, wd.size === 'l' ? 8 : 5);
         return '<div class="w-list">' + (items.length ? items.map(function (x) {
           return '<a class="w-item' + (x.warn ? ' warn' : '') + '" href="' + x.href + '"><span class="w-dot"></span><span><b>' + esc(x.t) + '</b><small>' + esc(x.s) + '</small></span></a>';
-        }).join('') : '<p class="hint">今日やることはありません</p>') + '</div>';
+        }).join('') : U.empty({ small: 1, text: '今日やることはありません', btn: '工事の一覧を開く', href: EE.link ? '#/o/list' : '#/sites' })) + '</div>';
       }
       case 'quick': {
         var Q = [['見積', '#/new', 'calc'], ['顧客', '#/clients', 'users'], ['工事', '#/sites', 'site'], ['予定', '#/schedule', 'calendar'], ['計算式', '#/settings/formulas', 'calc'], ['書類', '#/docs', 'docs'], ['検索', '#palette', 'search'], ['その他', '#/settings/features', 'grid']];
@@ -3501,7 +3537,7 @@
       }
       case 'events': {
         var ev = EE.views.schedule.upcoming(14).slice(0, wd.size === 'l' ? 8 : 5);
-        return '<div class="w-list">' + (ev.length ? ev.map(function (e) { return '<a class="w-item' + (e.warn ? ' warn' : '') + '" href="' + e.href + '"><span class="w-date-chip num">' + e.date.slice(5).replace('-', '/') + '</span><span><b>' + esc(e.title) + '</b><small>' + esc(e.label) + '</small></span></a>'; }).join('') : '<p class="hint">今後14日の予定はありません</p>') + '</div>';
+        return '<div class="w-list">' + (ev.length ? ev.map(function (e) { return '<a class="w-item' + (e.warn ? ' warn' : '') + '" href="' + e.href + '"><span class="w-date-chip num">' + e.date.slice(5).replace('-', '/') + '</span><span><b>' + esc(e.title) + '</b><small>' + esc(e.label) + '</small></span></a>'; }).join('') : U.empty({ small: 1, text: '今後14日の予定はまだありません', btn: '予定を開く', href: EE.link ? '#/o/cal' : '#/schedule' })) + '</div>';
       }
       case 'flow': return '<div class="w-flow" data-go="#/sites">' + EE.views.sites.flowSVG(EE.views.sites.filteredCases()) + '</div>';
       case 'bars': return '<div class="w-bars" data-bars></div>';
@@ -3512,7 +3548,7 @@
       case 'recent': {
         var docs = S.documents.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); }).slice(0, wd.size === 'l' ? 6 : 4);
         return '<div class="w-list">' + (docs.length ? docs.map(function (d) { var c = U.docCustomer(d);
-          return '<a class="w-item" href="#/edit/' + d.id + '"><span class="w-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc(c.name || '宛先未設定') + '　' + U.yen(U.calcDoc(d).total) + '</small></span>' + U.statusBadge(d) + '</a>'; }).join('') : '<p class="hint">まだ書類がありません</p>') + '</div>';
+          return '<a class="w-item" href="#/edit/' + d.id + '"><span class="w-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc(c.name || '宛先未設定') + '　' + U.yen(U.calcDoc(d).total) + '</small></span>' + U.statusBadge(d) + '</a>'; }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: '#/new' })) + '</div>';
       }
       case 'attention': {
         var at = S.documents.filter(function (d) { return d.status !== 'issued'; }).map(function (d) { return { d: d, s: EE.check.summary(U.checkDoc(d)) }; }).filter(function (x) { return x.s.error || x.s.warn; }).slice(0, 5);
@@ -3775,7 +3811,8 @@
 
   function tableHTML() {
     var list = rows();
-    if (!list.length) return '<div class="empty">' + I.search + '条件に合う書類がありません</div>';
+    if (!list.length) return EE.S.documents.length ? '<div class="empty">' + I.search + '<p class="empty-t">条件に合う見積がありません</p><button class="btn primary sm" type="button" data-fclear>条件を消す</button></div>'
+      : U.empty({ icon: I.docs, text: 'まだ見積がありません', sub: '最初の1枚を作ると、ここに並びます。', btn: '見積を作る', href: '#/new' });
     var total = list.reduce(function (s, x) { return s + x.r.total; }, 0);
     return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>担当</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {
@@ -3953,7 +3990,7 @@
     view.addEventListener('click', async function (e) {
       var s = e.target.closest('#f-status [data-s]');
       if (s) { location.hash = s.dataset.s === 'all' ? '#/docs' : '#/docs/' + s.dataset.s; return; }
-      if (e.target.closest('#f-clear')) {
+      if (e.target.closest('#f-clear, [data-fclear]')) {
         F = { q: '', status: 'all', from: '', to: '', min: '', max: '', sort: F.sort }; OWNER = '';
         EE.app.rerender(); return;
       }
@@ -5392,7 +5429,8 @@
   }
   function pastListHTML() {
     var list = pastList();
-    if (!list.length) return '<div class="empty">条件に合う見積がありません</div>';
+    if (!list.length) return EE.S.documents.length ? '<div class="empty"><p class="empty-t">条件に合う見積がありません</p></div>'
+      : U.empty({ icon: I.copy, text: 'まだ過去の見積がありません', sub: '1枚目は、文章やテンプレートから作れます。', btn: '別の作り方を選ぶ', href: '#/new' });
     return '<div class="checks">' + list.map(function (d) {
       var c = U.docCustomer(d);
       return '<button class="check info" data-doc="' + d.id + '" style="grid-template-columns:1fr auto;text-align:left;cursor:pointer;color:inherit;' + (pastSel === d.id ? 'border-color:var(--accent)' : '') + '">' +
@@ -6238,7 +6276,8 @@
   function listHTML() {
     var nq = U.norm(q);
     var list = EE.S.customers.filter(function (c) { return !nq || U.norm(c.name + c.contact + c.address).indexOf(nq) >= 0; });
-    if (!list.length) return '<div class="empty">' + I.users + '顧客がいません</div>';
+    if (!list.length) return EE.S.customers.length ? '<div class="empty">' + I.users + '<p class="empty-t">見つかりません</p></div>'
+      : U.empty({ icon: I.users, text: 'まだお客様がいません', sub: '工事を登録すると、お客様もここに入ります。', btn: '工事を登録する', href: EE.link ? '#/o/list' : '#/sites' });
     return '<table class="table"><tbody>' + list.map(function (c) {
       var n = EE.S.documents.filter(function (d) { return d.customerId === c.id; }).length;
       var rp = recentProject(c);
@@ -6383,7 +6422,7 @@
       return '<a class="folder-tile" href="#/folder/' + m.id + '" title="' + esc(m.name) + 'のファイルを開く">' + folderIcon(m, st.docs.length) +
         '<b>' + esc(m.name) + (m.id === me.id ? ' <span class="badge blue">自分</span>' : '') + '</b>' +
         '<small>' + esc(m.role || '') + '　工事 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</small>' +
-        (st.soon ? '<span class="badge warn fold-flag">期限間近 ' + st.soon + '</span>' : st.drafts ? '<span class="badge fold-flag">下書き ' + st.drafts + '</span>' : '') + '</a>';
+        (st.soon ? U.stBadge('alert', '期限間近 ' + st.soon, 'fold-flag') : st.drafts ? U.stBadge('draft', '下書き ' + st.drafts, 'fold-flag') : '') + '</a>';
     });
     var none = statsFor(NONE);
     if (none.docs.length) tiles.push('<a class="folder-tile" href="#/folder/' + NONE + '">' + folderIcon(null, none.docs.length) + '<b>未割り当て</b><small>担当者のいない書類 ' + none.docs.length + '</small></a>');
@@ -6642,7 +6681,7 @@
       '<div class="ws-title"><span class="kpi-icon" style="width:48px;height:48px">' + I.site + '</span><div style="flex:1;min-width:220px">' +
         '<div class="ws-name">' + esc(p.name) + '</div>' +
         '<div class="hint">' + esc(cu.name || '') + ' ' + esc(cu.honorific || '') + (p.site ? '　' + esc(p.site) : '') + (owner ? '　担当：' + esc(owner.name) : '') + '</div></div>' +
-        '<span class="badge blue">' + esc(ST[si].label) + '</span>' +
+        '' + U.stageBadge(si) + '' +
         '<button class="btn icon ghost' + (pinned ? ' pinned' : '') + '" data-act="pin" aria-pressed="' + pinned + '" title="' + (pinned ? 'お気に入りから外す' : 'お気に入りに追加（ホームの「お気に入りの工事」に出ます）') + '" aria-label="お気に入り">' + I.star + '</button>' +
         '<button class="btn sm" data-act="edit-p">' + I.edit + '工事を編集</button></div>' +
       '<div class="ws-stats">' +
@@ -6686,7 +6725,7 @@
     var cards = docs.map(function (d) {
       var r = U.calcDoc(d), acc = p.acceptedDocId === d.id;
       return '<div class="panel pattern-card' + (sel[d.id] ? ' on' : '') + '" data-st data-doc="' + d.id + '"><div class="panel-b">' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' + (patternBadge(d) || '<span class="badge">パターン名なし</span>') + U.statusBadge(d) + (acc ? '<span class="badge ok">受注</span>' : '') +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' + (patternBadge(d) || '<span class="badge">パターン名なし</span>') + U.statusBadge(d) + (acc ? U.stBadge('fixed', '受注') : '') +
           '<label class="hint" style="margin-left:auto;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" data-pick="' + d.id + '"' + (sel[d.id] ? ' checked' : '') + '>比較</label></div>' +
         '<div style="font-weight:600">' + esc(d.title || '（件名なし）') + '</div><div class="hint num">' + esc(d.no || '（未保存）') + '　' + U.jdate(d.issueDate) + '　明細 ' + d.lines.length + '行</div>' +
         '<div class="pattern-total num">' + U.yen(r.total) + '<small>税込　粗利率 ' + U.pct(r.marginRate) + '</small></div>' +
@@ -6942,7 +6981,8 @@
         var del = el.querySelector('[data-del]');
         if (del) del.onclick = async function () {
           if (!(await U.confirmBox('「' + p.name + '」を削除しますか？', '削除する', { danger: true }))) return;
-          EE.S.packages.splice(EE.S.packages.indexOf(p), 1); U.commit(); api.close(); rerender();
+          var undo = U.undoable('「' + p.name + '」を削除しました', ['packages']);
+          EE.S.packages.splice(EE.S.packages.indexOf(p), 1); U.commit(); api.close(); rerender(); undo();
         };
         el.querySelector('[data-s]').onclick = function () {
           var v = U.readForm(el.querySelector('.form-grid'));
@@ -7219,9 +7259,10 @@
           var used = EE.S.documents.filter(function (d) { return d.lines.some(function (l) { return l.itemId === it.id; }); }).length;
           if (used) { EE.fx.toast('「' + it.name + '」は ' + used + ' 件の書類で使っているため削除できません。「使用中」を外すと、新しい見積の候補に出なくなります', { warn: true, ms: 6000 }); return; }
           if (!(await U.confirmBox('「' + it.name + '」を削除しますか？', '削除する', { danger: true }))) return;
+          var undo = U.undoable('「' + it.name + '」を削除しました', ['items', 'packages']);
           EE.S.items.splice(EE.S.items.indexOf(it), 1);
           EE.S.packages.forEach(function (p) { p.lines = p.lines.filter(function (l) { return l.itemId !== it.id; }); });
-          U.commit(); api.close(); refreshItems(); EE.fx.toast('削除しました');
+          U.commit(); api.close(); refreshItems(); undo();
         };
         el.querySelector('[data-s]').onclick = function () {
           var v = U.readForm(el);
@@ -7464,10 +7505,10 @@
           if (!v.name) { var n = view.querySelector('[name=name]'); n.classList.add('flag-err'); EE.fx.shake(n); return; }
           if (v.invoiceRegNo && !/^T\d{13}$/.test(v.invoiceRegNo)) { var r = view.querySelector('[name=invoiceRegNo]'); r.classList.add('flag-err'); EE.fx.shake(r); EE.fx.toast('登録番号は「T」＋数字13桁です', { warn: true }); return; }
           Object.assign(S.company, v); U.commit(); EE.fx.success(a); break;
-        case 'del-logo': S.company.logo = ''; U.commit(); EE.fx.toast('ロゴを家紋＋会社名に戻しました'); EE.app.rerender(); break;
+        case 'del-logo': var undoLogo = U.undoable('ロゴを家紋＋会社名に戻しました', ['company']); S.company.logo = ''; U.commit(); undoLogo(); EE.app.rerender(); break;
         case 'del-seal':
           if (!(await U.confirmBox('登録した会社印を削除しますか？', '削除する', { danger: true }))) return;
-          S.company.seal = ''; U.commit(); EE.fx.toast('会社印を削除しました'); EE.app.rerender(); break;
+          var undoSeal = U.undoable('会社印を削除しました', ['company']); S.company.seal = ''; U.commit(); undoSeal(); EE.app.rerender(); break;
         case 'save-rules':
           var on = function (n) { return view.querySelector('[data-rule="' + n + '"] .on').dataset.v; };
           var m = Number(document.getElementById('r-margin').value), d = Number(document.getElementById('r-days').value);

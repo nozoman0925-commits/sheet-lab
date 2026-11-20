@@ -32,7 +32,8 @@
     if ((tries || 0) > 150) { U && EE.fx.toast('業務管理の画面を読み込めませんでした。再読み込みしてください', { warn: true, ms: 5000 }); return; }
     setTimeout(function () { whenFrame(fn, (tries || 0) + 1); }, 100);
   }
-  var lastSent = '', goAt = 0, arrived = false, rvT = null;   // arrived：指定した画面が一度描かれたか
+  var lastSent = '', goAt = 0, arrived = false, rvT = null, ldT = null;
+  function loaded() { clearTimeout(ldT); document.body.classList.remove('ob-loading'); }   // 0.3秒をこえて画面が出ないときだけ「読み込んでいます」   // arrived：指定した画面が一度描かれたか
   function go(parts) {
     var tab = parts[0] || 'list'; goAt = Date.now();
     whenFrame(function (o) {
@@ -47,7 +48,8 @@
   root.OUBI_LINK = {
     /** app.js の parse() から：#/o/<画面>/... */
     route: function (parts) {
-      goAt = Date.now(); lastSent = parts[0] || 'list'; arrived = false;   // 切り替えを始めた時から、業務管理の「ホームを描いた」の知らせは無視する
+      goAt = Date.now(); lastSent = parts[0] || 'list'; arrived = false;
+      clearTimeout(ldT); ldT = setTimeout(function () { if (!arrived && /^#\/o\//.test(location.hash)) document.body.classList.add('ob-loading'); ldT = setTimeout(loaded, 8000); }, 300);   // 切り替えを始めた時から、業務管理の「ホームを描いた」の知らせは無視する
       var pg = page(parts[0] || 'list');
       return { nav: pg[2], view: function () { return { title: pg[0], crumb: pg[1], html: '', oubi: true, mount: function () { go(parts); } }; } };
     },
@@ -55,7 +57,7 @@
     onTab: function (tab, cur) {
       if (!/^#\/o\//.test(location.hash)) return;            // 桜ミツの画面にいるときは、うしろの業務管理の動きで画面を変えない
       // 開いた直後に届く「ホームを描いた」は、業務管理の最初の画面なので無視する（こちらから画面を指定している途中）
-      if (tab === lastSent || (lastSent === 'case' && tab === 'case')) arrived = true;
+      if (tab === lastSent || (lastSent === 'case' && tab === 'case')) { arrived = true; loaded(); }
       if (tab === 'home' && lastSent !== 'home' && !arrived && Date.now() - goAt < 3000) return;
       if (tab === 'home') { document.body.classList.remove('ob-on'); location.hash = '#/home'; return; }   // 業務管理の「ホーム」は桜ミツのホーム（ウィジェット）。枠はすぐ隠す
       var h = tab === 'case' && cur && cur.caseId ? '#/o/case/' + cur.caseId : '#/o/' + tab;
@@ -239,7 +241,7 @@
         (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th></th><th>品目</th><th class="r">今の原価</th><th class="r">実績の原価</th><th class="r">差</th><th>もとにした工事</th></tr></thead><tbody>' +
           list.map(function (x, i) { var d = x.sug - x.now; return '<tr><td><input type="checkbox" data-act-pick="' + i + '" checked aria-label="' + U.esc(x.item.name) + 'を反映"></td><td>' + U.esc(x.item.name) + '<div class="hint">' + U.esc(x.item.unit || '') + '</div></td><td class="r num">' + U.yen(x.now) + '</td><td class="r num"><b>' + U.yen(x.sug) + '</b></td><td class="r num" style="color:' + (d > 0 ? 'var(--err)' : 'var(--ok)') + '">' + (d > 0 ? '+' : '') + U.yen(d).replace('¥', '¥') + '</td><td class="hint">' + U.esc(x.names.slice(0, 3).join('、')) + (x.n > 3 ? ' ほか' : '') + '（' + x.n + '件）</td></tr>'; }).join('') +
           '</tbody></table></div><div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn primary" data-act-apply>' + U.I.check + '選んだ品目の原価をマスタに反映</button><span class="hint">次の見積から、この原価で粗利を計算します。前の原価は品目の履歴に残します。</span></div>'
-          : '<p class="hint" style="margin:0">まだ見直せる品目がありません。工事を「完了」まで進め、工事の画面の「利益」に実際の原価（材料費・労務費・その他）と業者への支払いを入れると、ここに出ます。</p>') +
+          : U.empty({ small: 1, text: 'まだ見直せる品目がありません', sub: '工事を「完了」まで進め、工事の画面の「利益」に実際の原価（材料費・労務費・その他）と業者への支払いを入れると、ここに出ます。', btn: '工事の一覧を開く', href: '#/o/list' })) +
         '</div></section>';
     },
     mount: function (view) {
@@ -292,8 +294,8 @@
             setTimeout(function () { root.print(); pr.innerHTML = ''; }, 50);
           };
           el.querySelector('[data-cmp-img]').onclick = async function () {
-            var btn = this; btn.disabled = true;
-            try {
+            var btn = this;
+            try { await EE.fx.busy(btn, async function () {
               await loadH2C();
               var box = document.createElement('div'); box.style.cssText = 'position:fixed;left:-10000px;top:0'; box.innerHTML = html; document.body.appendChild(box);
               var cv = await root.html2canvas(box.firstChild, { scale: 2, backgroundColor: '#ffffff' }); box.remove();
@@ -303,6 +305,7 @@
               if (dl) await dl.save({ filename: name, data: blob });
               else { var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name; document.body.appendChild(a); a.click(); a.remove(); }
               EE.fx.toast('比較表を画像にしました');
+            });
             } catch (err) { if (!err || err.code !== 'declined') EE.fx.toast('画像にできませんでした（' + ((err && (err.message || err.code)) || '通信') + '）', { warn: true }); }
             btn.disabled = false;
           };
@@ -367,12 +370,12 @@
       view.addEventListener('click', async function (e) {
         var b = e.target.closest('[data-bk="save"]'); if (!b) return;
         b.disabled = true; msg('まとめています…');
-        try {
+        try { await EE.fx.busy(b, async function () {
           var data = JSON.stringify(await make());
           await saveFile('桜ミツ_バックアップ_' + EE.data.today() + '.json', data);
           try { localStorage.setItem(BK_KEY, new Date().toISOString()); } catch (e2) {}
-          msg('保存しました（' + Math.round(data.length / 1024) + 'KB）');
-        } catch (err) { msg(err && err.code === 'declined' ? '保存をやめました' : '保存できませんでした（' + ((err && (err.message || err.code)) || '不明') + '）'); }
+          msg('保存しました（' + Math.round(data.length / 1024) + 'KB）'); EE.fx.toast('バックアップを保存しました');
+        }); } catch (err) { msg(err && err.code === 'declined' ? '保存をやめました' : '保存できませんでした（' + ((err && (err.message || err.code)) || '不明') + '）'); }
         b.disabled = false;
       });
       view.addEventListener('change', async function (e) {

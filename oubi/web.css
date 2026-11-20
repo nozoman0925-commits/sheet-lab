@@ -45,3 +45,21 @@ body.ob-on #view { display: none; }
 }
 
 @media print { .mnav, #ob-frame { display: none !important; } }
+
+/* ボタンの大きさは3種類だけ：小 36px（補助・アイコン・知らせの中）／標準 48px（業務管理の画面・指で押す所）／大 52px（ホームの主役）。
+   角は丸ごと（アイコンだけのものは円）、左右の余白は 12px と 16px の2種類 */
+body.ee-link .btn.sm { height: 36px; padding: 0 12px; font-size: 14px; border-radius: 999px; }
+body.ee-link .btn.sm.icon, body.ee-link .btn.icon { width: 36px; height: 36px; padding: 0; border-radius: 50%; }
+body.ee-link .toast .btn { height: 36px; padding: 0 12px; font-size: 14px; border-radius: 999px; }
+
+/* 業務管理の画面が0.3秒をこえて出ないときだけ、まん中に「読み込んでいます」 */
+body.ob-loading .main { position: relative; }
+body.ob-loading .main::after {
+  content: "読み込んでいます…"; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 5;
+  padding: 12px 20px 12px 46px; border-radius: 999px; color: #e9eef8; font-size: 14px; font-weight: 600;
+  background: rgba(12, 18, 34, .82); border: 1px solid rgba(186, 230, 253, .14); -webkit-backdrop-filter: blur(18px); backdrop-filter: blur(18px);
+}
+body.ob-loading .main::before {
+  content: ""; position: absolute; left: 50%; top: 50%; z-index: 6; width: 16px; height: 16px; margin: -8px 0 0 -72px; border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, .3); border-top-color: #00E5FF; animation: ee-spin .7s linear infinite;
+}

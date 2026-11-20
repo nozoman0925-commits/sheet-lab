@@ -114,7 +114,7 @@
       '<div class="ws-title"><span class="kpi-icon" style="width:48px;height:48px">' + I.site + '</span><div style="flex:1;min-width:220px">' +
         '<div class="ws-name">' + esc(p.name) + '</div>' +
         '<div class="hint">' + esc(cu.name || '') + ' ' + esc(cu.honorific || '') + (p.site ? '　' + esc(p.site) : '') + (owner ? '　担当：' + esc(owner.name) : '') + '</div></div>' +
-        '<span class="badge blue">' + esc(ST[si].label) + '</span>' +
+        '' + U.stageBadge(si) + '' +
         '<button class="btn icon ghost' + (pinned ? ' pinned' : '') + '" data-act="pin" aria-pressed="' + pinned + '" title="' + (pinned ? 'お気に入りから外す' : 'お気に入りに追加（ホームの「お気に入りの工事」に出ます）') + '" aria-label="お気に入り">' + I.star + '</button>' +
         '<button class="btn sm" data-act="edit-p">' + I.edit + '工事を編集</button></div>' +
       '<div class="ws-stats">' +
@@ -158,7 +158,7 @@
     var cards = docs.map(function (d) {
       var r = U.calcDoc(d), acc = p.acceptedDocId === d.id;
       return '<div class="panel pattern-card' + (sel[d.id] ? ' on' : '') + '" data-st data-doc="' + d.id + '"><div class="panel-b">' +
-        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' + (patternBadge(d) || '<span class="badge">パターン名なし</span>') + U.statusBadge(d) + (acc ? '<span class="badge ok">受注</span>' : '') +
+        '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' + (patternBadge(d) || '<span class="badge">パターン名なし</span>') + U.statusBadge(d) + (acc ? U.stBadge('fixed', '受注') : '') +
           '<label class="hint" style="margin-left:auto;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" data-pick="' + d.id + '"' + (sel[d.id] ? ' checked' : '') + '>比較</label></div>' +
         '<div style="font-weight:600">' + esc(d.title || '（件名なし）') + '</div><div class="hint num">' + esc(d.no || '（未保存）') + '　' + U.jdate(d.issueDate) + '　明細 ' + d.lines.length + '行</div>' +
         '<div class="pattern-total num">' + U.yen(r.total) + '<small>税込　粗利率 ' + U.pct(r.marginRate) + '</small></div>' +

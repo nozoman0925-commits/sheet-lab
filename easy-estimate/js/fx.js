@@ -113,9 +113,18 @@
   function shake(el) { anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'none' }], { duration: 300, fill: 'none' }); }
   function pulse(el) { anim(el, [{ boxShadow: '0 0 0 0 rgba(77,141,255,.55)' }, { boxShadow: '0 0 0 10px rgba(77,141,255,0)' }], { duration: 500, fill: 'none' }); }
 
-  /** トースト（右下）。action を渡すと「元に戻す」などのボタンが付く */
+  /** 時間のかかる操作：0.3秒をこえたら、押したボタンに「処理中」の印を出す（すぐ終わるときは何も出さない） */
+  function busy(btn, fn) {
+    var t = setTimeout(function () { if (btn) { btn.classList.add('is-busy'); btn.setAttribute('aria-busy', 'true'); } }, 300);
+    var done = function () { clearTimeout(t); if (btn) { btn.classList.remove('is-busy'); btn.removeAttribute('aria-busy'); } };
+    return Promise.resolve().then(fn).then(function (v) { done(); return v; }, function (e) { done(); throw e; });
+  }
+
+  /** トースト（右下）。action を渡すと「元に戻す」などのボタンが付く。直してほしい知らせ（〜ください・できませんでした）は自動で「！」の形に */
+  var WARN_RE = /^⚠|できません|ませんでした|ください|ありません。|必要です|すぎます/;
   function toast(msg, opts) {
     opts = opts || {};
+    if (opts.warn == null && WARN_RE.test(msg)) opts.warn = true;
     var box = document.querySelector('.toasts');
     var t = document.createElement('div');
     t.className = 'toast' + (opts.warn ? ' warn' : '');
@@ -211,5 +220,5 @@
 
   root.EE = root.EE || {};
   root.EE.fx = { bindAmbient: bindAmbient, burst: burst, anim: anim, stagger: stagger, pageIn: pageIn, pageOut: pageOut, countUp: countUp, countAll: countAll,
-    retarget: retarget, ripple: ripple, success: success, pop: pop, shake: shake, pulse: pulse, toast: toast, fmt: fmt, reduce: reduce };
+    retarget: retarget, ripple: ripple, success: success, pop: pop, shake: shake, pulse: pulse, toast: toast, busy: busy, fmt: fmt, reduce: reduce };
 })(this);

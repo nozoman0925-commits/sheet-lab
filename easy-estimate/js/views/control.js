@@ -138,7 +138,7 @@
         return '<div class="w-clock"><div class="w-date">' + (d.getMonth() + 1) + '月' + d.getDate() + '日（' + WD[d.getDay()] + '）</div>' +
           '<div class="w-time num" data-clock>' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + '</div>' +
           '<div class="w-greet">' + greet() + '、' + esc(U.me().name) + 'さん</div>' +
-          (next ? '<a class="w-next" href="' + next.href + '"><span class="label">次の予定</span><span>' + U.jdate(next.date) + '　' + esc(next.label) + '・' + esc(next.title) + '</span></a>' : '<div class="w-next hint">次の予定はありません</div>') + '</div>';
+          (next ? '<a class="w-next" href="' + next.href + '"><span class="label">次の予定</span><span>' + U.jdate(next.date) + '　' + esc(next.label) + '・' + esc(next.title) + '</span></a>' : '<a class="w-next" href="' + (EE.link ? '#/o/cal' : '#/schedule') + '"><span class="label">次の予定</span><span>まだありません　予定を開く ›</span></a>') + '</div>';
       }
       case 'kpi': {
         var m = METRICS[wd.metric] || METRICS.active, v = metricValue(wd.metric);
@@ -155,7 +155,7 @@
         items = items.slice(0, wd.size === 'l' ? 8 : 5);
         return '<div class="w-list">' + (items.length ? items.map(function (x) {
           return '<a class="w-item' + (x.warn ? ' warn' : '') + '" href="' + x.href + '"><span class="w-dot"></span><span><b>' + esc(x.t) + '</b><small>' + esc(x.s) + '</small></span></a>';
-        }).join('') : '<p class="hint">今日やることはありません</p>') + '</div>';
+        }).join('') : U.empty({ small: 1, text: '今日やることはありません', btn: '工事の一覧を開く', href: EE.link ? '#/o/list' : '#/sites' })) + '</div>';
       }
       case 'quick': {
         var Q = [['見積', '#/new', 'calc'], ['顧客', '#/clients', 'users'], ['工事', '#/sites', 'site'], ['予定', '#/schedule', 'calendar'], ['計算式', '#/settings/formulas', 'calc'], ['書類', '#/docs', 'docs'], ['検索', '#palette', 'search'], ['その他', '#/settings/features', 'grid']];
@@ -163,7 +163,7 @@
       }
       case 'events': {
         var ev = EE.views.schedule.upcoming(14).slice(0, wd.size === 'l' ? 8 : 5);
-        return '<div class="w-list">' + (ev.length ? ev.map(function (e) { return '<a class="w-item' + (e.warn ? ' warn' : '') + '" href="' + e.href + '"><span class="w-date-chip num">' + e.date.slice(5).replace('-', '/') + '</span><span><b>' + esc(e.title) + '</b><small>' + esc(e.label) + '</small></span></a>'; }).join('') : '<p class="hint">今後14日の予定はありません</p>') + '</div>';
+        return '<div class="w-list">' + (ev.length ? ev.map(function (e) { return '<a class="w-item' + (e.warn ? ' warn' : '') + '" href="' + e.href + '"><span class="w-date-chip num">' + e.date.slice(5).replace('-', '/') + '</span><span><b>' + esc(e.title) + '</b><small>' + esc(e.label) + '</small></span></a>'; }).join('') : U.empty({ small: 1, text: '今後14日の予定はまだありません', btn: '予定を開く', href: EE.link ? '#/o/cal' : '#/schedule' })) + '</div>';
       }
       case 'flow': return '<div class="w-flow" data-go="#/sites">' + EE.views.sites.flowSVG(EE.views.sites.filteredCases()) + '</div>';
       case 'bars': return '<div class="w-bars" data-bars></div>';
@@ -174,7 +174,7 @@
       case 'recent': {
         var docs = S.documents.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); }).slice(0, wd.size === 'l' ? 6 : 4);
         return '<div class="w-list">' + (docs.length ? docs.map(function (d) { var c = U.docCustomer(d);
-          return '<a class="w-item" href="#/edit/' + d.id + '"><span class="w-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc(c.name || '宛先未設定') + '　' + U.yen(U.calcDoc(d).total) + '</small></span>' + U.statusBadge(d) + '</a>'; }).join('') : '<p class="hint">まだ書類がありません</p>') + '</div>';
+          return '<a class="w-item" href="#/edit/' + d.id + '"><span class="w-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc(c.name || '宛先未設定') + '　' + U.yen(U.calcDoc(d).total) + '</small></span>' + U.statusBadge(d) + '</a>'; }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: '#/new' })) + '</div>';
       }
       case 'attention': {
         var at = S.documents.filter(function (d) { return d.status !== 'issued'; }).map(function (d) { return { d: d, s: EE.check.summary(U.checkDoc(d)) }; }).filter(function (x) { return x.s.error || x.s.warn; }).slice(0, 5);

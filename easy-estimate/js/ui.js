@@ -215,20 +215,47 @@
     }
   }
 
-  function statusBadge(doc) {
-    if (doc.status === 'issued') return '<span class="badge blue"><span class="d"></span>発行済み</span>';
-    return '<span class="badge"><span class="d" style="background:var(--muted);box-shadow:none"></span>下書き</span>';
-  }
+  /* 状態の色の表（どの画面も、この表から色を取る。色だけでなく必ず文字も出す）
+     下書き＝灰／確定＝青／期限切れ・要対応＝赤／入金済・完了＝緑。黄は状態ではなく「注意」（チェックの警告）だけに使う */
+  var STATUS = { draft: '', fixed: 'blue', alert: 'err', done: 'ok' };
+  function stBadge(kind, label, extra) { return '<span class="badge ' + (STATUS[kind] || '') + (extra ? ' ' + extra : '') + '"><span class="d"></span>' + esc(label) + '</span>'; }
+  // 工事の段階：見積＝下書き／受注・着工・請求＝確定／完了・入金＝完了
+  function stageKind(i) { var k = (EE.data.STAGES[i] || {}).key; return k === 'estimate' ? 'draft' : (k === 'done' || k === 'paid') ? 'done' : 'fixed'; }
+  function stageBadge(i) { return stBadge(stageKind(i), (EE.data.STAGES[i] || {}).label || ''); }
+
+  function statusBadge(doc) { return doc.status === 'issued' ? stBadge('fixed', '発行済み') : stBadge('draft', '下書き'); }
   function validBadge(doc) {
     var d = daysFromToday(doc.validUntil);
-    if (d == null) return '<span class="badge err">未設定</span>';
-    if (d < 0) return '<span class="badge err">期限切れ</span>';
-    if (d <= 7) return '<span class="badge warn">あと' + d + '日</span>';
-    return '<span class="muted">' + jdate(doc.validUntil) + '</span>';
+    if (d == null) return stBadge('alert', '期限 未設定');
+    if (d < 0) return stBadge('alert', '期限切れ');
+    if (d <= 7) return stBadge('alert', 'あと' + d + '日');
+    return '<span class="muted num">' + jdate(doc.validUntil) + '</span>';
   }
 
-  EE.ui = { esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
+  // 空の画面：「まだ○○がありません」＋次に押すボタン1つ（o = {icon, text, sub, btn, href | act, small}）
+  function empty(o) {
+    var b = !o.btn ? '' : o.href ? '<a class="btn primary sm" href="' + o.href + '">' + esc(o.btn) + '</a>'
+      : '<button class="btn primary sm" type="button" data-act="' + o.act + '">' + esc(o.btn) + '</button>';
+    return '<div class="empty' + (o.small ? ' sm' : '') + '">' + (o.icon || '') + '<p class="empty-t">' + esc(o.text) + '</p>' + (o.sub ? '<p class="empty-s">' + esc(o.sub) + '</p>' : '') + b + '</div>';
+  }
+
+  /** 消す・まとめて変えるなどの前に呼ぶ：S の keys を控えておき、終わったら返り値を呼ぶと「元に戻す」付きの知らせを出す */
+  function undoable(msg, keys) {
+    var snap = {}; keys.forEach(function (k) { snap[k] = JSON.parse(JSON.stringify(EE.S[k])); });
+    return function () {
+      EE.fx.toast(msg, { action: { label: '元に戻す', run: function () {
+        keys.forEach(function (k) {   // 同じ入れ物の中身を戻す（ほかの画面が持っている参照もそのまま使える）
+          var cur = EE.S[k], v = snap[k];
+          if (Array.isArray(cur)) cur.splice.apply(cur, [0, cur.length].concat(v));
+          else if (cur && typeof cur === 'object') { Object.keys(cur).forEach(function (x) { delete cur[x]; }); Object.assign(cur, v); }
+          else EE.S[k] = v;
+        }); commit(); if (EE.app && EE.app.rerender) EE.app.rerender(); EE.fx.toast('元に戻しました');
+      } } });
+    };
+  }
+
+  EE.ui = { empty: empty, undoable: undoable, esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
     commit: commit, layer: layer, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
     rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
-    readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge };
+    readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge, STATUS: STATUS, stBadge: stBadge, stageKind: stageKind, stageBadge: stageBadge };
 })(this);

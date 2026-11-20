@@ -76,9 +76,9 @@
           list.map(function (x) {
             var low = x.rate != null && x.rate < minM;
             return '<tr class="clickable" data-href="#/site/' + x.p.id + '"><td>' + esc(x.p.name) + '<span class="cell-sub">受注 ' + U.jdate(x.p.orderedOn) + '</span></td>' +
-              '<td><span class="badge blue">' + esc(ST[x.stage].label) + '</span></td><td class="r num">' + U.yen(x.total) + '</td><td class="r num">' + U.yen(x.cost) + '</td>' +
+              '<td>' + U.stageBadge(x.stage) + '</td><td class="r num">' + U.yen(x.total) + '</td><td class="r num">' + U.yen(x.cost) + '</td>' +
               '<td class="r num">' + U.yen(x.profit) + '</td><td class="r num"' + (low ? ' style="color:var(--warn)" title="粗利の下限を下回っています"' : '') + '>' + U.pct(x.rate) + '</td></tr>';
-          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.yen + 'まだ受注した工事がありません。工事で「受注にする」と、ここに出ます</div>') + '</div></section>' +
+          }).join('') + '</tbody></table></div>' : U.empty({ icon: I.yen, text: 'まだ受注した工事がありません', sub: '工事で「受注にする」と、ここに出ます。', btn: '工事の一覧を開く', href: EE.link ? '#/o/list' : '#/sites' })) + '</div></section>' +
       '<p class="hint" data-st style="margin-top:12px">請求書・分割請求・入金消込・支払予定・実行予算は、これから追加します（設定 →「機能ライブラリ」）。</p>';
     return { title: '経営・会計', crumb: '利益・請求・入金', html: html, mount: mount };
   }
