@@ -26,13 +26,13 @@
   };
   // 桜ミツ版（業務管理の機能を入れたもの）の子メニュー
   var LINK_CHILDREN = {
-    sales: [['#/o/sales', '営業に出る（記録）'], ['#/o/sales/rv', '再訪問'], ['#/o/sales/rank', 'ランキング']],
-    sites: [['#/sites', '現場の流れ'], ['#/o/list', '工事の一覧（9工程）'], ['#/o/new', '新しい工事を登録']],
-    schedule: [['#/o/cal', 'カレンダー'], ['#/schedule', '見積の期限・入金日']],
-    board: [['#/o/wb', 'あしたの予定'], ['#/o/board', 'タイムライン']],
-    finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の経営']],
-    settings: [['#/settings/items', '工事項目・単価'], ['#/settings/packages', '工事テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
-      ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/o/settings', '業務の設定'], ['#/o/staff', '社員'], ['#/settings/features', '機能ライブラリ'], ['#/settings/data', 'バックアップ']]
+    sales: [['#/o/sales', '記録'], ['#/o/sales/rv', '再訪問'], ['#/o/sales/rank', 'ランキング']],
+    sites: [['#/o/list', '工事の一覧'], ['#/sites', '流れ（見積→入金）'], ['#/clients', 'お客様'], ['#/o/new', '＋ 新しい工事']],
+    estimate: [['#/new', '＋ 見積を作る'], ['#/docs', '見積の一覧'], ['#/docs/draft', '下書き'], ['#/docs/issued', '確定済み']],
+    schedule: [['#/o/cal', 'カレンダー'], ['#/o/wb', 'あしたの予定'], ['#/o/board', 'タイムライン']],
+    finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の進み・入金'], ['#/analysis', '分析']],
+    settings: [['#/settings/items', '工事項目・単価'], ['#/settings/packages', 'テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
+      ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/o/settings', '目標の粗利率'], ['#/o/staff', '社員'], ['#/settings/data', '自分の名前・バックアップ']]
   };
   var NAV = [];
   function buildNav() {
@@ -103,6 +103,7 @@
   }
 
   function setActive(i) {
+    i = EE.features.navKey(i);   // 桜ミツ版：顧客は「工事」、書類は「見積」などに
     document.querySelectorAll('.nav-item').forEach(function (a) { var on = a.dataset.nav === i; a.classList.toggle('active', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
     var h = location.hash || '#/home';
     var best = null;
@@ -122,6 +123,13 @@
   function renderUser() {
     var u = U.me();
     var el = document.getElementById('side-user');
+    // 桜ミツ版：ログインはない。左下は「自分の名前」（押すと設定の「自分の名前」へ）
+    if (EE.link) {
+      var nm = (root.OUBI_LINK && root.OUBI_LINK.me().name) || '';
+      el.innerHTML = '<a class="side-user-btn" href="#/settings/data" title="自分の名前を変える">' + U.avatar({ name: nm || '？', hue: u ? u.hue : 217 }) +
+        '<span class="who"><b>' + U.esc(nm || '名前を入れてください') + '</b><small>自分の名前（押して変える）</small></span></a>';
+      return;
+    }
     var others = U.members().filter(function (m) { return m.id !== u.id; });
     el.innerHTML = '<button class="side-user-btn" type="button" id="user-btn" aria-haspopup="menu" title="' + U.esc(u.name) + '">' +
         U.avatar(u).replace('</span>', '<i class="presence"></i></span>') +
@@ -147,6 +155,7 @@
   }
   function bindUser() {
     document.getElementById('side-user').addEventListener('click', function (e) {
+      if (EE.link) return;
       var pop = document.getElementById('user-pop');
       if (e.target.closest('#user-btn')) { toggleUserPop(!pop.hidden ? false : true); return; }
       var b = e.target.closest('[data-u]');

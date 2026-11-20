@@ -57,7 +57,7 @@
         return '<a class="panel kpi quick-card" data-st href="#/new/' + m.key + '"><div class="kpi-label"><span class="kpi-icon">' + icon(m) + '</span><b style="color:var(--text);font-size:15px">' + m.title + '</b></div>' +
           '<div class="hint" style="margin-top:10px;line-height:1.7">' + m.desc + '</div></a>';
       }).join('') + '</div>';
-    return { title: 'かんたん見積もり作成', crumb: '作り方を選ぶ', html: html };
+    return { title: EE.link ? '見積を作る' : 'かんたん見積もり作成', crumb: '作り方を選ぶ', html: html };
   }
 
   /* ================ 文章・音声 ================ */

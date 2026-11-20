@@ -3,7 +3,7 @@
  *   業務管理の画面は「共有モード」と同じ作りで動かし、保存先だけをこの端末にする。
  *   ・記録：localStorage（種類ごとに oubi.ldb.<種類>）。同じ端末の別のタブには storage イベントで届く
  *   ・写真・書類：IndexedDB（oubi-local-files）。画面には、その場で作る一時的なアドレスで出す
- *   ・使う人：桜ミツでログインした人（親の画面の EE.auth）。初めての人は社員の名簿に自動で入れる
+ *   ・使う人：この端末の「自分」（ログインはない）。名前は桜ミツの設定で変える
  *   社員とは共有しない。端末を替えるとき・ブラウザの記録を消すときは、桜ミツの「データ」でバックアップする。
  */
 (function () {
@@ -100,17 +100,49 @@
   var fillT = null;
   new MutationObserver(function () { clearTimeout(fillT); fillT = setTimeout(fill, 30); }).observe(document.documentElement, { subtree: true, childList: true });
 
-  /* ---------- 使う人：桜ミツでログインした人 ---------- */
-  var meResolve, mePromise = new Promise(function (r) { meResolve = r; });
-  function setMe(u) {
-    if (!u || !u.id) return;
+  /* ---------- 使う人：この端末の「自分」（ログインはない） ----------
+     自分＝社員の名簿の1人（id は oubi.local.me に覚える）。名前は 設定 → 自分の名前 でいつでも変えられる。
+     決め方（最初の1回）：①前の桜ミツのアカウントがあれば、その人（id と名前をそのまま引き継ぐ。ほかのアカウントも社員に入れる）
+                          ②社員の名簿があれば、その先頭の1人 ③どちらも無ければ、名前の空いた「自分」を作る
+     ①のあと、アカウントの保存データ（パスワードのハッシュなど）は消す。工事・営業・見積の記録には触らない。 */
+  var ME_KEY = 'oubi.local.me', AUTH_KEYS = ['oumitsu:auth:v1', 'oumitsu:auth:lock', 'oumitsu:keep', 'oumitsu:lock'];
+  function lsJson(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
+  function ensureStaff(id, name) {
     var st = read('staff');
-    if (!st[u.id]) { st[u.id] = { name: u.name || 'あなた', createdAt: new Date().toISOString(), at: new Date().toISOString() }; write('staff', st); emit('staff'); }
-    meResolve({ id: u.id, isOwner: true, name: u.name || '' });
+    if (!st[id]) { st[id] = { name: name || '', createdAt: new Date().toISOString(), at: new Date().toISOString() }; write('staff', st); return true; }
+    if (!st[id].name && name) { st[id].name = name; write('staff', st); return true; }
+    return false;
   }
-  window.OUBI_LOCAL_SET_ME = setMe;
-  try { var cur = window.parent && window.parent !== window && window.parent.EE && window.parent.EE.auth && window.parent.EE.auth.current(); if (cur) setMe(cur); } catch (e) {}
-  var user = { me: function () { return mePromise; }, isOwner: function () { return true; }, profiles: function () { return Promise.resolve({}); } };
+  function resolveMe() {
+    var saved = lsJson(ME_KEY);
+    if (saved && saved.id) { ensureStaff(saved.id, ''); return saved.id; }
+    var id = null, auth = lsJson('oumitsu:auth:v1');
+    if (auth && auth.users && auth.users.length) {
+      var sid = ((lsJson('oumitsu:keep') || {}).uid) || (function () { try { return (JSON.parse(sessionStorage.getItem('oumitsu:session')) || {}).uid; } catch (e) { return null; } })();
+      var u = auth.users.filter(function (x) { return x.id === sid; })[0] || auth.users[0];
+      auth.users.forEach(function (x) { ensureStaff(x.id, x.name); });
+      id = u.id;
+    } else {
+      var st = read('staff'), ids = Object.keys(st).sort(function (a, b) { return String(st[a].createdAt || '').localeCompare(String(st[b].createdAt || '')); });
+      id = ids[0] || ('me_' + Date.now().toString(36) + Math.random().toString(36).slice(2, 6));
+      ensureStaff(id, '');
+    }
+    try { localStorage.setItem(ME_KEY, JSON.stringify({ id: id })); } catch (e) {}
+    // アカウントの保存データは、引き継いだあと消す
+    AUTH_KEYS.forEach(function (k) { try { localStorage.removeItem(k); } catch (e) {} });
+    try { sessionStorage.removeItem('oumitsu:session'); } catch (e) {}
+    return id;
+  }
+  var meId = resolveMe();
+  function meObj() { var st = read('staff'); return { id: meId, isOwner: true, name: (st[meId] || {}).name || '' }; }
+  var user = { me: function () { return Promise.resolve(meObj()); }, isOwner: function () { return true; }, profiles: function () { return Promise.resolve({}); } };
+  /** 桜ミツの設定から：自分の名前・自分をだれにするか */
+  window.OUBI_LOCAL_ME = {
+    get: meObj,
+    setName: function (name) { var st = read('staff'); st[meId] = Object.assign({ createdAt: new Date().toISOString() }, st[meId], { name: String(name || '').trim(), at: new Date().toISOString() }); write('staff', st); emit('staff'); },
+    choose: function (id) { if (!id || id === meId) return; meId = id; try { localStorage.setItem(ME_KEY, JSON.stringify({ id: id })); } catch (e) {} ensureStaff(id, ''); }
+  };
+  window.OUBI_LOCAL_SET_ME = function () {};   // 以前の呼び出し（ログインした人を渡す）は使わない
 
   var caps = { db: db, user: user, assets: assets };
   window.claude = { use: function (n) { return Promise.resolve(caps[n] || null); } };

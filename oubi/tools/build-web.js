@@ -13,6 +13,7 @@ fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive:
 const cp = (a, b) => fs.cpSync(a, b, { recursive: true });
 cp(path.join(EE, 'css'), path.join(OUT, 'css'));
 cp(path.join(EE, 'js'), path.join(OUT, 'js'));
+['js/auth.js', 'js/login.js', 'css/login.css'].forEach(f => fs.rmSync(path.join(OUT, f), { force: true }));
 if (!ART) { try { fs.symlinkSync(path.join(EE, 'vendor'), path.join(OUT, 'vendor')); } catch (e) {} }
 fs.copyFileSync(path.join(OB, 'link.js'), path.join(OUT, 'js', 'oubi-link.js'));
 fs.copyFileSync(path.join(OB, 'mitsu-bridge.js'), path.join(OUT, 'js', 'oubi-bridge.js'));
@@ -27,21 +28,21 @@ body.ob-on #view { display: none; }
 let ix = fs.readFileSync(path.join(EE, 'index.html'), 'utf8');
 const sub = (a, b) => { if (!ix.includes(a)) throw new Error('見つからない: ' + a.slice(0, 60)); ix = ix.replace(a, b); };
 sub('<link rel="stylesheet" href="css/control.css">', '<link rel="stylesheet" href="css/control.css">\n<link rel="stylesheet" href="css/oubi-frame.css">');
+// ログインの部品（アカウント作成・サインイン・パスワード・間違いロック）は入れない
+sub('<link rel="stylesheet" href="css/login.css">\n', '');
+sub('<script src="js/auth.js"></script>\n', '');
+sub('<script src="js/login.js"></script>\n', '');
 sub('<script src="js/palette.js"></script>', '<script src="js/palette.js"></script>\n<script src="js/oubi-link.js"></script>\n<script src="js/oubi-bridge.js"></script>');
 const bootA = ix.indexOf('  var started = false;'), bootB = ix.indexOf('</script>', bootA);
-ix = ix.slice(0, bootA) + `  // 桜ミツ版：ログインした人を業務管理に渡し、工事・見積の記録がそろってから画面を開く
+ix = ix.slice(0, bootA) + `  // 桜ミツ版：ログインはない。起動の演出のあいだに業務管理と見積の記録をそろえ、演出が終わったらそのままホーム
   var started = false, ready = false, wantIntro = false;
-  function bootNow(user) {
+  function bootNow() {
     if (started) return; started = true;
-    OUBI_LINK.start(user, function () { EE.app.boot({ deferIntro: true, user: user }); ready = true; if (wantIntro) EE.app.intro(); });
+    OUBI_LINK.start(function () { EE.app.boot({ deferIntro: true }); ready = true; if (wantIntro) EE.app.intro(); });
   }
   function intro() { if (ready) EE.app.intro(); else wantIntro = true; }
-  var gate = EE.auth.current() ? null : EE.login.gate(function (user) { bootNow(user); intro(); });
-  if (!gate) setTimeout(function () { bootNow(EE.auth.current()); }, 600);
-  EE.splash.play({
-    target: function () { return gate && gate.target(); },
-    onReveal: function () { if (gate) gate.reveal(); else { bootNow(EE.auth.current()); intro(); } }
-  });
+  setTimeout(bootNow, 0);
+  EE.splash.play({ target: function () { return null; }, onReveal: function () { bootNow(); intro(); } });
 ` + ix.slice(bootB);
 if (ART) {
   ix = ix.replace(/<!doctype html>\s*<html[^>]*>\s*<head>\s*/i, '').replace(/<meta[^>]*>\s*/g, '').replace('</head>', '')
