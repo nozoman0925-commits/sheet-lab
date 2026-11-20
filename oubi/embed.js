@@ -9,6 +9,8 @@
   var P = window.parent !== window ? window.parent : null;
   window.OUBI_EMBED = true;
   document.documentElement.setAttribute('data-theme', 'dark');   // 桜ミツは暗い画面だけ
+  // 営業の画面は、桜ミツのダッシュボードと同じ暗い画面に（昼の自動切り替えはしない。「外で見やすく」を押したときだけ明るく）
+  try { if (localStorage.getItem('oubi.slsun') == null) localStorage.setItem('oubi.slsun', '0'); } catch (e) {}
   function H() { return (P && P.OUBI_HOST) || null; }
   window.OUBI_HOST = {
     start: function () {}, mountHome: function () {},
@@ -24,6 +26,7 @@
     open: function (hash) { var h = H(); if (h) h.open(hash); }
   };
   window.SUPA_AFTER_RENDER = function (tab) {
+    document.body.setAttribute('data-obtab', tab);   // 業務管理のホームは描かない（桜ミツのホームに替わる）
     try { if (P && P.OUBI_LINK) P.OUBI_LINK.onTab(tab, window.OUBI && window.OUBI.cur ? window.OUBI.cur() : { tab: tab }); } catch (e) {}
   };
 })();
