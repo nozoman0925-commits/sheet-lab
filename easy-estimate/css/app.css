@@ -33,6 +33,7 @@
 html, body { height: 100%; }
 body {
   margin: 0;
+  font-variant-numeric: tabular-nums;   /* 数字はすべて等幅（一覧で桁がそろう） */
   font-family: var(--font);
   font-size: 14px;
   line-height: 1.6;
@@ -494,8 +495,11 @@ tr:hover .row-actions { opacity: 1; }
 /* ===== 印刷（PDF出力） ===== */
 #print-root { display: none; }
 @media print {
-  @page { size: A4; margin: 12mm 12mm 14mm; }
-  body { background: #fff !important; overflow: visible; }
+  /* 帳票の余白は全ページ同じ（上下15mm・左右18mm）。右下にページ番号「1 / 2」 */
+  @page { size: A4; margin: 15mm 18mm 15mm 18mm;
+    @bottom-right { content: counter(page) " / " counter(pages); font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; font-size: 8pt; color: #555; } }
+  :root, html, body { color-scheme: light !important; }   /* 暗い画面の決まりのままだと、紙の余白が黒くなる */
+  html, body { background: #fff !important; overflow: visible; }
   body::before, body::after { display: none; }
   .app, .overlay, .toasts { display: none !important; }
   #print-root { display: block; }

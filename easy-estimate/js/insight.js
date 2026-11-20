@@ -26,12 +26,12 @@
     return best;
   }
 
-  /** 案件（現場）ごとの状況。現場に属さない見積は1件ずつ「見積」段階の案件として扱う */
+  /** 工事ごとの状況。工事に属さない見積は1件ずつ「見積」段階の工事として扱う */
   function cases() {
     var S = EE.S, out = [];
     S.projects.forEach(function (p) {
       var docs = S.documents.filter(function (d) { return d.projectId === p.id; });
-      if (!docs.length && (p.stage || 'estimate') === 'estimate') return;   // 見積の無い登録だけの現場は出さない
+      if (!docs.length && (p.stage || 'estimate') === 'estimate') return;   // 見積の無い登録だけの工事は出さない
       out.push(build(p, docs));
     });
     S.documents.filter(function (d) { return !d.projectId || !U.findProject(d.projectId); }).forEach(function (d) {

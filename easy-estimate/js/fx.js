@@ -102,7 +102,7 @@
     if (btn._eeTimer) clearTimeout(btn._eeTimer);
     if (btn._eeHtml == null) btn._eeHtml = btn.innerHTML;
     btn.classList.add('done');
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5fd0b0" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" style="stroke-dasharray:24;stroke-dashoffset:24;animation:draw .3s forwards"/></svg>' + (label || '保存しました');
+    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5fd0b0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" style="stroke-dasharray:24;stroke-dashoffset:24;animation:draw .3s forwards"/></svg>' + (label || '保存しました');
     anim(btn, [{ boxShadow: '0 0 0 0 rgba(95,208,176,.6)' }, { boxShadow: '0 0 0 8px rgba(95,208,176,0)' }], { duration: 420, fill: 'none' });
     btn._eeTimer = setTimeout(function () {
       btn.classList.remove('done'); btn.innerHTML = btn._eeHtml; btn._eeHtml = null;
@@ -121,7 +121,7 @@
     t.className = 'toast' + (opts.warn ? ' warn' : '');
     t.innerHTML = '<span class="ck">' + (opts.warn
       ? '<b>!</b>'
-      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>') +
+      : '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg>') +
       '</span><span></span>';
     t.lastChild.textContent = msg;
     if (opts.action) {

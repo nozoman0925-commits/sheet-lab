@@ -81,9 +81,9 @@
     }
     if (doc.projectId) {
       var pj = (ctx.projects || []).filter(function (p) { return p.id === doc.projectId; })[0];
-      if (!pj) add('warn', 'project-missing', '案件データが見つかりません', '', { area: 'header', field: 'projectId' });
+      if (!pj) add('warn', 'project-missing', '工事データが見つかりません', '', { area: 'header', field: 'projectId' });
       else if (pj.customerId && pj.customerId !== doc.customerId) {
-        add('error', 'project-customer', '案件と宛先の顧客が一致しません', '案件「' + pj.name + '」は別の顧客に紐づいています。', { area: 'header', field: 'projectId' });
+        add('error', 'project-customer', '工事と宛先の顧客が一致しません', '工事「' + pj.name + '」は別の顧客に紐づいています。', { area: 'header', field: 'projectId' });
       }
     }
     if (!doc.title || !String(doc.title).trim()) {
@@ -183,10 +183,10 @@
       }
     }
 
-    // ---- 6b. 同じ現場のパターン ----
+    // ---- 6b. 同じ工事のパターン ----
     if (doc.projectId && doc.patternLabel) {
       var same = (ctx.documents || []).filter(function (d) { return d.id !== doc.id && d.projectId === doc.projectId && d.patternLabel === doc.patternLabel; });
-      if (same.length) add('info', 'dup-pattern', '同じ現場に「' + doc.patternLabel + '」が ' + (same.length + 1) + ' 件あります', 'お客様に送るときに見分けが付くよう、パターン名を変えるとわかりやすくなります。', { area: 'header', field: 'patternLabel' });
+      if (same.length) add('info', 'dup-pattern', '同じ工事に「' + doc.patternLabel + '」が ' + (same.length + 1) + ' 件あります', 'お客様に送るときに見分けが付くよう、パターン名を変えるとわかりやすくなります。', { area: 'header', field: 'patternLabel' });
     }
 
     // ---- 7. 書類番号 ----

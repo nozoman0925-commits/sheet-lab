@@ -8,10 +8,10 @@
  *     mitsu_home/<社員ID> … その人のホームのウィジェット・お気に入りなど（人ごと）
  *   試用モード：この端末の localStorage（oubi.mitsu.v1）
  *
- * ■ 顧客・現場は業務管理の「工事」から作る（二重入力しない）
- *   現場（案件）＝工事1件。顧客＝工事の顧客名・電話番号が同じものを1人にまとめる。
- *   桜ミツの画面で顧客や案件を新しく作ると、業務管理に工事（問い合わせ）を1件作る。
- *   桜ミツだけの項目（採用した見積・現場メモ）は 工事.mitsu に入れる。
+ * ■ 顧客・工事は業務管理の「工事」から作る（二重入力しない）
+ *   工事＝工事1件。顧客＝工事の顧客名・電話番号が同じものを1人にまとめる。
+ *   桜ミツの画面で顧客や工事を新しく作ると、業務管理に工事（問い合わせ）を1件作る。
+ *   桜ミツだけの項目（採用した見積・工事メモ）は 工事.mitsu に入れる。
  *
  * ■ 見積の金額は工事へ戻す
  *   工事の「採用した見積」（無ければ、その工事でいちばん新しく直した見積）の明細・金額・日付・番号を
@@ -63,7 +63,7 @@
     O.db().collection(col).onSnapshot(function (s) { cb(s.docs.map(function (x) { return { id: x.id, data: x.data() }; })); }, function () {});
   }
 
-  /* ---------- 工事 → 顧客・現場 ---------- */
+  /* ---------- 工事 → 顧客・工事 ---------- */
   function N(v) { var n = Number(String(v == null ? '' : v).replace(/[,，円\s]/g, '')); return isFinite(n) ? n : 0; }
   function digits(s) { return String(s || '').replace(/\D/g, ''); }
   function custName(c) { var L = c.lead || {}; return (L.company || L.customer || '').trim(); }
@@ -126,7 +126,7 @@
   function masterOf(s) { var m = {}; Object.keys(s).forEach(function (k) { if (!MASTER_SKIP[k]) m[k] = s[k]; }); return m; }
   function clone(o) { return JSON.parse(JSON.stringify(o)); }
 
-  /** 桜ミツ版：前の桜ミツ（この端末の easy-estimate:v1）の見積・顧客・案件を引き継ぐ（最初の1回だけ。元のデータは消さない） */
+  /** 桜ミツ版：前の桜ミツ（この端末の easy-estimate:v1）の見積・顧客・工事を引き継ぐ（最初の1回だけ。元のデータは消さない） */
   function oldState() {
     if (!LINK) return null;
     try { var raw0 = localStorage.getItem('easy-estimate:v1'); if (!raw0) return null; var o = JSON.parse(raw0); return o && (o.schema === 1 || o.schema === 2) ? EE.data.migrate(o) : null; }
@@ -145,7 +145,7 @@
     s.homes = {}; if (h.home) s.homes[s.currentMemberId] = clone(h.home);
     s.ui = h.ui ? clone(h.ui) : {};
     if (old) {
-      // 顧客・案件は工事として作り直す（保存のときに adoptNew が工事を作り、見積の宛先を付け替える）
+      // 顧客・工事は工事として作り直す（保存のときに adoptNew が工事を作り、見積の宛先を付け替える）
       migrating = true;
       s.customers = s.customers.concat(old.customers || []);
       s.projects = s.projects.concat((old.projects || []).map(function (p) { var x = clone(p); x.oldStage = true; return x; }));
@@ -183,7 +183,7 @@
   function flush(s) {
     if (saving) return; saving = true;
     try {
-      // 1) 桜ミツで新しく作った顧客・案件 → 工事を作る（ID を工事のものに付け替える）
+      // 1) 桜ミツで新しく作った顧客・工事 → 工事を作る（ID を工事のものに付け替える）
       adoptNew(s);
       // 2) 見積書（1通ずつ）
       var seen = {};
@@ -201,7 +201,7 @@
       // 5) 自社情報の名前・住所・電話など → 業務管理の設定にも
       var cj = JSON.stringify(coSig(s.company));
       if (cj !== last.company) { last.company = cj; O.setCompany(JSON.parse(cj)); }
-      // 6) 顧客・案件の変更 → 工事へ、見積の金額 → 工事の「見積と利益」へ
+      // 6) 顧客・工事の変更 → 工事へ、見積の金額 → 工事の「見積と利益」へ
       writeCases(s);
     } finally { saving = false; }
   }
@@ -220,7 +220,7 @@
       remap[cu.id] = { cust: 'cus_' + c.id, caseId: c.id, used: false };
       cu.fromCase = c.id; known[c.id] = 1;
     });
-    // 新しい案件（工事が無い）→ 工事を作る。顧客の工事がまだ案件に使われていなければ、それを案件にする
+    // 新しい工事（工事が無い）→ 工事を作る。顧客の工事がまだ工事に使われていなければ、それを工事にする
     s.projects.forEach(function (p) {
       if (known[p.id] && !remap[p.customerId]) return;
       if (known[p.id]) return;
@@ -229,7 +229,7 @@
       else {
         var base = caseOf(String(p.customerId || '').replace(/^cus_/, '')) || caseOf((rc || {}).caseId), L = (base && base.lead) || {};
         c = O.makeCase({ customer: L.customer || '', company: L.company || '', tel: L.tel || '', email: L.email || '', addr: L.addr || '' });
-        O.addLog(c, '見積（桜ミツ）から案件を登録');
+        O.addLog(c, '見積（桜ミツ）から工事を登録');
       }
       c.work = c.work || {}; c.work.title = p.name || c.work.title || '';
       if (p.site) c.lead.siteAddr = p.site; if (p.ownerId) c.lead.owner = p.ownerId;
@@ -238,7 +238,7 @@
       O.touch(c);
       remap['prj:' + p.id] = c.id;
     });
-    // 書類の宛先・案件を、作った工事に付け替える
+    // 書類の宛先・工事を、作った工事に付け替える
     var changed = false;
     s.documents.forEach(function (d) {
       if (d.status === 'issued' && !migrating) return;   // 確定した見積は付け替えない（前の桜ミツから引き継ぐときだけは、工事に結び付ける）
@@ -247,7 +247,7 @@
       if (rc) { d.customerId = rc.cust; if (!d.projectId || !known[d.projectId]) d.projectId = rc.caseId; changed = true; }
     });
     if (Object.keys(remap).length) {
-      // 工事から作り直す（桜ミツの顧客・案件の一覧を、工事のものにそろえる）
+      // 工事から作り直す（桜ミツの顧客・工事の一覧を、工事のものにそろえる）
       var fc = fromCases(); s.customers = fc.customers; s.projects = fc.projects;
       s.projects.forEach(function (p) { last.projects[p.id] = projSig(p); });
       s.customers.forEach(function (c) { last.customers[c.id] = custSig(c); });
@@ -256,7 +256,7 @@
     }
   }
 
-  /** 前の桜ミツの案件の段階（受注・着工・完了・請求・入金）を、工事の記録に写す */
+  /** 前の桜ミツの工事の段階（受注・着工・完了・請求・入金）を、工事の記録に写す */
   function stageToCase(c, p, s) {
     var si = EE.data.stageIndex(p.stage || 'estimate');
     if (p.note) c.work.summary = p.note;
@@ -269,7 +269,7 @@
       var acc = (s.documents || []).filter(function (d) { return d.id === p.acceptedDocId; })[0], amt = acc ? U.calcDoc(acc).total : 0;
       if (amt) c.payments = [{ kind: '残金', bill: amt, billDate: p.invoicedOn || '', date: p.paidOn || '', amount: amt }];
     }
-    O.addLog(c, '前の桜ミツの案件から引き継ぎ（段階：' + ((EE.data.STAGES[si] || {}).label || '見積') + '）');
+    O.addLog(c, '前の桜ミツの工事から引き継ぎ（段階：' + ((EE.data.STAGES[si] || {}).label || '見積') + '）');
   }
   function writeCases(s) {
     var touched = {};
@@ -284,7 +284,7 @@
         touched[c.id] = c;
       });
     });
-    // 案件の変更 → 工事名・現場住所・担当・桜ミツの項目
+    // 工事の変更 → 工事名・現場住所・担当・桜ミツの項目
     s.projects.forEach(function (p) {
       var sig = projSig(p); if (last.projects[p.id] === sig) return; last.projects[p.id] = sig;
       var c = caseOf(p.id); if (!c) return;
@@ -420,7 +420,7 @@
     EE.app.route(!was);
     subNav();
   }
-  var SUB = [['#/docs', '見積の一覧', /^#\/(docs|edit)/], ['#/new', '新しい見積', /^#\/new/], ['#/clients', '顧客', /^#\/clients/], ['#/sites', '現場の流れ', /^#\/sites/],
+  var SUB = [['#/docs', '見積の一覧', /^#\/(docs|edit)/], ['#/new', '新しい見積', /^#\/new/], ['#/clients', '顧客', /^#\/clients/], ['#/sites', '工事の流れ', /^#\/sites/],
     ['#/finance', '粗利・会計', /^#\/finance/], ['#/analysis', '分析', /^#\/analysis/], ['#/settings/items', '品目・見積の設定', /^#\/(settings|folder)/]];
   function subNav() {
     var el = document.getElementById('ee-sub'); if (!el) return;

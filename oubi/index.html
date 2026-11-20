@@ -205,7 +205,7 @@ nav.tabs[hidden]{display:none!important}
 .pk-item{display:grid;grid-template-columns:36px minmax(0,1fr) auto;gap:10px;align-items:center;text-align:left;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:8px 10px;cursor:pointer;min-height:52px}
 .pk-item:hover,.pk-item.on{border-color:var(--blue);background:var(--blue-soft)}
 .pk-tx{display:grid;min-width:0}.pk-tx small{color:var(--muted)}
-/* 表示する案件の切り替え */
+/* 表示する工事の切り替え */
 .scope{display:flex;gap:6px;flex-wrap:wrap}
 .chipbtn{border:1px solid var(--line);background:var(--surface);border-radius:999px;padding:7px 14px;font-weight:700;font-size:.84rem;cursor:pointer;min-height:38px}
 .chipbtn.on{background:var(--blue);border-color:var(--blue);color:var(--surface)}
@@ -349,7 +349,7 @@ button.brand{border:none;background:none;cursor:pointer;color:inherit;padding:0}
 .pipe span{height:7px;border-radius:4px;background:var(--line)}
 .pipe span.done{background:var(--blue)} .pipe span.now{background:var(--sakura)} .pipe span.closed{background:var(--muted);opacity:.35}
 
-/* 案件画面 */
+/* 工事画面 */
 .case-head{display:grid;gap:12px}
 .case-card{display:grid;gap:12px}
 .case-card h1{font-size:1.3rem}
@@ -485,7 +485,7 @@ nav.tabs .more-btn{display:none}
 /* 絞り込み中の表示 */
 .fchip{display:inline-flex;align-items:center;gap:8px;background:var(--blue-soft);color:var(--blue);border-radius:999px;padding:4px 6px 4px 14px;font-weight:700;font-size:.86rem}
 .fchip button{border:none;background:var(--surface);color:var(--ink);border-radius:999px;min-height:32px;padding:0 12px;cursor:pointer;font-weight:700}
-/* 案件一覧：スマホはカード、PCは表 */
+/* 工事一覧：スマホはカード、PCは表 */
 .ccards{display:none;gap:8px}
 .ccard{display:grid;gap:6px;text-align:left;width:100%;border:1px solid var(--line);border-radius:8px;background:var(--surface);padding:12px 14px;cursor:pointer}
 .ccard:hover{border-color:var(--blue)}
@@ -775,7 +775,7 @@ table.t tr.click td{height:48px}
 .home2 .launch-btn{min-height:0;padding:18px 18px}
 .home2 .launch-btn.sales{padding:24px 18px}
 .home2 .launch-btn .lb-ic{width:56px;height:56px}
-/* 進み具合：大きな数字＋工事現場の安全帯のような斜線のバー */
+/* 進み具合：大きな数字＋工事の安全帯のような斜線のバー */
 .pbar{display:grid;grid-template-columns:auto minmax(0,1fr);align-items:center;gap:10px}
 .pb-n{font-weight:700;font-size:1rem;min-width:3.2em}.pb-n small{font-size:.7em;margin-left:1px}
 .pb-t{height:10px;border-radius:99px;background:var(--sunk);overflow:hidden;border:1px solid var(--line)}
@@ -934,7 +934,7 @@ main{gap:var(--sp5)}
     </defs></svg>
     <button type="button" class="brand" data-tab="home" aria-label="桜美建設（最初の画面へ）"><img class="mon logo-img" src="logo-s.jpg" alt="" aria-hidden="true">桜美建設<small>総合業務管理</small></button>
     <nav class="tabs" id="tabs" aria-label="画面切替"></nav>
-    <span class="hw"><button type="button" class="hd-btn" data-tab="staff" aria-label="社員一覧" title="社員一覧"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20.5c0-3.6 2.9-6.3 6.5-6.3s6.5 2.7 6.5 6.3"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.3c3 .2 5 2.6 5 5.7"/></svg></button><button type="button" class="hd-btn help-btn" data-tab="help" aria-label="ヘルプ（使い方）" title="ヘルプ">？</button><span class="who-am-i" id="whoami"><i>桜</i><span>接続中…</span></span></span>
+    <span class="hw"><button type="button" class="hd-btn" data-tab="staff" aria-label="社員一覧" title="社員一覧"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="9" cy="8" r="3.4"/><path d="M2.5 20.5c0-3.6 2.9-6.3 6.5-6.3s6.5 2.7 6.5 6.3"/><circle cx="17" cy="9" r="2.6"/><path d="M16.5 14.3c3 .2 5 2.6 5 5.7"/></svg></button><button type="button" class="hd-btn help-btn" data-tab="help" aria-label="ヘルプ（使い方）" title="ヘルプ">？</button><span class="who-am-i" id="whoami"><i>桜</i><span>接続中…</span></span></span>
   </div>
 </header>
 <main class="gut" id="main"><p class="sub">読み込み中…</p></main>
@@ -942,7 +942,7 @@ main{gap:var(--sp5)}
 <section class="ee ee-host gut" id="ee-host" hidden aria-labelledby="title">
   <div class="ee-top"><div class="ee-ttl"><h1 id="title"></h1><div class="crumb" id="crumb"></div></div>
     <div class="ee-acts" id="actions"></div>
-    <button class="btn ghost topbar-search" id="open-palette" type="button" title="すべての機能を検索（Ctrl+K）" aria-label="すべての機能を検索"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>検索</span></button></div>
+    <button class="btn ghost topbar-search" id="open-palette" type="button" title="すべての機能を検索（Ctrl+K）" aria-label="すべての機能を検索"><svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg><span>検索</span></button></div>
   <nav class="ee-sub" id="ee-sub" aria-label="見積のメニュー"></nav>
   <div class="view" id="view"></div>
   <div hidden><nav id="nav"></nav><div id="side-user"></div><span id="brand-crest"></span><span id="foot-count"></span></div>
@@ -1021,7 +1021,7 @@ const APPR_LABEL={quote:'見積書',contract:'契約書',invoice:'請求書'};
 let cases=[], dec={}, settings={targetRate:25}, mode='local';
 let db=null, assets=null, userCap=null, me={id:'local',isOwner:true,name:'あなた'};
 let view={tab:'home',caseId:null,sec:'lead',month:null,q:'',fStage:'',fWho:'',showArchived:false};
-let C=null; // 表示中の案件
+let C=null; // 表示中の工事
 const names={};
 
 const $=s=>document.querySelector(s);
@@ -1054,7 +1054,7 @@ function hideToast(dir){const t=$('#toast');if(!t||t.hidden)return;clearTimeout(
     if(Math.abs(dx)>50)hideToast(dx>0?'x+':'x-');else if(dy>30)hideToast('y');else{t.style.transform='';t.style.opacity='';toast.t=setTimeout(hideToast,2500)}};
   t.addEventListener('pointerup',end);t.addEventListener('pointercancel',end);
 })();
-// 案件を変える操作を「元に戻せる」ようにする
+// 工事を変える操作を「元に戻せる」ようにする
 function withUndo(msg,fn){
   if(!C){fn();return}
   const id=C.id, before=JSON.stringify(C); fn();
@@ -1119,11 +1119,11 @@ function choosePerson(id){if(!C||!view.pick)return;const p=view.pick.path,label=
   withUndo(id?`${label}を ${pn(id)} さんにしました`:`${label}を外しました`,()=>{setP(C,p,id||'');if(id)addLog(C,`${label}に ${pn(id)} を設定`);noteEdit(C);touch(C);closePicker();const y=window.scrollY;$('#main').innerHTML=renderCase();fillNames();window.scrollTo(0,y)})}
 /* 自分の担当・工程のまとまり */
 function isMine(c){if(!me.id)return false;return ASSIGN(c).some(v=>sameP(v,me.id))||sameP(c.createdBy,me.id)||((c.lead||{}).contacts||[]).some(k=>sameP(k.who,me.id))}
-// 成約したら（見積の承認が残っていても）工事側の案件として扱う：現場の人が「工事中」で探せるように
+// 成約したら（見積の承認が残っていても）工事側の工事として扱う：工事の人が「工事中」で探せるように
 function phaseOf(c){if(isLost(c))return'lost';const i=curStage(c);if(i>=9)return'done';
   if((c.result||{}).status!=='won')return'sales';return approved(c,'invoice')||i>=7?'money':'build'}
 const PHASES=[['','すべて'],['sales','営業中'],['build','工事中'],['money','入金・支払'],['done','完了']];
-function scopeBar(){return `<div class="scope" role="group" aria-label="表示する案件"><button type="button" class="chipbtn ${view.mine?'on':''}" data-mine aria-pressed="${!!view.mine}">👤 自分の担当だけ</button>${PHASES.map(([k,l])=>`<button type="button" class="chipbtn ${(view.phase||'')===k?'on':''}" data-phase="${k}" aria-pressed="${(view.phase||'')===k}">${l}</button>`).join('')}</div>`}
+function scopeBar(){return `<div class="scope" role="group" aria-label="表示する工事"><button type="button" class="chipbtn ${view.mine?'on':''}" data-mine aria-pressed="${!!view.mine}">👤 自分の担当だけ</button>${PHASES.map(([k,l])=>`<button type="button" class="chipbtn ${(view.phase||'')===k?'on':''}" data-phase="${k}" aria-pressed="${(view.phase||'')===k}">${l}</button>`).join('')}</div>`}
 function scoped(list){return list.filter(c=>(!view.mine||isMine(c))&&(!view.phase||phaseOf(c)===view.phase))}
 
 /* ===================== 保存 ===================== */
@@ -1166,7 +1166,7 @@ async function flush(id){
   writing.delete(id); if(again.delete(id)) flush(id);
 }
 const retryN={};
-// 送れていない案件の控え（この端末だけ）。次に開いたときに送り直す
+// 送れていない工事の控え（この端末だけ）。次に開いたときに送り直す
 function unsent(id,c){try{const k='oubi.unsent.v1';const m=JSON.parse(localStorage.getItem(k)||'{}');if(c)m[id]=c;else delete m[id];localStorage.setItem(k,JSON.stringify(m))}catch(e){}}
 function resendUnsent(){try{const m=JSON.parse(localStorage.getItem('oubi.unsent.v1')||'{}');Object.values(m).forEach(c=>{if(GONE.has(c.id)){unsent(c.id,null);return} // 消す途中の工事は送り直さないconst cur=cases.find(x=>x.id===c.id);
   if(!cur||(c.updatedAt||'')>(cur.updatedAt||'')){if(cur)Object.assign(cur,c);else cases.push(c);dirty.add(c.id);flush(c.id)}else unsent(c.id,null)});
@@ -1274,7 +1274,7 @@ function renderTabs(){
    mitsu:'<rect x="5" y="3" width="14" height="18" rx="2"/><path d="M9 7h6M9 11h2M13 11h2M9 15h2M13 15h2M9 18.5h6"/>',
    staff:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3 3 0 0 1 0 6M18 14c2 .7 3 2.8 3 6"/>',
    settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>'};
-  const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
+  const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
   const nav=$('#tabs'); nav.hidden=['setup','pickme','pin'].includes(view.tab); if(nav.hidden){nav.innerHTML='';return}
   if(view.tab==='sales'){nav.innerHTML=slNav();return} // 営業モードの間は、下のボタンが営業用に変わる
   // 下のボタンは5つ：ホーム・タイムライン・ホワイトボード・予定・経営（経営状況は1回で開ける）
@@ -1285,7 +1285,7 @@ function renderTabs(){
 }/* スマホの「その他」：経営状況・社員・設定をまとめた下からのメニュー */
 function openSheet(){
   const sh=$('#sheet'); const I={dash:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>',staff:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6M16 4.5a3 3 0 0 1 0 6M18 14c2 .7 3 2.8 3 6"/>',settings:'<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1L7 17M17 7l2.1-2.1"/>',me:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>'};
-  const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
+  const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
   const al=alertsOf().length, un=boardUnread(), pend=cases.filter(c=>!c.archived).reduce((s,c)=>s+['quote','contract','invoice'].filter(k=>pendingAppr(c,k)).length,0);
   I.board='<rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M7 9h10M7 13h6M9 18l-1 3M15 18l1 3"/>';
   I.appr='<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>';
@@ -1388,7 +1388,7 @@ fsApply(fsGet());
 /* ホームの近道（模擬テスト サイクル1）：メニューの奥にあった掲示板・承認・経営状況を最初の画面に出す */
 function shortcuts(){
   const I={board:'<rect x="3" y="4" width="18" height="14" rx="1.5"/><path d="M7 9h10M7 13h6M9 18l-1 3M15 18l1 3"/>',appr:'<path d="M6 16V11a6 6 0 0 1 12 0v5l2 2H4z"/><path d="M10 21h4"/>',dash:'<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>'};
-  const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
+  const ic=k=>`<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${I[k]}</svg>`;
   const un=boardUnread(), pend=cases.filter(c=>!c.archived).reduce((s,c)=>s+['quote','contract','invoice'].filter(k=>pendingAppr(c,k)).length,0);
   // サイクル2：社員の端末では、承認は待っている書類があるときだけ出す（最初の画面のボタンを減らす）
   const showAppr=me.isOwner||pend>0;
@@ -1464,7 +1464,7 @@ function todayBoard(){
     ${ftSitesHTML()}
   </section>`;
 }
-/* 工事の進み具合（9つの段階のうち、終わった数）。一覧と工事の画面で、大きな数字と工事現場の斜線のバーで見せる */
+/* 工事の進み具合（9つの段階のうち、終わった数）。一覧と工事の画面で、大きな数字と工事の斜線のバーで見せる */
 function casePct(c){let n=0;for(let i=0;i<9;i++)if(stageDone(c,i))n++;return Math.round(n/9*100)}
 function pbar(c,big){const p=casePct(c),lost=isLost(c);
   return `<div class="pbar ${big?'big':''} ${lost?'lost':''}" role="img" aria-label="${lost?'見送り':'進み具合 '+p+'%'}"><span class="pb-n num">${lost?'—':p+'<small>%</small>'}</span><span class="pb-t"><i style="width:${lost?0:Math.max(p,3)}%"></i></span></div>`}
@@ -1496,7 +1496,7 @@ function renderToday(){
      +(items.length>20&&view.tdAll?`<button type="button" class="btn" data-tab="dash">残り ${items.length-20} 件は「経営状況」の要対応で見る</button>`:'')
      :'<div class="sub" style="text-align:center;padding:8px">今日やることはありません。お疲れさまです。</div>'}</section>`;
 }
-/* 案件ごとの「次にやること」 */
+/* 工事ごとの「次にやること」 */
 const NEXT_TEXT=['お客様に連絡して、話した内容を記録する','現地調査をして、工事の内容と写真を入れる','利益を確かめて、見積書を作る','お客様の返事（契約か見送りか）を記録する','工事の日程を決めて、準備を進める','契約書を作る','工事写真と完成の確認を済ませて、請求書を作る','お客様からの入金を確かめる','協力業者への支払いを済ませる'];
 function nextStep(c){
   if(isLost(c))return null; const k=defaultSec(c), i=STAGES.findIndex(s=>s.k===k); if(i<0||stageDone(c,i))return null;
@@ -1554,7 +1554,7 @@ async function fillNames(){
 /* ===================== 画面: 掲示板（社員のみ・リアルタイム） ===================== */
 let posts=[];
 function ago(s){if(!s)return'';const m=Math.floor((Date.now()-new Date(s))/6e4);if(m<1)return'たった今';if(m<60)return m+'分前';const h=Math.floor(m/60);if(h<24)return h+'時間前';const d=Math.floor(h/24);return d<7?d+'日前':fmtDT(s)}
-/* 掲示板はタイムライン形式：投稿・返信・いいね・写真。工程別の案件は「工事の状況」タブへ */
+/* 掲示板はタイムライン形式：投稿・返信・いいね・写真。工程別の工事は「工事の状況」タブへ */
 let replies=[], likes=[], draftImgs=[];
 const newId=p=>p+Date.now().toString(36)+Math.random().toString(36).slice(2,6);
 function boardSeen(){try{return localStorage.getItem('oubi.boardSeen')||''}catch(e){return''}}
@@ -1607,10 +1607,10 @@ function postCard(p){
     <div class="tw-a">
       <button type="button" class="tw-btn" data-thread="${p.id}" aria-expanded="${open}">💬 返信${rs.length?` ${rs.length}`:''}</button>
       <button type="button" class="tw-btn ${iLike?'on':''}" data-like="${p.id}" aria-pressed="${iLike}">${iLike?'♥':'♡'} いいね${lk.length?` ${lk.length}`:''}</button>
-      ${canDel?`<button type="button" class="tw-btn" data-delpost="${esc(p.id)}">削除</button>`:''}
+      ${canDel?`<button type="button" class="tw-btn" data-delpost="${esc(p.id)}">削除する</button>`:''}
     </div>
     ${shown.length?`<div class="tw-r">${!open&&rs.length>2?`<button type="button" class="tw-more" data-thread="${p.id}">返信をすべて見る（${rs.length}件）</button>`:''}${shown.map(r=>`<div class="tw-rep">${avatar(r.by,28)}<div class="tw-b"><div class="tw-h"><b>${uid(r.by)}</b><span class="sub">・${ago(r.at)}</span>${r.to?`<span class="sub">　${esc(whoName(r.to))}さんへ</span>`:''}</div><div class="tw-t">${esc(r.text)}</div>
-      <div class="tw-a"><button type="button" class="tw-btn" data-replyto="${p.id}|${esc(r.by)}">返信</button>${r.by===me.id||me.isOwner?`<button type="button" class="tw-btn" data-delreply="${esc(r.id)}">削除</button>`:''}</div></div></div>`).join('')}</div>`:''}
+      <div class="tw-a"><button type="button" class="tw-btn" data-replyto="${p.id}|${esc(r.by)}">返信</button>${r.by===me.id||me.isOwner?`<button type="button" class="tw-btn" data-delreply="${esc(r.id)}">削除する</button>`:''}</div></div></div>`).join('')}</div>`:''}
     ${open?`<div class="tw-reply">${view.replyTo&&view.replyTo.post===p.id&&view.replyTo.to?`<div class="sub">${esc(whoName(view.replyTo.to))}さんへの返信　<button type="button" class="tw-more" data-replyto="${p.id}|">やめる</button></div>`:''}
       <div class="cp-row">${avatar(me.id,28)}<textarea id="reply-${p.id}" rows="2" placeholder="返信を書く" aria-label="返信する内容"></textarea></div>
       <div class="row" style="justify-content:flex-end"><button type="button" class="btn pri sm" data-reply="${p.id}">返信する</button></div></div>`:''}
@@ -1701,7 +1701,7 @@ async function addPostImages(input){
 }
 
 /* ===================== 担当者ごとの状況（経営状況から） ===================== */
-const ROLE_FIELDS=[['lead.owner','営業担当'],['work.surveyor','現地調査'],['quote.who','見積'],['result.who','契約'],['schedule.manager','現場責任者'],['contract.who','契約書']];
+const ROLE_FIELDS=[['lead.owner','営業担当'],['work.surveyor','現地調査'],['quote.who','見積'],['result.who','契約'],['schedule.manager','工事責任者'],['contract.who','契約書']];
 // 誰がどの工事で何を担当しているかの表（社員1000人・工事500件でも一度に数える）
 function workload(){
   const key=cases.length+'|'+cases.reduce((m,c)=>(c.updatedAt||'')>m?c.updatedAt:m,'')+'|'+Object.keys(members).length+'|'+Object.keys(staff).length;
@@ -1759,7 +1759,7 @@ function renderStaff(){
   const ps=peopleList(), q=(view.sq||'').trim();
   const list=q?ps.filter(p=>kana(p.name+(p.tel||'')+(p.bio||'')).includes(kana(q))):ps;
   return `<div class="row sb"><div><h1>社員一覧</h1><div class="sub">${ps.length} 名。名前を押すと、その人のプロフィールと投稿が見られます。</div></div>
-   <div class="row"><button class="btn" type="button" data-profile="${esc(me.id)}">${person(me.id)?'自分のプロフィール':'自分を登録'}</button><button class="btn pri" type="button" data-profile="new">＋ アカウントを追加</button></div></div>
+   <div class="row"><button class="btn" type="button" data-profile="${esc(me.id)}">${person(me.id)?'自分のプロフィールを開く':'自分を登録する'}</button><button class="btn pri" type="button" data-profile="new">＋ アカウントを追加</button></div></div>
   ${window.OUBI_SUPA?adminInfo(false):''}
   <div id="pending-users"></div>
   ${ps.length?`<input id="sq" class="btn" style="font-weight:400;width:100%" type="search" placeholder="🔍 名前・電話番号・ひとことで探す" value="${esc(view.sq||'')}" aria-label="社員を探す">`:''}
@@ -1817,7 +1817,7 @@ function renderProfile(id,setup){
   const isNew=id==='new', base=isNew?{}:(staff[id]||members[id]||{});
   if(!P||P._id!==id)P={name:base.name||'',tel:base.tel||'',bio:base.bio||'',photo:base.photo||null,claims:base.claims||'',_id:id};
   const can=canEditPerson(id), st=isNew?null:staffStats(id);
-  const back=view.returnTo?'<button type="button" class="btn sm" data-back-case>← 案件に戻る</button>':id===me.id?'':'<button type="button" class="btn sm" data-tab="staff">← 社員一覧へ</button>';
+  const back=view.returnTo?'<button type="button" class="btn sm" data-back-case>← 工事に戻る</button>':id===me.id?'':'<button type="button" class="btn sm" data-tab="staff">← 社員一覧へ</button>';
   if(!can) return `<div class="row">${back}</div><section class="panel"><div class="row">${avatar(id,80)}<div><h1>${esc(base.name||'未登録')}</h1><div class="num" style="font-size:1.1rem">${esc(base.tel||'電話番号 未登録')}</div>${base.bio?`<div style="margin-top:4px">${esc(base.bio)}</div>`:''}<div class="sub">担当中 ${st.charge} 件${isAdmin(id)?' ・ <span class="chip sk">管理者</span>':''}</div></div></div>${adminTools(id)}</section>${profilePosts(id)}`;
   // 社長が作ったアカウントから自分を選ぶ（機種変更などで前の端末が使っていても選べる）
   const unclaimed=setup?Object.keys(members).filter(m=>!members[m].retired).sort((a,b)=>members[a].name.localeCompare(members[b].name,'ja')):[];
@@ -1894,7 +1894,7 @@ function alertsCompute(){
   return out.sort((a,b)=>(a[0]==='bad'?0:1)-(b[0]==='bad'?0:1));
 }
 function overlaps(){
-  // 業者ごとに日付順へ並べて隣どうしだけ比べる（全組み合わせを比べると案件が増えたとき重くなるため）
+  // 業者ごとに日付順へ並べて隣どうしだけ比べる（全組み合わせを比べると工事が増えたとき重くなるため）
   const key=cases.map(c=>c.id+(c.updatedAt||'')).join('|'); if(overlaps.k===key)return overlaps.v;
   const by={};cases.filter(c=>!c.archived&&!isLost(c)).forEach(c=>((c.schedule||{}).steps||[]).forEach(s=>{if(s.partner&&s.start){const k=s.partner.trim();(by[k]=by[k]||[]).push({c,s,a:s.start,b:s.end||s.start})}}));
   const out=[];
@@ -1938,15 +1938,15 @@ function renderDash(){
   wk.sort((a,b)=>a.d.localeCompare(b.d));
   const W='日月火水木金土';
   return `
-  <div class="row sb"><div class="hero"><h1>すべての現場を、ひとつに。</h1><div class="sub">${t.replace(/-/g,'/')}（${W[new Date(t).getDay()]}） ・ 対象 ${live.length} 案件</div></div>
-    <button class="btn pri" type="button" data-new>＋ 新しい工事を登録</button></div>
-  ${window.OUBI_HOST?`<div class="mq-links" role="group" aria-label="見積の数字"><button type="button" class="btn" data-mopen="#/finance">粗利・会計（見積の原価から）</button><button type="button" class="btn" data-mopen="#/analysis">分析（受注率・推移・工事種別）</button><button type="button" class="btn" data-mopen="#/sites">現場の流れ</button></div>`:''}
+  <div class="row sb"><div class="hero"><h1>すべての工事を、ひとつに。</h1><div class="sub">${t.replace(/-/g,'/')}（${W[new Date(t).getDay()]}） ・ 対象 ${live.length} 工事</div></div>
+    <button class="btn pri" type="button" data-new>＋ 新しい工事を登録する</button></div>
+  ${window.OUBI_HOST?`<div class="mq-links" role="group" aria-label="見積の数字"><button type="button" class="btn" data-mopen="#/finance">粗利・会計（見積の原価から）</button><button type="button" class="btn" data-mopen="#/analysis">分析（受注率・推移・工事種別）</button><button type="button" class="btn" data-mopen="#/sites">工事の流れ</button></div>`:''}
   <div class="big4"><button type="button" class="c1" data-flag="active"><b>${active.length}</b><span>進行中</span></button><button type="button" class="c2" data-jump="alerts"><b>${al.length}</b><span>要対応</span></button><button type="button" class="c3" data-flag="recv"><b>${payWait}</b><span>入金待ち</span></button><button type="button" class="c4" data-flag="pay"><b>${vendWait}</b><span>支払待ち</span></button></div>
   <section class="panel"><div class="row sb"><h2>今週のスケジュール</h2><button type="button" class="btn sm" data-tab="cal">すべて見る</button></div>
     ${wk.length?`<div class="week">${wk.slice(0,8).map(w=>`<button type="button" class="wk" data-open="${w.c.id}" data-sec="schedule"><span class="dt"><b>${md(w.d)}</b><small>${W[new Date(w.d).getDay()]}</small></span><span class="bd"><b>${esc(((w.c.lead||{}).siteAddr||'').replace(/^.*?[都道府県]/,'').slice(0,8))} ${esc((w.c.lead||{}).customer||'')}様邸</b><span>${esc((w.c.work||{}).title||'')}</span><span>${esc(w.what)}${(w.c.lead||{}).owner?'（担当 '+esc(pn(w.c.lead.owner))+'）':''}</span></span><span class="chip sk">${esc(stageLabel(w.c))}</span></button>`).join('')}</div>`:'<div class="empty">今後7日間の工程・現地調査はありません。工程表に日付を入れるとここに並びます。</div>'}</section>
   <div class="flow" tabindex="0" role="group" aria-label="工事の9つの段階（横に動かせます）">${STAGES.map((s,i)=>`<div><span class="sn" style="--h:${350-i*14}">${i+1}</span>${s.n}</div>`).join('')}</div>
   ${renderPeopleLoad()}
-  ${!cases.length?`<div class="panel"><h2>まだ案件がありません</h2><p class="sub" style="margin:0">「＋ 新しい工事を登録」から始めてください。お客様の名前と電話番号だけで登録でき、問い合わせから業者への支払いまで1つの画面で進められます。</p></div>`:''}
+  ${!cases.length?`<div class="panel"><h2>まだ工事がありません</h2><p class="sub" style="margin:0">「＋ 新しい工事を登録」から始めてください。お客様の名前と電話番号だけで登録でき、問い合わせから業者への支払いまで1つの画面で進められます。</p></div>`:''}
   ${slDash()}
   <section class="grp"><h3>工事の営業（今月）</h3><div class="kpis">${kp('反響件数',leads,'件')}${kp('見積件数',quotes,'件')}${kp('成約件数',won.length,'件')}${kp('成約率',rate==null?'—':rate.toFixed(0),rate==null?'':'%')}${kp('見積提出待ち',live.filter(c=>stageDone(c,1)&&!(c.quote||{}).req&&!isLost(c)).length,'件')}</div></section>
   <section class="grp"><h3>施工と書類</h3><div class="kpis">${kp('施工中',working.length,'件')}${kp('契約書がまだ',live.filter(c=>(c.result||{}).status==='won'&&!approved(c,'contract')).length,'件')}${kp('請求書がまだ',live.filter(c=>(c.schedule||{}).actualEnd&&!approved(c,'invoice')).length,'件')}</div></section>
@@ -1964,7 +1964,7 @@ function renderDash(){
   </div>`;
 }
 
-/* ===================== 画面: 案件一覧 ===================== */
+/* ===================== 画面: 工事一覧 ===================== */
 // 経営状況の大きな数字から開いたときの絞り込み（数字と一覧の件数が一致するよう、同じ条件で数える）
 const FLAGS={
  active:{l:'進行中',f:c=>!isLost(c)&&(c.result||{}).status==='won'&&!stageDone(c,8)},
@@ -2001,7 +2001,7 @@ function renderList(){
      <span class="sub">${esc((c.work||{}).title||'工事名未入力')}${c.archived?' ・ 隠した工事':''}${c.sample?' ・ サンプル':''}</span>${pbar(c)}
      <span class="cc-m"><span class="num">${esc(c.no)}</span><span>担当 ${esc(pn(L.owner)||'未設定')}</span>${s.start?`<span class="num">${md(s.start)}〜${md(s.end)}</span>`:''}${x.contractAmt?`<span class="num">契約 ${yen(x.contractAmt)}</span>`:''}</span>
      <span class="row" style="gap:4px">${apChips(c)} ${payChip(x)}</span></button>`}).join('')}</div>
-  <div tabindex="0" class="tw ctable"><table class="t"><tr><th>案件番号</th><th>顧客名</th><th>工事名</th><th>担当</th><th>現在の工程</th><th style="min-width:120px">進捗</th><th class="r">契約金額</th><th class="r">予定利益率</th><th>工期</th><th>書類</th><th>入金</th><th>作成者</th><th>最終更新</th></tr>
+  <div tabindex="0" class="tw ctable"><table class="t"><tr><th>工事番号</th><th>顧客名</th><th>工事名</th><th>担当</th><th>現在の工程</th><th style="min-width:120px">進捗</th><th class="r">契約金額</th><th class="r">予定利益率</th><th>工期</th><th>書類</th><th>入金</th><th>作成者</th><th>最終更新</th></tr>
   ${shown.map(c=>{const x=calc(c),s=c.schedule||{},cs=curStage(c);
     const ap=apChips(c), pay=payChip(x);
     return `<tr class="click" data-open="${c.id}" tabindex="0"><td class="num">${esc(c.no)}</td><td>${esc((c.lead||{}).customer||'名称未設定')}${c.sample?' <span class="chip">サンプル</span>':''}${c.archived?' <span class="chip">隠した工事</span>':''}</td><td>${esc((c.work||{}).title||'')}</td><td>${esc(pn((c.lead||{}).owner))}</td>
@@ -2010,7 +2010,7 @@ function renderList(){
     <td class="r num">${x.contractAmt?yen(x.contractAmt):'—'}</td><td class="r"><span class="chip ${rateLv(x.planRate)}">${pct(x.planRate)}</span></td>
     <td class="num" style="white-space:nowrap">${s.start?md(s.start)+'〜'+md(s.end):''}</td><td>${ap}</td><td>${pay}</td><td style="white-space:nowrap">${uid(c.createdBy)}</td><td style="white-space:nowrap">${c.updatedBy?uid(c.updatedBy)+' <span class="sub">'+fmtDT(c.updatedAt)+'</span>':''}</td></tr>`}).join('')}</table></div>
   <div class="row sb"><span class="sub">${list.length} 件中 ${Math.min(list.length,lim)} 件を表示</span>${list.length>lim?'<button type="button" class="btn" data-more-rows>さらに60件表示</button>':''}</div>`
-  :`<div class="empty">${cases.length?`条件に合う案件はありません。${view.mine||view.phase||fl||view.q||view.fStage||view.fWho?'<button type="button" class="btn sm" data-clearf>絞り込みをすべて解除</button>':''}`:'まだ工事がありません。右上の「＋ 新規工事の追加」から、お客様の名前だけで登録できます。'}</div>`}
+  :`<div class="empty">${cases.length?`条件に合う工事はありません。${view.mine||view.phase||fl||view.q||view.fStage||view.fWho?'<button type="button" class="btn sm" data-clearf>絞り込みをすべて解除</button>':''}`:'まだ工事がありません。右上の「＋ 新規工事の追加」から、お客様の名前だけで登録できます。'}</div>`}
   </div>`;
 }
 
@@ -2159,7 +2159,7 @@ function renderCal(){
      <section class="ag-day"><div class="ag-h"><b>${sd.getMonth()+1}/${sd.getDate()}（${'日月火水木金土'[sd.getDay()]}）の予定</b><span class="chip">${evs.length}件</span></div>
       ${evs.length?evs.slice(0,view.agAll===sel?999:8).map(calAg).join('')
         +(evs.length>8&&view.agAll!==sel?`<button type="button" class="btn sm" data-agall="${sel}">残り ${evs.length-8} 件も見る</button>`:'')
-        :`<div class="empty">この日の工事予定はありません。${monthN?'丸に数字のある日を押すと、その日の予定が出ます。':'工事の日程（案件の「工事日程と準備」）や、ホワイトボードに書いた予定がここに出ます。'}</div>`}</section></div>`})()}
+        :`<div class="empty">この日の工事予定はありません。${monthN?'丸に数字のある日を押すと、その日の予定が出ます。':'工事の日程（工事の「工事日程と準備」）や、ホワイトボードに書いた予定がここに出ます。'}</div>`}</section></div>`})()}
   <div tabindex="0" class="tw cal-wrap"><div class="cal">${'日月火水木金土'.split('').map(w=>`<div class="dh">${w}</div>`).join('')}${cells}</div></div>`;
 }
 
@@ -2170,7 +2170,7 @@ function apprCard(c,kind,{withCase=true}={}){
   const amt=kind==='quote'?N(o.amount):kind==='contract'?N(o.amount):N(o.amount);
   return `<div class="appr">
    <div class="row sb"><div class="row"><b>${APPR_LABEL[kind]}</b><span class="chip ${apprCls(st)}">${st}</span>${r?`<span class="sub">第${r.v}版 申請 ${fmtDT(r.at)} ・ ${uid(r.by)}</span>`:''}</div>
-   ${withCase?`<button type="button" class="btn sm" data-open="${c.id}" data-sec="${kind}">案件を開く</button>`:''}</div>
+   ${withCase?`<button type="button" class="btn sm" data-open="${c.id}" data-sec="${kind}">工事を開く</button>`:''}</div>
    ${withCase?`<div><b>${esc((c.lead||{}).customer||'')}</b> <span class="sub">${esc(c.no)} ・ ${esc((c.work||{}).title||'')} ・ 担当 ${esc(pn((c.lead||{}).owner)||'未設定')}</span><div class="sub">${esc(((c.work||{}).types||[]).join('、'))}</div></div>`:''}
    <div class="calc">
      <div><span>${APPR_LABEL[kind]}金額（税抜）</span><b>${yen(amt)}</b></div>
@@ -2205,11 +2205,11 @@ const HELP=[
  {c:'困ったとき',q:'お客様・工事・営業の記録を、名前や電話番号で探したい',a:'ホームの「🔍 お客様・工事・記録を探す」を押して、名前の一部（ひらがなでもOK）・電話番号の一部・住所の一部を入れます。工事・営業の記録・タイムライン・社員から探します。',k:'探す 検索 さがす 名前 電話 住所 見つからない',go:'gsearch',gl:'探す'},
  {c:'困ったとき',q:'声で入力したい（手袋・字を打つのが苦手）',a:'メモや投稿などの欄の右下にある「🎤声」を押して話すと、文字になります。もう一度押すと止まります。ホーム画面に置いたiPhoneのアプリなど、この仕組みがないスマホでは、押すとキーボードが出るので、キーボードの🎤マイクを押して話してください。',k:'声 音声 マイク 話す 手袋 入力 打てない',go:'',gl:''},
  {c:'工事',q:'写真に工事名と日付を入れたい',a:'工事の写真の欄の「写真に工事名・日付・撮影者を入れる」にチェックが入っていると、撮った写真の左下に緑の札で入ります。写真は送る前に自動で小さくするので、通信量も少なくなります。',k:'写真 黒板 日付 工事名 撮影者 通信量 小さく',go:'case:invoice',gl:'最近の工事の写真を開く'},
- {c:'工事',q:'今日行く現場を知りたい・終わったら報告したい',a:'ホームの上の「今日のあなたの現場」に、あなたが担当の今日の工程が出ます。「ナビ」でGoogleマップの道案内、「📷 写真」で写真、「終わった」で工程を完了にできます。',k:'今日 現場 ナビ 終わった 完了 職人 報告',go:'home',gl:'ホームを開く'},
+ {c:'工事',q:'今日行く現場を知りたい・終わったら報告したい',a:'ホームの上の「今日のあなたの工事」に、あなたが担当の今日の工程が出ます。「ナビ」でGoogleマップの道案内、「📷 写真」で写真、「終わった」で工程を完了にできます。',k:'今日 工事 ナビ 終わった 完了 職人 報告',go:'home',gl:'ホームを開く'},
  {c:'困ったとき',q:'使いにくい所を伝えたい・ご意見を送りたい',a:'このヘルプの画面の右上の「💬 ご意見を送る」を押し、顔のボタン（とても不満〜とても満足）を1つ押して、ひとこと書いて「送る」を押します。管理者だけが見て、アプリを直すのに使います。',k:'意見 要望 不満 使いにくい 改善 アンケート 満足',go:'help',gl:'ヘルプを開く'},
  {c:'アカウント',q:'アプリの調子（使った人数・不具合・速さ・満足度）を見たい',a:'管理者は「設定」のいちばん上の「アプリの調子（ここ7日）」で、使った人数、よく使われている画面、不具合の記録、実際のスマホでの速さ、使いやすさの声を見られます。お客様の名前や電話番号は記録していません。',k:'調子 不具合 エラー 速さ 満足度 使われ方 分析 管理者',go:'settings',gl:'設定を開く'},
  {c:'営業',q:'飛び込み営業の記録をしたい',a:'ホームの「🚶 営業に出る」を押すと、すぐ記録の画面になります。住所の町名は今いる場所から自動で入るので、番地を足して、結果の大きなボタン（不在／話せた／見込みあり／今回は見送り）を押します。「不在」は押すだけで記録。記録すると次の家の番地が1つ進みます（−1／＋1で直せます）。まちがえたら、上に出る「元に戻す」を10秒以内に押します。',k:'営業 飛び込み 訪問 記録 不在 話せた 見込み 見送り 営業台帳',go:'sales',gl:'営業に出る'},
- {c:'営業',q:'見込みのお客様を工事にしたい',a:'営業の記録で「見込みあり」を押し、お名前・電話（あとでもOK）・工事の種類・現地調査の日を選んで「工事にする」を押します。「既存工事」に新しい工事ができ、住所・地図の位置・あなたの名前（取ってきた人）が入ります。現地調査の日はカレンダーに出て、タイムラインにも「見込みゲット」と流れます。',k:'見込み 工事にする 案件 登録 現地調査 取ってきた人',go:'sales',gl:'営業に出る'},
+ {c:'営業',q:'見込みのお客様を工事にしたい',a:'営業の記録で「見込みあり」を押し、お名前・電話（あとでもOK）・工事の種類・現地調査の日を選んで「工事にする」を押します。「既存工事」に新しい工事ができ、住所・地図の位置・あなたの名前（取ってきた人）が入ります。現地調査の日はカレンダーに出て、タイムラインにも「見込みゲット」と流れます。',k:'見込み 工事にする 工事 登録 現地調査 取ってきた人',go:'sales',gl:'営業に出る'},
  {c:'営業',q:'再訪問の予定を入れたい・見落としたくない',a:'「話せた」で再訪問の日（明日・3日後・来週・日付）を選んで記録します。カレンダーに 🔁 で出て、前の日にはホワイトボードの「あしたの予定」にも自動で出ます。当日はホームに「やり残し」として赤く出ます。行けなかった家は消えずに次の日へ持ち越し、「◯日遅れ」と出ます。その家を記録すると自動で消えます。',k:'再訪問 再訪 また行く 予定 見落とし やり残し 遅れ 持ち越し',go:'sales:rv',gl:'再訪問を開く'},
  {c:'営業',q:'地図の位置がずれる・正しい家に合わせたい',a:'営業の画面の上の「±◯m」が精度です（◎◯がよい、✕はずれています）。ずれているときは「🗺️ 地図で直す」を押し、「🛰️ 航空写真」にして、まん中の📍を家の屋根に合わせて「この家にする」を押します。iPhoneで位置が大きくずれるときは、設定の位置情報で「正確な位置情報」をオンにしてください。',k:'地図 位置 ずれる GPS 精度 航空写真 正確な位置情報',go:'sales:map',gl:'地図を開く'},
  {c:'営業',q:'Googleマップの場所を入れたい・Googleマップで開きたい',a:'営業の画面の「📋 Googleマップ」を押し、Googleマップで家を長押しして出る数字（例：35.68, 139.76）か、場所のリンクを貼ります。地図の印や再訪問の「🧭 ナビ」を押すと、Googleマップの道案内が始まります。共有ボタンで作る短いリンク（maps.app.goo.gl）は読めないので、数字を貼ってください。',k:'Googleマップ グーグルマップ リンク 貼る ナビ 道案内 座標',go:'sales',gl:'営業に出る'},
@@ -2245,7 +2245,7 @@ const HELP=[
  {c:'困ったとき',q:'電波が悪いところで使いたい',a:'電波がなくても、前に見た記録は見られて、入力もできます。入力は端末に残り、電波が戻ると自動で送られます（「未送信」と出ている間はアプリを消さないでください）。',k:'電波 圏外 オフライン つながらない 未送信',go:'',gl:''},
  {c:'困ったとき',q:'アプリが新しくならない・おかしい',a:'アプリを一度完全に閉じて、もう一度開いてください。それでも直らないときは、画面のスクリーンショットを撮って管理者に見せてください。',k:'更新 新しく おかしい 動かない 固まる バグ',go:'',gl:''},
  {c:'工事',q:'工事の担当者を決めたい',a:'工事の画面の「問い合わせ」などにある「担当者」を押すと、名前で探せる画面が出ます。名前を押すと決まります。',k:'担当 担当者 割り振り',go:'case:lead',gl:'最近の工事を開く'},
- {c:'工事',q:'現場の写真を入れたい',a:'工事の画面の「現地調査」や「完成と請求」に写真の欄があります。「カメラで撮影」か「写真を選択」で入れます。',k:'写真 現場 撮影 カメラ 調査',go:'case:work',gl:'最近の工事の現地調査を開く'},
+ {c:'工事',q:'現場の写真を入れたい',a:'工事の画面の「現地調査」や「完成と請求」に写真の欄があります。「カメラで撮影」か「写真を選択」で入れます。',k:'写真 工事 撮影 カメラ 調査',go:'case:work',gl:'最近の工事の現地調査を開く'},
  {c:'工事',q:'お客様に電話・地図を見たい',a:'工事の画面の上に「📞 電話番号」と「📍 地図」があります。押すと電話や地図が開きます。',k:'電話 地図 住所 場所 ナビ',go:'case:',gl:'最近開いた工事を開く'},
  {c:'工事',q:'お客様へのLINEの文面を作りたい',a:'工事の画面の「LINE報告」で「報告を作成」→ 内容を書いて「報告内容から文面を作成」→「文面をコピー」。LINE に貼って送ります。',k:'LINE 報告 文面 連絡 お客様',go:'case:line',gl:'最近の工事のLINE報告を開く'},
  {c:'経営',q:'その工事でいくら利益が出たか見たい',a:'工事の画面の「利益」で、予定と実際の利益をくらべられます。業者への支払いを入れると自動で計算されます。',k:'利益 もうけ 粗利 原価 実績',go:'case:profit',gl:'最近の工事の利益を開く'}
@@ -2289,7 +2289,7 @@ function renderSettings(){
   <div class="panel" id="set-theme"><h2>画面の明るさ</h2><div class="sub">暗い画面が標準です。営業の画面は、昼（6〜18時）は外で見やすい明るい画面に自動で切り替わります。</div>
    <div class="mq-links" role="group" aria-label="画面の明るさ">${[['dark','暗い（標準）'],['light','明るい'],['auto','端末に合わせる']].map(([k,l])=>`<button type="button" class="btn${themePref()===k?' pri':''}" data-theme-set="${k}" aria-pressed="${themePref()===k}">${l}</button>`).join('')}</div></div>
   ${window.OUBI_HOST?`<div class="panel" id="set-mitsu"><h2>見積の設定</h2><div class="sub">見積で使う品目・テンプレート・計算式・定型文・端数の決まり、書類に入れるロゴと会社印。</div>
-   <div class="mq-links">${[['#/settings/items','品目マスタ'],['#/settings/packages','テンプレート'],['#/settings/formulas','計算式'],['#/settings/snippets','定型文'],['#/settings/rules','計算の決まり'],['#/settings/company','ロゴ・会社印']].map(([h,l])=>`<button type="button" class="btn" data-mopen="${h}">${l}</button>`).join('')}</div></div>`:''}
+   <div class="mq-links">${[['#/settings/items','品目マスタを開く'],['#/settings/packages','テンプレートを開く'],['#/settings/formulas','計算式を開く'],['#/settings/snippets','定型文を開く'],['#/settings/rules','計算の決まりを開く'],['#/settings/company','ロゴ・会社印を開く']].map(([h,l])=>`<button type="button" class="btn" data-mopen="${h}">${l}</button>`).join('')}</div></div>`:''}
   <div class="panel" id="set-co"><h2>会社の情報（見積書・契約書・請求書に入ります）</h2>
    <div class="fields">
     <label class="fld"><span>会社名</span><input id="co-name" value="${esc(co.name)}" ${dis}></label>
@@ -2327,7 +2327,7 @@ function renderSettings(){
   <div class="panel"><h2>保存先</h2><div class="sub">${mode==='db'?'会社のみんなで共有する保管場所に、自動で保存しています。この端末にも控えを置くので、電波がないときも前回までの記録を見られます。':'このブラウザ内だけに保存しています（試用モード）。共有されず、写真や書類も追加できません。'}</div></div>`;
 }
 
-/* ===================== 画面: 案件 ===================== */
+/* ===================== 画面: 工事 ===================== */
 function inp(p,l,o={}){const v=getP(C,p);const t=o.type||'text';
   return `<label class="fld${o.wide?' wide':''}"><span>${l}</span><input data-f="${p}" type="${t}" ${t==='number'?'data-num="1" inputmode="numeric"':''} value="${esc(v??'')}" placeholder="${esc(o.ph||'')}" ${o.list?`list="${o.list}"`:''} ${o.re?'data-re="1"':''} ${o.dis?'disabled':''}></label>`}
 function sel(p,l,opts,o={}){const v=getP(C,p)??'';
@@ -2348,7 +2348,7 @@ function monthSel(p,l){const v=getP(C,p)||'', d=new Date(), opts=[];
 const ymLabel=s=>{if(!s)return'';const [y,m]=s.split('-');return `${y}年${+m}月`};
 // 住所・場所の欄：右に「📍地図」ボタン。押すと Googleマップが開く（リンクが入っていればそのリンクを開く）
 function inpMap(p,l,o={}){const v=getP(C,p);
-  return `<div class="fld${o.wide?' wide':''}"><span>${l}</span><div class="inrow"><input data-f="${p}" value="${esc(v??'')}" placeholder="${esc(o.ph||'')}" aria-label="${esc(l)}"><button type="button" class="btn map-btn" data-map="${p}" aria-label="${esc(l)}をGoogleマップで開く">📍 地図</button></div>${o.note?`<span class="sub">${o.note}</span>`:''}</div>`}
+  return `<div class="fld${o.wide?' wide':''}"><span>${l}</span><div class="inrow"><input data-f="${p}" value="${esc(v??'')}" placeholder="${esc(o.ph||'')}" aria-label="${esc(l)}"><button type="button" class="btn map-btn" data-map="${p}" aria-label="${esc(l)}をGoogleマップで開く">📍 地図を開く</button></div>${o.note?`<span class="sub">${o.note}</span>`:''}</div>`}
 function openMap(p){
   const el=document.querySelector(`[data-f="${p}"]`), v=((el&&el.value)||getP(C,p)||'').trim(), L=C&&C.lead||{};
   let url='';
@@ -2359,7 +2359,7 @@ function openMap(p){
   openOut(url);
 }
 function listRows(p,title,fields,addLabel){const arr=getP(C,p)||[];
-  return `<div class="grp">${arr.map((_,i)=>`<div class="lrow"><div class="lh"><b>${title} ${i+1}</b><button type="button" class="btn sm bad" data-del="${p}" data-i="${i}">削除</button></div><div class="fields">${fields(`${p}.${i}`,i)}</div></div>`).join('')}
+  return `<div class="grp">${arr.map((_,i)=>`<div class="lrow"><div class="lh"><b>${title} ${i+1}</b><button type="button" class="btn sm bad" data-del="${p}" data-i="${i}">削除する</button></div><div class="fields">${fields(`${p}.${i}`,i)}</div></div>`).join('')}
    <div><button type="button" class="btn" data-add="${p}">＋ ${addLabel}</button></div></div>`}
 function upBtn(p,label,cat){return mode==='db'&&assets?`<label class="btn up">⬆ ${label}<input type="file" multiple accept="application/pdf,image/*" data-up="${p}" ${cat?`data-cat="${esc(cat)}"`:''}></label>`:`<span class="sub">${mode==='db'?'いまは写真・書類を追加できません。少し待ってからページを開き直してください':'試用モードでは写真・書類を追加できません'}</span>`}
 function fileList(p){const arr=getP(C,p)||[];return arr.length?`<div class="files">${arr.map((f,i)=>`<div class="file">${(f.type||'').startsWith('image/')?'<span class="ic img">IMG</span>':'<span class="ic">PDF</span>'}<a href="${esc(blobUrl(f.id))}" target="_blank" rel="noopener">${esc(f.name)}</a><span class="sub">${fmtDT(f.at)} ・ ${uid(f.by)}</span><button type="button" class="btn sm" data-unlink="${p}" data-i="${i}">一覧から外す</button></div>`).join('')}</div>`:'<div class="sub">まだファイルがありません。</div>'}
@@ -2584,7 +2584,7 @@ function secHTML(k){
   switch(k){
   case 'lead':{
     const dup=cases.filter(o=>o.id!==C.id&&((L.tel&&(o.lead||{}).tel===L.tel)||(L.customer&&(o.lead||{}).customer===L.customer)));
-    return `${slLeadNote(C)}<div class="grp"><h3>基本情報</h3>${dup.length?`<div class="lock">同じ顧客名か電話番号の案件があります：${dup.map(o=>`<a href="#" data-open="${o.id}">${esc(o.no)}</a>`).join('、')}</div>`:''}
+    return `${slLeadNote(C)}<div class="grp"><h3>基本情報</h3>${dup.length?`<div class="lock">同じ顧客名か電話番号の工事があります：${dup.map(o=>`<a href="#" data-open="${o.id}">${esc(o.no)}</a>`).join('、')}</div>`:''}
      <div class="fields">${inp('lead.date','問い合わせ日',{type:'date'})}${inp('lead.customer','顧客名',{ph:'例: 山田 太郎',re:1})}${inp('lead.company','法人名（法人の場合）')}${inp('lead.tel','電話番号',{type:'tel',re:1})}${inp('lead.email','メールアドレス',{type:'email'})}
      ${inpMap('lead.addr','顧客住所',{wide:1})}${inpMap('lead.siteAddr','工事現場住所',{wide:1,ph:'顧客住所と同じなら空欄でも可'})}${area('lead.inquiry','問い合わせ内容')}
      ${whoSel('lead.owner','担当者')}${sel('lead.priority','対応優先度',['高','中','低'])}${area('lead.note','備考')}</div></div>
@@ -2604,7 +2604,7 @@ function secHTML(k){
     return `<div class="grp"><h3>① 事業収支書（見積の前に作成）</h3><div class="note">金額はすべて税抜です。入力するとすぐに粗利益と利益率を計算します。見積金額を変えると収支も再計算されます。</div>
      <div class="fields">${inp('plan.estimate','予定見積金額',{type:'number'})}${inp('plan.discount','値引予定額',{type:'number'})}</div>
      <div class="fields">${COSTS.map(([c,l])=>inp('plan.'+c,l,{type:'number'})).join('')}</div>${calcBox()}</div>
-     ${window.OUBI_HOST?mitsuQuoteBox():`<div class="grp"><h3>② 見積書</h3><div class="fields">${inp('quote.date','見積作成日',{type:'date',re:1})}${inp('quote.validUntil','見積有効期限',{type:'date',re:1})}${whoSel('quote.who','見積担当者')}${inp('quote.no','見積番号',{ph:'空欄なら案件番号',re:1})}</div>
+     ${window.OUBI_HOST?mitsuQuoteBox():`<div class="grp"><h3>② 見積書</h3><div class="fields">${inp('quote.date','見積作成日',{type:'date',re:1})}${inp('quote.validUntil','見積有効期限',{type:'date',re:1})}${whoSel('quote.who','見積担当者')}${inp('quote.no','見積番号',{ph:'空欄なら工事番号',re:1})}</div>
      <h3>明細（品名・数量・単価）</h3><div class="sub">前に使った品名を選ぶと、単位と単価が自動で入ります。</div>${slItemList()}
      ${listRows('quote.items','明細',(p,i)=>{const r=((C.quote||{}).items||[])[i]||{};return `${inp(p+'.name','品名・内容',{wide:1,ph:'例: 外壁塗装（シリコン）',re:1,list:'qitems'})}${inp(p+'.qty','数量',{type:'number',re:1})}${inp(p+'.unit','単位',{ph:'例: ㎡・式・m',re:1})}${inp(p+'.price','単価（税抜）',{type:'number',re:1})}<div class="fld"><span>金額</span><b class="num" style="padding:10px 0">${yen(Math.round(N(r.qty||1)*N(r.price)))}</b></div>${area(p+'.note','この明細の備考（書類ではこの行のすぐ下に載ります）',{re:1})}${r.note?sel(p+'.noteFont','備考の文字の種類',Object.keys(NOTE_FONT),{noBlank:1,re:1})+sel(p+'.noteSize','備考の文字の大きさ',Object.keys(NOTE_SIZE),{noBlank:1,re:1}):''}`},'明細を1行足す')}
      ${((C.quote||{}).items||[]).length?'':inp('quote.amount','明細を使わないときの見積金額（税抜）',{type:'number',re:1})}
@@ -2630,7 +2630,7 @@ function secHTML(k){
      <div class="fld"><span>工期</span><b class="num" style="padding:7px 0">${s.start&&s.end&&s.end>=s.start?Math.round((new Date(s.end)-new Date(s.start))/864e5)+1+' 日':'—'}</b></div>
      ${dateWarns(s).map(w=>`<div class="fld wide warn-line" role="alert">⚠ ${esc(w)}</div>`).join('')}
      ${inp('schedule.actualStart','実際の着工日',{type:'date'})}${inp('schedule.actualEnd','実際の完工日',{type:'date'})}
-     ${whoSel('schedule.manager','現場責任者')}${inp('schedule.crew','担当職人')}${inp('schedule.partners','協力業者',{wide:1,ph:'例: ○○足場、△△塗装'})}</div></div>
+     ${whoSel('schedule.manager','工事責任者')}${inp('schedule.crew','担当職人')}${inp('schedule.partners','協力業者',{wide:1,ph:'例: ○○足場、△△塗装'})}</div></div>
      <div class="grp"><div class="row sb"><h3>工程表</h3><div class="row">${((C.work||{}).types||[]).map(t=>`<button class="btn sm" type="button" data-tpl="${esc(t)}">${esc(t)}の標準工程を追加</button>`).join('')||'<button class="btn sm" type="button" data-tpl="_">標準工程を追加</button>'}</div></div>
      ${listRows('schedule.steps','工程',p=>`${inp(p+'.name','工程名')}${inp(p+'.start','開始予定日',{type:'date'})}${inp(p+'.end','終了予定日',{type:'date'})}${inp(p+'.done','実施日',{type:'date'})}${inp(p+'.partner','担当業者',{list:'dl-partner'})}${inp(p+'.people','作業人数',{type:'number'})}${inp(p+'.material','必要材料')}${sel(p+'.progress','進捗状況',PROGRESS)}${inp(p+'.note','備考')}`,'工程を追加')}</div>
      <div class="grp"><h3>工事の準備 <span class="chip ${PREP.every(k=>((s.prep||{})[k]||{}).done)?'ok':'warn'}">${PREP.filter(k=>((s.prep||{})[k]||{}).done).length}/${PREP.length} 完了</span></h3>
@@ -2661,7 +2661,7 @@ function secHTML(k){
      <div class="grp"><div class="row sb"><h3>入金確認資料</h3>${upBtn('payfiles','通帳コピー・振込明細など')}</div>${fileList('payfiles')}</div>`);}
   case 'payout':{const x=calc(C);
     return wrap(`<div class="calc"><div><span>業者請求合計</span><b>${yen(x.vendorAmt)}</b></div><div><span>支払済</span><b>${yen(x.vendorPaid)}</b></div><div class="${x.unpaid>0?'warn':'ok'}"><span>未払残高</span><b>${yen(x.unpaid)}</b></div><div><span>発注残（未請求分）</span><b>${yen(x.orderRemain)}</b></div><div class="${x.vendorAmt>N((C.plan||{}).outsource)&&N((C.plan||{}).outsource)?'warn':''}"><span>予定外注費との差</span><b>${yen(x.vendorAmt-N((C.plan||{}).outsource))}</b></div></div>
-     <div class="note">協力業者の請求金額は、そのまま案件の実績原価に反映されます。</div>
+     <div class="note">協力業者の請求金額は、そのまま工事の実績原価に反映されます。</div>
      ${listRows('vendors','業者',(p,i)=>{const v=C.vendors[i]||{};const dupInv=v.invNo&&C.vendors.some((o,j)=>j!==i&&o.name===v.name&&o.invNo===v.invNo);
        return `${inp(p+'.name','協力業者名',{list:'dl-partner'})}${inp(p+'.content','工事内容')}${inp(p+'.order','発注金額',{type:'number',re:1})}${inp(p+'.invNo','業者の請求書番号',{re:1})}${inp(p+'.recvDate','請求書受領日',{type:'date'})}${inp(p+'.amount','請求金額',{type:'number',re:1})}
        ${N(v.order)&&N(v.amount)&&N(v.order)!==N(v.amount)?`<div class="fld wide"><span class="chip warn" style="justify-self:start">発注額との差 ${yen(N(v.amount)-N(v.order))}</span></div>`:''}${dupInv?'<div class="fld wide"><span class="chip bad" style="justify-self:start">同じ請求書番号がすでに登録されています（二重登録の可能性）</span></div>':''}
@@ -2700,7 +2700,7 @@ function renderCase(){
   const L=c.lead||{}, S=c.schedule||{};
   const short=['問合せ','調査','見積','契約','日程','契約書','完成','入金','支払'];
   return `<div class="row sb"><div class="row"><button type="button" class="btn sm" data-tab="list">← 一覧へ</button><span class="savebadge" id="savebadge">${dirty.has(c.id)?'保存中…':'保存済み'}</span></div>
-     <div class="row"><button type="button" class="btn sm" data-archive>${c.archived?'一覧に戻す':'一覧から隠す'}</button>${canDeleteCase(c)?'<button type="button" class="btn sm bad" data-delcase>🗑 削除</button>':''}</div></div>
+     <div class="row"><button type="button" class="btn sm" data-archive>${c.archived?'一覧に戻す':'一覧から隠す'}</button>${canDeleteCase(c)?'<button type="button" class="btn sm bad" data-delcase>🗑 削除する</button>':''}</div></div>
   <section class="panel case-card">
    ${(()=>{ // 工程は「← 前」「次 →」で進む。いまの段階と、全体の進み具合だけを見せる
      const i=cur.extra?-1:cur.i, prev=i>0?STAGES[i-1]:null, next=i>=0&&i<8?STAGES[i+1]:null;
@@ -2729,7 +2729,7 @@ function renderCase(){
        <button type="button" class="btn pri big next-big" data-sec="${nx.k}" ${lock?'disabled':''}>次へ：${esc(nx.n)} →</button>${lock?`<span class="sub">${esc(lock)}</span>`:''}</div>`})()}</section>
   <datalist id="dl-staff">${staffNames.map(s=>`<option value="${esc(s)}">`).join('')}</datalist><datalist id="dl-partner">${partners.map(s=>`<option value="${esc(s)}">`).join('')}</datalist>`;
 }
-// 開いたときの工程：成約済みなら工事側（工程→契約→完工・請求）の未完了から開く。現場の人がすぐ作業できるように
+// 開いたときの工程：成約済みなら工事側（工程→契約→完工・請求）の未完了から開く。工事の人がすぐ作業できるように
 function defaultSec(c){if((c.result||{}).status==='won'&&!isLost(c)){for(const i of [4,5,6,7,8])if(!stageDone(c,i))return STAGES[i].k}return STAGES[Math.min(curStage(c),8)].k}
 /* 日付の前後のまちがい（終わりが始まりより前）を見つける */
 function dateWarns(s){const w=[];s=s||{};
@@ -3053,7 +3053,7 @@ document.addEventListener('change',e=>{
 });
 document.addEventListener('click',async e=>{
   if(e.target.id==='saveSettings'){const el=$('#targetRate'),raw=el.value.trim(),v=+raw,er=$('#targetRate-err');
-    // 空欄や範囲外のまま保存すると、全案件の判定がおかしくなるため止める
+    // 空欄や範囲外のまま保存すると、全工事の判定がおかしくなるため止める
     if(raw===''||!isFinite(v)||v<0||v>100){el.setAttribute('aria-invalid','true');if(er)er.hidden=false;el.focus();toast('0〜100 の数字を入れてください');return}
     el.removeAttribute('aria-invalid');if(er)er.hidden=true;
     try{await store.setSettings({...settings,targetRate:v});settings.targetRate=v;toast('基準を保存しました')}catch(err){toast('保存できませんでした')}}
@@ -3100,7 +3100,7 @@ async function init(){
   else me={id:'anon',isOwner:false,name:''};
   // この端末をまだだれが使うか決めていなければ、名前を選ぶ画面から
   if(window.OUBI_SUPA&&!me.id)view.tab='pickme';
-  // 案件の最初の受信まで読み込み中のまま（0件と誤解しないように）。10秒たっても届かなければ表示する
+  // 工事の最初の受信まで読み込み中のまま（0件と誤解しないように）。10秒たっても届かなければ表示する
   setTimeout(()=>{if(!booted){booted=true;render()}},10000);
   render();
   const rerender=softRender;
@@ -3119,7 +3119,7 @@ async function init(){
     if(view.tab==='pickme'&&!(document.activeElement&&document.activeElement.id==='pm-name')){render();return} // 名前の一覧をすぐ出す
     rerender()},()=>{});
   db.collection('roles').onSnapshot(s=>{roles={};s.docs.forEach(x=>roles[x.id]=x.data());rerender()},()=>{});
-  db.collection('cases').onSnapshot(s=>applySnapshot(s.docs.map(x=>({...JSON.parse(JSON.stringify(x.data())),id:x.id}))),()=>toast('案件データの受信が止まりました。再読み込みしてください。'));
+  db.collection('cases').onSnapshot(s=>applySnapshot(s.docs.map(x=>({...JSON.parse(JSON.stringify(x.data())),id:x.id}))),()=>toast('工事データの受信が止まりました。再読み込みしてください。'));
   db.collection('decisions').onSnapshot(s=>{dec={};s.docs.forEach(x=>dec[x.id]=x.data());const a=document.activeElement;if(!(a&&/INPUT|TEXTAREA|SELECT/.test(a.tagName))){const y=window.scrollY;render();window.scrollTo(0,y)}else pendingRender=true},()=>{});
   slInit(db); // 営業の訪問記録
   startMitsu();

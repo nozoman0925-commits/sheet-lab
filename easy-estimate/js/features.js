@@ -14,13 +14,13 @@
   var SECTIONS = [
     { key: 'home', label: 'ホーム', icon: 'home', href: '#/home', note: '自分専用の操作盤' },
     { key: 'clients', label: '顧客', icon: 'users', href: '#/clients', note: '問い合わせ・営業' },
-    { key: 'sites', label: '現場', icon: 'site', href: '#/sites', note: '調査・施工・検査' },
+    { key: 'sites', label: '工事', icon: 'site', href: '#/sites', note: '調査・施工・検査' },
     { key: 'estimate', label: '見積・積算', icon: 'calc', href: '#/new', note: '計算・提案・契約' },
     { key: 'schedule', label: 'スケジュール', icon: 'calendar', href: '#/schedule', note: '工程・人員・予定' },
     { key: 'procure', label: '資材・発注', icon: 'truck', href: '#/procure', note: '材料・業者・在庫', planned: 4 },
     { key: 'finance', label: '経営・会計', icon: 'yen', href: '#/finance', note: '利益・請求・入金' },
     { key: 'docs', label: '書類', icon: 'docs', href: '#/docs', note: 'すべての書類' },
-    { key: 'analysis', label: '分析', icon: 'trend', href: '#/analysis', note: '経営・現場データ' },
+    { key: 'analysis', label: '分析', icon: 'trend', href: '#/analysis', note: '経営・工事データ' },
     { key: 'settings', label: '設定', icon: 'gear', href: '#/settings/items', note: 'マスタ・権限・連携' }
   ];
 
@@ -31,16 +31,16 @@
     ['home', 'ホームの編集（ウィジェットの追加・並べ替え）', R, '#/home?edit', 'ウィジェット 追加 配置 カスタマイズ'],
     ['home', '担当者ごとのファイル', R, '#/home', 'フォルダ 担当 ファイル'],
     ['clients', '顧客の登録・一覧', R, '#/clients', '顧客 お客様 取引先 施主'],
-    ['clients', '顧客メモ・直近の案件', R, '#/clients', 'メモ 注意点'],
+    ['clients', '顧客メモ・直近の工事', R, '#/clients', 'メモ 注意点'],
     ['clients', '月別×工事種別ヒートマップ', R, '#/analysis', 'ヒートマップ'],
     ['clients', '問い合わせ受付', 3, '', '問い合わせ 電話 紹介 流入'],
     ['clients', '顧客対応履歴・タイムライン', 3, '', '対応履歴 タイムライン 連絡'],
     ['clients', '追客リマインダー', 3, '', '追客 リマインダー フォロー'],
     ['clients', '顧客の重複検知', 3, '', '重複'],
-    ['sites', '現場一覧・案件フロー', R, '#/sites', '現場 案件 フロー 進捗 一覧'],
-    ['sites', '現場ワークスペース', R, '#/sites', 'ワークスペース 現場カルテ 概要'],
+    ['sites', '工事の一覧・流れ', R, '#/sites', '工事 工事 フロー 進捗 一覧'],
+    ['sites', '工事ワークスペース', R, '#/sites', 'ワークスペース 工事カルテ 概要'],
     ['sites', '現場写真', R, '#/sites', '写真 現場写真 施工前 施工後 ビフォーアフター'],
-    ['sites', '現場メモ・履歴', R, '#/sites', 'メモ 連絡 履歴'],
+    ['sites', '工事メモ・履歴', R, '#/sites', 'メモ 連絡 履歴'],
     ['sites', '現地調査シート', 3, '', '現地調査 調査 チェックリスト'],
     ['sites', '写真への書き込み・採寸図', 3, '', '書き込み 寸法 採寸'],
     ['sites', '安全・品質・検査', 7, '', 'KY 安全 品質 検査 是正 ヒヤリハット'],
@@ -66,7 +66,7 @@
     ['procure', '在庫管理', 4, '', '在庫 資材 材料'],
     ['finance', '入金・粗利のメーター', R, '#/finance', '入金率 粗利率 未入金'],
     ['finance', '月別の見積・受注・入金', R, '#/finance', '月別 売上 受注額 入金額'],
-    ['finance', '案件別の粗利', R, '#/finance', '案件別 損益 粗利 利益'],
+    ['finance', '工事別の粗利', R, '#/finance', '工事別 損益 粗利 利益'],
     ['finance', '請求書・分割請求', 6, '', '請求 請求書 着手金 中間金'],
     ['finance', '入金消込・未入金通知', 6, '', '入金 消込 未入金 督促'],
     ['finance', '実行予算・実績原価', 5, '', '実行予算 原価 予算超過'],
@@ -97,7 +97,7 @@
   function settings() { var s = EE.S || {}; s.ui = s.ui || {}; s.ui.navHidden = s.ui.navHidden || {}; return s.ui; }
   /** メニューに出す業務のまとまり（準備中のものと、利用者が隠したものは出さない） */
   /* 桜ミツ版（EE.link）：業務管理の機能を入れても、メニューは7つに絞る（同じ種類の画面を2つ並べない）
-     顧客・現場の流れ・工事の一覧 → 工事／書類 → 見積／カレンダー・ホワイトボード → 予定／粗利・工事の経営・分析 → 経営 */
+     顧客・工事の流れ・工事の一覧 → 工事／書類 → 見積／カレンダー・ホワイトボード → 予定／粗利・工事の経営・分析 → 経営 */
   var LINK_SECTIONS = [
     { key: 'home', label: 'ホーム', icon: 'home', href: '#/home', note: '今日のこと・数字' },
     { key: 'sales', label: '営業', icon: 'walk', href: '#/o/sales', note: '訪問の記録・再訪問・ランキング' },

@@ -33,6 +33,7 @@
 .ee [hidden]{ display: none !important; }
 .ee{
   margin: 0;
+  font-variant-numeric: tabular-nums;   
   font-family: var(--font);
   font-size: 16px;
   line-height: 1.6;
@@ -448,8 +449,9 @@
 
 }
 .ee #print-root{ display: none; }
-@media print{@page{ size: A4; margin: 12mm 12mm 14mm; }
-.ee{ background: #fff !important; overflow: visible; }
+@media print{@page{ size: A4; margin: 15mm 18mm 15mm 18mm;
+    @bottom-right { content: counter(page) " / " counter(pages); font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; font-size: 8pt; color: #555; } }
+.ee,.ee,.ee{ color-scheme: light !important; }
 .ee-host::before,.ee-host::after{ display: none; }
 .ee .app,.ee .overlay,.ee .toasts{ display: none !important; }
 .ee #print-root{ display: block; }
@@ -554,7 +556,7 @@
 
 /* ---- sheet.css ---- */
 .ee .sheet{
-  width: 210mm; min-height: 297mm; padding: 14mm 14mm 16mm; background: #fff; color: #1a1f2b;
+  width: 210mm; min-height: 297mm; padding: 15mm 18mm 15mm; background: #fff; color: #1a1f2b;   
   font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-size: 10pt; line-height: 1.55;
   -webkit-print-color-adjust: exact; print-color-adjust: exact;
 }
@@ -582,19 +584,18 @@
 .ee .sheet .stamps div + div{ border-left: 0; }
 .ee .sheet table.items{ width: 100%; border-collapse: collapse; margin-top: 5mm; font-size: 8.8pt; }
 .ee .sheet table.items thead{ display: table-header-group; }
-.ee .sheet table.items th{ background: #1f3f8f; color: #fff; font-weight: 500; padding: 1.6mm 2mm; text-align: center; }
-.ee .sheet table.items td{ border-bottom: 1px solid #d5dae5; padding: 1.5mm 2mm; vertical-align: top; }
+.ee .sheet table.items th{ background: none; color: #1a1f2b; font-weight: 600; padding: 1.6mm 2mm; text-align: center; border-top: .8pt solid #1a1f2b; border-bottom: .8pt solid #1a1f2b; }
+.ee .sheet table.items td{ border-bottom: .3pt solid #b9c0cc; padding: 1.5mm 2mm; vertical-align: top; }
 .ee .sheet table.items tr{ page-break-inside: avoid; }
-.ee .sheet table.items tbody tr:nth-child(even) td{ background: #f5f7fb; }
 .ee .sheet table.items .r{ text-align: right; white-space: nowrap; }
 .ee .sheet table.items .c{ text-align: center; white-space: nowrap; }
 .ee .sheet table.items .spec{ color: #555; font-size: 8pt; }
 .ee .sheet table.items .mark{ color: #1f3f8f; }
-.ee .sheet .bottom{ display: grid; grid-template-columns: 1fr 72mm; gap: 8mm; margin-top: 4mm; page-break-inside: avoid; }
+.ee .sheet .bottom{ display: grid; grid-template-columns: 1fr 72mm; gap: 8mm; margin-top: 4mm; page-break-inside: avoid; align-items: start; }
 .ee .sheet table.tot{ width: 100%; border-collapse: collapse; font-size: 9pt; }
-.ee .sheet table.tot th{ text-align: left; font-weight: 500; padding: 1.2mm 2mm; border-bottom: 1px solid #d5dae5; }
-.ee .sheet table.tot td{ text-align: right; padding: 1.2mm 2mm; border-bottom: 1px solid #d5dae5; white-space: nowrap; }
-.ee .sheet table.tot tr.g th,.ee .sheet table.tot tr.g td{ font-weight: 700; font-size: 10.5pt; border-top: 1.5px solid #1f3f8f; border-bottom: 1.5px solid #1f3f8f; }
+.ee .sheet table.tot th{ text-align: left; font-weight: 500; padding: 1.2mm 2mm; border-bottom: .3pt solid #b9c0cc; }
+.ee .sheet table.tot td{ text-align: right; padding: 1.2mm 2mm; border-bottom: .3pt solid #b9c0cc; white-space: nowrap; font-variant-numeric: tabular-nums; }
+.ee .sheet table.tot tr.g th,.ee .sheet table.tot tr.g td{ font-weight: 700; font-size: 10.5pt; background: #eef2fa; border-top: 1.6pt solid #1f3f8f; border-bottom: 1.6pt solid #1f3f8f; }
 .ee .sheet .box{ border: 1px solid #c9cfdc; padding: 2.5mm 3mm; font-size: 8.8pt; margin-bottom: 3mm; page-break-inside: avoid; }
 .ee .sheet .box h4{ margin: 0 0 1.5mm; font-size: 8.8pt; color: #1f3f8f; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; }
 .ee .sheet .box table{ width: 100%; border-collapse: collapse; }
@@ -603,8 +604,9 @@
 .ee .sheet .notes{ white-space: pre-wrap; }
 .ee .sheet .foot{ margin-top: 5mm; font-size: 7.5pt; color: #777; display: flex; justify-content: space-between; }
 .ee .sheet .draft-mark{ position: absolute; right: 0; top: 10mm; font-size: 9pt; color: #b33; border: 1px solid #b33; padding: .5mm 2mm; }
-.ee .sheet .from .logo{ margin-bottom: 2mm; }
-.ee .sheet .from .logo img{ max-width: 60mm; max-height: 20mm; display: block; }
+.ee .sheet .from .logo{ margin-bottom: 2mm; height: 14mm; display: flex; align-items: center; }
+.ee .sheet .from .logo img{ max-width: 60mm; max-height: 14mm; display: block; }
+.ee .sheet .from .co-wrap{ min-height: 14mm; }
 .ee .sheet .from .crest-logo{ display: flex; align-items: center; gap: 2.5mm; color: #111; }
 .ee .sheet .from .crest-logo .sheet-crest{ width: 11mm; height: 11mm; flex: none; overflow: visible; }
 .ee .sheet .from .crest-logo .c-field{ fill: #fff; }
@@ -612,7 +614,8 @@
 .ee .sheet .from .crest-logo .c-glow,.ee .sheet .from .crest-logo .c-sheen,.ee .sheet .from .crest-logo .c-rayfills{ display: none; }
 .ee .sheet .from .crest-logo span{ font-family: "Hiragino Mincho ProN", "Yu Mincho", "Noto Serif JP", serif; font-size: 13pt; font-weight: 600; letter-spacing: .14em; }
 .ee .sheet .from .co-wrap{ position: relative; }
-.ee .sheet .from .co-wrap .seal{ position: absolute; right: -2mm; top: -4mm; width: 21mm; height: 21mm; object-fit: contain; mix-blend-mode: multiply; opacity: .92; }
+.ee .sheet .from .co-wrap .seal{ position: absolute; right: 0; top: -3mm; width: 21mm; height: 21mm; object-fit: contain; mix-blend-mode: multiply; opacity: .92; }
+.ee .sheet .num,.ee .sheet td.r,.ee .sheet .grand .v{ font-variant-numeric: tabular-nums; }
 
 
 /* ---- aurora.css ---- */

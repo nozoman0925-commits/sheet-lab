@@ -1,10 +1,10 @@
-/* 顧客・案件 */
+/* 顧客・工事 */
 (function (root) {
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var sel = null, q = '';
 
-  /** 顧客ごとの直近の案件（書類の発行日が新しい順） */
+  /** 顧客ごとの直近の工事（書類の発行日が新しい順） */
   function recentProject(c) {
     var best = null, bd = '';
     EE.S.projects.forEach(function (p) {
@@ -31,7 +31,7 @@
         '<div class="field c6"><label>メール</label><input class="input" name="email" value="' + esc(c.email) + '"></div>' +
         '<div class="field c12"><label>メモ（一覧にも出ます）</label><textarea class="input" name="memo" placeholder="例：見積は紙でも郵送希望。支払いは月末締め翌月末">' + esc(c.memo || '') + '</textarea></div>' +
       '</div>',
-      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         var kind = el.querySelector('[name=kind]'), hon = el.querySelector('[name=honorific]');
         kind.onchange = function () { hon.value = kind.value === 'corp' ? '御中' : '様'; EE.fx.pulse(hon); };
@@ -54,14 +54,14 @@
     var isNew = !p;
     p = p || { id: EE.data.uid('prj'), customerId: customerId || '', name: '', site: '', note: '', ownerId: EE.S.currentMemberId || '' };
     U.modal({
-      title: isNew ? '案件を登録' : '案件を編集',
+      title: isNew ? '工事を登録' : '工事を編集',
       body: '<div class="form-grid">' +
         '<div class="field c12"><label class="req">顧客</label><select class="input" name="customerId">' + EE.S.customers.map(function (c) { return U.opt(c.id, c.name, p.customerId); }).join('') + '</select></div>' +
-        '<div class="field c12"><label class="req">案件名</label><input class="input" name="name" value="' + esc(p.name) + '" autofocus></div>' +
-        '<div class="field c12"><label>担当者（この現場の担当）</label><select class="input" name="ownerId">' + U.memberOptions(p.ownerId || '', '（未割り当て）') + '</select></div>' +
+        '<div class="field c12"><label class="req">工事名</label><input class="input" name="name" value="' + esc(p.name) + '" autofocus></div>' +
+        '<div class="field c12"><label>担当者（この工事の担当）</label><select class="input" name="ownerId">' + U.memberOptions(p.ownerId || '', '（未割り当て）') + '</select></div>' +
         '<div class="field c12"><label>現場住所（工事場所）</label><input class="input" name="site" value="' + esc(p.site) + '"></div>' +
         '<div class="field c12"><label>メモ</label><textarea class="input" name="note">' + esc(p.note) + '</textarea></div></div>',
-      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         el.querySelector('[data-c]').onclick = function () { api.close(); };
         el.querySelector('[data-s]').onclick = function () {
@@ -70,7 +70,7 @@
           Object.assign(p, v);
           if (isNew) EE.S.projects.push(p);
           U.commit(); api.close();
-          EE.fx.toast(isNew ? '案件を登録しました' : '保存しました');
+          EE.fx.toast(isNew ? '工事を登録しました' : '保存しました');
           if (onSaved) onSaved(p);
         };
       }
@@ -98,23 +98,23 @@
     var pjs = EE.S.projects.filter(function (p) { return p.customerId === c.id; });
     var docs = EE.S.documents.filter(function (d) { return d.customerId === c.id; }).sort(function (a, b) { return (b.issueDate || '').localeCompare(a.issueDate || ''); });
     return '<div class="panel-h" style="padding:0 0 12px"><h2 style="font-size:17px">' + esc(c.name) + ' <span class="muted">' + esc(c.honorific) + '</span></h2><div class="spacer"></div>' +
-        '<button class="btn sm" data-act="edit-c">' + I.edit + '編集</button>' +
+        '<button class="btn sm" data-act="edit-c">' + I.edit + '編集する</button>' +
         (EE.host || EE.link ? '' : '<button class="btn sm danger" data-act="del-c">' + I.trash + '</button>') +   // 業務管理の中では、顧客は工事の記録なので消さない
 
-        '<button class="btn sm primary" data-act="new-doc">' + I.plus + 'この顧客で見積</button></div>' +
+        '<button class="btn sm primary" data-act="new-doc">' + I.plus + 'この顧客で見積を作る</button></div>' +
       '<div class="form-grid" style="margin-bottom:18px">' +
         [['担当者', c.contact], ['住所', (c.zip ? '〒' + c.zip + ' ' : '') + c.address], ['電話', c.tel], ['メール', c.email]].map(function (x) {
           return '<div class="field c6"><span class="label">' + x[0] + '</span><span>' + (esc(x[1]) || '<span class="hint">—</span>') + '</span></div>';
         }).join('') +
         '<div class="field c12"><span class="label">メモ</span><span style="white-space:pre-wrap">' + (esc(c.memo || '') || '<span class="hint">—（編集から書けます）</span>') + '</span></div></div>' +
-      '<div class="panel-h" style="padding:0 0 8px"><h3>案件</h3><div class="spacer"></div><button class="btn sm" data-act="new-p">' + I.plus + '案件を追加</button></div>' +
+      '<div class="panel-h" style="padding:0 0 8px"><h3>工事</h3><div class="spacer"></div><button class="btn sm" data-act="new-p">' + I.plus + '工事を追加</button></div>' +
       (pjs.length ? '<table class="table" style="margin-bottom:18px"><tbody>' + pjs.map(function (p) {
         var pm = U.findMember(p.ownerId);
         var pc = EE.views.site.docsOf(p.id).length;
         return '<tr class="clickable" data-href="#/site/' + p.id + '" data-st><td>' + esc(p.name) + (pc ? ' <span class="badge">見積 ' + pc + '件</span>' : '') + '<span class="cell-sub">' + esc(p.site || '') + (pm ? '　担当：' + esc(pm.name) : '') + '</span></td><td class="r"><div class="row-actions">' +
-          '<button class="btn ghost sm" data-act="p-doc" data-pid="' + p.id + '">' + I.plus + '見積</button>' +
+          '<button class="btn ghost sm" data-act="p-doc" data-pid="' + p.id + '">' + I.plus + '見積を作る</button>' +
           '<button class="btn ghost icon sm" data-act="edit-p" data-pid="' + p.id + '">' + I.edit + '</button></div></td></tr>';
-      }).join('') + '</tbody></table>' : '<p class="hint" style="margin:0 0 18px">案件はまだありません</p>') +
+      }).join('') + '</tbody></table>' : '<p class="hint" style="margin:0 0 18px">工事はまだありません</p>') +
       '<div class="panel-h" style="padding:0 0 8px"><h3>この顧客の書類</h3></div>' +
       (docs.length ? '<table class="table"><tbody>' + docs.map(function (d) {
         return '<tr class="clickable" data-href="#/edit/' + d.id + '" data-st><td class="num">' + esc(d.no) + '</td><td>' + esc(d.title) + '</td><td class="num muted">' + U.jdate(d.issueDate) + '</td><td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td></tr>';
@@ -125,7 +125,7 @@
     if (!sel && EE.S.customers[0]) sel = EE.S.customers[0].id;
     var html = '<div class="grid" style="grid-template-columns:minmax(280px,380px) minmax(0,1fr)">' +
       '<section class="panel" data-st><div class="panel-h"><h2>顧客</h2><span class="sub">' + EE.S.customers.length + '件</span><div class="spacer"></div>' +
-        '<button class="btn sm primary" data-act="new-c">' + I.plus + '登録</button></div>' +
+        '<button class="btn sm primary" data-act="new-c">' + I.plus + '登録する</button></div>' +
         '<div class="panel-b"><div class="search" style="margin-bottom:10px">' + I.search + '<input class="input" id="c-q" placeholder="名称・住所で検索" value="' + esc(q) + '"></div><div id="c-list">' + listHTML() + '</div></div></section>' +
       '<section class="panel" data-st><div class="panel-b" id="c-detail">' + detailHTML() + '</div></section></div>';
     return { title: '顧客', crumb: '問い合わせ・営業', html: html, mount: mount };
@@ -154,7 +154,7 @@
           if (EE.S.documents.some(function (d) { return d.customerId === c.id; })) {
             EE.fx.toast('書類がある顧客は削除できません（書類の宛先が消えるため）', { warn: true, ms: 3500 }); return;
           }
-          if (!(await U.confirmBox('「' + c.name + '」と、その案件を削除しますか？', '削除する', { danger: true }))) return;
+          if (!(await U.confirmBox('「' + c.name + '」と、その工事を削除しますか？', '削除する', { danger: true }))) return;
           EE.S.customers.splice(EE.S.customers.indexOf(c), 1);
           EE.S.projects = EE.S.projects.filter(function (p) { return p.customerId !== c.id; });
           U.commit(); sel = null; EE.app.rerender(); break;

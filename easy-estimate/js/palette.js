@@ -1,6 +1,6 @@
 /*
  * 全機能検索（コマンドパレット）：Ctrl+K（Mac は ⌘K）で開く
- *  - 機能（準備中のものは「第N期で追加」と表示）・顧客・現場・書類・工事項目を横断して探す
+ *  - 機能（準備中のものは「第N期で追加」と表示）・顧客・工事・書類・工事項目を横断して探す
  *  - 業務の言葉（未入金・期限切れ・今日の予定・新しい見積…）からも、該当の画面へ直接移動
  *  - ↑↓ で選び、Enter で開く。Esc で閉じる
  * 検索は文字の一致だけ（AIは使わない）。
@@ -22,14 +22,14 @@
   var ACTIONS = [
     ['新しい見積を作る', '#/new', '見積 作成 新規 つくる'],
     ['外構の見積を作る（文章から）', '#/new/text', '外構 フェンス 文章'],
-    ['未入金の現場を見る', '#/finance', '未入金 入金待ち 請求済み 督促'],
+    ['未入金の工事を見る', '#/finance', '未入金 入金待ち 請求済み 督促'],
     ['期限切れの見積を見る', '#/schedule', '期限切れ 有効期限 期限'],
     ['今日の予定を見る', '#/schedule', '今日 予定 スケジュール'],
     ['下書きの見積を見る', '#/docs/draft', '下書き 未確定 未対応'],
     ['確定済み（送った）見積を見る', '#/docs/issued', '確定 送った 発行済み 回答待ち'],
     ['顧客を登録する', '#/clients', '顧客 登録 新規'],
     ['ホームを編集する', '#/home?edit', 'ホーム ウィジェット 編集 カスタマイズ'],
-    ['現場写真を登録する（現場を開いて「写真」）', '#/sites', '写真 現場写真 撮影'],
+    ['現場写真を登録する（工事を開いて「写真」）', '#/sites', '写真 現場写真 撮影'],
     ['先月の売上・粗利を見る', '#/finance', '先月 売上 粗利 月別'],
     ['自社情報・会社印を変える', '#/settings/company', '会社 自社 角印 ロゴ']
   ];
@@ -55,11 +55,11 @@
     });
     if (q) {
       S.customers.forEach(function (c) { add('顧客', c.name + ' ' + (c.honorific || ''), c.address || c.tel || '', '#/clients', { icon: 'users', cid: c.id }, c.contact + ' ' + c.tel + ' ' + (c.memo || '')); });
-      S.projects.forEach(function (p) { add('現場', p.name, (U.findCustomer(p.customerId) || {}).name || '', '#/site/' + p.id, { icon: 'site' }, p.site + ' ' + (p.note || '')); });
+      S.projects.forEach(function (p) { add('工事', p.name, (U.findCustomer(p.customerId) || {}).name || '', '#/site/' + p.id, { icon: 'site' }, p.site + ' ' + (p.note || '')); });
       S.documents.forEach(function (d) { add('書類', (d.title || '（件名なし）') + (d.patternLabel ? '（' + d.patternLabel + '）' : ''), (d.no || '') + '　' + U.yen(U.calcDoc(d).total), '#/edit/' + d.id, { icon: 'docs' }, d.no + ' ' + (U.docCustomer(d).name || '')); });
       S.items.forEach(function (it) { add('工事項目', it.name, it.code + '　' + U.yen(it.unitPrice) + '/' + it.unit, '#/settings/items', { icon: 'box' }, it.code + ' ' + (it.synonyms || []).join(' ')); });
     }
-    var order = { '操作': 0, '機能': 1, '現場': 2, '顧客': 3, '書類': 4, '工事項目': 5 };
+    var order = { '操作': 0, '機能': 1, '工事': 2, '顧客': 3, '書類': 4, '工事項目': 5 };
     out.sort(function (a, b) { return (b.s - a.s) || (a.planned ? 1 : 0) - (b.planned ? 1 : 0) || order[a.group] - order[b.group]; });
     return out.slice(0, q ? 40 : 14);
   }

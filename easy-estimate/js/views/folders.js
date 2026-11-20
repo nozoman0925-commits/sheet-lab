@@ -1,7 +1,7 @@
 /*
  * 担当者ごとのファイル
- * - ホームに担当者の人数分のフォルダを並べ、開くとその人の担当現場と書類がまとめて見られる
- * - 担当現場 = 案件の担当者がその人の現場 ＋ その人が担当の書類がある現場
+ * - ホームに担当者の人数分のフォルダを並べ、開くとその人の担当工事と書類がまとめて見られる
+ * - 担当工事 = 工事の担当者がその人の工事 ＋ その人が担当の書類がある工事
  * - 担当者（作成者）の名簿の登録・編集
  */
 (function (root) {
@@ -50,7 +50,7 @@
       var st = statsFor(m.id);
       return '<a class="folder-tile" href="#/folder/' + m.id + '" title="' + esc(m.name) + 'のファイルを開く">' + folderIcon(m, st.docs.length) +
         '<b>' + esc(m.name) + (m.id === me.id ? ' <span class="badge blue">自分</span>' : '') + '</b>' +
-        '<small>' + esc(m.role || '') + '　現場 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</small>' +
+        '<small>' + esc(m.role || '') + '　工事 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</small>' +
         (st.soon ? '<span class="badge warn fold-flag">期限間近 ' + st.soon + '</span>' : st.drafts ? '<span class="badge fold-flag">下書き ' + st.drafts + '</span>' : '') + '</a>';
     });
     var none = statsFor(NONE);
@@ -58,11 +58,11 @@
     // 業務管理の中では、社員は業務管理の「社員一覧」で増やす
     if (!EE.host && !EE.link) tiles.push('<a class="folder-tile add" href="#/settings/members" title="担当者を追加">' +
       '<span class="fold-add">' + I.plus + '</span><b>担当者を追加</b><small>設定 → 担当者</small></a>');
-    return '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>担当者のファイル</h2><span class="sub">担当者ごとの現場と書類。クリックでいつでも開けます</span></div>' +
+    return '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>担当者のファイル</h2><span class="sub">担当者ごとの工事と書類。クリックでいつでも開けます</span></div>' +
       '<div class="panel-b"><div class="folder-grid">' + tiles.join('') + '</div></div></section>';
   }
 
-  /** フォルダの中身：担当現場ごとの書類 */
+  /** フォルダの中身：担当工事ごとの書類 */
   function render(id) {
     var m = id === NONE ? null : U.findMember(id);
     if (id !== NONE && !m) return { title: '見つかりません', html: '<div class="panel panel-b empty">担当者が見つかりません。</div>' };
@@ -84,23 +84,23 @@
       var c = U.findCustomer(p.customerId) || {};
       var list = docsBy[p.id] || [];
       var pOwner = p.ownerId && U.findMember(p.ownerId);
-      var note = pOwner && pOwner.id !== id ? '<span class="badge">現場の担当：' + esc(pOwner.name) + '</span>' : '';
-      return '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.home + '</span><h3><a href="#/site/' + p.id + '" class="site-link">' + esc(p.name) + '</a></h3><div class="spacer"></div>' + note + '<a class="btn ghost sm" href="#/site/' + p.id + '">現場ページ</a></div>' +
-        '<div class="panel-b"><div class="hint" style="margin-bottom:10px">' + esc(c.name || '') + ' ' + esc(c.honorific || '') + (p.site ? '　現場：' + esc(p.site) : '') + '</div>' +
+      var note = pOwner && pOwner.id !== id ? '<span class="badge">工事の担当：' + esc(pOwner.name) + '</span>' : '';
+      return '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.home + '</span><h3><a href="#/site/' + p.id + '" class="site-link">' + esc(p.name) + '</a></h3><div class="spacer"></div>' + note + '<a class="btn ghost sm" href="#/site/' + p.id + '">工事ページ</a></div>' +
+        '<div class="panel-b"><div class="hint" style="margin-bottom:10px">' + esc(c.name || '') + ' ' + esc(c.honorific || '') + (p.site ? '　工事：' + esc(p.site) : '') + '</div>' +
         (list.length ? '<table class="table"><tbody>' + docRows(list) + '</tbody></table>' : '<p class="hint">まだ書類はありません</p>') +
-        '<div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn sm" data-new-site="' + p.id + '">' + I.plus + 'この現場で見積を作る</button></div></div></section>';
+        '<div style="display:flex;justify-content:flex-end;margin-top:10px"><button class="btn sm" data-new-site="' + p.id + '">' + I.plus + 'この工事で見積を作る</button></div></div></section>';
     }).join('');
     if (docsBy._none) {
-      cards += '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.file + '</span><h3>現場の登録がない書類</h3></div><div class="panel-b">' +
+      cards += '<section class="panel site-card" data-st><div class="panel-h"><span class="kpi-icon">' + I.file + '</span><h3>工事の登録がない書類</h3></div><div class="panel-b">' +
         '<table class="table"><tbody>' + docRows(docsBy._none) + '</tbody></table>' +
-        '<p class="hint" style="margin:10px 0 0">見積の「案件」を選ぶと、ここから現場ごとのまとまりに移ります。</p></div></section>';
+        '<p class="hint" style="margin:10px 0 0">見積の「工事」を選ぶと、ここから工事ごとのまとまりに移ります。</p></div></section>';
     }
     var head = '<section class="panel" data-st><div class="panel-b folder-head">' +
         (m ? U.avatar(m, 56) : '<span class="avatar" style="--hue:220;width:56px;height:56px;filter:grayscale(1)">？</span>') +
         '<div style="flex:1;min-width:200px"><div style="font-size:20px;font-weight:650">' + esc(m ? m.name : '未割り当て') + (m && m.id === U.me().id ? ' <span class="badge blue">自分</span>' : '') + '</div>' +
           '<div class="hint">' + esc(m ? (m.role || '') : '担当者が決まっていない書類です。見積の「担当者」を選ぶと、その人のファイルに移ります') + '</div></div>' +
         '<div class="folder-stats">' +
-          '<div><small>担当現場</small><b class="num" data-count="' + st.projectIds.length + '" data-format="int">0</b></div>' +
+          '<div><small>担当工事</small><b class="num" data-count="' + st.projectIds.length + '" data-format="int">0</b></div>' +
           '<div><small>書類</small><b class="num" data-count="' + st.docs.length + '" data-format="int">0</b></div>' +
           '<div><small>下書き</small><b class="num" data-count="' + st.drafts + '" data-format="int">0</b></div>' +
           '<div><small>今月の見積（税込）</small><b class="num" data-count="' + st.month + '" data-format="yen">¥0</b></div>' +
@@ -110,7 +110,7 @@
         (m ? '<button class="btn" data-act="edit-member">' + I.edit + '担当者の情報</button>' : '') +
         '<button class="btn" data-act="docs-list">' + I.docs + '書類一覧で見る</button>' +
         '<button class="btn primary" data-act="new-doc">' + I.plus + (m ? esc(m.name) + 'の担当で見積を作る' : '見積を作る') + '</button></div>' +
-      (cards ? '<div class="site-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'まだ担当の現場・書類はありません</div></section>');
+      (cards ? '<div class="site-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'まだ担当の工事・書類はありません</div></section>');
     return {
       title: (m ? m.name : '未割り当て') + 'のファイル', crumb: '担当者のファイル', html: html,
       mount: function (view) {
@@ -136,13 +136,13 @@
     U.modal({
       title: isNew ? '担当者を追加' : '担当者の情報',
       body: '<div class="form-grid"><div class="field c6"><label class="req">名前</label><input class="input" name="name" value="' + esc(d.name) + '" placeholder="例：桜井 美和" autofocus></div>' +
-        '<div class="field c6"><label>役割</label><input class="input" name="role" value="' + esc(d.role || '') + '" placeholder="例：営業、事務、現場管理"></div>' +
+        '<div class="field c6"><label>役割</label><input class="input" name="role" value="' + esc(d.role || '') + '" placeholder="例：営業、事務、工事管理"></div>' +
         '<div class="field c12"><label>アイコンとフォルダの色</label><div style="display:flex;gap:10px;flex-wrap:wrap">' + HUES.map(function (h) {
           return '<label class="hue-pick"><input type="radio" name="hue" value="' + h + '"' + (d.hue === h ? ' checked' : '') + '>' + U.avatar({ name: d.name || '？', hue: h }) + '</label>'; }).join('') + '</div></div></div>' +
-        (st ? '<p class="hint" style="margin-top:12px">担当：現場 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</p>' : '') +
+        (st ? '<p class="hint" style="margin-top:12px">担当：工事 ' + st.projectIds.length + '・書類 ' + st.docs.length + '</p>' : '') +
         '<p class="hint">この版はログインのない1台用です。担当者は「誰が作った・担当している書類か」を分けるための名簿で、パスワードや権限はありません（設計書の範囲）。</p>',
       foot: (isNew || U.members().length <= 1 ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div>' +
-        '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+        '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         el.querySelector('[name=name]').addEventListener('input', function (e) {
           el.querySelectorAll('.hue-pick .avatar').forEach(function (a) { a.textContent = U.initial(e.target.value || '？'); });
@@ -151,7 +151,7 @@
         var del = el.querySelector('[data-del]');
         if (del) del.onclick = async function () {
           var s2 = statsFor(d.id);
-          if (!(await U.confirmBox('「' + d.name + '」を名簿から削除しますか？\n担当の書類 ' + s2.docs.length + ' 件・現場は消えず、「未割り当て」に移ります。', '削除する', { danger: true }))) return;
+          if (!(await U.confirmBox('「' + d.name + '」を名簿から削除しますか？\n担当の書類 ' + s2.docs.length + ' 件・工事は消えず、「未割り当て」に移ります。', '削除する', { danger: true }))) return;
           EE.S.members = EE.S.members.filter(function (x) { return x.id !== d.id; });
           EE.S.documents.forEach(function (x) { if (x.ownerId === d.id) x.ownerId = ''; });
           EE.S.projects.forEach(function (x) { if (x.ownerId === d.id) x.ownerId = ''; });
@@ -177,9 +177,9 @@
   /** 設定・マスタ →「担当者」 */
   function membersTab() {
     var me = U.me();
-    return '<div class="toolbar" data-st><div class="grow hint">見積を作る人・現場を担当する人の名簿です。ホームに一人ずつファイル（フォルダ）が並び、担当現場と書類をすぐ開けます。<br>サイドバー下の名前から「担当者を切り替え」ると、新しく作る見積がその人の担当になります。</div>' +
+    return '<div class="toolbar" data-st><div class="grow hint">見積を作る人・工事を担当する人の名簿です。ホームに一人ずつファイル（フォルダ）が並び、担当工事と書類をすぐ開けます。<br>サイドバー下の名前から「担当者を切り替え」ると、新しく作る見積がその人の担当になります。</div>' +
       '<button class="btn primary" data-act="new-member">' + I.plus + '担当者を追加</button></div>' +
-      '<section class="panel" data-st><div class="panel-b"><table class="table"><thead><tr><th></th><th>名前</th><th>役割</th><th class="r">担当現場</th><th class="r">書類</th><th></th></tr></thead><tbody>' +
+      '<section class="panel" data-st><div class="panel-b"><table class="table"><thead><tr><th></th><th>名前</th><th>役割</th><th class="r">担当工事</th><th class="r">書類</th><th></th></tr></thead><tbody>' +
       U.members().map(function (m) {
         var st = statsFor(m.id);
         return '<tr data-st><td style="width:46px">' + U.avatar(m) + '</td><td>' + esc(m.name) + (m.id === me.id ? ' <span class="badge blue">使用中</span>' : '') + '</td><td class="muted">' + esc(m.role || '') + '</td>' +

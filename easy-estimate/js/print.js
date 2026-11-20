@@ -19,7 +19,8 @@
     return '<div class="logo crest-logo">' + EE.crest.svg({ id: 'shl-' + String(key || 'x').replace(/\W/g, ''), className: 'sheet-crest', fieldR: 106 }) + '<span>' + esc(co.name || '') + '</span></div>';
   }
 
-  function sheetHTML(doc) {
+  function sheetHTML(doc, opts) {
+    opts = opts || {};
     var S = EE.S, sn = doc.status === 'issued' && doc.snap;
     // 確定済みの書類は、確定時の写し（宛名・自社情報・工事場所）で作る。後から顧客や自社情報を変えても送ったものと同じになる
     var co = sn ? sn.company : S.company;
@@ -67,7 +68,11 @@
       (b.discount ? '<tr><td>値引き・端数調整</td><td class="r num">' + yen(b.discount) + '</td></tr>' : '');
 
     var title = '御見積書' + (doc.patternLabel ? '（' + doc.patternLabel + '）' : '') + (doc.rev ? '（第' + doc.rev + '版）' : '');
-    return '<div class="sheet">' +
+    // 2ページ目以降の上に、宛先と件名の小さい見出しを繰り返す（1ページ目は本文にあるので出さない）
+    var css = function (t) { return '"' + String(t).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n<>]/g, ' ') + '"'; };
+    var run = (cust.name || '') + (cust.honorific ? ' ' + cust.honorific : '') + '　／　' + (doc.title || '') + '　／　' + (doc.no ? 'No. ' + doc.no : '');
+    var runCss = opts.many ? '' : '<style>@page { @top-left { content: ' + css(run) + '; font-family: "Hiragino Sans", "Noto Sans JP", sans-serif; font-size: 8pt; color: #555; } } @page :first { @top-left { content: none; } }</style>';
+    return runCss + '<div class="sheet">' +
       '<div class="head" style="grid-template-columns:1fr"><h1>' + esc(title) + '</h1>' +
       '<div class="meta sans num">No. ' + esc(doc.no) + '<br>発行日 ' + U.jdate(doc.issueDate) + '</div></div>' +
       '<div class="head">' +
@@ -169,7 +174,7 @@
   /** 複数の書類を1回の印刷（1つのPDF）にまとめる */
   function printMany(docs) {
     var pr = document.getElementById('print-root');
-    pr.innerHTML = docs.map(function (d, i) { return '<div style="' + (i ? 'page-break-before:always;break-before:page' : '') + '">' + sheetHTML(d) + '</div>'; }).join('');
+    pr.innerHTML = docs.map(function (d, i) { return '<div style="' + (i ? 'page-break-before:always;break-before:page' : '') + '">' + sheetHTML(d, { many: true }) + '</div>'; }).join('');
     var oldTitle = document.title;
     document.title = '見積書_' + docs.length + '件_' + EE.data.today();
     setTimeout(function () { root.print(); document.title = oldTitle; pr.innerHTML = ''; }, 50);

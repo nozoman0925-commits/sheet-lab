@@ -1,6 +1,6 @@
 /*
- * 現場ワークスペース：現場を開けば全部そろう（概要・見積・写真・書類・原価・メモと履歴）
- * 見積タブ：1つの現場（案件）に作った見積をパターン別（A案・B案…）に並べ、比べる
+ * 工事ワークスペース：工事を開けば全部そろう（概要・見積・写真・書類・原価・メモと履歴）
+ * 見積タブ：1つの工事に作った見積をパターン別（A案・B案…）に並べ、比べる
  * - 修正見積（同じ見積の新しい版）とは別物。パターンはそれぞれ独立した見積書
  * - 比較表：明細の行をマスタ品目でそろえ、パターンごとの数量・金額の違いを色で示す
  */
@@ -8,7 +8,7 @@
   'use strict';
   var EE = root.EE, U = EE.ui, I = U.I, esc = U.esc;
   var LETTERS = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-  var picked = {};   // 比較に入れるパターン（現場ごと）
+  var picked = {};   // 比較に入れるパターン（工事ごと）
 
   function docsOf(projectId) {
     return EE.S.documents.filter(function (d) { return d.projectId === projectId; })
@@ -25,7 +25,7 @@
     return '別案';
   }
 
-  /** 見積から、同じ現場の別パターンを作る（明細は最新のマスタ単価で写す） */
+  /** 見積から、同じ工事の別パターンを作る（明細は最新のマスタ単価で写す） */
   function newPattern(srcId) {
     var src = U.findDoc(srcId);
     if (!src) return;
@@ -41,7 +41,7 @@
     d.patternOf = src.id;
     d.sourceLabel = (src.patternLabel || src.no) + ' をもとに ' + label + ' を作成';
     EE.app.newWith(d);
-    EE.fx.toast('「' + label + '」を作りました。明細を変えて保存してください（現場の見積 ' + (siblings.length + 1) + ' 件目）');
+    EE.fx.toast('「' + label + '」を作りました。明細を変えて保存してください（工事の見積 ' + (siblings.length + 1) + ' 件目）');
   }
 
   function patternBadge(d) {
@@ -87,15 +87,15 @@
       '<p class="hint" style="margin-top:8px">色の付いた行は、パターンによって数量や金額が違う明細です。</p>';
   }
 
-  /* ================= 現場ワークスペース ================= */
+  /* ================= 工事ワークスペース ================= */
   var TABS = [['overview', '概要'], ['estimate', '見積'], ['photos', '写真'], ['docs', '書類'], ['cost', '原価'], ['notes', 'メモ・履歴']];
   var PHASES = { before: '施工前', during: '施工中', after: '施工後', survey: '現地調査', '': 'その他' };
 
   /** 注意事項（決まったルールで出す。AIは使わない） */
   function cautions(p, c, docs, photoCount) {
     var out = [], ST = EE.data.STAGES, si = c ? c.stage : 0, minM = EE.S.settings.minMargin || 0;
-    if (!p.site) out.push(['warn', '現場住所が未登録です', '案件を編集から入れると、見積書の工事場所に入ります']);
-    if (!p.ownerId) out.push(['warn', '担当者が決まっていません', '案件を編集から選べます']);
+    if (!p.site) out.push(['warn', '現場住所が未登録です', '工事を編集から入れると、見積書の工事場所に入ります']);
+    if (!p.ownerId) out.push(['warn', '担当者が決まっていません', '工事を編集から選べます']);
     docs.filter(function (d) { return d.status !== 'issued'; }).forEach(function (d) {
       var s = EE.check.summary(U.checkDoc(d)); if (s.error) out.push(['error', '「' + (d.title || '見積') + (d.patternLabel ? '（' + d.patternLabel + '）' : '') + '」に要修正 ' + s.error + ' 件', '見積を開いて送信前チェックを確認してください']);
       var r = U.calcDoc(d); if (r.subtotal > 0 && r.marginRate < minM) out.push(['warn', '「' + (d.title || '見積') + '」の粗利率が下限（' + Math.round(minM * 100) + '%）を下回っています', '粗利率 ' + U.pct(r.marginRate)]);
@@ -115,8 +115,8 @@
         '<div class="ws-name">' + esc(p.name) + '</div>' +
         '<div class="hint">' + esc(cu.name || '') + ' ' + esc(cu.honorific || '') + (p.site ? '　' + esc(p.site) : '') + (owner ? '　担当：' + esc(owner.name) : '') + '</div></div>' +
         '<span class="badge blue">' + esc(ST[si].label) + '</span>' +
-        '<button class="btn icon ghost' + (pinned ? ' pinned' : '') + '" data-act="pin" aria-pressed="' + pinned + '" title="' + (pinned ? 'お気に入りから外す' : 'お気に入りに追加（ホームの「お気に入りの現場」に出ます）') + '" aria-label="お気に入り">' + I.star + '</button>' +
-        '<button class="btn sm" data-act="edit-p">' + I.edit + '案件を編集</button></div>' +
+        '<button class="btn icon ghost' + (pinned ? ' pinned' : '') + '" data-act="pin" aria-pressed="' + pinned + '" title="' + (pinned ? 'お気に入りから外す' : 'お気に入りに追加（ホームの「お気に入りの工事」に出ます）') + '" aria-label="お気に入り">' + I.star + '</button>' +
+        '<button class="btn sm" data-act="edit-p">' + I.edit + '工事を編集</button></div>' +
       '<div class="ws-stats">' +
         '<div><small>' + (si >= 1 ? '受注金額' : '見積金額') + '（税込）</small><b class="num" data-count="' + amt + '" data-format="yen">¥0</b></div>' +
         '<div><small>予定粗利率</small><b class="num">' + (rate != null ? U.pct(rate) : '—') + '</b></div>' +
@@ -127,7 +127,7 @@
   }
 
   function tabsHTML(p, tab) {
-    return '<nav class="ws-tabs" data-st role="tablist" aria-label="現場の情報">' + TABS.map(function (t) {
+    return '<nav class="ws-tabs" data-st role="tablist" aria-label="工事の情報">' + TABS.map(function (t) {
       return '<a role="tab" aria-selected="' + (t[0] === tab) + '" class="' + (t[0] === tab ? 'on' : '') + '" href="#/site/' + p.id + '/' + t[0] + '">' + esc(t[1]) + '</a>';
     }).join('') + '</nav>';
   }
@@ -135,7 +135,7 @@
   function overviewTab(p, c, docs) {
     var ST = EE.data.STAGES, si = c ? c.stage : 0, next = ST[si + 1];
     return '<div class="grid" style="grid-template-columns:minmax(0,1.3fr) minmax(0,1fr)">' +
-      '<section class="panel" data-st><div class="panel-h"><h2>この現場の注意事項</h2></div><div class="panel-b"><div class="checks" id="ws-cautions"><p class="hint">確認中…</p></div></div></section>' +
+      '<section class="panel" data-st><div class="panel-h"><h2>この工事の注意事項</h2></div><div class="panel-b"><div class="checks" id="ws-cautions"><p class="hint">確認中…</p></div></div></section>' +
       '<section class="panel" data-st><div class="panel-h"><h2>次の行動</h2></div><div class="panel-b">' +
         '<div class="next-action' + (c && c.warn ? ' warn' : '') + '"><div>' + esc(c ? c.next : '見積を作る') + '</div></div>' +
         '<div class="flow-detail-actions" style="margin-top:12px">' +
@@ -150,7 +150,7 @@
   function estimateTab(p, docs) {
     var sel = picked[p.id] || (picked[p.id] = {});
     if (!Object.keys(sel).length) {
-      // 最初は「パターン名が付いた見積どうし」を比べる（同じ現場の別工事は外しておく）
+      // 最初は「パターン名が付いた見積どうし」を比べる（同じ工事の別工事は外しておく）
       var labeled = docs.filter(function (d) { return d.patternLabel; });
       (labeled.length >= 2 ? labeled : docs).slice(0, 4).forEach(function (d) { sel[d.id] = true; });
     }
@@ -167,10 +167,10 @@
           '<a class="btn sm" href="#/edit/' + d.id + '">' + I.edit + '開く</a><button class="btn sm" data-act="pattern-from" data-id="' + d.id + '">' + I.copy + 'これをもとに別パターン</button></div>' +
       '</div></div>';
     }).join('');
-    return '<div class="toolbar" data-st><div class="grow hint">同じ現場に、条件や仕様を変えた見積をパターン（A案・B案…）として何枚でも作れます。それぞれ独立した見積書です。</div>' +
+    return '<div class="toolbar" data-st><div class="grow hint">同じ工事に、条件や仕様を変えた見積をパターン（A案・B案…）として何枚でも作れます。それぞれ独立した見積書です。</div>' +
         '<button class="btn" data-act="pattern-blank">' + I.plus + '空のパターンを作る</button>' +
         (docs.length ? '<button class="btn primary" data-act="pattern-from" data-id="' + docs[docs.length - 1].id + '">' + I.copy + '最新の見積をもとに別パターン</button>' : '') + '</div>' +
-      (docs.length ? '<div class="pattern-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'この現場の見積はまだありません</div></section>') +
+      (docs.length ? '<div class="pattern-grid">' + cards + '</div>' : '<section class="panel" data-st style="margin-top:18px"><div class="empty">' + I.docs + 'この工事の見積はまだありません</div></section>') +
       (docs.length > 1 ? '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>パターンの比較</h2><span class="sub">' + chosen.length + '件を比較中</span></div><div class="panel-b" id="cmp">' + compareHTML(chosen) + '</div></section>' : '');
   }
 
@@ -183,8 +183,8 @@
   }
 
   function docsTab(p, docs) {
-    if (!docs.length) return '<section class="panel" data-st><div class="empty">' + I.docs + 'この現場の書類はまだありません</div></section>';
-    return '<section class="panel" data-st><div class="panel-h"><h2>この現場の書類</h2><span class="sub">' + docs.length + ' 件</span></div><div class="panel-b table-scroll"><table class="table"><thead><tr><th>番号</th><th>件名</th><th>発行日</th><th class="r">金額（税込）</th><th>状態</th><th>PDF</th></tr></thead><tbody>' +
+    if (!docs.length) return '<section class="panel" data-st><div class="empty">' + I.docs + 'この工事の書類はまだありません</div></section>';
+    return '<section class="panel" data-st><div class="panel-h"><h2>この工事の書類</h2><span class="sub">' + docs.length + ' 件</span></div><div class="panel-b table-scroll"><table class="table"><thead><tr><th>番号</th><th>件名</th><th>発行日</th><th class="r">金額（税込）</th><th>状態</th><th>PDF</th></tr></thead><tbody>' +
       docs.map(function (d) {
         var pdf = (d.history || []).filter(function (h) { return /PDF出力/.test(h.action); }).length;
         return '<tr class="clickable" data-href="#/edit/' + d.id + '"><td class="num">' + esc(d.no || '（未保存）') + '</td><td>' + patternBadge(d) + ' ' + esc(d.title || '') + '</td><td class="num">' + U.jdate(d.issueDate) + '</td><td class="r num">' + U.yen(U.calcDoc(d).total) + '</td><td>' + U.statusBadge(d) + '</td><td class="num">' + (pdf ? pdf + '回' : '—') + '</td></tr>';
@@ -217,7 +217,7 @@
     ev.sort(function (a, b) { return (b.at || '').localeCompare(a.at || ''); });
     return '<div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1.3fr)">' +
       '<section class="panel" data-st><div class="panel-h"><h2>メモを残す</h2></div><div class="panel-b">' +
-        '<textarea class="input" id="ws-note" placeholder="例：駐車は前面道路不可。近くのコインパーキングを使う" aria-label="現場のメモ"></textarea>' +
+        '<textarea class="input" id="ws-note" placeholder="例：駐車は前面道路不可。近くのコインパーキングを使う" aria-label="工事のメモ"></textarea>' +
         '<div style="display:flex;justify-content:flex-end;margin-top:8px"><button class="btn primary" data-act="add-note">' + I.save + '記録する</button></div></div></section>' +
       '<section class="panel" data-st><div class="panel-h"><h2>履歴</h2><span class="sub">' + ev.length + ' 件</span></div><div class="panel-b"><ol class="timeline">' +
         (ev.length ? ev.slice(0, 60).map(function (e) { return '<li class="' + (e.memo ? 'memo' : '') + '"><span class="num hint">' + (e.at ? U.jdate(e.at.slice(0, 10)) + ' ' + e.at.slice(11, 16) : '') + '</span><span>' + (e.memo ? '<b>メモ</b>' + (e.who ? '（' + esc(e.who) + '）' : '') + '：' : '') + esc(e.t) + '</span></li>'; }).join('') : '<li class="hint">まだ履歴はありません</li>') +
@@ -226,14 +226,14 @@
 
   function render(projectId, tab) {
     var p = U.findProject(projectId);
-    if (!p) return { title: '見つかりません', html: '<div class="panel panel-b empty">現場（案件）が見つかりません。</div>' };
+    if (!p) return { title: '見つかりません', html: '<div class="panel panel-b empty">工事が見つかりません。</div>' };
     tab = TABS.some(function (t) { return t[0] === tab; }) ? tab : 'overview';
     var docs = docsOf(p.id);
     var c = EE.insight.cases().filter(function (x) { return x.project.id === p.id; })[0];
     var body = tab === 'estimate' ? estimateTab(p, docs) : tab === 'photos' ? photosTab(p) : tab === 'docs' ? docsTab(p, docs) : tab === 'cost' ? costTab(p, c) : tab === 'notes' ? notesTab(p, docs) : overviewTab(p, c, docs);
     var html = header(p, c, docs) + tabsHTML(p, tab) + '<div class="ws-body">' + body + '</div>';
     return {
-      title: p.name, crumb: '現場ワークスペース', html: html,
+      title: p.name, crumb: '工事ワークスペース', html: html,
       mount: function (view) {
         EE.fx.countAll(view);
         var phFilter = 'all';
@@ -293,7 +293,7 @@
             case 'pin':
               var ui = EE.features.settings(); ui.pins = ui.pins || [];
               var i = ui.pins.indexOf(p.id); if (i >= 0) ui.pins.splice(i, 1); else ui.pins.push(p.id);
-              U.commit(); EE.fx.toast(i >= 0 ? 'お気に入りから外しました' : 'お気に入りに追加しました（ホームの「お気に入りの現場」）'); EE.app.rerender(); break;
+              U.commit(); EE.fx.toast(i >= 0 ? 'お気に入りから外しました' : 'お気に入りに追加しました（ホームの「お気に入りの工事」）'); EE.app.rerender(); break;
             case 'add-note':
               var t = view.querySelector('#ws-note').value.trim(); if (!t) { EE.fx.shake(view.querySelector('#ws-note')); return; }
               p.notes = (p.notes || []).concat([{ at: new Date().toISOString(), text: t, who: U.me().name }]); U.commit(); EE.fx.toast('記録しました'); EE.app.rerender(); break;

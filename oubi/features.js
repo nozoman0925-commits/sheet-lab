@@ -1,7 +1,7 @@
 /* ===================== 10万人の模擬調査（PDCA）から入れた機能 =====================
    1 声で入力（手袋・字を打つのが苦手）   2 どこからでも探す（お客様・工事・営業の記録・投稿）
    3 電話をかけたら自動で記録              4 初めての人への3画面の案内
-   5 ホームに「今日の自分の現場」（ナビ・写真・終わった）
+   5 ホームに「今日の自分の工事」（ナビ・写真・終わった）
    6 押したら震える（Android）            7 写真を小さくしてから送る（通信量・速さ）
    8 写真に工事名・日付・撮影者を入れる（施主・元請への報告用。公共工事の電子小黒板の代わりではない）
    本体（index.html）より先に読み、本体の関数は呼ばれたときに使う */
@@ -112,11 +112,11 @@ function ftHomeSearch(){return FT_SEARCH_VARIANT()==='A'?'':`<button type="butto
 function ftHeaderSearch(){ // 上の帯（社員一覧の左）に🔍
   const hw=document.querySelector('.hw'); if(!hw||hw.querySelector('[data-gsearch]'))return;
   const b=document.createElement('button');b.type='button';b.className='hd-btn';b.dataset.gsearch='';b.setAttribute('aria-label','探す');b.title='探す';
-  b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>';
+  b.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg>';
   hw.insertBefore(b,hw.firstChild);
 }
 
-/* ---------- 5 今日の自分の現場 ---------- */
+/* ---------- 5 今日の自分の工事 ---------- */
 function ftMySites(){
   const t=today(), out=[];
   cases.filter(c=>!c.archived&&!isLost(c)&&!GONE.has(c.id)&&caseHas(c,me.id)).forEach(c=>{
@@ -127,13 +127,13 @@ function ftMySites(){
 }
 function ftSitesHTML(){
   const a=ftMySites(); if(!a.length)return'';
-  // 1つの現場を1行に（PDCA2：2行だとホームの大事なボタンが下に押し出されたため）。ボタンは44pxの四角で、名前は読み上げ用に付ける
+  // 1つの工事を1行に（PDCA2：2行だとホームの大事なボタンが下に押し出されたため）。ボタンは44pxの四角で、名前は読み上げ用に付ける
   const row=({c,st,i,survey})=>{const L=c.lead||{},ad=L.siteAddr||L.addr||'',done=st&&st.progress==='完了',nm=(L.customer||'')+'様 '+(survey?'現地調査':(st.name||'工事'));
     const nav=L.lat?slGnav(L.lat,L.lon):ad?'https://www.google.com/maps/dir/?api=1&destination='+encodeURIComponent(ad):'';
     return `<div class="ft-site ${done?'done':''}" data-site><div class="ft-st"><b>${esc(nm)}</b><span class="sub">${esc(slShortAddr(ad))}</span></div>
       ${nav?`<button type="button" class="ft-ib" data-slurl="${esc(nav)}" aria-label="${esc(nm)}へナビ">${ico('nav')}<small>ナビ</small></button>`:''}<button type="button" class="ft-ib" data-open="${c.id}" data-sec="${survey?'work':'invoice'}" data-goalbum="1" aria-label="${esc(nm)}の写真">${ico('cam')}<small>写真</small></button>${st?`<button type="button" class="ft-ib ${done?'on':''}" data-sitedone="${c.id}|${i}" aria-pressed="${done}" aria-label="${esc(nm)}を${done?'進行中に戻す':'終わったにする'}">${ico('check')}<small>${done?'済':'終了'}</small></button>`:''}</div>`};
   const lim=innerHeight<=720?1:2; // 画面の低いスマホ（iPhone SE など）は1件だけ。残りは予定の画面へ
-  return `<div class="tdb-sites"><b class="tdb-sh">今日のあなたの現場</b>${a.slice(0,lim).map(row).join('')}${a.length>lim?`<button type="button" class="btn sm" data-mday="${today()}" data-tab-cal>ほかの現場 ${a.length-lim}件を見る</button>`:''}</div>`;
+  return `<div class="tdb-sites"><b class="tdb-sh">今日のあなたの工事</b>${a.slice(0,lim).map(row).join('')}${a.length>lim?`<button type="button" class="btn sm" data-mday="${today()}" data-tab-cal>ほかの工事 ${a.length-lim}件を見る</button>`:''}</div>`;
 }
 document.addEventListener('click',e=>{const t=e.target.closest&&e.target.closest('[data-sitedone],[data-gsearch],[data-mic-for],[data-onb],[data-stamp-toggle]');if(!t)return;const d=t.dataset;
   if(d.sitedone){const [id,i]=d.sitedone.split('|'),c=cases.find(x=>x.id===id),st=c&&((c.schedule||{}).steps||[])[+i];if(!st)return;

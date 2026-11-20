@@ -1,8 +1,8 @@
 /*
- * 現場（案件フロー＋現場一覧）
- *  - 上：案件フロー図（見積 → 受注 → 着工 → 完了 → 請求 → 入金）。点＝案件、色＝担当者。
- *    期間・工事種別・段階で絞り込み、1件選ぶとその案件だけが強調され、右に金額・期限・次の行動が出る
- *  - 下：現場一覧（現場名・担当・状態・次の期限だけ）。開くと現場ワークスペース（js/views/site.js）
+ * 工事（工事フロー＋工事一覧）
+ *  - 上：工事フロー図（見積 → 受注 → 着工 → 完了 → 請求 → 入金）。点＝工事、色＝担当者。
+ *    期間・工事種別・段階で絞り込み、1件選ぶとその工事だけが強調され、右に金額・期限・次の行動が出る
+ *  - 下：工事一覧（工事名・担当・状態・次の期限だけ）。開くと工事ワークスペース（js/views/site.js）
  * 一覧は判断する場所、ワークスペースは作業する場所（構想 3-④）
  */
 (function (root) {
@@ -11,7 +11,7 @@
   var F = { period: '6m', cat: '', stage: '' };
   var selId = null;
 
-  /* ---------- 案件フロー図 ---------- */
+  /* ---------- 工事フロー図 ---------- */
   var VB_W = 1000, VB_H = 360, NODE_Y = 180;
   function nodeX(i) { return 80 + i * 168; }
   function nodeY(i) { return NODE_Y + (i % 2 ? -22 : 22); }   // ゆるい波形
@@ -43,7 +43,7 @@
     list.forEach(function (c) { byStage[c.stage].push(c); });
     var nodes = ST.map(function (s, i) {
       var cs = byStage[i], amt = cs.reduce(function (a, c) { return a + c.amount; }, 0);
-      var up = i % 2 === 1;   // 波の上側にある節は、ラベルを上に・案件の点を下に置く
+      var up = i % 2 === 1;   // 波の上側にある節は、ラベルを上に・工事の点を下に置く
       return '<g class="flow-node" data-stage="' + i + '">' +
         '<circle cx="' + nodeX(i) + '" cy="' + nodeY(i) + '" r="27" class="flow-ring"/>' +
         '<circle cx="' + nodeX(i) + '" cy="' + nodeY(i) + '" r="18" class="flow-core"/>' +
@@ -65,7 +65,7 @@
       });
       if (cs.length > 9) dots += '<text x="' + nodeX(i) + '" y="' + (nodeY(i) + (up ? 166 : -152)) + '" text-anchor="middle" class="flow-amt">ほか ' + (cs.length - 9) + ' 件</text>';
     });
-    return '<svg class="flow" viewBox="0 0 ' + VB_W + ' ' + VB_H + '" role="img" aria-label="案件フロー：見積から入金まで">' +
+    return '<svg class="flow" viewBox="0 0 ' + VB_W + ' ' + VB_H + '" role="img" aria-label="工事フロー：見積から入金まで">' +
       segs + flows + nodes + dots + '</svg>';
   }
 
@@ -74,11 +74,11 @@
     var ST = EE.data.STAGES;
     if (!c) {
       var total = list.reduce(function (a, x) { return a + x.amount; }, 0);
-      return '<div class="label">表示中の案件</div><div class="kpi-value num" data-count="' + list.length + '" data-format="int">0</div>' +
+      return '<div class="label">表示中の工事</div><div class="kpi-value num" data-count="' + list.length + '" data-format="int">0</div>' +
         '<div class="hint">合計 ' + U.yen(total) + '（受注前は最新の見積、受注後は受注した見積の金額）</div><div class="sep"></div>' +
         ST.map(function (s, i) { var n = list.filter(function (x) { return x.stage === i; }).length;
           return '<div class="sum-row"><span>' + esc(s.label) + '</span><span class="num">' + n + ' 件</span></div>'; }).join('') +
-        '<p class="hint" style="margin-top:12px">図の点をクリックすると、その案件が拡大されてここに詳細が出ます。点の色は担当者の色です。</p>';
+        '<p class="hint" style="margin-top:12px">図の点をクリックすると、その工事が拡大されてここに詳細が出ます。点の色は担当者の色です。</p>';
     }
     var p = c.project, cu = U.findCustomer(p.customerId) || {};
     var daysTxt = c.days == null ? '' : c.days < 0 ? '期限切れ（' + (-c.days) + '日前）' : 'あと ' + c.days + ' 日';
@@ -92,7 +92,7 @@
       '<div class="sum-row"><span>見積の数</span><span class="num">' + c.docs.length + ' 件</span></div>' +
       '<div class="next-action' + (c.warn ? ' warn' : '') + '"><div class="label">次の行動</div><div>' + esc(c.next) + '</div></div>' +
       '<div class="flow-detail-actions">' +
-        (p.id ? '<a class="btn sm" href="#/site/' + p.id + '">' + I.home + '現場ページ</a>' : '') +
+        (p.id ? '<a class="btn sm" href="#/site/' + p.id + '">' + I.home + '工事ページ</a>' : '') +
         (c.main ? '<a class="btn sm" href="#/edit/' + c.main.id + '">' + I.edit + '見積を開く</a>' : '') +
         (p.id && nextStage ? '<button class="btn sm primary" data-act="flow-advance" data-id="' + p.id + '">' + I.check + nextStage.label + 'にする</button>' : '') +
       '</div>';
@@ -107,11 +107,11 @@
     var ST = EE.data.STAGES, si = EE.data.stageIndex(p.stage), next = ST[si + 1]; if (!next) return;
     var docs = EE.S.documents.filter(function (d) { return d.projectId === p.id; });
     if (next.key === 'order') {
-      if (!docs.length) { EE.fx.toast('この現場には見積がありません', { warn: true }); return; }
+      if (!docs.length) { EE.fx.toast('この工事には見積がありません', { warn: true }); return; }
       var issued = docs.filter(function (d) { return d.status === 'issued'; });
       var pick = (issued.length ? issued : docs).sort(function (a, b) { return (b.issueDate || '').localeCompare(a.issueDate || ''); });
       var ok = await U.confirmBox('「' + p.name + '」を受注にします。\n受注した見積：' + (pick[0].patternLabel ? pick[0].patternLabel + '　' : '') + (pick[0].no || '') + '（' + U.yen(U.calcDoc(pick[0]).total) + '）' +
-        (pick.length > 1 ? '\n※別の見積で受注した場合は、現場ページで選び直せます。' : ''), '受注にする');
+        (pick.length > 1 ? '\n※別の見積で受注した場合は、工事ページで選び直せます。' : ''), '受注にする');
       if (!ok) return;
       p.acceptedDocId = pick[0].id; p.orderedOn = EE.data.today();
     } else {
@@ -135,21 +135,21 @@
     var sites = list.filter(function (c) { return c.project.id; }).sort(function (a, b) { return (b.lastDate || '').localeCompare(a.lastDate || ''); });
     var ST = EE.data.STAGES;
     var html =
-      '<div class="toolbar" data-st style="margin-bottom:14px"><div class="grow"><div class="hint">案件の今の段階と次の行動。現場を開くと、見積・写真・書類・原価・メモがまとまっています</div></div>' +
-        '<button class="btn" data-act="new-site">' + I.plus + '現場を登録</button>' +
+      '<div class="toolbar" data-st style="margin-bottom:14px"><div class="grow"><div class="hint">工事の今の段階と次の行動。工事を開くと、見積・写真・書類・原価・メモがまとまっています</div></div>' +
+        '<button class="btn" data-act="new-site">' + I.plus + '工事を登録する</button>' +
         '<a class="btn primary" href="#/new">' + I.spark + 'かんたん見積もり作成</a></div>' +
       '<div class="flow-filters" data-st>' +
         '<div class="seg" id="f-period">' + periods.map(function (p) { return '<button data-v="' + p[0] + '" class="' + (F.period === p[0] ? 'on' : '') + '">' + p[1] + '</button>'; }).join('') + '</div>' +
         '<select class="input" id="f-cat" style="width:auto">' + U.opt('', '工事種別：すべて', F.cat) + (S.categories || []).map(function (c) { return U.opt(c.id, c.name, F.cat); }).join('') + '</select>' +
         '<select class="input" id="f-stage" style="width:auto">' + U.opt('', '段階：すべて', F.stage) + ST.map(function (s, i) { return U.opt(String(i), s.label, F.stage); }).join('') + '</select>' +
-        '<span class="hint" style="margin-left:auto">' + list.length + ' 件の案件</span></div>' +
+        '<span class="hint" style="margin-left:auto">' + list.length + ' 件の工事</span></div>' +
       '<div class="flow-grid">' +
-        '<section class="panel flow-panel" data-st><div class="panel-h"><h2>案件フロー</h2><span class="sub">見積 → 受注 → 着工 → 完了 → 請求 → 入金</span></div>' +
+        '<section class="panel flow-panel" data-st><div class="panel-h"><h2>工事フロー</h2><span class="sub">見積 → 受注 → 着工 → 完了 → 請求 → 入金</span></div>' +
           '<div class="panel-b"><div id="flow-wrap">' + flowSVG(list) + '</div></div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>詳細</h2></div><div class="panel-b" id="flow-detail">' + detailHTML(list) + '</div></section>' +
       '</div>' +
-      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>現場一覧</h2><span class="sub">' + sites.length + ' 件</span></div>' +
-        '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>現場名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
+      '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>工事一覧</h2><span class="sub">' + sites.length + ' 件</span></div>' +
+        '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
           sites.map(function (c) {
             var p = c.project, cu = U.findCustomer(p.customerId) || {};
             var due = c.stage === 0 && c.valid ? (c.days < 0 ? '<span class="badge err">期限切れ</span>' : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
@@ -158,9 +158,9 @@
               '<td><span class="badge blue">' + esc(ST[c.stage].label) + '</span></td>' +
               '<td>' + due + '<span class="cell-sub' + (c.warn ? ' warn-text' : '') + '">' + esc(c.next || '') + '</span></td>' +
               '<td class="r num">' + U.yen(c.amount) + '</td></tr>';
-          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.site + 'まだ現場がありません。「現場を登録」か、見積を作るときに案件を選ぶと現場ができます</div>') + '</div></section>';
+          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.site + 'まだ工事がありません。「工事を登録」か、見積を作るときに工事を選ぶと工事ができます</div>') + '</div></section>';
 
-    return { title: '現場', crumb: '調査・施工・検査', html: html, mount: mount };
+    return { title: '工事', crumb: '調査・施工・検査', html: html, mount: mount };
   }
 
   function select(view, id) {
@@ -193,7 +193,7 @@
       if (e.target.id === 'f-cat') { F.cat = e.target.value; EE.app.rerender(); }
       if (e.target.id === 'f-stage') { F.stage = e.target.value; EE.app.rerender(); }
     });
-    // 点にカーソル：案件名と金額
+    // 点にカーソル：工事名と金額
     var cases = filteredCases();
     view.querySelectorAll('.flow-case').forEach(function (g) {
       g.addEventListener('pointermove', function (e) {

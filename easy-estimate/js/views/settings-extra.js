@@ -13,7 +13,7 @@
     var S = EE.S;
     var cats = (S.categories || []);
     return '<div class="toolbar" data-st><div class="grow hint">工事の種類ごとの標準明細です。「かんたん見積もり作成」と見積画面から呼び出せます。<br>「参考候補」の明細は最初は外した状態で出ます。キーワードは文章・音声から作るときのテンプレート判定に使います。</div>' +
-      '<button class="btn" data-act="cats">' + I.edit + '工事カテゴリー</button><button class="btn primary" data-act="new-pkg">' + I.plus + 'テンプレートを作成</button></div>' +
+      '<button class="btn" data-act="cats">' + I.edit + '工事カテゴリーを編集する</button><button class="btn primary" data-act="new-pkg">' + I.plus + 'テンプレートを作成する</button></div>' +
       cats.concat([{ id: '__none', name: 'カテゴリーなし' }]).map(function (c) {
         var list = S.packages.filter(function (p) { return c.id === '__none' ? !cats.some(function (x) { return x.id === p.category; }) : p.category === c.id; });
         if (!list.length) return '';
@@ -64,7 +64,7 @@
         '<div class="field c3"><label>メモ</label><input class="input" name="note" value="' + esc(draft.note) + '"></div></div>' +
         '<div class="label" style="margin-bottom:8px">明細（マスタ＋標準数量）</div><div id="pl">' + linesHTML() + '</div>' +
         '<button class="btn sm" data-add>' + I.plus + '行を追加</button>',
-      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         var pl = el.querySelector('#pl');
         pl.addEventListener('change', function (e) {
@@ -112,7 +112,7 @@
     U.modal({
       title: '工事カテゴリー', wide: true,
       body: '<p class="hint" style="margin-top:0">文章・音声から見積を作るとき、キーワードでカテゴリーを判定します。工事項目マスターの分類にも使います。</p><div id="cl">' + rows() + '</div><button class="btn sm" data-add>' + I.plus + 'カテゴリーを追加</button>',
-      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: '<button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         var cl = el.querySelector('#cl');
         cl.addEventListener('input', function (e) { var r = e.target.closest('[data-i]'); var c = cats[r.dataset.i];
@@ -172,7 +172,7 @@
         '<div class="label" style="margin:14px 0 8px">入力（入力名を式の中で使います。単位が m の入力は、使うときに mm / cm でも入れられます）</div><div id="fi">' + inputsHTML() + '</div>' +
         '<button class="btn sm" data-add>' + I.plus + '入力を追加</button>' +
         '<div class="sum-total" style="margin-top:14px"><div class="label">試しの計算</div><div class="big num" id="f-out" style="font-size:22px">—</div><div class="hint" id="f-err"></div></div>',
-      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         var fi = el.querySelector('#fi');
         function test() {
@@ -226,7 +226,7 @@
       body: '<div class="form-grid"><div class="field c6"><label>種類</label><select class="input" name="kind">' + U.options(K, x.kind) + '</select></div>' +
         '<div class="field c6"><label class="req">見出し</label><input class="input" name="title" value="' + esc(x.title) + '" autofocus></div>' +
         '<div class="field c12"><label class="req">本文</label><textarea class="input" name="body" rows="4">' + esc(x.body) + '</textarea></div></div>',
-      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存</button>',
+      foot: (isNew ? '' : '<button class="btn danger" data-del>' + I.trash + '削除</button>') + '<div class="spacer"></div><button class="btn ghost" data-c>キャンセル</button><button class="btn primary" data-s>' + I.save + '保存する</button>',
       onMount: function (el, api) {
         el.querySelector('[data-c]').onclick = function () { api.close(); };
         var del = el.querySelector('[data-del]');

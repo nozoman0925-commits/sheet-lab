@@ -48,7 +48,7 @@ const ICO={
   check:'<path d="M5 12.5l4.5 4.5L19 7.5"/>',
   cam:'<path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/>',
   mic:'<rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21"/>'};
-function ico(n,cls){return `<svg class="ic ${cls||''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[n]||''}</svg>`}
+function ico(n,cls){return `<svg class="ic ${cls||''}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICO[n]||''}</svg>`}
 
 let visits=[], slOut=[];
 const SV={sub:'rec',d:null,lockUntil:0,rankP:'week',photo:false,pick:false,kp:false,ngArm:'',rvAll:false,detail:''};
@@ -214,7 +214,7 @@ function slMeterCore(){
   const D=slDraft(), f=D.geo||slFix(), out=slOut.length?`<span class="sl-out">📶 送信待ち ${slOut.length}件</span>`:'';
   if(GEO.paused&&!D.geo)return `<button type="button" class="sl-acc mid" data-slgeo-resume>⏸ 電池のため位置を止めています（押すと再開）</button>${out}`;
   if(D.geo)return `<span class="sl-acc ok">📍 ${D.geo.src==='map'?'地図で指定':D.geo.src==='paste'?'Googleマップから':'住所から'}<button type="button" class="sl-x" data-slgeo-clear aria-label="指定をやめてGPSにもどす">×</button></span>${out}`;
-  if(GEO.err==='denied')return `<button type="button" class="sl-acc bad" data-slhelp-geo>📍 位置が使えません（直し方）</button>${out}`;
+  if(GEO.err==='denied')return `<button type="button" class="sl-acc bad" data-slhelp-geo>📍 位置が使えません：直し方を見る</button>${out}`;
   if(!f)return `<span class="sl-acc mid">${ico('pin')}位置を測っています…</span>${out}`;
   const [c,m]=slGrade(f.acc);
   return `<span class="sl-acc ${c}">${ico('pin')}±${f.acc}m ${m}${c==='bad'?'・地図で直す':''}</span>${out}`;
@@ -443,7 +443,7 @@ function slRecView(){
     <div class="sl-arow"><input id="sl-addr" value="${esc(D.addr)}" placeholder="住所（町名は自動で入ります）" aria-label="訪問する家の住所" autocomplete="off" enterkeyhint="done">
       <button type="button" class="sl-mini" data-slkpt aria-pressed="${SV.kp}" aria-label="番地のテンキー">${ico('keypad')}</button></div>
     <div class="sl-steps"><button type="button" class="sl-mini" data-slstep="-1">−1</button><button type="button" class="sl-mini" data-slstep="1">＋1</button><button type="button" class="sl-mini" data-slstep="2">＋2</button>
-      <button type="button" class="sl-mini" data-slroom>${ico('home')}部屋番号</button><button type="button" class="sl-mini" data-slhere>${ico('target')}今いる町</button><button type="button" class="sl-mini" data-slsub="map" data-slpick="1">${ico('map')}地図で直す</button><button type="button" class="sl-mini" data-slpaste>${ico('link')}Googleマップ</button></div>
+      <button type="button" class="sl-mini" data-slroom>${ico('home')}部屋番号を入れる</button><button type="button" class="sl-mini" data-slhere>${ico('target')}今いる町を入れる</button><button type="button" class="sl-mini" data-slsub="map" data-slpick="1">${ico('map')}地図で直す</button><button type="button" class="sl-mini" data-slpaste>${ico('link')}Googleマップで開く</button></div>
     <div id="sl-addrwarn"></div>
     ${kp}
     <div id="sl-prevbox">${slPrevBox()}</div>
@@ -541,7 +541,7 @@ function slMapMarks(){
     const col=ng?'#D02B2B':mine?(SL_COL[v.r]||'#8A94A6'):'#9aa3b2';
     const m=L.circleMarker([v.lat,v.lon],{radius:v.day===today()?9:7,color:'#fff',weight:2,fillColor:col,fillOpacity:mine||ng?.95:.6}).addTo(slLayer);
     m.bindPopup(`<b>${esc(v.r==='話した'?'話せた':v.r==='お断り'?'見送り':v.r)}</b>${ng?' <b style="color:#D02B2B">もう行かない</b>':''}<br>${esc(v.addr||'住所なし')}<br>${esc(md(v.day))} ${esc(whoName(v.by))}さん${v.why?'・'+esc(v.why):''}
-      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn sm" data-slgo-visit="${esc(v.id)}">ここを記録</button><button type="button" class="btn sm" data-slurl="${esc(slGnav(v.lat,v.lon))}">🧭 ナビ</button><button type="button" class="btn sm" data-slurl="${esc(slGmap(v.lat,v.lon))}">Googleマップ</button></div>`);
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-top:6px"><button type="button" class="btn sm" data-slgo-visit="${esc(v.id)}">ここを記録</button><button type="button" class="btn sm" data-slurl="${esc(slGnav(v.lat,v.lon))}">🧭 ナビ</button><button type="button" class="btn sm" data-slurl="${esc(slGmap(v.lat,v.lon))}">Googleマップで開く</button></div>`);
   });
 }
 function slMapMe(){

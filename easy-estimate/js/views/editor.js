@@ -111,18 +111,18 @@
           '<div class="panel-b"><div class="form-grid">' +
             '<div class="field c6"><label class="req">宛先（顧客）</label><div style="display:flex;gap:8px"><select class="input" data-f="customerId"' + dis + '>' + custOpts + '</select>' +
               (lk ? '' : '<button class="btn icon" data-act="quick-customer" title="顧客を新規登録">' + I.plus + '</button>') + '</div></div>' +
-            '<div class="field c6"><label>案件</label><select class="input" data-f="projectId"' + dis + '>' + projectOptions() + '</select></div>' +
+            '<div class="field c6"><label>工事</label><select class="input" data-f="projectId"' + dis + '>' + projectOptions() + '</select></div>' +
             '<div class="field c4"><label>担当者</label><select class="input" data-f="ownerId"' + dis + '>' + U.memberOptions(d.ownerId || '', '（未割り当て）') + '</select></div>' +
             '<div class="field c8"><label class="req">件名</label><input class="input" data-f="title" value="' + esc(d.title) + '" placeholder="例：〇〇様邸 浴室改修工事"' + dis + '></div>' +
-            '<div class="field c4"><label>パターン名（同じ現場の別案）</label><input class="input" data-f="patternLabel" list="pattern-list" value="' + esc(d.patternLabel || '') + '" placeholder="例：A案、グレードアップ案"' + dis + '>' +
+            '<div class="field c4"><label>パターン名（同じ工事の別案）</label><input class="input" data-f="patternLabel" list="pattern-list" value="' + esc(d.patternLabel || '') + '" placeholder="例：A案、グレードアップ案"' + dis + '>' +
               '<datalist id="pattern-list"><option>A案</option><option>B案</option><option>C案</option><option>標準プラン</option><option>グレードアップ案</option><option>お値打ち案</option></datalist></div>' +
-            '<div class="field c8"><label>この現場の見積</label><div id="site-hint" class="site-hint"></div></div>' +
+            '<div class="field c8"><label>この工事の見積</label><div id="site-hint" class="site-hint"></div></div>' +
             '<div class="field c3"><label class="req">発行日</label><input class="input" type="date" data-f="issueDate" value="' + esc(d.issueDate) + '"' + dis + '></div>' +
             '<div class="field c3"><label class="req">有効期限</label><input class="input" type="date" data-f="validUntil" value="' + esc(d.validUntil) + '"' + dis + '></div>' +
             '<div class="field c6"><label>有効期限（発行日から）</label><div class="seg" id="valid-quick">' +
               [14, 30, 60, 90].map(function (n) { return '<button data-days="' + n + '"' + dis + '>+' + n + '日</button>'; }).join('') + '</div></div>' +
             '<div class="field c4"><label>受渡期日</label><input class="input" data-f="deliveryTerm" value="' + esc(d.deliveryTerm) + '"' + dis + '></div>' +
-            '<div class="field c4"><label>受渡場所</label><input class="input" data-f="deliveryPlace" value="' + esc(d.deliveryPlace) + '" placeholder="空欄なら案件の現場住所"' + dis + '></div>' +
+            '<div class="field c4"><label>受渡場所</label><input class="input" data-f="deliveryPlace" value="' + esc(d.deliveryPlace) + '" placeholder="空欄なら工事の現場住所"' + dis + '></div>' +
             '<div class="field c4"><label style="display:flex;justify-content:space-between">支払条件' + (lk ? '' : '<a href="#" data-act="snip" data-target="paymentTerms" style="color:var(--accent-2)">定型文</a>') + '</label><input class="input" data-f="paymentTerms" value="' + esc(d.paymentTerms) + '"' + dis + '></div>' +
             '<div class="field c12"><label style="display:flex;justify-content:space-between">備考・条件（PDFに載ります）' + (lk ? '' : '<a href="#" data-act="snip" data-target="notes" style="color:var(--accent-2)">定型文を挿入</a>') + '</label><textarea class="input" data-f="notes" rows="2"' + dis + '>' + esc(d.notes) + '</textarea></div>' +
           '</div></div></section>' +
@@ -145,9 +145,9 @@
                 return ps.length ? '<optgroup label="' + esc(c.name) + '">' + ps.map(function (p) { return U.opt(p.id, p.name + '（' + p.lines.filter(function (l) { return !l.optional; }).length + '行）', ''); }).join('') + '</optgroup>' : '';
               }).join('') + S.packages.filter(function (p) { return !(S.categories || []).some(function (c) { return c.id === p.category; }); }).map(function (p) { return U.opt(p.id, p.name, ''); }).join('') + '</select>' +
               '<div class="grow"></div>' +
-              '<button class="btn sm" data-act="add-adj" data-type="overhead">' + I.plus + '諸経費</button>' +
-              '<button class="btn sm" data-act="add-adj" data-type="discount">' + I.plus + '値引き</button>' +
-              '<button class="btn sm" data-act="add-adj" data-type="roundoff">' + I.plus + '端数調整</button>' +
+              '<button class="btn sm" data-act="add-adj" data-type="overhead">' + I.plus + '諸経費を足す</button>' +
+              '<button class="btn sm" data-act="add-adj" data-type="discount">' + I.plus + '値引きを足す</button>' +
+              '<button class="btn sm" data-act="add-adj" data-type="roundoff">' + I.plus + '端数を調整する</button>' +
             '</div>' +
             '<div class="toolbar" id="bulk-bar" hidden style="margin-bottom:10px;padding:8px 10px;border:1px solid rgba(77,141,255,.3);border-radius:10px;background:rgba(77,141,255,.07)">' +
               '<b id="bulk-n">0行を選択</b><div class="grow"></div>' +
@@ -168,9 +168,9 @@
       title: ED.isNew ? '新規見積' : (lk ? '見積書（発行済み）' : '見積書の編集'),
       crumb: d.no || '新規',
       actions: lk
-        ? '<button class="btn" data-act="duplicate">' + I.copy + '複製して新規</button><button class="btn primary" data-act="pdf">' + I.pdf + 'PDF出力</button>'
+        ? '<button class="btn" data-act="duplicate">' + I.copy + '複製して新しく作る</button><button class="btn primary" data-act="pdf">' + I.pdf + 'PDFを出す</button>'
         : '<span id="save-state" class="hint">' + (ED.dirty ? '<span class="dirty-dot"></span>未保存の変更' : (ED.isNew ? '' : '<span class="saved-mark">保存済み</span>')) + '</span>' +
-          '<button class="btn" data-act="save" id="btn-save">' + I.save + '保存 <kbd>Ctrl S</kbd></button>',
+          '<button class="btn" data-act="save" id="btn-save">' + I.save + '保存する <kbd>Ctrl S</kbd></button>',
       html: html,
       mount: mount,
       guard: function () { return ED && ED.dirty; },
@@ -178,18 +178,18 @@
     };
   }
 
-  /** 同じ現場（案件）の見積とパターンを表示し、別パターン作成・比較へつなぐ */
+  /** 同じ工事の見積とパターンを表示し、別パターン作成・比較へつなぐ */
   function renderSiteHint() {
     var el = document.getElementById('site-hint'); if (!el) return;
     var d = ED.doc;
-    if (!d.projectId || !U.findProject(d.projectId)) { el.innerHTML = '<span class="hint">案件（現場）を選ぶと、同じ現場の見積がここに並びます</span>'; return; }
+    if (!d.projectId || !U.findProject(d.projectId)) { el.innerHTML = '<span class="hint">工事を選ぶと、同じ工事の見積がここに並びます</span>'; return; }
     var sib = EE.views.site.docsOf(d.projectId).filter(function (x) { return x.id !== d.id; });
     var saved = !!U.findDoc(d.id);
     el.innerHTML = '<span class="site-chips">' + (sib.length ? sib.map(function (x) {
         return '<a class="badge pattern" href="#/edit/' + x.id + '" title="' + esc(x.no + ' ' + (x.title || '')) + '">' + esc(x.patternLabel || x.no) + '</a>'; }).join('') : '<span class="hint">ほかの見積はありません</span>') + '</span>' +
       (EE.linkCompare ? (sib.length ? '<button class="btn ghost sm" data-act="cmp-sheet" data-pid="' + esc(d.projectId) + '">' + I.docs + 'お客様向けの比較表</button>' : '')
-        : '<a class="btn ghost sm" href="#/site/' + d.projectId + '">' + I.docs + '現場ページで比較</a>') +
-      '<button class="btn sm" data-act="new-pattern"' + (saved ? '' : ' disabled title="一度保存すると、この見積をもとに別パターンを作れます"') + '>' + I.copy + 'この見積をもとに別パターン</button>';
+        : '<a class="btn ghost sm" href="#/site/' + d.projectId + '">' + I.docs + '工事ページで比較</a>') +
+      '<button class="btn sm" data-act="new-pattern"' + (saved ? '' : ' disabled title="一度保存すると、この見積をもとに別パターンを作れます"') + '>' + I.copy + 'この見積をもとに別パターンを作る</button>';
   }
 
   function projectOptions() {
@@ -218,14 +218,14 @@
       '<section class="panel" data-st id="sec-check"><div class="panel-h"><h2>送信前チェック</h2><div class="spacer"></div><div class="check-sum" id="check-sum"></div></div>' +
         '<div class="panel-b"><div class="checks" id="check-mini"></div>' +
         '<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px">' +
-          '<button class="btn" data-act="check">' + I.check + 'チェック一覧</button>' +
-          '<button class="btn primary" data-act="pdf">' + I.pdf + 'PDF出力</button>' +
+          '<button class="btn" data-act="check">' + I.check + 'チェックを見る</button>' +
+          '<button class="btn primary" data-act="pdf">' + I.pdf + 'PDFを出す</button>' +
         '</div>' +
-        (lk ? '' : '<button class="btn ghost" style="width:100%;margin-top:8px" data-act="issue">' + I.stamp + '発行確定（以後は編集不可）</button>') +
+        (lk ? '' : '<button class="btn ghost" style="width:100%;margin-top:8px" data-act="issue">' + I.stamp + '発行を確定する（以後は編集できません）</button>') +
       '</div></section>';
   }
 
-  var CALC_ICON = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.2" width="14" height="17.6" rx="3.4"/><rect x="8.2" y="6.4" width="7.6" height="3.4" rx="1.4"/><path d="M8.6 13.4h.1M12 13.4h.1M15.4 13.4h.1M8.6 16.8h.1M12 16.8h.1M15.4 16.8h.1"/></svg>';
+  var CALC_ICON = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.2" width="14" height="17.6" rx="3.4"/><rect x="8.2" y="6.4" width="7.6" height="3.4" rx="1.4"/><path d="M8.6 13.4h.1M12 13.4h.1M15.4 13.4h.1M8.6 16.8h.1M12 16.8h.1M15.4 16.8h.1"/></svg>';
 
   function lineRowHTML(l, i, r) {
     var lk = locked();
@@ -386,7 +386,7 @@
     var ic = c.level === 'error' ? '!' : c.level === 'warn' ? '!' : 'i';
     return '<div class="check ' + c.level + '" data-ci="' + (i == null ? '' : i) + '"><span class="ic">' + ic + '</span><div><div class="t">' + esc(c.title) + '</div>' +
       (c.detail ? '<div class="d">' + esc(c.detail) + '</div>' : '') + '</div>' +
-      '<button class="btn ghost sm" data-goto=\'' + esc(JSON.stringify(c.target)) + '\'>該当箇所</button></div>';
+      '<button class="btn ghost sm" data-goto=\'' + esc(JSON.stringify(c.target)) + '\'>該当箇所を見る</button></div>';
   }
 
   function highlightFields(list) {
