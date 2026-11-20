@@ -42,6 +42,11 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   ok((await f.$$('.mq-row')).length === 1, '工事の画面に戻ると、その見積が並ぶ');
   await p.screenshot({ path: OUT + 'web-case.png' });
 
+  // ---- 地図は新しいタブで開き、枠は業務管理のまま ----
+  const pop = p.context().waitForEvent('page', { timeout: 5000 }).catch(() => null);
+  await f.click('text=地図'); const np = await pop; await p.waitForTimeout(800);
+  ok(!!np && /oubi\.html/.test(F(p).url()), '「地図」は新しいタブで開き、桜ミツの中の画面はそのまま');
+  if (np) await np.close();
   // ---- 写真（この端末に保存） ----
   await go(p, '#/o/case/' + cid + '/work', 2000); f = F(p);
   const png = Buffer.from('iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAIAAACQkWg2AAAAH0lEQVR4nGP8z8BQz0AEYBxVSF+FjOMKRxWOKiSgEAAzrB8P+wnQSQAAAABJRU5ErkJggg==', 'base64');

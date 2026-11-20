@@ -274,7 +274,7 @@ async function slCheckAddr(){
 const slGmap=(lat,lon)=>`https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
 const slGnav=(lat,lon)=>`https://www.google.com/maps/dir/?api=1&destination=${lat},${lon}&travelmode=walking`;
 const slGaddr=a=>'https://www.google.com/maps/search/?api=1&query='+encodeURIComponent(a);
-function slOpen(url){const w=window.open(url,'_blank','noopener');if(!w)location.href=url}
+function slOpen(url){if(window.openOut){openOut(url);return}const w=window.open(url,'_blank');if(w){try{w.opener=null}catch(e){}}else location.href=url}
 // Googleマップの場所（長押しで出る数字・長いリンク）から緯度・経度を読む
 function slParseLoc(s){
   s=String(s||'').trim();if(!s)return null;
