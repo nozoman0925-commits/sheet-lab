@@ -97,9 +97,10 @@
           var used = EE.S.documents.filter(function (d) { return d.lines.some(function (l) { return l.itemId === it.id; }); }).length;
           if (used) { EE.fx.toast('「' + it.name + '」は ' + used + ' 件の書類で使っているため削除できません。「使用中」を外すと、新しい見積の候補に出なくなります', { warn: true, ms: 6000 }); return; }
           if (!(await U.confirmBox('「' + it.name + '」を削除しますか？', '削除する', { danger: true }))) return;
+          var undo = U.undoable('「' + it.name + '」を削除しました', ['items', 'packages']);
           EE.S.items.splice(EE.S.items.indexOf(it), 1);
           EE.S.packages.forEach(function (p) { p.lines = p.lines.filter(function (l) { return l.itemId !== it.id; }); });
-          U.commit(); api.close(); refreshItems(); EE.fx.toast('削除しました');
+          U.commit(); api.close(); refreshItems(); undo();
         };
         el.querySelector('[data-s]').onclick = function () {
           var v = U.readForm(el);
@@ -342,10 +343,10 @@
           if (!v.name) { var n = view.querySelector('[name=name]'); n.classList.add('flag-err'); EE.fx.shake(n); return; }
           if (v.invoiceRegNo && !/^T\d{13}$/.test(v.invoiceRegNo)) { var r = view.querySelector('[name=invoiceRegNo]'); r.classList.add('flag-err'); EE.fx.shake(r); EE.fx.toast('登録番号は「T」＋数字13桁です', { warn: true }); return; }
           Object.assign(S.company, v); U.commit(); EE.fx.success(a); break;
-        case 'del-logo': S.company.logo = ''; U.commit(); EE.fx.toast('ロゴを家紋＋会社名に戻しました'); EE.app.rerender(); break;
+        case 'del-logo': var undoLogo = U.undoable('ロゴを家紋＋会社名に戻しました', ['company']); S.company.logo = ''; U.commit(); undoLogo(); EE.app.rerender(); break;
         case 'del-seal':
           if (!(await U.confirmBox('登録した会社印を削除しますか？', '削除する', { danger: true }))) return;
-          S.company.seal = ''; U.commit(); EE.fx.toast('会社印を削除しました'); EE.app.rerender(); break;
+          var undoSeal = U.undoable('会社印を削除しました', ['company']); S.company.seal = ''; U.commit(); undoSeal(); EE.app.rerender(); break;
         case 'save-rules':
           var on = function (n) { return view.querySelector('[data-rule="' + n + '"] .on').dataset.v; };
           var m = Number(document.getElementById('r-margin').value), d = Number(document.getElementById('r-days').value);

@@ -234,7 +234,22 @@
     return '<div class="empty' + (o.small ? ' sm' : '') + '">' + (o.icon || '') + '<p class="empty-t">' + esc(o.text) + '</p>' + (o.sub ? '<p class="empty-s">' + esc(o.sub) + '</p>' : '') + b + '</div>';
   }
 
-  EE.ui = { empty: empty, esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
+  /** 消す・まとめて変えるなどの前に呼ぶ：S の keys を控えておき、終わったら返り値を呼ぶと「元に戻す」付きの知らせを出す */
+  function undoable(msg, keys) {
+    var snap = {}; keys.forEach(function (k) { snap[k] = JSON.parse(JSON.stringify(EE.S[k])); });
+    return function () {
+      EE.fx.toast(msg, { action: { label: '元に戻す', run: function () {
+        keys.forEach(function (k) {   // 同じ入れ物の中身を戻す（ほかの画面が持っている参照もそのまま使える）
+          var cur = EE.S[k], v = snap[k];
+          if (Array.isArray(cur)) cur.splice.apply(cur, [0, cur.length].concat(v));
+          else if (cur && typeof cur === 'object') { Object.keys(cur).forEach(function (x) { delete cur[x]; }); Object.assign(cur, v); }
+          else EE.S[k] = v;
+        }); commit(); if (EE.app && EE.app.rerender) EE.app.rerender(); EE.fx.toast('元に戻しました');
+      } } });
+    };
+  }
+
+  EE.ui = { empty: empty, undoable: undoable, esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
     commit: commit, layer: layer, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
     rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
     readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge };

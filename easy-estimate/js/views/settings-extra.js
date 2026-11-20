@@ -84,7 +84,8 @@
         var del = el.querySelector('[data-del]');
         if (del) del.onclick = async function () {
           if (!(await U.confirmBox('「' + p.name + '」を削除しますか？', '削除する', { danger: true }))) return;
-          EE.S.packages.splice(EE.S.packages.indexOf(p), 1); U.commit(); api.close(); rerender();
+          var undo = U.undoable('「' + p.name + '」を削除しました', ['packages']);
+          EE.S.packages.splice(EE.S.packages.indexOf(p), 1); U.commit(); api.close(); rerender(); undo();
         };
         el.querySelector('[data-s]').onclick = function () {
           var v = U.readForm(el.querySelector('.form-grid'));
