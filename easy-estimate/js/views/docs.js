@@ -39,7 +39,7 @@
   function tableHTML() {
     var list = rows();
     if (!list.length) return EE.S.documents.length ? '<div class="empty">' + I.search + '<p class="empty-t">条件に合う見積がありません</p><button class="btn primary sm" type="button" data-fclear>条件を消す</button></div>'
-      : U.empty({ icon: I.docs, text: 'まだ見積がありません', sub: '最初の1枚を作ると、ここに並びます。', btn: '見積を作る', href: '#/new' });
+      : U.empty({ icon: I.docs, text: 'まだ見積がありません', sub: '最初の1枚を作ると、ここに並びます。', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' });
     var total = list.reduce(function (s, x) { return s + x.r.total; }, 0);
     return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>担当</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {

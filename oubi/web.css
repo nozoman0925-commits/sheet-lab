@@ -96,3 +96,7 @@ body.ob-loading .main::before {
 .sectabs a:focus-visible { outline: 2px solid #00E5FF; outline-offset: 2px; }
 @media (max-width: 760px) { .sectabs { padding: 10px 14px 8px; } }
 @media print { .sectabs { display: none !important; } }
+
+/* 見積の作り方の画面：いちばん上に「次へで進めて作る」 */
+.quick-wz { --lt: #3b82f6; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 16px 18px; text-decoration: none; color: var(--text); border-color: rgba(0, 229, 255, .45) !important; }
+.quick-wz > span:nth-child(2) { display: grid; gap: 4px; } .quick-wz b { font-size: 17px; } .quick-wz small { color: var(--text-2); font-size: 14px; }

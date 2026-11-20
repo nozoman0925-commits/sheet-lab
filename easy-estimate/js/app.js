@@ -35,7 +35,7 @@
   };
   var NAV = [];
   function buildNav() {
-    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: (EE.link && LINK_CHILDREN[s.key]) || CHILDREN[s.key] }; });
+    NAV = EE.features.navSections().map(function (s) { return { key: s.key, label: s.label, icon: I[s.icon], href: s.href, children: EE.link ? LINK_CHILDREN[s.key] : CHILDREN[s.key] }; });
     return NAV;
   }
   function navOrder(key) { var i = -1; EE.features.navSections().forEach(function (s, k) { if (s.key === key) i = k; }); return i; }
@@ -48,6 +48,7 @@
     var p = (hash || '').replace(/^#\/?/, '').split('?')[0].split('/');
     switch (p[0]) {
       case 'docs': return { nav: 'docs', view: function () { return EE.views.docs.render(p[1]); } };
+      case 'w': return { nav: 'estimate', view: function () { return EE.views.wizard.render(p[1]); } };   // 見積を「次へ」で進めて作る
       case 'new': return { nav: 'estimate', view: function () { return p[1] === 'edit' ? EE.views.editor.render(null) : EE.views.quick.render(p[1]); } };
       case 'edit': return { nav: 'docs', view: function () { return EE.views.editor.render(p[1]); } };
       case 'clients': return { nav: 'clients', view: function () { return EE.views.clients.render(); } };

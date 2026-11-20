@@ -35,7 +35,7 @@ const openWeb = require('./_web');
   await fr(p).click('.empty .btn'); await p.waitForTimeout(300);
   ok(await fr(p).evaluate(() => document.activeElement && document.activeElement.id === 'wbText'), '「予定を書きはじめる」で書く欄に移る');
   await go(p, '#/docs'); await p.click('#view .empty .btn'); await p.waitForTimeout(1200);
-  ok(/#\/new$/.test(p.url()), '「見積を作る」で見積の作り方を選ぶ画面へ');
+  ok(/#\/w$/.test(p.url()), '「見積を作る」で「次へ」で進める見積の画面へ');
 
   // ---- 知らせ ----
   await go(p, '#/o/wb', 2000);

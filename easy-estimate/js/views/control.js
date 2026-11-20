@@ -174,7 +174,7 @@
       case 'recent': {
         var docs = S.documents.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); }).slice(0, wd.size === 'l' ? 6 : 4);
         return '<div class="w-list">' + (docs.length ? docs.map(function (d) { var c = U.docCustomer(d);
-          return '<a class="w-item" href="#/edit/' + d.id + '"><span class="w-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc(c.name || '宛先未設定') + '　' + U.yen(U.calcDoc(d).total) + '</small></span>' + U.statusBadge(d) + '</a>'; }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: '#/new' })) + '</div>';
+          return '<a class="w-item" href="#/edit/' + d.id + '"><span class="w-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc(c.name || '宛先未設定') + '　' + U.yen(U.calcDoc(d).total) + '</small></span>' + U.statusBadge(d) + '</a>'; }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' })) + '</div>';
       }
       case 'attention': {
         var at = S.documents.filter(function (d) { return d.status !== 'issued'; }).map(function (d) { return { d: d, s: EE.check.summary(U.checkDoc(d)) }; }).filter(function (x) { return x.s.error || x.s.warn; }).slice(0, 5);

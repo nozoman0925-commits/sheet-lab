@@ -32,7 +32,7 @@
     var max = tot.length ? tot[0][HM] : 0;
     view.querySelector('#a-heat-sum').innerHTML = '<div class="label" style="margin-bottom:10px">工事種別ごとの合計（12か月）</div>' + (tot.length ? tot.map(function (t) {
       return '<div class="hs-row"><span>' + esc(t.label) + '</span><b class="num">' + (HM === 'count' ? t.count + '件' : U.yen(t.amount)) + '</b><i style="--w:' + Math.round(t[HM] / max * 100) + '%"></i></div>';
-    }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: '#/new' }));
+    }).join('') : U.empty({ small: 1, text: 'まだ見積がありません', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' }));
   }
 
   /** 受注率：見積がある工事のうち、受注（受注以降の段階）になった割合 */
@@ -53,7 +53,7 @@
   }
 
   function table(rows) {
-    if (!rows.length) return U.empty({ small: 1, text: 'まだ集計できる見積がありません', btn: '見積を作る', href: '#/new' });
+    if (!rows.length) return U.empty({ small: 1, text: 'まだ集計できる見積がありません', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' });
     return '<table class="table"><thead><tr><th></th><th class="r">見積した工事</th><th class="r">受注</th><th class="r">受注率</th><th class="r">受注額（税込）</th></tr></thead><tbody>' + rows.map(function (r) {
       return '<tr><td>' + esc(r.label) + '</td><td class="r num">' + r.n + '</td><td class="r num">' + r.won + '</td><td class="r num">' + U.pct(r.n ? r.won / r.n : 0) + '</td><td class="r num">' + U.yen(r.amount) + '</td></tr>';
     }).join('') + '</tbody></table>';
