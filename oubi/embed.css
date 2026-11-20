@@ -92,3 +92,6 @@ h1, h2, h3 { text-shadow: 0 1px 10px rgba(0, 0, 0, .6); letter-spacing: .02em !i
 
 /* 業務管理のホームは桜ミツのホーム（ウィジェット）に替わるので、枠の中では描かない */
 body[data-obtab="home"] main { visibility: hidden; }
+
+/* 会社の情報は桜ミツの「自社情報」の1か所で直す（業務管理の設定の同じ欄は出さない） */
+#set-co { display: none !important; }

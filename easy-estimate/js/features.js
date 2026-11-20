@@ -96,22 +96,21 @@
 
   function settings() { var s = EE.S || {}; s.ui = s.ui || {}; s.ui.navHidden = s.ui.navHidden || {}; return s.ui; }
   /** メニューに出す業務のまとまり（準備中のものと、利用者が隠したものは出さない） */
-  /* 桜ミツ版（EE.link）：業務管理の機能（営業・工事・カレンダー・ホワイトボード）をメニューに足す。並び・形は桜ミツのまま */
-  var LINK_SECTIONS = {
-    sales: { key: 'sales', label: '営業', icon: 'walk', href: '#/o/sales', note: '訪問の記録・再訪問・ランキング', after: 'home' },
-    board: { key: 'board', label: 'ホワイトボード', icon: 'board', href: '#/o/wb', note: 'あしたの予定・タイムライン', after: 'schedule' }
-  };
-  function linkSections() {
-    var out = [];
-    SECTIONS.forEach(function (s) {
-      var x = s;
-      if (s.key === 'schedule') x = Object.assign({}, s, { href: '#/o/cal', note: '工事・現地調査・再訪問・予定' });
-      if (s.key === 'sites') x = Object.assign({}, s, { note: '工事の9工程・写真・契約・請求' });
-      out.push(x);
-      Object.keys(LINK_SECTIONS).forEach(function (k) { if (LINK_SECTIONS[k].after === s.key) out.push(LINK_SECTIONS[k]); });
-    });
-    return out;
-  }
+  /* 桜ミツ版（EE.link）：業務管理の機能を入れても、メニューは7つに絞る（同じ種類の画面を2つ並べない）
+     顧客・現場の流れ・工事の一覧 → 工事／書類 → 見積／カレンダー・ホワイトボード → 予定／粗利・工事の経営・分析 → 経営 */
+  var LINK_SECTIONS = [
+    { key: 'home', label: 'ホーム', icon: 'home', href: '#/home', note: '今日のこと・数字' },
+    { key: 'sales', label: '営業', icon: 'walk', href: '#/o/sales', note: '訪問の記録・再訪問・ランキング' },
+    { key: 'sites', label: '工事', icon: 'site', href: '#/o/list', note: 'お客様・9工程・写真・契約・請求' },
+    { key: 'estimate', label: '見積', icon: 'calc', href: '#/docs', note: '作る・一覧・確定' },
+    { key: 'schedule', label: '予定', icon: 'calendar', href: '#/o/cal', note: 'カレンダー・あしたの予定・タイムライン' },
+    { key: 'finance', label: '経営', icon: 'yen', href: '#/finance', note: '粗利・入金・分析' },
+    { key: 'settings', label: '設定', icon: 'gear', href: '#/settings/items', note: 'マスタ・自社情報・バックアップ' }
+  ];
+  function linkSections() { return LINK_SECTIONS; }
+  /** 桜ミツ版で、元の画面が属するメニュー（顧客は工事、書類は見積…） */
+  var LINK_ALIAS = { clients: 'sites', docs: 'estimate', analysis: 'finance', board: 'schedule' };
+  function navKey(k) { return EE.link ? (LINK_ALIAS[k] || k) : k; }
   function allSections() { return EE.link ? linkSections() : SECTIONS; }
   function navSections() {
     var hid = EE.S ? settings().navHidden : {};
@@ -119,5 +118,5 @@
   }
   function sectionOf(key) { return allSections().filter(function (s) { return s.key === key; })[0]; }
 
-  root.EE.features = { SECTIONS: SECTIONS, FEATURES: FEATURES, navSections: navSections, sectionOf: sectionOf, settings: settings };
+  root.EE.features = { SECTIONS: SECTIONS, FEATURES: FEATURES, navSections: navSections, sectionOf: sectionOf, settings: settings, navKey: navKey };
 })(this);

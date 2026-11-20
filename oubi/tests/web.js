@@ -17,13 +17,13 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   // ---- 構成は桜ミツのまま ----
   let p = await openWeb(b, { wait: 3500 }); watch(p);
   const nav = await p.$$eval('.nav-item', a => a.map(x => x.textContent.trim()));
-  ok(nav.join('|') === 'ホーム|営業|顧客|現場|見積・積算|スケジュール|ホワイトボード|経営・会計|書類|分析|設定', '左のメニューは桜ミツのまま、営業・ホワイトボードが加わる');
+  ok(nav.join('|') === 'ホーム|営業|工事|見積|予定|経営|設定', '左のメニューは7つ（同じ種類の画面を2つ並べない）');
   ok((await p.$$eval('#view .widget', w => w.length)) >= 8 && await p.isVisible('[data-clock]'), 'ホームは桜ミツのウィジェット式のまま（時計・数字…）');
   await p.screenshot({ path: OUT + 'web-home.png' });
 
   // ---- 工事（業務管理）→ 顧客（桜ミツ）に出る ----
   await go(p, '#/o/list', 2000);
-  ok(await p.evaluate(() => document.body.classList.contains('ob-on') && !!document.getElementById('ob-frame').contentWindow.OUBI), '「現場 → 工事の一覧」で業務管理の画面が桜ミツの中に開く');
+  ok(await p.evaluate(() => document.body.classList.contains('ob-on') && !!document.getElementById('ob-frame').contentWindow.OUBI), '「工事」で工事の一覧（業務管理の画面）が桜ミツの中に開く');
   await p.evaluate(() => { const o = OUBI_LINK.frame().contentWindow.OUBI; const c = o.makeCase({ customer: '山田 太郎', tel: '090-1111-2222', addr: '東京都町田市森野1-1-1' }); c.work.title = '山田様邸 外壁塗装工事'; c.quote.items = [{ name: '外壁塗装（シリコン）', qty: 100, unit: '㎡', price: 2500 }]; o.touch(c); });
   await p.waitForTimeout(1500);
   await go(p, '#/clients', 1500);
@@ -57,7 +57,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   } else console.log('（写真の入力欄が見つからない：省略）');
 
   // ---- メニュー・ウィジェット・検索 ----
-  for (const [h, t] of [['#/o/sales', '営業'], ['#/o/cal', 'カレンダー'], ['#/o/wb', 'ホワイトボード']]) { await go(p, h, 1800); ok((await p.textContent('#title')) === t, h + ' で「' + t + '」'); }
+  for (const [h, t] of [['#/o/sales', '営業'], ['#/o/cal', 'カレンダー'], ['#/o/wb', 'あしたの予定']]) { await go(p, h, 1800); ok((await p.textContent('#title')) === t, h + ' で「' + t + '」'); }
   await p.screenshot({ path: OUT + 'web-wb.png' });
   await go(p, '#/home', 1500);
   await p.click('[data-act="w-edit"]'); await p.waitForTimeout(400); await p.click('[data-act="w-add"]'); await p.waitForTimeout(400);

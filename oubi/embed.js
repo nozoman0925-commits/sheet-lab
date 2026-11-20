@@ -9,8 +9,7 @@
   var P = window.parent !== window ? window.parent : null;
   window.OUBI_EMBED = true;
   document.documentElement.setAttribute('data-theme', 'dark');   // 桜ミツは暗い画面だけ
-  // 営業の画面は、桜ミツのダッシュボードと同じ暗い画面に（昼の自動切り替えはしない。「外で見やすく」を押したときだけ明るく）
-  try { if (localStorage.getItem('oubi.slsun') == null) localStorage.setItem('oubi.slsun', '0'); } catch (e) {}
+  // 営業の画面は、昼（6〜18時）は外で見やすい明るい画面に自動で切り替わる（「暗い画面に」を押せばその端末では暗いまま）
   function H() { return (P && P.OUBI_HOST) || null; }
   window.OUBI_HOST = {
     start: function () {}, mountHome: function () {},

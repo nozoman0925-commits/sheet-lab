@@ -211,7 +211,8 @@
   }
 
   function setupHTML() {
-    if (EE.host || EE.link) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
+    if (EE.link) return EE.linkNameBanner ? EE.linkNameBanner() : '';   // 桜ミツ版：名前がまだ無いときだけ「名前を入れてください」
+    if (EE.host) return '';   // 業務管理の中では、自社情報・顧客は業務管理の設定と工事から入る
     var S = EE.S, steps = [
       [!!(S.company.name && S.company.address), '自社情報（会社名・住所・登録番号）を入れる', '#/settings/company', '見積書に載ります'],
       [S.customers.length > 0, '顧客を登録する', '#/clients', '宛先として選べるようになります'],
