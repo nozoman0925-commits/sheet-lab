@@ -1,9 +1,94 @@
-/* 桜ミツ版：桜ミツの中の枠に入れたときの見た目（見出しの帯・下のメニューは桜ミツの側） */
-html, body { background: transparent !important; }
-html:root body.sl-on.sl-sun { background: #F4F6FA !important; }
+/*
+ * 桜ミツ版：桜ミツの中の枠に入れたときの見た目
+ *   見出しの帯・メニューは桜ミツの側。地は透明にして、うしろの桜ミツのオーロラ（ネオンの光）を見せる。
+ *   カード・ボタン・入力欄は、桜ミツのダッシュボードと同じ作り（すりガラス・ネオンのグラデーション・光る縁）。
+ *   基準：文字と背景の差 4.5:1 以上（主ボタンの白い字は、濃い青・濃い水色・紫のグラデーションで 5:1 以上）
+ */
+:root:not([data-theme="light"]), :root[data-theme="dark"] {
+  --surface: rgba(12, 18, 34, .46); --sunk: rgba(4, 8, 18, .55); --line: rgba(186, 230, 253, .14);
+  --ink: #e9eef8; --muted: #b4bfd3; --blue: #8ab8ff; --blue-soft: rgba(77, 141, 255, .16);
+  --glass: rgba(12, 18, 34, .46); --glass-line: rgba(186, 230, 253, .14); --neon: #00E5FF;
+  --neon-grad: linear-gradient(120deg, #2563EB, #0E7490 55%, #7C3AED);
+}
+/* 地は透明（うしろの桜ミツのオーロラが見える） */
+html:root:not(.x), html:root:not(.x) body, html:root:not(.x) body.sl-on, html:root:not(.x) main, html:root:not(.x) #main { background: transparent !important; }
 header.top { display: none !important; }
 nav.tabs { display: none !important; }
 body.sl-on nav.tabs { display: flex !important; }        /* 営業の画面の下のボタン（記録・地図・再訪問…）は残す */
 main { padding-top: 8px !important; }
 #set-theme { display: none !important; }                  /* 画面の明るさは桜ミツの決まり（暗い画面） */
-.modebar { display: none !important; }                    /* 「試用モード」の帯は出さない（この端末だけの版） */
+.modebar { display: none !important; }
+
+/* ---------- すりガラスの板（桜ミツの .panel と同じ） ---------- */
+.panel, .ccard, .launch-btn, .tdb, .td-item, .ag-day, .sheet-item, .staff-card, .prow, .feed, .kpi, .big4 button, .wk, .alert, .lrow, .pk-item,
+.mcal, .filt, .appr, .file, .next, .bcard, .wb-day, .grp, .post, .sheet-box, .picker > *, .help-item,
+.sl-hud, .sl-det, .sl-rv, .sl-aw, .sl-me, .sl .empty, .sl-k, .sl-meter, .sl-steps, .sl-lead {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .055), rgba(255, 255, 255, .01) 40%), var(--glass) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(165%); backdrop-filter: blur(24px) saturate(165%);
+  border: 1px solid var(--glass-line) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), inset 0 0 0 1px rgba(255, 255, 255, .015), 0 24px 50px -26px rgba(0, 0, 0, .75) !important;
+  transition: border-color .25s ease-out, box-shadow .25s ease-out, transform .25s ease-out;
+}
+.panel, .ccard, .launch-btn, .tdb, .staff-card, .feed, .wb-day, .mcal, .grp, .sl-hud, .sl-det, .sl-rv, .sl-aw, .sl-me, .post { border-radius: 22px !important; }
+.ccard:hover, .launch-btn:hover, .wk:hover, .lrow:hover, .bcard:hover, .staff-card:hover, .td-item:hover, .sl-k:hover {
+  border-color: rgba(125, 249, 255, .26) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 0 0 1px rgba(0, 229, 255, .05), 0 24px 50px -26px rgba(0, 0, 0, .75), 0 0 34px -18px rgba(0, 229, 255, .55) !important;
+}
+/* 板の中の小さい区切り（明細・予定の吹き出し・カレンダーの日） */
+.calc div, .wb-b, .mcal .md, .sl-prev, .sl-badge, .quick a, .tdb-cs, .sl-bar, .sl-mb {
+  background: rgba(4, 8, 18, .45) !important; border: 1px solid rgba(186, 230, 253, .08);
+}
+.wb-msg.mine .wb-b, .mcal .md.sel { background: rgba(0, 229, 255, .10) !important; border-color: rgba(0, 229, 255, .45) !important; box-shadow: 0 0 18px -6px rgba(0, 229, 255, .55) !important; }
+.mcal .md.out { background: transparent !important; border-color: transparent; }
+.mcal .md.today span, .cal .d.today .dn { background: var(--neon-grad) !important; color: #fff !important; box-shadow: 0 0 12px rgba(0, 229, 255, .5); }
+
+/* ---------- ボタン（桜ミツのカプセル型・ネオン） ---------- */
+.btn, .sl .btn, .sl-mini, .chipbtn, .sl .chipbtn {
+  border-radius: 999px !important; background: rgba(130, 165, 255, .06) !important; border: 1px solid rgba(130, 165, 255, .22) !important; color: var(--ink) !important;
+  transition: transform .12s, box-shadow .25s, border-color .25s, background .25s;
+}
+.btn:hover, .sl-mini:hover, .chipbtn:hover { box-shadow: 0 0 0 1px rgba(0, 229, 255, .25), 0 8px 24px -10px rgba(0, 229, 255, .55) !important; border-color: rgba(0, 229, 255, .35) !important; }
+.btn.pri, .sl .btn.pri, .launch-btn.sales, .launch-btn.new, .gate-go, .chipbtn.on, .sl .chipbtn.on, .sl-mini[aria-pressed="true"], .sl .seg button[aria-pressed="true"], .subtabs button[aria-current="step"] {
+  background: var(--neon-grad) !important; background-size: 200% 100% !important; border-color: transparent !important; color: #fff !important;
+  box-shadow: 0 1px 0 rgba(255, 255, 255, .25) inset, 0 10px 30px -10px rgba(0, 229, 255, .6), 0 0 0 1px rgba(125, 249, 255, .25) !important;
+  transition: background-position .5s ease-out, transform .12s, box-shadow .25s;
+}
+.btn.pri:hover, .launch-btn.sales:hover { background-position: 100% 50% !important; box-shadow: 0 1px 0 rgba(255, 255, 255, .3) inset, 0 10px 30px -8px rgba(0, 229, 255, .75), 0 0 0 1px rgba(125, 249, 255, .35) !important; }
+.launch-btn.sales small, .launch-btn.sales .lb-ic { color: #fff !important; }
+
+/* ---------- 入力欄（暗い半透明・押すと水色に光る） ---------- */
+.fld input, .fld select, .fld textarea, input.btn, select.btn, .sl textarea, .sl input, #fq, #wq, #gs-q, textarea, select {
+  background: rgba(4, 8, 18, .55) !important; border: 1.5px solid #7f90b4 !important; color: var(--ink) !important; border-radius: 12px !important;
+}
+.fld input:focus, .fld select:focus, .fld textarea:focus, .sl textarea:focus, .sl input:focus, textarea:focus, select:focus, input:focus {
+  border-color: var(--neon) !important; box-shadow: 0 0 0 3px rgba(0, 229, 255, .16), 0 0 22px rgba(0, 229, 255, .28) !important; outline: none;
+}
+
+/* ---------- 営業の画面：結果のボタンを、色付きのすりガラスに ---------- */
+.sl { --sbg: transparent; --ssf: rgba(12, 18, 34, .46); --ssf2: rgba(4, 8, 18, .55); --sline: rgba(186, 230, 253, .16); --spri: #2563EB; }
+.sl:not(.sun) .sl-card {
+  background: linear-gradient(160deg, rgba(255, 255, 255, .07), rgba(255, 255, 255, .01) 45%), linear-gradient(160deg, var(--gl1), var(--gl2)) !important;
+  -webkit-backdrop-filter: blur(24px) saturate(165%); backdrop-filter: blur(24px) saturate(165%);
+  border: 1px solid var(--gll) !important; border-radius: 22px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .1), 0 24px 50px -26px rgba(0, 0, 0, .75), 0 0 30px -16px var(--glw) !important;
+}
+.sl:not(.sun) .sl-card:hover { transform: translateY(-2px); box-shadow: inset 0 1px 0 rgba(255, 255, 255, .14), 0 24px 50px -26px rgba(0, 0, 0, .75), 0 0 40px -10px var(--glw) !important; }
+.sl-card.r1 { --gl1: rgba(148, 163, 184, .16); --gl2: rgba(12, 18, 34, .5); --gll: rgba(203, 213, 225, .22); --glw: rgba(148, 163, 184, .5); }
+.sl-card.r2 { --gl1: rgba(59, 130, 246, .26); --gl2: rgba(12, 18, 34, .5); --gll: rgba(125, 211, 252, .32); --glw: rgba(0, 229, 255, .6); }
+.sl-card.r3 { --gl1: rgba(16, 185, 129, .22); --gl2: rgba(12, 18, 34, .5); --gll: rgba(110, 231, 183, .3); --glw: rgba(43, 255, 184, .5); }
+.sl-card.r4 { --gl1: rgba(139, 92, 246, .26); --gl2: rgba(12, 18, 34, .5); --gll: rgba(196, 181, 253, .3); --glw: rgba(139, 92, 246, .6); }
+.sl-card .sl-ic { background: rgba(255, 255, 255, .08) !important; box-shadow: inset 0 0 0 1px rgba(255, 255, 255, .1), 0 0 18px -6px var(--glw); }
+.sl-bar i { background: linear-gradient(90deg, #3B82F6, #06B6D4, #2BFFB8) !important; box-shadow: 0 0 12px rgba(0, 229, 255, .6); }
+/* 営業の下のボタン（スマホ）：桜ミツの帯と同じすりガラス */
+body.sl-on nav.tabs { background: rgba(6, 9, 18, .55) !important; -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%); border-top: 1px solid rgba(186, 230, 253, .14) !important; }
+body.sl-on nav.tabs button[aria-current="page"]::before { background: linear-gradient(90deg, #00E5FF, #3B82F6) !important; box-shadow: 0 0 10px rgba(0, 229, 255, .8); }
+
+/* ---------- チップ・見出し ---------- */
+.chip { background: rgba(130, 165, 255, .1) !important; border: 1px solid rgba(130, 165, 255, .22); }
+.chip.ok { background: rgba(95, 208, 176, .12) !important; border-color: rgba(95, 208, 176, .3); }
+.chip.warn { background: rgba(242, 189, 92, .12) !important; border-color: rgba(242, 189, 92, .3); }
+.chip.bad { background: rgba(255, 122, 138, .12) !important; border-color: rgba(255, 122, 138, .3); }
+h1, h2, h3 { text-shadow: 0 1px 10px rgba(0, 0, 0, .6); letter-spacing: .02em !important; }
+
+/* 業務管理のホームは桜ミツのホーム（ウィジェット）に替わるので、枠の中では描かない */
+body[data-obtab="home"] main { visibility: hidden; }

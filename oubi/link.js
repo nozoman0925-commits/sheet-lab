@@ -32,11 +32,11 @@
     if ((tries || 0) > 150) { U && EE.fx.toast('業務管理の画面を読み込めませんでした。再読み込みしてください', { warn: true, ms: 5000 }); return; }
     setTimeout(function () { whenFrame(fn, (tries || 0) + 1); }, 100);
   }
-  var lastSent = '';
+  var lastSent = '', goAt = 0;
   function go(parts) {
-    var tab = parts[0] || 'list';
+    var tab = parts[0] || 'list'; goAt = Date.now();
     whenFrame(function (o) {
-      lastSent = tab;
+      lastSent = tab; goAt = Date.now();
       if (tab === 'case' && parts[1]) o.openCase(parts[1], SEC[parts[2]] || parts[2] || undefined);
       else if (tab === 'new') o.newQuick();
       else if (tab === 'sales') o.go(parts[1] ? 'sales:' + parts[1] : 'sales');
@@ -47,13 +47,16 @@
   root.OUBI_LINK = {
     /** app.js の parse() から：#/o/<画面>/... */
     route: function (parts) {
+      goAt = Date.now(); lastSent = parts[0] || 'list';   // 切り替えを始めた時から、業務管理の「ホームを描いた」の知らせは無視する
       var pg = page(parts[0] || 'list');
       return { nav: pg[2], view: function () { return { title: pg[0], crumb: pg[1], html: '', oubi: true, mount: function () { go(parts); } }; } };
     },
     /** 業務管理の画面が描かれるたびに（embed.js から） */
     onTab: function (tab, cur) {
       if (!/^#\/o\//.test(location.hash)) return;            // 桜ミツの画面にいるときは、うしろの業務管理の動きで画面を変えない
-      if (tab === 'home') { location.hash = '#/home'; return; }   // 業務管理の「ホーム」は桜ミツのホーム（ウィジェット）
+      // 開いた直後に届く「ホームを描いた」は、業務管理の最初の画面なので無視する（こちらから画面を指定している途中）
+      if (tab === 'home' && lastSent !== 'home' && Date.now() - goAt < 2000) return;
+      if (tab === 'home') { document.body.classList.remove('ob-on'); location.hash = '#/home'; return; }   // 業務管理の「ホーム」は桜ミツのホーム（ウィジェット）。枠はすぐ隠す
       var h = tab === 'case' && cur && cur.caseId ? '#/o/case/' + cur.caseId : '#/o/' + tab;
       if (h.split('/').slice(0, 3).join('/') !== location.hash.split('/').slice(0, 3).join('/') || (tab === 'case' && h !== location.hash)) {
         EE.app.replaceRoute(h);
