@@ -80,7 +80,8 @@
   function listHTML() {
     var nq = U.norm(q);
     var list = EE.S.customers.filter(function (c) { return !nq || U.norm(c.name + c.contact + c.address).indexOf(nq) >= 0; });
-    if (!list.length) return '<div class="empty">' + I.users + '顧客がいません</div>';
+    if (!list.length) return EE.S.customers.length ? '<div class="empty">' + I.users + '<p class="empty-t">見つかりません</p></div>'
+      : U.empty({ icon: I.users, text: 'まだお客様がいません', sub: '工事を登録すると、お客様もここに入ります。', btn: '工事を登録する', href: EE.link ? '#/o/list' : '#/sites' });
     return '<table class="table"><tbody>' + list.map(function (c) {
       var n = EE.S.documents.filter(function (d) { return d.customerId === c.id; }).length;
       var rp = recentProject(c);

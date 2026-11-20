@@ -109,3 +109,7 @@ body.sl-sun .chip { background: #E9EEF6 !important; border-color: #B4C0D6; color
 
 /* 数字はすべて等幅（一覧で桁がそろう） */
 body { font-variant-numeric: tabular-nums; }
+
+/* ボタンの大きさをそろえる（桜ミツ版）：業務管理の画面は 48px・丸ごとの角・左右 12/16px */
+.ft-mic { min-height: 48px !important; padding: 0 12px !important; border-radius: 999px !important; }
+.sl-acc, .sl-sun { border-radius: 999px !important; }

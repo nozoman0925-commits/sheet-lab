@@ -239,7 +239,7 @@
         (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th></th><th>品目</th><th class="r">今の原価</th><th class="r">実績の原価</th><th class="r">差</th><th>もとにした工事</th></tr></thead><tbody>' +
           list.map(function (x, i) { var d = x.sug - x.now; return '<tr><td><input type="checkbox" data-act-pick="' + i + '" checked aria-label="' + U.esc(x.item.name) + 'を反映"></td><td>' + U.esc(x.item.name) + '<div class="hint">' + U.esc(x.item.unit || '') + '</div></td><td class="r num">' + U.yen(x.now) + '</td><td class="r num"><b>' + U.yen(x.sug) + '</b></td><td class="r num" style="color:' + (d > 0 ? 'var(--err)' : 'var(--ok)') + '">' + (d > 0 ? '+' : '') + U.yen(d).replace('¥', '¥') + '</td><td class="hint">' + U.esc(x.names.slice(0, 3).join('、')) + (x.n > 3 ? ' ほか' : '') + '（' + x.n + '件）</td></tr>'; }).join('') +
           '</tbody></table></div><div style="margin-top:12px;display:flex;gap:10px;align-items:center;flex-wrap:wrap"><button class="btn primary" data-act-apply>' + U.I.check + '選んだ品目の原価をマスタに反映</button><span class="hint">次の見積から、この原価で粗利を計算します。前の原価は品目の履歴に残します。</span></div>'
-          : '<p class="hint" style="margin:0">まだ見直せる品目がありません。工事を「完了」まで進め、工事の画面の「利益」に実際の原価（材料費・労務費・その他）と業者への支払いを入れると、ここに出ます。</p>') +
+          : U.empty({ small: 1, text: 'まだ見直せる品目がありません', sub: '工事を「完了」まで進め、工事の画面の「利益」に実際の原価（材料費・労務費・その他）と業者への支払いを入れると、ここに出ます。', btn: '工事の一覧を開く', href: '#/o/list' })) +
         '</div></section>';
     },
     mount: function (view) {

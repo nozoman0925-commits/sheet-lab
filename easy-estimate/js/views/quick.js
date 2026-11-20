@@ -293,7 +293,8 @@
   }
   function pastListHTML() {
     var list = pastList();
-    if (!list.length) return '<div class="empty">条件に合う見積がありません</div>';
+    if (!list.length) return EE.S.documents.length ? '<div class="empty"><p class="empty-t">条件に合う見積がありません</p></div>'
+      : U.empty({ icon: I.copy, text: 'まだ過去の見積がありません', sub: '1枚目は、文章やテンプレートから作れます。', btn: '別の作り方を選ぶ', href: '#/new' });
     return '<div class="checks">' + list.map(function (d) {
       var c = U.docCustomer(d);
       return '<button class="check info" data-doc="' + d.id + '" style="grid-template-columns:1fr auto;text-align:left;cursor:pointer;color:inherit;' + (pastSel === d.id ? 'border-color:var(--accent)' : '') + '">' +

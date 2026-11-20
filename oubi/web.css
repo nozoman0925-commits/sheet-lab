@@ -45,3 +45,9 @@ body.ob-on #view { display: none; }
 }
 
 @media print { .mnav, #ob-frame { display: none !important; } }
+
+/* ボタンの大きさは3種類だけ：小 36px（補助・アイコン・知らせの中）／標準 48px（業務管理の画面・指で押す所）／大 52px（ホームの主役）。
+   角は丸ごと（アイコンだけのものは円）、左右の余白は 12px と 16px の2種類 */
+body.ee-link .btn.sm { height: 36px; padding: 0 12px; font-size: 14px; border-radius: 999px; }
+body.ee-link .btn.sm.icon, body.ee-link .btn.icon { width: 36px; height: 36px; padding: 0; border-radius: 50%; }
+body.ee-link .toast .btn { height: 36px; padding: 0 12px; font-size: 14px; border-radius: 999px; }

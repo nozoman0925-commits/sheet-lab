@@ -158,7 +158,7 @@
               '<td><span class="badge blue">' + esc(ST[c.stage].label) + '</span></td>' +
               '<td>' + due + '<span class="cell-sub' + (c.warn ? ' warn-text' : '') + '">' + esc(c.next || '') + '</span></td>' +
               '<td class="r num">' + U.yen(c.amount) + '</td></tr>';
-          }).join('') + '</tbody></table></div>' : '<div class="empty">' + I.site + 'まだ工事がありません。「工事を登録」か、見積を作るときに工事を選ぶと工事ができます</div>') + '</div></section>';
+          }).join('') + '</tbody></table></div>' : U.empty({ icon: I.site, text: 'まだ工事がありません', sub: '見積を作るときに工事を選んでも、工事ができます。', btn: '工事を登録する', act: 'new-site' })) + '</div></section>';
 
     return { title: '工事', crumb: '調査・施工・検査', html: html, mount: mount };
   }

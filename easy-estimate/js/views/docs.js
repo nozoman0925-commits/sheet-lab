@@ -38,7 +38,8 @@
 
   function tableHTML() {
     var list = rows();
-    if (!list.length) return '<div class="empty">' + I.search + '条件に合う書類がありません</div>';
+    if (!list.length) return EE.S.documents.length ? '<div class="empty">' + I.search + '<p class="empty-t">条件に合う見積がありません</p><button class="btn primary sm" type="button" data-fclear>条件を消す</button></div>'
+      : U.empty({ icon: I.docs, text: 'まだ見積がありません', sub: '最初の1枚を作ると、ここに並びます。', btn: '見積を作る', href: '#/new' });
     var total = list.reduce(function (s, x) { return s + x.r.total; }, 0);
     return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>担当</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {
@@ -216,7 +217,7 @@
     view.addEventListener('click', async function (e) {
       var s = e.target.closest('#f-status [data-s]');
       if (s) { location.hash = s.dataset.s === 'all' ? '#/docs' : '#/docs/' + s.dataset.s; return; }
-      if (e.target.closest('#f-clear')) {
+      if (e.target.closest('#f-clear, [data-fclear]')) {
         F = { q: '', status: 'all', from: '', to: '', min: '', max: '', sort: F.sort }; OWNER = '';
         EE.app.rerender(); return;
       }

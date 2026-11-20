@@ -483,7 +483,7 @@ function slRvView(){
   return `${slHud()}<div class="row sb"><h1>再訪問</h1><div class="seg" role="group" aria-label="だれの再訪問"><button type="button" data-slrvall="0" aria-pressed="${!all}">自分</button><button type="button" data-slrvall="1" aria-pressed="${all}">全員</button></div></div>
    <button type="button" class="btn pri sl-sum" data-slsummary>📤 今日のまとめを上司に送る</button>
    <p class="sub" style="margin:0">今日できなかった家は、消えずに次の日へ持ち越します。その家を記録すると、ここから消えます。</p>
-   ${list.length?list.map(row).join(''):'<div class="empty">再訪問の予定はありません。「話せた」で再訪問の日を選ぶと、ここに出ます。</div>'}
+   ${list.length?list.map(row).join(''):'<div class="empty">まだ再訪問の予定はありません。「話せた」で再訪問の日を選ぶと、ここに出ます。<div class="empty-act"><button type="button" class="btn pri" data-slsub="rec">訪問を記録する</button></div></div>'}
    ${st.length?`<h2 style="margin-top:12px">⏰ 止まっている見込み</h2>${st.map(c=>`<button type="button" class="sl-rv late" data-open="${c.id}" data-sec="lead"><div class="sl-rvh"><b>${esc((c.lead||{}).customer||'')}様</b><span class="chip bad">${Math.floor((Date.now()-Date.parse(c.updatedAt||c.createdAt))/864e5)}日そのまま</span></div><div class="sub">${esc((c.work||{}).title||'')}${all?'　'+esc(pn(c.lead.salesBy))+'さん':''}　→ 開いて次へ進める</div></button>`).join('')}`:''}`;
 }
 function slRankView(){
@@ -501,7 +501,7 @@ function slRankView(){
     <div class="sl-badges">${SL_BADGES.map(b=>{const has=P.badges.includes(b);return `<span class="sl-badge ${has?'on':''}">${has?'🏅':'🔒'} ${esc(b[1])}<small>${esc(b[2])}</small></span>`}).join('')}</div></details></section>`:''}
   <div class="row sb"><h1>ランキング</h1><div class="seg" role="group" aria-label="期間">${[['day','今日'],['week','今週'],['month','今月']].map(([k,l])=>`<button type="button" data-slrank="${k}" aria-pressed="${p===k}">${l}</button>`).join('')}</div></div>
   <p class="sub" style="margin:0">いろいろな賞があるので、だれでもどれかで1位になれます。契約は「契約になった」を押した日で数えます。</p>
-  <div class="sl-aws">${AW.map(card).join('')}</div>
+  <div class="sl-aws">${AW.map(card).join('')}</div>${R.some(r=>r.door>0)?'':'<div class="empty">まだ訪問の記録がありません。訪問を記録すると、ここに順位が出ます。<div class="empty-act"><button type="button" class="btn pri" data-slsub="rec">訪問を記録する</button></div></div>'}
   <section class="panel"><h2>営業台帳から記録を引っ越す</h2><p class="sub">前の「営業台帳」の設定にある「バックアップを保存」で作ったファイルを選ぶと、あなたの訪問記録として取り込みます（同じものは2回入りません）。</p>
    <label class="btn up">📂 バックアップのファイルを選ぶ<input type="file" accept=".json,application/json" data-slimport></label></section>`;
 }

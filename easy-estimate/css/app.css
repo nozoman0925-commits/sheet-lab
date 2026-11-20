@@ -344,6 +344,11 @@ select.input option { background: #0e1422; }
 .table .muted { color: var(--muted); }
 .cell-sub { display: block; font-size: 11.5px; color: var(--muted); }
 .empty { padding: 44px 20px; text-align: center; color: var(--muted); }
+.empty .empty-t { margin: 0; color: var(--text-2); font-weight: 600; }
+.empty .empty-s { margin: 6px auto 0; max-width: 34em; font-size: 13px; }
+.empty > .btn { margin-top: 14px; }
+.empty.sm { padding: 18px 8px; }
+.empty.sm svg { width: 26px; height: 26px; }
 .empty svg { width: 34px; height: 34px; opacity: .5; display: block; margin: 0 auto 10px; }
 
 .badge { display: inline-flex; align-items: center; gap: 5px; font-size: 11px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-hi); color: var(--text-2); white-space: nowrap; }

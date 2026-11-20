@@ -227,7 +227,14 @@
     return '<span class="muted">' + jdate(doc.validUntil) + '</span>';
   }
 
-  EE.ui = { esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
+  // 空の画面：「まだ○○がありません」＋次に押すボタン1つ（o = {icon, text, sub, btn, href | act, small}）
+  function empty(o) {
+    var b = !o.btn ? '' : o.href ? '<a class="btn primary sm" href="' + o.href + '">' + esc(o.btn) + '</a>'
+      : '<button class="btn primary sm" type="button" data-act="' + o.act + '">' + esc(o.btn) + '</button>';
+    return '<div class="empty' + (o.small ? ' sm' : '') + '">' + (o.icon || '') + '<p class="empty-t">' + esc(o.text) + '</p>' + (o.sub ? '<p class="empty-s">' + esc(o.sub) + '</p>' : '') + b + '</div>';
+  }
+
+  EE.ui = { empty: empty, esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
     commit: commit, layer: layer, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
     rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
     readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge };

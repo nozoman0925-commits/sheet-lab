@@ -321,6 +321,11 @@
 .ee .table .muted{ color: var(--muted); }
 .ee .cell-sub{ display: block; font-size: 14px; color: var(--muted); }
 .ee .empty{ padding: 44px 20px; text-align: center; color: var(--muted); }
+.ee .empty .empty-t{ margin: 0; color: var(--text-2); font-weight: 600; }
+.ee .empty .empty-s{ margin: 6px auto 0; max-width: 34em; font-size: 14px; }
+.ee .empty > .btn{ margin-top: 14px; }
+.ee .empty.sm{ padding: 18px 8px; }
+.ee .empty.sm svg{ width: 26px; height: 26px; }
 .ee .empty svg{ width: 34px; height: 34px; opacity: .5; display: block; margin: 0 auto 10px; }
 .ee .badge{ display: inline-flex; align-items: center; gap: 5px; font-size: 14px; padding: 2px 8px; border-radius: 999px; border: 1px solid var(--line-hi); color: var(--text-2); white-space: nowrap; }
 .ee .badge.blue{ color: var(--accent-2); border-color: rgba(77,141,255,.35); background: rgba(77,141,255,.1); }
