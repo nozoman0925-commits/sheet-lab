@@ -64,13 +64,13 @@ body { background: #04060d; }
   backdrop-filter: blur(24px) saturate(165%);
   border: 1px solid var(--glass-line);
   box-shadow: inset 0 1px 0 rgba(255,255,255,.08), inset 0 0 0 1px rgba(255,255,255,.015), 0 24px 50px -26px rgba(0,0,0,.75);
-  transition: border-color .25s ease-out, box-shadow .25s ease-out, transform .25s ease-out;
+  transition: border-color .25s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1), transform .25s cubic-bezier(0.2, 0, 0, 1);
 }
 /* カーソルの位置に合わせて、ガラスの中をネオンの光が追いかける */
 .panel::after {   /* パネルは backdrop-filter で重なりの基準になるので、z-index:-1 で文字の下・背景の上に置ける */
   content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; z-index: -1;
   background: radial-gradient(260px circle at var(--mx, 50%) var(--my, 50%), rgba(0,229,255,.10), rgba(139,92,246,.06) 40%, transparent 70%);
-  transition: opacity .3s ease-out;
+  transition: opacity .25s cubic-bezier(0.2, 0, 0, 1);
 }
 .panel.lit::after { opacity: 1; }
 .panel.lit { border-color: rgba(125, 249, 255, .26); box-shadow: inset 0 1px 0 rgba(255,255,255,.1), 0 0 0 1px rgba(0,229,255,.05), 0 24px 50px -26px rgba(0,0,0,.75), 0 0 34px -18px rgba(0,229,255,.55); }
@@ -82,32 +82,32 @@ body { background: #04060d; }
 /* ===== カーソルを合わせたときのアクション ===== */
 /* ボタン：浮き上がり＋ネオンの縁取り、アイコンが跳ねる */
 .btn:hover { box-shadow: 0 0 0 1px rgba(0,229,255,.25), 0 8px 24px -10px rgba(0,229,255,.55); }
-.btn.primary { background: linear-gradient(120deg, #3B82F6, #06B6D4 55%, #8B5CF6); background-size: 200% 100%; background-position: 0% 50%; transition: background-position .5s ease-out, transform .12s, box-shadow .25s; }
+.btn.primary { background: linear-gradient(120deg, #3B82F6, #06B6D4 55%, #8B5CF6); background-size: 200% 100%; background-position: 0% 50%; transition: background-position .4s cubic-bezier(0.2, 0, 0, 1), transform .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1); }
 .btn.primary:hover { background-position: 100% 50%; box-shadow: 0 1px 0 rgba(255,255,255,.3) inset, 0 10px 30px -8px rgba(0,229,255,.75), 0 0 0 1px rgba(125,249,255,.35); }
-.btn:hover svg, .pkg:hover svg, .nav-item:hover svg, .quick-card:hover .kpi-icon svg, .kpi:hover .kpi-icon svg, a.badge:hover svg { animation: icon-hop .45s cubic-bezier(.3,1.6,.5,1); }
+.btn:hover svg, .pkg:hover svg, .nav-item:hover svg, .quick-card:hover .kpi-icon svg, .kpi:hover .kpi-icon svg, a.badge:hover svg { animation: icon-hop .25s cubic-bezier(0.2, 0, 0, 1); }
 @keyframes icon-hop { 0% { transform: translateY(0) rotate(0); } 35% { transform: translateY(-3px) rotate(-10deg) scale(1.15); } 70% { transform: translateY(1px) rotate(4deg); } 100% { transform: none; } }
 .nav-item:hover svg { animation-name: icon-hop-x; }
 @keyframes icon-hop-x { 0% { transform: translateX(3px); } 40% { transform: translateX(3px) translateY(-3px) rotate(-10deg) scale(1.15); } 100% { transform: translateX(3px); } }
 /* アイコンの箱：くるっと回って光る */
-.kpi-icon { transition: transform .35s cubic-bezier(.3,1.5,.5,1), box-shadow .3s, background-color .3s; }
+.kpi-icon { transition: transform .4s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1), background-color .25s cubic-bezier(0.2, 0, 0, 1); }
 .kpi:hover .kpi-icon, .quick-card:hover .kpi-icon, .site-card:hover .kpi-icon { transform: rotate(-8deg) scale(1.12); background: rgba(0,229,255,.14); color: var(--neon-cyan); box-shadow: 0 0 18px -4px rgba(0,229,255,.7); }
 /* カード：ふわっと浮いて少し傾く */
-.kpi, .quick-card, .site-card { transition: transform .3s cubic-bezier(.2,.9,.3,1), border-color .25s, box-shadow .25s; transform-style: preserve-3d; }
+.kpi, .quick-card, .site-card { transition: transform .25s cubic-bezier(0.2, 0, 0, 1), border-color .25s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1); transform-style: preserve-3d; }
 .kpi:hover, .quick-card:hover { transform: translateY(-4px) perspective(800px) rotateX(var(--tx, 0deg)) rotateY(var(--ty, 0deg)); }
 /* 数字：ネオンににじむ */
 .kpi:hover .kpi-value { text-shadow: 0 0 22px rgba(0,229,255,.45); }
 /* 表の行：左からネオンのラインが走る */
-.table tbody tr { background-image: linear-gradient(90deg, rgba(0,229,255,.10), rgba(139,92,246,.06) 40%, transparent 70%); background-size: 0% 100%; background-repeat: no-repeat; transition: background-size .35s ease-out, box-shadow .25s; }
+.table tbody tr { background-image: linear-gradient(90deg, rgba(0,229,255,.10), rgba(139,92,246,.06) 40%, transparent 70%); background-size: 0% 100%; background-repeat: no-repeat; transition: background-size .4s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1); }
 .table tbody tr:hover { background-size: 100% 100%; box-shadow: inset 2px 0 0 var(--neon-cyan); }
 /* バッジ・チップ */
-.badge { transition: transform .2s ease-out, box-shadow .2s; }
+.badge { transition: transform .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .15s cubic-bezier(0.2, 0, 0, 1); }
 .badge:hover { transform: translateY(-1px) scale(1.05); box-shadow: 0 0 12px -3px currentColor; }
 .pkg:hover { border-color: rgba(0,229,255,.5); box-shadow: 0 10px 20px -12px rgba(0,229,255,.8); }
 /* フォルダ：ネオンの影 */
 .folder-tile:hover .fold { filter: drop-shadow(0 10px 14px rgba(0,0,0,.45)) drop-shadow(0 0 16px rgba(0,229,255,.35)); }
 /* チェック一覧・アバター・入力欄 */
 .check:hover { border-color: rgba(0,229,255,.28); }
-.avatar { transition: transform .3s cubic-bezier(.3,1.6,.5,1), box-shadow .3s; }
+.avatar { transition: transform .25s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1); }
 .side-user-btn:hover .avatar, .hue-pick:hover .avatar, .owner-chip:hover .avatar { transform: scale(1.1) rotate(-6deg); box-shadow: 0 0 16px -2px hsl(var(--hue) 95% 60%); }
 .input:focus { border-color: var(--neon-cyan); box-shadow: 0 0 0 3px rgba(0,229,255,.16), 0 0 22px rgba(0,229,255,.28); }
 .nav-item.active::before { background: linear-gradient(180deg, var(--neon-cyan), var(--neon-blue)); box-shadow: 0 0 10px rgba(0,229,255,.8); }

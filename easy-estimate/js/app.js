@@ -96,7 +96,7 @@
   /* 桜ミツ版：今いるメニューの細かい画面を、見出しの下にタブで並べる */
   function secTabs(nv) {
     var bar = document.getElementById('sectabs');
-    if (!bar) { bar = document.createElement('nav'); bar.id = 'sectabs'; bar.className = 'sectabs'; bar.setAttribute('aria-label', 'この中の画面'); var tb = document.querySelector('.topbar'); tb.parentNode.insertBefore(bar, tb.nextSibling); }
+    if (!bar) { bar = document.createElement('nav'); bar.id = 'sectabs'; bar.className = 'sectabs'; bar.setAttribute('aria-label', 'この中の画面'); bar.addEventListener('click', function () { root.__tabNav = Date.now(); }); var tb = document.querySelector('.topbar'); tb.parentNode.insertBefore(bar, tb.nextSibling); }
     var kids = (nv && nv.children) || [], h = location.hash || '#/home';
     if (!kids.length) { bar.hidden = true; bar.innerHTML = ''; return; }
     var on = kids.filter(function (c) { return h === c[0]; })[0] || kids.filter(function (c) { return h.indexOf(c[0] + '/') === 0; })[0] || (/^#\/(o\/case|site)\//.test(h) ? kids[0] : null);
@@ -232,7 +232,7 @@
       if (animate !== false && (!document.activeElement || document.activeElement === document.body)) {
         var h1 = document.getElementById('title'); h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true });
       }
-      if (animate !== false) { EE.fx.pageIn(fresh.firstChild, dir); EE.fx.stagger(fresh); }
+      if (animate !== false) { var quick = Date.now() - (root.__tabNav || 0) < 1000; EE.fx.pageIn(fresh.firstChild, dir, quick); if (!quick) EE.fx.stagger(fresh); }
       lastHash = location.hash;
     };
     if (animate === false || !view.firstChild) go(); else EE.fx.pageOut(view.firstChild, go);
@@ -414,7 +414,7 @@
     U.onCommit(updateCount);
   }
 
-  EE.app = { renderNav: function () { var nav = document.getElementById('nav'); var fresh = nav.cloneNode(false); nav.parentNode.replaceChild(fresh, nav); renderNav(); setActive(currentNav); }, renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
+  EE.app = { renderNav: function () { var nav = document.getElementById('nav'); var fresh = nav.cloneNode(false); nav.parentNode.replaceChild(fresh, nav); renderNav(); setActive(currentNav); }, renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(false); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
     duplicate: duplicate, finalizeDoc: finalizeDoc, newWith: newWith, takePrefill: takePrefill,
     // 業務管理の中で動くときに使う
     setNav: function (k) { currentNav = k; setActive(k); },

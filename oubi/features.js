@@ -170,7 +170,7 @@ function ftOnb(step){
 .ft-taw{position:relative;display:grid;min-width:0}.ft-taw>textarea{padding-right:64px;width:100%}
 .ft-mic{position:absolute;right:6px;bottom:6px;display:inline-flex;align-items:center;gap:4px;min-height:44px;min-width:52px;padding:0 10px;border-radius:99px;border:1.5px solid var(--ctl,#8d7f6e);background:var(--surface);color:var(--ink);font:inherit;font-size:.9375rem;font-weight:700;cursor:pointer}
 .ft-mic .ic{width:18px;height:18px}
-.ft-mic.on{background:var(--bad);border-color:var(--bad);color:#fff;animation:ftpulse 1.2s infinite}
+.ft-mic.on{background:var(--bad);border-color:var(--bad);color:#fff;animation:ftpulse .4s cubic-bezier(0.2, 0, 0, 1) infinite}
 @keyframes ftpulse{50%{box-shadow:0 0 0 6px rgba(174,58,46,.25)}}
 @media (prefers-reduced-motion:reduce){.ft-mic.on{animation:none}}
 .sl .ft-mic{background:var(--ssf2);color:var(--sink);border-color:#6B7FA6}

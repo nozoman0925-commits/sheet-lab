@@ -139,7 +139,7 @@
         if (!stack.length) backdrop().forEach(function (x) { x.inert = false; });
         if (opener && opener.isConnected && opener.focus) setTimeout(function () { opener.focus({ preventScroll: true }); }, 0);
         if (EE.fx.reduce || !ov.animate) return ov.remove();
-        var a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: 'forwards' });
+        var a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: EE.fx.T.react, easing: EE.fx.EASE, fill: 'forwards' });
         a.onfinish = function () { ov.remove(); };
       }
     };

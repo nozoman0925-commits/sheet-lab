@@ -61,7 +61,7 @@ body.ob-loading .main::after {
 }
 body.ob-loading .main::before {
   content: ""; position: absolute; left: 50%; top: 50%; z-index: 6; width: 16px; height: 16px; margin: -8px 0 0 -72px; border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, .3); border-top-color: #00E5FF; animation: ee-spin .7s linear infinite;
+  border: 2px solid rgba(255, 255, 255, .3); border-top-color: #00E5FF; animation: ee-spin .4s linear infinite;
 }
 
 /* ホームの一番上：よく使う4つの大きなボタン（ウィジェットと同じすりガラス。色は見出しの点だけ） */
@@ -71,7 +71,7 @@ body.ob-loading .main::before {
   color: var(--text); text-decoration: none; border: 1px solid color-mix(in srgb, var(--lt) 34%, transparent);
   background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--lt) 20%, transparent), transparent 60%), rgba(14, 20, 34, .7);
   -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%);
-  transition: transform .12s ease, border-color .2s, box-shadow .2s;
+  transition: transform .15s cubic-bezier(0.2, 0, 0, 1), border-color .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .15s cubic-bezier(0.2, 0, 0, 1);
 }
 .launch-tile:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--lt) 60%, transparent); box-shadow: 0 12px 30px -16px color-mix(in srgb, var(--lt) 80%, transparent); }
 .launch-tile:focus-visible { outline: 2px solid #00E5FF; outline-offset: 2px; }
@@ -236,3 +236,8 @@ body.ee-link .wz > .wz-card { flex: 1 1 auto; min-height: 0; overflow: auto; }
 body.ee-link .wz > .wz-foot { position: static; margin-top: 12px; }
 /* 知らせは下の中央（右下の「次へ」「保存」などの主役のボタンに重ならない） */
 @media (min-width: 761px) { body.ee-link .toasts { left: 50%; right: auto; transform: translateX(-50%); align-items: center; } }
+/* 並べ替え：掴んだパネルは少し浮く（0.15秒） */
+body.ee-link .widgets.editing .widget { transition: transform .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .15s cubic-bezier(0.2, 0, 0, 1), opacity .15s cubic-bezier(0.2, 0, 0, 1); }
+body.ee-link .widgets.editing .widget.dragging { opacity: .9; transform: scale(1.02); box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .8), 0 0 0 1px rgba(0, 229, 255, .4); }
+/* ホーム：押せるパネル・タイルは、乗せると少し浮いて縁に淡い光、押すと沈む（コントロールセンターのタイル） */
+body.ee-link .launch-tile:active, body.ee-link .w-kpi:active, body.ee-link .w-item:active { transform: scale(.98); }

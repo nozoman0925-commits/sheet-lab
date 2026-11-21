@@ -27,7 +27,7 @@ main { padding-top: 8px !important; }
   -webkit-backdrop-filter: blur(24px) saturate(165%); backdrop-filter: blur(24px) saturate(165%);
   border: 1px solid var(--glass-line) !important;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, .08), inset 0 0 0 1px rgba(255, 255, 255, .015), 0 24px 50px -26px rgba(0, 0, 0, .75) !important;
-  transition: border-color .25s ease-out, box-shadow .25s ease-out, transform .25s ease-out;
+  transition: border-color .25s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1), transform .25s cubic-bezier(0.2, 0, 0, 1);
 }
 .panel, .ccard, .launch-btn, .tdb, .staff-card, .feed, .wb-day, .mcal, .grp, .sl-hud, .sl-det, .sl-rv, .sl-aw, .sl-me, .post { border-radius: 22px !important; }
 .ccard:hover, .launch-btn:hover, .wk:hover, .lrow:hover, .bcard:hover, .staff-card:hover, .td-item:hover, .sl-k:hover {
@@ -45,13 +45,13 @@ main { padding-top: 8px !important; }
 /* ---------- ボタン（桜ミツのカプセル型・ネオン） ---------- */
 .btn, .sl .btn, .sl-mini, .chipbtn, .sl .chipbtn {
   border-radius: 999px !important; background: rgba(130, 165, 255, .06) !important; border: 1px solid rgba(130, 165, 255, .22) !important; color: var(--ink) !important;
-  transition: transform .12s, box-shadow .25s, border-color .25s, background .25s;
+  transition: transform .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1), border-color .25s cubic-bezier(0.2, 0, 0, 1), background .25s cubic-bezier(0.2, 0, 0, 1);
 }
 .btn:hover, .sl-mini:hover, .chipbtn:hover { box-shadow: 0 0 0 1px rgba(0, 229, 255, .25), 0 8px 24px -10px rgba(0, 229, 255, .55) !important; border-color: rgba(0, 229, 255, .35) !important; }
 .btn.pri, .sl .btn.pri, .launch-btn.sales, .launch-btn.new, .gate-go, .chipbtn.on, .sl .chipbtn.on, .sl-mini[aria-pressed="true"], .sl .seg button[aria-pressed="true"], .subtabs button[aria-current="step"] {
   background: var(--neon-grad) !important; background-size: 200% 100% !important; border-color: transparent !important; color: #fff !important;
   box-shadow: 0 1px 0 rgba(255, 255, 255, .25) inset, 0 10px 30px -10px rgba(0, 229, 255, .6), 0 0 0 1px rgba(125, 249, 255, .25) !important;
-  transition: background-position .5s ease-out, transform .12s, box-shadow .25s;
+  transition: background-position .4s cubic-bezier(0.2, 0, 0, 1), transform .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .25s cubic-bezier(0.2, 0, 0, 1);
 }
 .btn.pri:hover, .launch-btn.sales:hover { background-position: 100% 50% !important; box-shadow: 0 1px 0 rgba(255, 255, 255, .3) inset, 0 10px 30px -8px rgba(0, 229, 255, .75), 0 0 0 1px rgba(125, 249, 255, .35) !important; }
 .launch-btn.sales small, .launch-btn.sales .lb-ic { color: #fff !important; }
@@ -189,3 +189,11 @@ p, .sub { line-height: 1.7; }
 .note, .filt, details.filt { border-radius: 14px !important; }
 .case-card .author, .case-card .author * { line-height: 1.7 !important; }
 .seg button, .sl .seg button { border-radius: 14px !important; }
+
+/* 押した手応え（桜ミツと同じ）：0.15秒で沈む＋中に波紋 */
+button, .btn, .chipbtn, .sl-mini, .sl-card { transition: transform .15s cubic-bezier(0.2, 0, 0, 1), background-color .15s cubic-bezier(0.2, 0, 0, 1), border-color .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .15s cubic-bezier(0.2, 0, 0, 1), color .15s cubic-bezier(0.2, 0, 0, 1); overflow: hidden; }
+button:active:not(:disabled), .btn:active, .chipbtn:active, .sl-mini:active { transform: scale(.97); }
+.ob-ripple { position: absolute; border-radius: 50%; pointer-events: none; background: rgba(255, 255, 255, .35); transform: scale(0); }
+.btn.done, button.done { border-color: rgba(95, 208, 176, .55) !important; }
+.done-t { white-space: nowrap; }
+nav button, nav .btn, .tabs button { overflow: visible !important; }

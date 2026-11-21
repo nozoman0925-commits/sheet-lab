@@ -239,11 +239,12 @@
         EE.S.documents.splice(idx, 1);
         U.commit();
         var tr = a.closest('tr');
-        var an = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(14px)' }], { duration: 180, fill: 'forwards' });
+        var an = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(' + EE.fx.mv() * 2 + 'px)' }], { duration: EE.fx.T.change, fill: 'forwards' });
         var fired = false, done = function () { if (fired) return; fired = true; var t = document.getElementById('doc-table'); if (t) t.innerHTML = tableHTML(); };
-        if (an) { an.onfinish = done; setTimeout(done, 240); } else done();
+        if (an) { an.onfinish = done; setTimeout(done, 300); } else done();
         EE.fx.toast('削除しました', { action: { label: '元に戻す', run: function () {
           EE.S.documents.splice(idx, 0, d); U.commit(); refresh();
+          setTimeout(function () { var back = document.querySelector('#doc-table tr[data-pick="' + d.id + '"]'); if (back) EE.fx.anim(back.closest('tr') || back, [{ opacity: 0, transform: 'translateX(' + EE.fx.mv() * 2 + 'px)' }, { opacity: 1, transform: 'none' }], { duration: EE.fx.T.change }); }, 60);
         } } });
       }
     }, true);

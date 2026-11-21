@@ -916,7 +916,7 @@ body.sl-on.sl-sun nav.tabs button[aria-current="page"]::before{background:#1F5BC
 .slfx-box h2{margin:0;font-size:1.4rem;color:#fff}.slfx-big{font-size:3.4rem;line-height:1}.slfx-xp{font-size:1.8rem;font-weight:900;color:#5BE39A;margin:0}
 .slfx-box .sub{color:#A6B3C7}
 .slfx-conf{position:absolute;inset:0;overflow:hidden;pointer-events:none}
-.slfx-conf i{position:absolute;top:-10%;font-style:normal;font-size:1.6rem;animation:slfall 2.4s ease-in forwards}
+.slfx-conf i{position:absolute;top:-10%;font-style:normal;font-size:1.6rem;animation:slfall .4s cubic-bezier(0.2, 0, 0, 1) forwards}
 @keyframes slfall{to{transform:translateY(120vh) rotate(540deg);opacity:.2}}
 @media (prefers-reduced-motion:reduce){.slfx-conf{display:none}}
 @media (max-width:360px){.sl-card{min-height:100px}.sl-card small{display:none}}

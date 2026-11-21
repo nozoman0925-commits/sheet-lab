@@ -342,7 +342,7 @@
           var v = U.readForm(document.getElementById('co-form'));
           if (!v.name) { var n = view.querySelector('[name=name]'); n.classList.add('flag-err'); EE.fx.shake(n); return; }
           if (v.invoiceRegNo && !/^T\d{13}$/.test(v.invoiceRegNo)) { var r = view.querySelector('[name=invoiceRegNo]'); r.classList.add('flag-err'); EE.fx.shake(r); EE.fx.toast('登録番号は「T」＋数字13桁です', { warn: true }); return; }
-          Object.assign(S.company, v); U.commit(); EE.fx.success(a); break;
+          Object.assign(S.company, v); U.commit(); EE.fx.success(a, '保存しました'); break;
         case 'del-logo': var undoLogo = U.undoable('ロゴを家紋＋会社名に戻しました', ['company']); S.company.logo = ''; U.commit(); undoLogo(); EE.app.rerender(); break;
         case 'del-seal':
           if (!(await U.confirmBox('登録した会社印を削除しますか？', '削除する', { danger: true }))) return;
@@ -354,7 +354,7 @@
           S.autoSave = document.getElementById('r-autosave').checked;
           Object.assign(S.settings, { lineRounding: on('lineRounding'), taxRounding: on('taxRounding'), overheadRounding: on('overheadRounding'), discountRounding: on('discountRounding'), minMargin: m / 100, validDays: Math.round(d),
             numberPrefix: document.getElementById('r-prefix').value.trim() || 'EST' });
-          U.commit(); EE.fx.success(a); break;
+          U.commit(); EE.fx.success(a, '保存しました'); break;
         case 'replay-splash': EE.splash.play({ replay: true, onReveal: EE.app.intro }); break;
         case 'export':
           U.download('easy-estimate_backup_' + EE.data.today() + '.json', JSON.stringify(S, null, 2));

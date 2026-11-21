@@ -149,7 +149,7 @@
       case 'kpi': {
         var m = METRICS[wd.metric] || METRICS.active, v = metricValue(wd.metric);
         return '<a class="w-kpi' + (m.warn && v ? ' warn' : '') + '" href="' + m.href + '"><div class="w-kpi-label">' + I[m.icon] + esc(m.label) + '</div>' +
-          '<div class="w-kpi-value num" data-count="' + v + '" data-format="' + m.fmt + '">0</div><div class="w-kpi-foot">' + esc(m.foot) + '</div></a>';
+          '<div class="w-kpi-value num" data-count="' + v + '" data-count-key="home-' + wd.metric + '" data-format="' + m.fmt + '">0</div><div class="w-kpi-foot">' + esc(m.foot) + '</div></a>';
       }
       case 'todo': {
         var items = EE.link && EE.linkTodo ? EE.linkTodo() : [];   // 桜ミツ版：期限が近い見積・入金待ち・バックアップ
@@ -277,6 +277,18 @@
   function save() { U.commit(); }
   function find(id) { var L = layout(); for (var i = 0; i < L.widgets.length; i++) if (L.widgets[i].id === id) return { L: L, i: i, w: L.widgets[i] }; return null; }
   function rerender() { EE.app.rerender(); }
+  function flip(movedId) {
+    var before = {};
+    document.querySelectorAll('[data-wid]').forEach(function (el) { before[el.dataset.wid] = el.getBoundingClientRect(); });
+    rerender();
+    document.querySelectorAll('[data-wid]').forEach(function (el) {
+      var b = before[el.dataset.wid]; if (!b) return; var a = el.getBoundingClientRect(), dx = b.left - a.left, dy = b.top - a.top;
+      if (!dx && !dy) return;
+      EE.fx.anim(el, el.dataset.wid === movedId
+        ? [{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(1.02)' }, { transform: 'scale(1.02)', offset: .8 }, { transform: 'none' }]   // 動かしたパネルは浮いたまま運ばれ、最後にカチッと収まる
+        : [{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }], { duration: EE.fx.T.change, fill: 'none' });
+    });
+  }
 
   function library() {
     var cats = {};
@@ -390,7 +402,7 @@
           case 'opts': options(f.w.id); return;
           case 'del': f.L.widgets.splice(f.i, 1); EE.fx.toast('削除しました', { action: { label: '元に戻す', run: function () { f.L.widgets.splice(f.i, 0, f.w); save(); rerender(); } } }); break;
         }
-        save(); rerender();
+        save(); if (b.dataset.w === 'left' || b.dataset.w === 'right') flip(f.w.id); else rerender();
         var again = document.querySelector('[data-wid="' + f.w.id + '"] [data-w="' + b.dataset.w + '"]' + (b.dataset.v ? '[data-v="' + b.dataset.v + '"]' : '')); if (again && !again.disabled) again.focus();
         return;
       }
@@ -410,7 +422,7 @@
         e.preventDefault(); var t = e.target.closest('[data-wid]'); if (!dragId || !t || t.dataset.wid === dragId) return;
         var L = layout(), from = find(dragId), to = find(t.dataset.wid);
         var item = L.widgets.splice(from.i, 1)[0]; var ti = L.widgets.indexOf(to.w); L.widgets.splice(ti, 0, item);
-        dragId = null; save(); rerender();
+        var moved = dragId; dragId = null; save(); flip(moved);
       });
     }
   }

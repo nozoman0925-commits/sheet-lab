@@ -1720,19 +1720,30 @@
 /* ---- fx.js ---- */
 /*
  * マイクロインタラクション（Web Animations API。外部ライブラリ不要・オフライン動作）
- * - 1つの動きは 0.2〜0.4 秒。transform / opacity だけを動かして 60fps を保つ
+ * - 動きの文法：時間は 0.15秒（反応）／0.25秒（画面内の変化）／0.4秒（画面の切り替え）の3つだけ。
+ *   曲線は cubic-bezier(0.2, 0, 0, 1)（速く出て、すっと止まる）の1つだけ。例外は起動の演出と数字のカウントアップ（0.6秒まで）。
+ * - 動かすのは「状態が変わったもの」だけ。動きの途中でも次の操作を受け付ける（待たせない）。
+ * - transform / opacity だけを動かして 60fps を保つ
  * - 連続操作で遅れないよう、同じ要素の古いアニメーションは止めてから新しく動かす
  * - OS の「視差効果を減らす」設定では動きを止める
  */
 (function (root) {
   'use strict';
   var reduce = root.matchMedia && root.matchMedia('(prefers-reduced-motion: reduce)').matches;
-  var EASE = 'cubic-bezier(.22,.8,.28,1)';
+  // 検証モード：?motion=off か localStorage「oumitsu:motion」= off で、動きを一括で切る（ランダム操作のテストなど）
+  try { if (/[?&]motion=off/.test(location.search) || localStorage.getItem('oumitsu:motion') === 'off') { reduce = true; document.documentElement.classList.add('no-motion'); } } catch (e) {}
+  var EASE = 'cubic-bezier(0.2, 0, 0, 1)';
+  var T = { react: 150, change: 250, page: 400 };
+  function snap(d) { return d <= 200 ? T.react : d <= 325 ? T.change : T.page; }
+  function mv() { return root.innerWidth <= 760 ? 4 : 8; }   // 動く量：スマホは半分
 
   function anim(el, frames, opts) {
     if (!el || reduce || !el.animate) return null;
     if (el._eeAnim) { try { el._eeAnim.cancel(); } catch (e) {} }
-    el._eeAnim = el.animate(frames, Object.assign({ duration: 280, easing: EASE, fill: 'backwards' }, opts));
+    var o = Object.assign({ duration: T.change, easing: EASE, fill: 'backwards' }, opts, { easing: EASE });
+    o.duration = snap(o.duration);                                          // 秒数は 0.15／0.25／0.4 のどれかに寄せる
+    if (o.delay) o.delay = Math.min(160, Math.round(o.delay / 40) * 40);   // 時間差は 40ms 刻み、全体で 0.4秒以内
+    el._eeAnim = el.animate(frames, o);
     return el._eeAnim;
   }
 
@@ -1740,25 +1751,26 @@
   function stagger(scope, opts) {
     opts = opts || {};
     var els = (scope || document).querySelectorAll('[data-st]');
-    var step = opts.step || 35, max = opts.max || 14;
+    // 40ms 刻み。全体で 0.4秒以内（遅れて出るものも 0.15秒で始め、0.25秒で終える）
+    var step = 40, max = 3;
     els.forEach(function (el, i) {
       anim(el, [
-        { opacity: 0, transform: 'translateY(10px) scale(.985)' },
+        { opacity: 0, transform: 'translateY(' + mv() + 'px)' },
         { opacity: 1, transform: 'none' }
-      ], { duration: 340, delay: Math.min(i, max) * step });
+      ], { duration: T.change, delay: Math.min(i, max) * step });
     });
   }
 
   /** 画面遷移：前の画面を軽く消し、新しい画面をスライド＋フェードで入れる */
-  function pageIn(el, dir) {
+  function pageIn(el, dir, quick) {
     anim(el, [
-      { opacity: 0, transform: 'translateX(' + (dir < 0 ? -14 : 14) + 'px)' },
+      { opacity: 0, transform: 'translateX(' + (dir < 0 ? -mv() : mv()) + 'px)' },
       { opacity: 1, transform: 'none' }
-    ], { duration: 260 });
+    ], { duration: quick ? T.change : T.page });   // タブの切り替えは 0.25秒、画面の切り替えは 0.4秒
   }
   function pageOut(el, done) {
     if (reduce || !el.animate) return done();
-    var a = el.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(-6px)' }], { duration: 110, easing: 'ease-in', fill: 'forwards' });
+    var a = el.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(-' + (mv() / 2) + 'px)' }], { duration: T.react, easing: EASE, fill: 'forwards' });
     var called = false, fin = function () { if (called) return; called = true; done(); };
     a.onfinish = function () { a.cancel(); fin(); };
     setTimeout(fin, 180);   // 描画が重い瞬間でも切り替えが止まらないように
@@ -1775,7 +1787,7 @@
     from = from == null ? 0 : from;
     if (el._eeRaf) cancelAnimationFrame(el._eeRaf);
     if (reduce || from === to) { el.textContent = fmt(to, f); el._eeVal = to; return; }
-    dur = dur || 520;
+    dur = Math.min(dur || T.change, 600);   // カウントアップは例外（0.6秒まで）
     var t0 = performance.now();
     function tick(now) {
       var p = Math.min(1, (now - t0) / dur);
@@ -1787,9 +1799,14 @@
     }
     el._eeRaf = requestAnimationFrame(tick);
   }
+  // 大きな数字は、その数字を初めて見せるときだけカウントアップ（同じ数字の再表示では動かさない）
+  var counted = {};
   function countAll(scope) {
     (scope || document).querySelectorAll('[data-count]').forEach(function (el) {
-      countUp(el, Number(el.dataset.count), el.dataset.format, 0, 620);
+      var key = el.dataset.countKey || '', to = Number(el.dataset.count);
+      if (key && counted[key] === to) { el.textContent = fmt(to, el.dataset.format); el._eeVal = to; return; }
+      if (key) counted[key] = to;
+      countUp(el, to, el.dataset.format, 0, 600);
     });
   }
   /** 値が変わったときだけ、今の値から新しい値へ短く動かす（入力に遅れず付いてくる） */
@@ -1797,8 +1814,8 @@
     if (!el) return;
     var from = el._eeVal == null ? to : el._eeVal;
     if (from === to) { el.textContent = fmt(to, el.dataset.format); el._eeVal = to; return; }
-    countUp(el, to, el.dataset.format, from, 260);
-    anim(el, [{ color: '#8ab8ff', textShadow: '0 0 18px rgba(77,141,255,.8)' }, { color: '', textShadow: '' }], { duration: 400, fill: 'none' });
+    countUp(el, to, el.dataset.format, from, T.change);   // 前後の差分だけ 0.25秒でロール
+    anim(el, [{ color: '#8ab8ff' }, { color: '' }], { duration: T.change, fill: 'none' });
   }
 
   /** クリックの手応え：押した位置から光の波紋 */
@@ -1812,31 +1829,48 @@
     d.style.cssText = 'width:' + s + 'px;height:' + s + 'px;left:' + (e.clientX - r.left - s / 2) + 'px;top:' + (e.clientY - r.top - s / 2) + 'px';
     if (!b.classList.contains('btn')) return;
     b.appendChild(d);
-    var a = d.animate([{ transform: 'scale(0)', opacity: .5 }, { transform: 'scale(1)', opacity: 0 }], { duration: 420, easing: 'ease-out' });
+    var a = d.animate([{ transform: 'scale(0)', opacity: .5 }, { transform: 'scale(1)', opacity: 0 }], { duration: T.react, easing: EASE });
     a.onfinish = function () { d.remove(); };
   }
 
-  /** 成功の合図：ボタンを一瞬だけ緑のチェックに */
+  /** 成功の合図：押したボタンの文字が一瞬だけ「✓ 保存しました」などに変わって戻る（知らせと二重にしない） */
   function success(btn, label) {
     if (!btn) return;
     if (btn._eeTimer) clearTimeout(btn._eeTimer);
-    if (btn._eeHtml == null) btn._eeHtml = btn.innerHTML;
+    if (btn._eeHtml == null) { btn._eeHtml = btn.innerHTML; btn._eeMinW = btn.style.minWidth; btn.style.minWidth = btn.getBoundingClientRect().width + 'px'; }
     btn.classList.add('done');
-    btn.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="#5fd0b0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5" style="stroke-dasharray:24;stroke-dashoffset:24;animation:draw .3s forwards"/></svg>' + (label || '保存しました');
-    anim(btn, [{ boxShadow: '0 0 0 0 rgba(95,208,176,.6)' }, { boxShadow: '0 0 0 8px rgba(95,208,176,0)' }], { duration: 420, fill: 'none' });
+    btn.innerHTML = '<span class="done-t">✓ ' + String(label || 'できました').replace(/[<&]/g, '') + '</span>';
+    anim(btn, [{ transform: 'scale(.97)' }, { transform: 'none' }], { duration: T.react, fill: 'none' });
     btn._eeTimer = setTimeout(function () {
-      btn.classList.remove('done'); btn.innerHTML = btn._eeHtml; btn._eeHtml = null;
+      btn.classList.remove('done'); btn.innerHTML = btn._eeHtml; btn._eeHtml = null; btn.style.minWidth = btn._eeMinW || '';
     }, 1300);
   }
+  // 「〜しました」を、ボタンに入る短い言葉に
+  function doneLabel(msg) {
+    var m = String(msg || '');
+    var k = [['保存', '保存しました'], ['登録', '登録しました'], ['書き出', '書き出しました'], ['書き', '書きました'], ['送', '送りました'], ['反映', '反映しました'], ['追加', '追加しました'], ['コピー', 'コピーしました'], ['画像', '画像にしました'], ['確定', '確定しました'], ['複製', '複製しました'], ['変え', '変えました'], ['入れ', '入れました']];
+    for (var i = 0; i < k.length; i++) if (m.indexOf(k[i][0]) >= 0) return k[i][1];
+    return 'できました';
+  }
+  // 最後に押したボタン（2秒以内なら、成功の知らせはそのボタンの中に出す）
+  var lastBtn = null, lastAt = 0;
+  document.addEventListener('pointerdown', function (e) { var b = e.target.closest && e.target.closest('.btn, button'); if (b) { lastBtn = b; lastAt = Date.now(); } }, true);
+  document.addEventListener('keydown', function (e) { if ((e.key === 'Enter' || e.key === ' ') && e.target.closest && e.target.closest('.btn, button')) { lastBtn = e.target.closest('.btn, button'); lastAt = Date.now(); } }, true);
+  function recentBtn() {
+    if (!lastBtn || Date.now() - lastAt > 2000 || !lastBtn.isConnected) return null;
+    var r = lastBtn.getBoundingClientRect(); return r.width > 0 && r.height > 0 ? lastBtn : null;
+  }
 
-  function pop(el) { anim(el, [{ transform: 'scale(.96)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 220 }); }
-  function shake(el) { anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'none' }], { duration: 300, fill: 'none' }); }
-  function pulse(el) { anim(el, [{ boxShadow: '0 0 0 0 rgba(77,141,255,.55)' }, { boxShadow: '0 0 0 10px rgba(77,141,255,0)' }], { duration: 500, fill: 'none' }); }
+  function pop(el) { anim(el, [{ transform: 'scale(.96)', opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: T.change }); }
+  function shake(el) { anim(el, [{ transform: 'translateX(0)' }, { transform: 'translateX(-5px)' }, { transform: 'translateX(5px)' }, { transform: 'translateX(-3px)' }, { transform: 'none' }], { duration: T.change, fill: 'none' }); }
+  function pulse(el) { anim(el, [{ boxShadow: '0 0 0 0 rgba(77,141,255,.55)' }, { boxShadow: '0 0 0 10px rgba(77,141,255,0)' }], { duration: T.change, fill: 'none' }); }
 
   /** 時間のかかる操作：0.3秒をこえたら、押したボタンに「処理中」の印を出す（すぐ終わるときは何も出さない） */
   function busy(btn, fn) {
-    var t = setTimeout(function () { if (btn) { btn.classList.add('is-busy'); btn.setAttribute('aria-busy', 'true'); } }, 300);
-    var done = function () { clearTimeout(t); if (btn) { btn.classList.remove('is-busy'); btn.removeAttribute('aria-busy'); } };
+    // 0.3秒をこえたら：ボタンに回る印、そのボタンのパネルだけ薄く脈打つ（全体は止めない）
+    var pane = btn && btn.closest && btn.closest('.panel, .widget, .overlay .modal, .wz-card');
+    var t = setTimeout(function () { if (btn) { btn.classList.add('is-busy'); btn.setAttribute('aria-busy', 'true'); } if (pane) pane.classList.add('is-loading'); }, 300);
+    var done = function () { clearTimeout(t); if (btn) { btn.classList.remove('is-busy'); btn.removeAttribute('aria-busy'); } if (pane) pane.classList.remove('is-loading'); };
     return Promise.resolve().then(fn).then(function (v) { done(); return v; }, function (e) { done(); throw e; });
   }
 
@@ -1845,6 +1879,7 @@
   function toast(msg, opts) {
     opts = opts || {};
     if (opts.warn == null && WARN_RE.test(msg)) opts.warn = true;
+    if (!opts.warn && !opts.action && !opts.force && /しました/.test(msg)) { var rb = opts.btn || recentBtn(); if (rb) { success(rb, doneLabel(msg)); return; } }
     var box = document.querySelector('.toasts');
     var t = document.createElement('div');
     t.className = 'toast' + (opts.warn ? ' warn' : '');
@@ -1861,7 +1896,7 @@
     }
     if (opts.warn) t.setAttribute('role', 'alert');
     box.appendChild(t);
-    anim(t, [{ opacity: 0, transform: 'translateY(10px) scale(.96)' }, { opacity: 1, transform: 'none' }], { duration: 240 });
+    anim(t, [{ opacity: 0, transform: 'translateY(' + mv() + 'px)' }, { opacity: 1, transform: 'none' }], { duration: T.change });
     var ms = opts.ms || (opts.action ? 8000 : 2200), timer = setTimeout(close, ms);
     // カーソルが乗っている間・フォーカスがある間は消さない（「元に戻す」を押せるように）
     var hold = function () { clearTimeout(timer); }, resume = function () { if (!t.matches(':hover') && !t.contains(document.activeElement)) { clearTimeout(timer); timer = setTimeout(close, 2500); } };
@@ -1871,38 +1906,22 @@
       clearTimeout(timer);
       if (!t.isConnected) return;
       if (reduce || !t.animate) return t.remove();
-      var a = t.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(14px)' }], { duration: 180, fill: 'forwards' });
+      var a = t.animate([{ opacity: 1 }, { opacity: 0, transform: 'translateX(' + mv() + 'px)' }], { duration: T.react, easing: EASE, fill: 'forwards' });
       a.onfinish = function () { t.remove(); };
     }
   }
 
   /* ===== カーソル・クリックのアクション ===== */
-  var NEON = ['#00E5FF', '#8B5CF6', '#FF2BD6', '#2BFFB8', '#3B82F6'];
   var CLICKABLE = 'button, a[href], .clickable, [data-href], .folder-tile, .pkg, .nav-child, .check[data-doc], .check[data-tpl], label.btn, [role=menuitem], input[type=checkbox], .seg button';
 
-  /** クリック：押した場所からネオンの輪と粒が弾ける＋押したものが小さく弾む */
+  /** 押した手応え：ボタンは CSS の :active で沈み、中に波紋。ボタン以外の押せるもの（カード・タイル）は 0.15秒だけ沈む */
   function burst(e) {
     if (reduce || e.button > 0) return;
     var t = e.target.closest(CLICKABLE);
     if (!t || t.disabled) return;
-    var x = e.clientX, y = e.clientY, c = NEON[(Math.random() * NEON.length) | 0];
-    var ring = document.createElement('span');
-    ring.className = 'click-ring'; ring.style.cssText = 'left:' + x + 'px;top:' + y + 'px;--c:' + c;
-    EE.ui.layer().appendChild(ring);
-    ring.animate([{ transform: 'scale(.4)', opacity: 1 }, { transform: 'scale(5.5)', opacity: 0 }], { duration: 480, easing: 'cubic-bezier(.2,.8,.3,1)' }).onfinish = function () { ring.remove(); };
-    var n = t.matches('.btn.primary, .folder-tile, .quick-card') ? 12 : 8;
-    for (var i = 0; i < n; i++) {
-      var d = document.createElement('span');
-      var col = NEON[(i + (Math.random() * 2 | 0)) % NEON.length];
-      d.className = 'click-dot'; d.style.cssText = 'left:' + x + 'px;top:' + y + 'px;--c:' + col;
-      EE.ui.layer().appendChild(d);
-      var ang = (i / n) * Math.PI * 2 + Math.random() * 0.5, dist = 30 + Math.random() * 34;
-      d.animate([{ transform: 'translate(0,0) scale(1)', opacity: 1 }, { transform: 'translate(' + Math.cos(ang) * dist + 'px,' + Math.sin(ang) * dist + 'px) scale(.2)', opacity: 0 }],
-        { duration: 520 + Math.random() * 180, easing: 'cubic-bezier(.15,.8,.3,1)' }).onfinish = (function (el) { return function () { el.remove(); }; })(d);
-    }
-    // 押したものが一瞬沈んで弾む（ボタンは CSS の :active で沈む）
-    var target = t.closest('.folder-tile, .quick-card, .pkg, .kpi, .nav-child, .check, .badge, .avatar, .seg button') || (t.matches('.btn') ? null : null);
-    if (target && target.animate) target.animate([{ transform: 'scale(1)' }, { transform: 'scale(.95)' }, { transform: 'scale(1.03)' }, { transform: 'scale(1)' }], { duration: 380, easing: 'ease-out' });
+    if (t.matches('.btn')) return ripple(e);
+    var target = t.closest('.folder-tile, .quick-card, .pkg, .kpi, .nav-child, .check, .launch-tile, .w-item, .wz-opt, .wz-mode, .seg button');
+    if (target && target.animate) target.animate([{ transform: 'scale(1)' }, { transform: 'scale(.97)' }, { transform: 'scale(1)' }], { duration: T.react, easing: EASE });
   }
 
   /** ガラスのパネル：カーソルの位置を光が追いかける／カードは少し傾く */
@@ -1921,7 +1940,7 @@
         if (!p.classList.contains('lit')) p.classList.add('lit');
       }
       lit = p;
-      var c = !reduce && ev.target.closest && ev.target.closest('.kpi, .quick-card');
+      var c = null;   // カードの傾きはやめた（ホバーは少し浮くだけ）
       if (tiltEl && tiltEl !== c) { tiltEl.style.removeProperty('--tx'); tiltEl.style.removeProperty('--ty'); }
       if (c) {
         var rc = c.getBoundingClientRect();
@@ -1940,7 +1959,7 @@
 
   root.EE = root.EE || {};
   root.EE.fx = { bindAmbient: bindAmbient, burst: burst, anim: anim, stagger: stagger, pageIn: pageIn, pageOut: pageOut, countUp: countUp, countAll: countAll,
-    retarget: retarget, ripple: ripple, success: success, pop: pop, shake: shake, pulse: pulse, toast: toast, busy: busy, fmt: fmt, reduce: reduce };
+    retarget: retarget, ripple: ripple, success: success, pop: pop, shake: shake, pulse: pulse, toast: toast, busy: busy, fmt: fmt, reduce: reduce, T: T, EASE: EASE, mv: mv, snap: snap, doneLabel: doneLabel, recentBtn: recentBtn };
 })(this);
 
 
@@ -2086,7 +2105,7 @@
         if (!stack.length) backdrop().forEach(function (x) { x.inert = false; });
         if (opener && opener.isConnected && opener.focus) setTimeout(function () { opener.focus({ preventScroll: true }); }, 0);
         if (EE.fx.reduce || !ov.animate) return ov.remove();
-        var a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: 140, fill: 'forwards' });
+        var a = ov.animate([{ opacity: 1 }, { opacity: 0 }], { duration: EE.fx.T.react, easing: EE.fx.EASE, fill: 'forwards' });
         a.onfinish = function () { ov.remove(); };
       }
     };
@@ -3523,7 +3542,7 @@
       case 'kpi': {
         var m = METRICS[wd.metric] || METRICS.active, v = metricValue(wd.metric);
         return '<a class="w-kpi' + (m.warn && v ? ' warn' : '') + '" href="' + m.href + '"><div class="w-kpi-label">' + I[m.icon] + esc(m.label) + '</div>' +
-          '<div class="w-kpi-value num" data-count="' + v + '" data-format="' + m.fmt + '">0</div><div class="w-kpi-foot">' + esc(m.foot) + '</div></a>';
+          '<div class="w-kpi-value num" data-count="' + v + '" data-count-key="home-' + wd.metric + '" data-format="' + m.fmt + '">0</div><div class="w-kpi-foot">' + esc(m.foot) + '</div></a>';
       }
       case 'todo': {
         var items = EE.link && EE.linkTodo ? EE.linkTodo() : [];   // 桜ミツ版：期限が近い見積・入金待ち・バックアップ
@@ -3651,6 +3670,18 @@
   function save() { U.commit(); }
   function find(id) { var L = layout(); for (var i = 0; i < L.widgets.length; i++) if (L.widgets[i].id === id) return { L: L, i: i, w: L.widgets[i] }; return null; }
   function rerender() { EE.app.rerender(); }
+  function flip(movedId) {
+    var before = {};
+    document.querySelectorAll('[data-wid]').forEach(function (el) { before[el.dataset.wid] = el.getBoundingClientRect(); });
+    rerender();
+    document.querySelectorAll('[data-wid]').forEach(function (el) {
+      var b = before[el.dataset.wid]; if (!b) return; var a = el.getBoundingClientRect(), dx = b.left - a.left, dy = b.top - a.top;
+      if (!dx && !dy) return;
+      EE.fx.anim(el, el.dataset.wid === movedId
+        ? [{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(1.02)' }, { transform: 'scale(1.02)', offset: .8 }, { transform: 'none' }]   // 動かしたパネルは浮いたまま運ばれ、最後にカチッと収まる
+        : [{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }], { duration: EE.fx.T.change, fill: 'none' });
+    });
+  }
 
   function library() {
     var cats = {};
@@ -3764,7 +3795,7 @@
           case 'opts': options(f.w.id); return;
           case 'del': f.L.widgets.splice(f.i, 1); EE.fx.toast('削除しました', { action: { label: '元に戻す', run: function () { f.L.widgets.splice(f.i, 0, f.w); save(); rerender(); } } }); break;
         }
-        save(); rerender();
+        save(); if (b.dataset.w === 'left' || b.dataset.w === 'right') flip(f.w.id); else rerender();
         var again = document.querySelector('[data-wid="' + f.w.id + '"] [data-w="' + b.dataset.w + '"]' + (b.dataset.v ? '[data-v="' + b.dataset.v + '"]' : '')); if (again && !again.disabled) again.focus();
         return;
       }
@@ -3784,7 +3815,7 @@
         e.preventDefault(); var t = e.target.closest('[data-wid]'); if (!dragId || !t || t.dataset.wid === dragId) return;
         var L = layout(), from = find(dragId), to = find(t.dataset.wid);
         var item = L.widgets.splice(from.i, 1)[0]; var ti = L.widgets.indexOf(to.w); L.widgets.splice(ti, 0, item);
-        dragId = null; save(); rerender();
+        var moved = dragId; dragId = null; save(); flip(moved);
       });
     }
   }
@@ -4036,11 +4067,12 @@
         EE.S.documents.splice(idx, 1);
         U.commit();
         var tr = a.closest('tr');
-        var an = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(14px)' }], { duration: 180, fill: 'forwards' });
+        var an = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(' + EE.fx.mv() * 2 + 'px)' }], { duration: EE.fx.T.change, fill: 'forwards' });
         var fired = false, done = function () { if (fired) return; fired = true; var t = document.getElementById('doc-table'); if (t) t.innerHTML = tableHTML(); };
-        if (an) { an.onfinish = done; setTimeout(done, 240); } else done();
+        if (an) { an.onfinish = done; setTimeout(done, 300); } else done();
         EE.fx.toast('削除しました', { action: { label: '元に戻す', run: function () {
           EE.S.documents.splice(idx, 0, d); U.commit(); refresh();
+          setTimeout(function () { var back = document.querySelector('#doc-table tr[data-pick="' + d.id + '"]'); if (back) EE.fx.anim(back.closest('tr') || back, [{ opacity: 0, transform: 'translateX(' + EE.fx.mv() * 2 + 'px)' }, { opacity: 1, transform: 'none' }], { duration: EE.fx.T.change }); }, 60);
         } } });
       }
     }, true);
@@ -4320,7 +4352,7 @@
     if (flashId) {
       (Array.isArray(flashId) ? flashId : [flashId]).forEach(function (id, k) {
         var tr = body.querySelector('[data-line="' + id + '"]');
-        if (tr) { tr.classList.add('added'); EE.fx.anim(tr, [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 260, delay: k * 40 }); }
+        if (tr) { tr.classList.add('added'); EE.fx.anim(tr, [{ opacity: 0, transform: 'translateX(' + EE.fx.mv() * 2 + 'px)' }, { opacity: 1, transform: 'none' }], { duration: EE.fx.T.change, delay: k * 40 }); }   // 戻る・増える行は横から滑って入る
       });
     }
     document.getElementById('line-count').textContent = ED.doc.lines.length + '行';
@@ -4376,7 +4408,7 @@
     var set = function (k, v) {
       var el = document.querySelector('[data-k="' + k + '"]');
       if (!el) return;
-      if (first) EE.fx.countUp(el, v, el.dataset.format, 0, 620); else EE.fx.retarget(el, v);
+      if (first) EE.fx.countUp(el, v, el.dataset.format, 0, 600); else EE.fx.retarget(el, v);   // 開いたとき：カウントアップ（例外）／変えたとき：差分だけ 0.25秒でロール
     };
     set('subtotal', r.subtotal); set('total', r.total); set('costTotal', r.costTotal); set('grossProfit', r.grossProfit);
     set('margin', r.marginRate == null ? 0 : Math.round(r.marginRate * 1000) / 10);
@@ -4401,7 +4433,10 @@
     var mm = document.getElementById('margin-meter');
     var mr = r.marginRate == null ? 0 : Math.max(0, Math.min(1, r.marginRate / 0.5));
     mm.firstChild.style.width = (mr * 100) + '%';
-    mm.classList.toggle('low', r.marginRate != null && r.marginRate < EE.S.settings.minMargin);
+    var wasLow = mm.classList.contains('low'), nowLow = r.marginRate != null && r.marginRate < EE.S.settings.minMargin;
+    mm.classList.toggle('low', nowLow);
+    // 粗利率が下限を割った瞬間だけ、数字が1回だけ赤くパルスする（くり返さない）
+    if (!first && !wasLow && nowLow) { var me = document.querySelector('[data-k="margin"]'); if (me) EE.fx.anim(me, [{ color: '#ff7a8a', transform: 'scale(1.08)' }, { color: '#ff7a8a', transform: 'scale(1)' }, { color: '', transform: 'none' }], { duration: EE.fx.T.page, fill: 'none' }); }
 
     var CT = Object.assign({}, EE.engine.COST_TYPES, { discount: '値引き' }), b = r.breakdown, tot = Math.max(1, r.subtotal);
     document.getElementById('breakdown').innerHTML = Object.keys(CT).filter(function (k) { return b[k] || k === 'material' || k === 'labor'; }).map(function (k) {
@@ -4464,6 +4499,8 @@
     pane = name; var ed = document.querySelector('.editor'); if (!ed) return;
     ed.setAttribute('data-pane', name);
     ed.querySelectorAll('.ed-pane [data-pane]').forEach(function (b) { var on = b.dataset.pane === name; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    var shown = name === 'lines' ? '#sec-lines' : name === 'header' ? '#sec-header' : 'aside.summary';   // 中身が 0.25秒で横に数px滑って入れ替わる
+    EE.fx.anim(ed.querySelector(shown), [{ opacity: 0, transform: 'translateX(' + EE.fx.mv() + 'px)' }, { opacity: 1, transform: 'none' }], { duration: EE.fx.T.change });
   }
   function gotoTarget(t) {
     if (!t) return;
@@ -4879,10 +4916,10 @@
         if (act === 'del') {
           var removed = L.splice(idx, 1)[0];
           markDirty();
-          var anim = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(12px)' }], { duration: 160, fill: 'forwards' });
-          // 動きの終わりを待ちつつ、描画が重いときも 0.22 秒後には必ず表を描き直す
+          var anim = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(' + EE.fx.mv() * 2 + 'px)' }], { duration: EE.fx.T.change, fill: 'forwards' });
+          // 動きの終わりを待ちつつ、描画が重いときも 0.3 秒後には必ず表を描き直す（次の操作は待たせない）
           var doneDel = false, after = function () { if (doneDel) return; doneDel = true; renderLines(); };
-          if (anim) { anim.onfinish = after; setTimeout(after, 220); } else after();
+          if (anim) { anim.onfinish = after; setTimeout(after, 300); } else after();
           EE.fx.toast('「' + removed.name + '」を削除しました', { action: { label: '元に戻す', run: function () {
             if (!ED || ED.doc.lines !== L) return;
             L.splice(Math.min(idx, L.length), 0, removed); markDirty(); renderLines(removed.lineId);
@@ -7733,7 +7770,7 @@
           var v = U.readForm(document.getElementById('co-form'));
           if (!v.name) { var n = view.querySelector('[name=name]'); n.classList.add('flag-err'); EE.fx.shake(n); return; }
           if (v.invoiceRegNo && !/^T\d{13}$/.test(v.invoiceRegNo)) { var r = view.querySelector('[name=invoiceRegNo]'); r.classList.add('flag-err'); EE.fx.shake(r); EE.fx.toast('登録番号は「T」＋数字13桁です', { warn: true }); return; }
-          Object.assign(S.company, v); U.commit(); EE.fx.success(a); break;
+          Object.assign(S.company, v); U.commit(); EE.fx.success(a, '保存しました'); break;
         case 'del-logo': var undoLogo = U.undoable('ロゴを家紋＋会社名に戻しました', ['company']); S.company.logo = ''; U.commit(); undoLogo(); EE.app.rerender(); break;
         case 'del-seal':
           if (!(await U.confirmBox('登録した会社印を削除しますか？', '削除する', { danger: true }))) return;
@@ -7745,7 +7782,7 @@
           S.autoSave = document.getElementById('r-autosave').checked;
           Object.assign(S.settings, { lineRounding: on('lineRounding'), taxRounding: on('taxRounding'), overheadRounding: on('overheadRounding'), discountRounding: on('discountRounding'), minMargin: m / 100, validDays: Math.round(d),
             numberPrefix: document.getElementById('r-prefix').value.trim() || 'EST' });
-          U.commit(); EE.fx.success(a); break;
+          U.commit(); EE.fx.success(a, '保存しました'); break;
         case 'replay-splash': EE.splash.play({ replay: true, onReveal: EE.app.intro }); break;
         case 'export':
           U.download('easy-estimate_backup_' + EE.data.today() + '.json', JSON.stringify(S, null, 2));
@@ -7907,7 +7944,7 @@
   /* 桜ミツ版：今いるメニューの細かい画面を、見出しの下にタブで並べる */
   function secTabs(nv) {
     var bar = document.getElementById('sectabs');
-    if (!bar) { bar = document.createElement('nav'); bar.id = 'sectabs'; bar.className = 'sectabs'; bar.setAttribute('aria-label', 'この中の画面'); var tb = document.querySelector('.topbar'); tb.parentNode.insertBefore(bar, tb.nextSibling); }
+    if (!bar) { bar = document.createElement('nav'); bar.id = 'sectabs'; bar.className = 'sectabs'; bar.setAttribute('aria-label', 'この中の画面'); bar.addEventListener('click', function () { root.__tabNav = Date.now(); }); var tb = document.querySelector('.topbar'); tb.parentNode.insertBefore(bar, tb.nextSibling); }
     var kids = (nv && nv.children) || [], h = location.hash || '#/home';
     if (!kids.length) { bar.hidden = true; bar.innerHTML = ''; return; }
     var on = kids.filter(function (c) { return h === c[0]; })[0] || kids.filter(function (c) { return h.indexOf(c[0] + '/') === 0; })[0] || (/^#\/(o\/case|site)\//.test(h) ? kids[0] : null);
@@ -8043,7 +8080,7 @@
       if (animate !== false && (!document.activeElement || document.activeElement === document.body)) {
         var h1 = document.getElementById('title'); h1.setAttribute('tabindex', '-1'); h1.focus({ preventScroll: true });
       }
-      if (animate !== false) { EE.fx.pageIn(fresh.firstChild, dir); EE.fx.stagger(fresh); }
+      if (animate !== false) { var quick = Date.now() - (root.__tabNav || 0) < 1000; EE.fx.pageIn(fresh.firstChild, dir, quick); if (!quick) EE.fx.stagger(fresh); }
       lastHash = location.hash;
     };
     if (animate === false || !view.firstChild) go(); else EE.fx.pageOut(view.firstChild, go);
@@ -8225,7 +8262,7 @@
     U.onCommit(updateCount);
   }
 
-  EE.app = { renderNav: function () { var nav = document.getElementById('nav'); var fresh = nav.cloneNode(false); nav.parentNode.replaceChild(fresh, nav); renderNav(); setActive(currentNav); }, renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
+  EE.app = { renderNav: function () { var nav = document.getElementById('nav'); var fresh = nav.cloneNode(false); nav.parentNode.replaceChild(fresh, nav); renderNav(); setActive(currentNav); }, renderUser: function () { renderUser(); }, boot: boot, linkMember: linkMember, intro: intro, rerender: function () { show(false); }, replaceRoute: replaceRoute, makeRevision: makeRevision,
     duplicate: duplicate, finalizeDoc: finalizeDoc, newWith: newWith, takePrefill: takePrefill,
     // 業務管理の中で動くときに使う
     setNav: function (k) { currentNav = k; setActive(k); },
