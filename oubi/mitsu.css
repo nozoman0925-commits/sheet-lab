@@ -203,12 +203,12 @@
 .ee .user-pop-h .dot,.ee .sidebar-foot .dot{ display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); margin-right: 6px; vertical-align: 1px; }
 .ee .user-pop [role=menuitem]{
   display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px 10px; border-radius: 9px; border: 0; background: transparent;
-  color: var(--text-2); font-size: 14px; text-align: left; cursor: pointer; text-decoration: none; transition: background var(--t), color var(--t), transform var(--t) cubic-bezier(0.2, 0, 0, 1);
+  color: var(--text-2); font-size: 14px; text-align: left; cursor: pointer; text-decoration: none; transition: background var(--t) var(--ease), color var(--t) var(--ease), transform var(--t) cubic-bezier(0.2, 0, 0, 1);
 }
 .ee .user-pop [role=menuitem] svg{ width: 15px; height: 15px; opacity: .7; }
 .ee .user-pop [role=menuitem]:hover{ background: rgba(77,141,255,.12); color: #fff; transform: translateX(2px); }
 .ee .hue-pick input{ position: absolute; opacity: 0; pointer-events: none; }
-.ee .hue-pick .avatar{ cursor: pointer; transition: transform var(--t) cubic-bezier(0.2, 0, 0, 1), outline-color var(--t); outline: 2px solid transparent; outline-offset: 2px; }
+.ee .hue-pick .avatar{ cursor: pointer; transition: transform var(--t) cubic-bezier(0.2, 0, 0, 1), outline-color var(--t) var(--ease); outline: 2px solid transparent; outline-offset: 2px; }
 .ee .hue-pick input:checked + .avatar{ outline-color: var(--accent-2); transform: scale(1.06); }
 .ee .hue-pick .avatar:hover{ transform: translateY(-2px); }
 .ee .main{ position: relative; overflow: hidden; display: flex; flex-direction: column; }
@@ -237,7 +237,7 @@
 .ee .panel-b{ padding: 16px 20px 20px; }
 .ee .grid{ display: grid; gap: 18px; }
 .ee .kpis{ grid-template-columns: repeat(4, minmax(0, 1fr)); }
-.ee .kpi{ padding: 18px 20px; cursor: default; transition: transform var(--t) cubic-bezier(0.2, 0, 0, 1), border-color var(--t), box-shadow var(--t); }
+.ee .kpi{ padding: 18px 20px; cursor: default; transition: transform var(--t) cubic-bezier(0.2, 0, 0, 1), border-color var(--t) var(--ease), box-shadow var(--t) var(--ease); }
 .ee .kpi:hover{ transform: translateY(-3px); border-color: var(--line-hi); box-shadow: 0 0 0 1px rgba(77,141,255,.08), 0 24px 40px -22px rgba(30,80,200,.45); }
 .ee .kpi-label{ color: var(--muted); font-size: 14px; letter-spacing: .05em; display: flex; align-items: center; gap: 8px; }
 .ee .kpi-value{ font-size: 30px; font-weight: 650; margin-top: 8px; letter-spacing: -.01em; }
@@ -252,7 +252,7 @@
   position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px;
   height: 36px; padding: 0 14px; border-radius: 10px; border: 1px solid var(--b);
   background: rgba(130,165,255,.05); color: var(--text); cursor: pointer; white-space: nowrap; overflow: hidden;
-  transition: transform .15s cubic-bezier(0.2, 0, 0, 1), background var(--t), border-color var(--t), box-shadow var(--t), color var(--t);
+  transition: transform .15s cubic-bezier(0.2, 0, 0, 1), background var(--t) var(--ease), border-color var(--t) var(--ease), box-shadow var(--t) var(--ease), color var(--t) var(--ease);
   user-select: none;
 }
 .ee .btn svg{ width: 16px; height: 16px; flex: none; }
@@ -290,7 +290,7 @@
 .ee .input,.ee select.input,.ee textarea.input{
   width: 100%; height: 38px; padding: 0 12px; border-radius: 10px;
   background: rgba(6,9,16,.55); border: 1px solid var(--line-hi); outline: none;
-  transition: border-color var(--t), box-shadow var(--t), background var(--t);
+  transition: border-color var(--t) var(--ease), box-shadow var(--t) var(--ease), background var(--t) var(--ease);
 }
 .ee textarea.input{ height: auto; min-height: 76px; padding: 10px 12px; resize: vertical; line-height: 1.6; }
 .ee .input:hover{ border-color: rgba(130,165,255,.32); }
@@ -313,13 +313,13 @@
 .ee .c2{ grid-column: span 2; }
 .ee .hint{ font-size: 14px; color: var(--dim); }
 .ee .seg{ display: inline-flex; padding: 3px; gap: 2px; border-radius: 10px; background: rgba(6,9,16,.55); border: 1px solid var(--line); position: relative; }
-.ee .seg button{ border: 0; background: transparent; color: var(--muted); padding: 5px 12px; border-radius: 7px; cursor: pointer; font-size: 14px; position: relative; z-index: 1; transition: color var(--t); }
+.ee .seg button{ border: 0; background: transparent; color: var(--muted); padding: 5px 12px; border-radius: 7px; cursor: pointer; font-size: 14px; position: relative; z-index: 1; transition: color var(--t) var(--ease); }
 .ee .seg button:hover{ color: var(--text); }
 .ee .seg button.on{ color: #fff; background: rgba(77,141,255,.22); box-shadow: inset 0 0 0 1px rgba(77,141,255,.35); }
 .ee .table{ width: 100%; border-collapse: separate; border-spacing: 0; }
 .ee .table th{ text-align: left; font-weight: 500; font-size: 14px; letter-spacing: .05em; color: var(--muted); padding: 10px 12px; border-bottom: 1px solid var(--line); white-space: nowrap; position: sticky; top: 0; background: rgba(12,17,28,.92); backdrop-filter: blur(8px); z-index: 1; }
 .ee .table td{ padding: 11px 12px; border-bottom: 1px solid rgba(130,165,255,.06); vertical-align: middle; }
-.ee .table tbody tr{ transition: background var(--t), box-shadow var(--t); }
+.ee .table tbody tr{ transition: background var(--t) var(--ease), box-shadow var(--t) var(--ease); }
 .ee .table tbody tr.clickable{ cursor: pointer; }
 .ee .table tbody tr:hover{ background: rgba(77,141,255,.06); box-shadow: inset 2px 0 0 var(--accent); }
 .ee .table .r{ text-align: right; }
@@ -372,7 +372,7 @@
 .ee .lines tr.hl-err td{ background: rgba(255,122,138,.07); }
 .ee .lines tr.added td{ animation: rowIn .4s cubic-bezier(0.2, 0, 0, 1); }
 @keyframes rowIn{ from { background: rgba(77,141,255,.22); } to { background: transparent; } }
-.ee .row-actions{ display: flex; gap: 2px; justify-content: flex-end; opacity: .35; transition: opacity var(--t); }
+.ee .row-actions{ display: flex; gap: 2px; justify-content: flex-end; opacity: .35; transition: opacity var(--t) var(--ease); }
 .ee tr:hover .row-actions{ opacity: 1; }
 .ee .profit-chip{ font-size: 14px; color: var(--muted); }
 .ee .profit-chip.neg{ color: var(--err); }
@@ -399,7 +399,7 @@
 .ee .check{
   display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: start;
   padding: 11px 12px; border-radius: 10px; border: 1px solid var(--line); background: rgba(6,9,16,.4);
-  transition: border-color var(--t), background var(--t), transform var(--t) cubic-bezier(0.2, 0, 0, 1);
+  transition: border-color var(--t) var(--ease), background var(--t) var(--ease), transform var(--t) cubic-bezier(0.2, 0, 0, 1);
 }
 .ee .check:hover{ transform: translateX(2px); border-color: var(--line-hi); background: rgba(77,141,255,.05); }
 .ee .check .ic{ width: 18px; height: 18px; border-radius: 50%; display: grid; place-items: center; font-size: 14px; font-weight: 700; margin-top: 1px; }
@@ -993,7 +993,7 @@
     rgba(14, 20, 34, var(--w-alpha));
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 18px 36px -24px rgba(0,0,0,.7);
-  transition: transform var(--t) cubic-bezier(0.2, 0, 0, 1), box-shadow var(--t), border-color var(--t); }
+  transition: transform var(--t) cubic-bezier(0.2, 0, 0, 1), box-shadow var(--t) var(--ease), border-color var(--t) var(--ease); }
 .ee .widget.size-s{ grid-column: span 3; }
 .ee .widget.size-m{ grid-column: span 6; }
 .ee .widget.size-l{ grid-column: span 12; }
@@ -1032,7 +1032,7 @@
 .ee .w-item.warn small{ color: var(--warn); }
 .ee .w-date-chip{ flex: none; font-size: 14px; padding: 3px 8px; border-radius: 8px; background: color-mix(in srgb, var(--w-accent) 18%, transparent); color: var(--text); }
 .ee .w-quick{ display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.ee .w-quick a{ display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: rgba(255,255,255,.04); color: var(--text-2); text-decoration: none; font-size: 14px; transition: background var(--t), transform var(--t) cubic-bezier(0.2, 0, 0, 1), color var(--t); }
+.ee .w-quick a{ display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: rgba(255,255,255,.04); color: var(--text-2); text-decoration: none; font-size: 14px; transition: background var(--t) var(--ease), transform var(--t) cubic-bezier(0.2, 0, 0, 1), color var(--t) var(--ease); }
 .ee .w-quick a .ico{ width: 22px; height: 22px; color: var(--w-accent); }
 .ee .w-quick a:hover{ background: color-mix(in srgb, var(--w-accent) 16%, transparent); color: var(--text); transform: translateY(-2px); }
 .ee .w-flow{ cursor: pointer; }
