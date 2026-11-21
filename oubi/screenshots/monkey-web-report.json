@@ -1,17 +1,1 @@
-[
- {
-  "msg": "枠の中が横にはみ出す (幅390)",
-  "n": 1146,
-  "trail": [
-   "none → Escape",
-   "none → Escape",
-   "click a 見積を作る見積を作る",
-   "click a 今日の予定を見る今日の予定",
-   "click a ほかの作り方（PDF・写真など）",
-   "goto #/o/case/c2/quote"
-  ],
-  "worker": 1,
-  "width": 390,
-  "step": 5
- }
-]
+[]
