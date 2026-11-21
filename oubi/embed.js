@@ -66,7 +66,8 @@
     var fx = FX(); if (!fx) return;
     var T = fx.T, mv = fx.mv();
     // タブが変わったとき：中身が 0.25秒で横に数px滑って入れ替わる
-    if (M.tab && M.tab !== tab) go(document.querySelector('main'), [{ opacity: 0, transform: 'translateX(' + mv + 'px)' }, { opacity: 1, transform: 'none' }], T.change);
+    // （左から入る：右へ動かすと、動いている 0.25秒だけ画面の幅をこえて横にはみ出すため）
+    if (M.tab && M.tab !== tab) go(document.querySelector('main'), [{ opacity: 0, transform: 'translateX(-' + mv + 'px)' }, { opacity: 1, transform: 'none' }], T.change);
     M.tab = tab;
     // 営業：目標のバーは 0.25秒で伸びる。届いたときだけ小さく弾む。数字は増えたときだけ弾む（0.15秒）、レベルアップだけ 0.4秒
     document.querySelectorAll('.sl-bar i, .sl-mb i').forEach(function (i, k) {
