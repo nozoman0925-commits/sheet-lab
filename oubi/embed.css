@@ -116,3 +116,35 @@ body { font-variant-numeric: tabular-nums; }
 
 /* あしたの予定・タイムラインの切り替えは、桜ミツの見出しの下のタブで行う */
 .wbseg { display: none !important; }
+
+/* ===== 1画面で完結（パソコン 1920×1080 基準）：枠の中もページ全体は動かさず、一覧だけ枠の中で動かす ===== */
+main { max-width: none !important; height: 100vh; box-sizing: border-box; padding: 12px 28px 16px !important; display: flex !important; flex-direction: column; gap: 14px !important; }
+main > * { flex: none; }
+/* 工事の一覧：一覧だけ動く */
+body[data-obtab="list"] main > #sr { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body[data-obtab="list"] main > #sr > .tw { flex: 1 1 auto; min-height: 0; overflow: auto; }
+/* 工事の画面：左に工事の見出し（段階・連絡先・次にやること・切り替え）、右に各段階の中身（その枠の中だけ動く） */
+@media (min-width: 1100px) {
+  body[data-obtab="case"] main { display: grid !important; grid-template-columns: 400px minmax(0, 1fr); grid-template-rows: auto minmax(0, 1fr); align-items: stretch; }
+  body[data-obtab="case"] main > :not(.case-card):not(.sec) { grid-column: 1 / -1; }
+  body[data-obtab="case"] main > .case-card { grid-column: 1; grid-row: 2; min-height: 0; overflow: auto; }
+  body[data-obtab="case"] main > section.sec { grid-column: 2; grid-row: 2; min-height: 0; overflow: auto; }
+  body[data-obtab="case"] .case-card .quick { display: grid !important; grid-template-columns: 1fr; }
+}
+body[data-obtab="case"] main > section.sec { flex: 1 1 auto; min-height: 0; overflow: auto; }
+/* 目標の粗利率などの設定：パネルを3列に */
+@media (min-width: 1280px) {
+  body[data-obtab="settings"] main { display: block !important; column-count: 3; column-gap: 18px; overflow: visible; }
+  body[data-obtab="settings"] main > * { break-inside: avoid; margin: 0 0 16px !important; }
+  body[data-obtab="settings"] main > h1 { column-span: all; }
+}
+/* 工事の進み・入金：上半分（数字4つ・今週の予定・段階・担当者）。下半分は「要対応・数字」のタブへ */
+body[data-obtab="dash"] main > .mq-links { display: none !important; }   /* 粗利・会計・分析へは見出しの下のタブから */
+body[data-obtab="dash"]:not([data-dpart="nums"]) main > section.grp, body[data-obtab="dash"]:not([data-dpart="nums"]) main > .cols2 { display: none !important; }
+body[data-obtab="dash"]:not([data-dpart="nums"]) main > section.panel:last-of-type { flex: 1 1 auto; min-height: 0; overflow: auto; }
+/* 要対応・数字：営業・施工・経営の数字（2×2）と、要対応・集客経路（その枠の中だけ動く） */
+body[data-obtab="dash"][data-dpart="nums"] main { display: grid !important; grid-template-columns: 1fr 1fr; grid-template-rows: auto auto auto minmax(0, 1fr); align-content: stretch; }
+body[data-obtab="dash"][data-dpart="nums"] main > :not(.grp):not(.cols2) { display: none !important; }
+body[data-obtab="dash"][data-dpart="nums"] main > .grp { margin: 0 !important; }
+body[data-obtab="dash"][data-dpart="nums"] main > .cols2 { grid-column: 1 / -1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+body[data-obtab="dash"][data-dpart="nums"] main > .cols2 > * { min-height: 0; overflow: auto; margin: 0 !important; }

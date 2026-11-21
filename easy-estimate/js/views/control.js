@@ -76,8 +76,9 @@
   function preset(role) {
     switch (role) {
       // 桜ミツ版の標準：今日のこと → 数字 → やること → 書類・流れ・お金
-      case 'link': return [w('clock', 'm'), w('today', 'm', { color: 'teal' }), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
-        w('kpi', 's', { metric: 'unpaid', color: 'amber' }), w('kpi', 's', { metric: 'monthOrder' }), w('todo', 'm'), w('recent', 'm'), w('flow', 'l'), w('bars', 'l')];
+      // 桜ミツ版：1画面（1920×1080）に収まる3段。1段目 時計・今日・数字2つ／2段目 数字2つ・今日やること／3段目 最近の見積・工事の流れ
+      case 'link': return [w('clock', 's'), w('today', 's', { color: 'teal' }), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
+        w('kpi', 's', { metric: 'unpaid', color: 'amber' }), w('kpi', 's', { metric: 'monthOrder' }), w('todo', 'm'), w('recent', 'm'), w('flow', 'm')];
       case 'sales': return [w('clock', 'm'), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'waiting', color: 'violet' }), w('todo', 'm'), w('quick', 'm'), w('recent', 'l'), w('kpi', 's', { metric: 'overdue', color: 'amber' }), w('kpi', 's', { metric: 'customers', color: 'teal' }), w('usage', 'm')];
       case 'site': return [w('clock', 'm'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'today' }), w('todo', 'm'), w('quick', 'm'), w('events', 'l'), w('favorites', 'm')];
       case 'office': return [w('clock', 'm'), w('kpi', 's', { metric: 'unpaid', color: 'violet' }), w('kpi', 's', { metric: 'waiting' }), w('attention', 'm'), w('quick', 'm'), w('recent', 'l'), w('members', 'l')];
@@ -100,6 +101,9 @@
         U.commit();
       }
       h.active = 'main'; h.auto = false;
+      // 前の標準（縦に長い並び）のままなら、1画面に収まる新しい標準へ
+      var mainL = h.layouts.filter(function (l) { return l.key === 'main'; })[0];
+      if (mainL && mainL.widgets.map(function (x) { return x.type; }).join(',') === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow,bars') { mainL.widgets = preset('link'); U.commit(); }
       return h;
     }
     if (!h) {

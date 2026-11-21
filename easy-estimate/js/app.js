@@ -29,8 +29,8 @@
     // 桜ミツ版：左のメニューには出さず、開いた画面の上にタブで並べる（営業は営業の下のボタン、見積は一覧の中の絞り込みを使う）
     sites: [['#/o/list', '工事の一覧'], ['#/sites', '流れ（見積→入金）'], ['#/clients', 'お客様']],
     schedule: [['#/o/cal', 'カレンダー'], ['#/o/wb', 'あしたの予定'], ['#/o/board', 'タイムライン']],
-    finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の進み・入金'], ['#/analysis', '分析']],
-    settings: [['#/settings/items', '工事項目・単価'], ['#/settings/packages', 'テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
+    finance: [['#/finance', '粗利・会計'], ['#/o/dash', '工事の進み・入金'], ['#/o/dash/nums', '要対応・数字'], ['#/analysis', '分析']],
+    settings: [['#/settings/items', '工事項目・単価'], ['#/settings/actual', '実績から原価'], ['#/settings/packages', 'テンプレート'], ['#/settings/formulas', '計算式'], ['#/settings/snippets', '定型文'],
       ['#/settings/company', '自社情報'], ['#/settings/rules', '計算ルール'], ['#/o/settings', '目標の粗利率'], ['#/o/staff', '社員'], ['#/settings/data', '自分の名前・バックアップ']]
   };
   var NAV = [];
@@ -99,7 +99,7 @@
     if (!bar) { bar = document.createElement('nav'); bar.id = 'sectabs'; bar.className = 'sectabs'; bar.setAttribute('aria-label', 'この中の画面'); var tb = document.querySelector('.topbar'); tb.parentNode.insertBefore(bar, tb.nextSibling); }
     var kids = (nv && nv.children) || [], h = location.hash || '#/home';
     if (!kids.length) { bar.hidden = true; bar.innerHTML = ''; return; }
-    var on = kids.filter(function (c) { return h === c[0] || h.indexOf(c[0] + '/') === 0; })[0] || (/^#\/(o\/case|site)\//.test(h) ? kids[0] : null);
+    var on = kids.filter(function (c) { return h === c[0]; })[0] || kids.filter(function (c) { return h.indexOf(c[0] + '/') === 0; })[0] || (/^#\/(o\/case|site)\//.test(h) ? kids[0] : null);
     bar.hidden = false;
     bar.innerHTML = kids.map(function (c) { return '<a href="' + c[0] + '"' + (c === on ? ' class="on" aria-current="page"' : '') + '>' + c[1] + '</a>'; }).join('');
     var a = bar.querySelector('.on'); if (a && a.scrollIntoView && bar.scrollWidth > bar.clientWidth) a.scrollIntoView({ block: 'nearest', inline: 'center' });

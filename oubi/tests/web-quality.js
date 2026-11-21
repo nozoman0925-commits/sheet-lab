@@ -15,7 +15,7 @@ const openWeb = require('./_web');
 
   // ---- 空の画面 ----
   const PARENT = [['#/docs', 'まだ見積がありません', '見積を作る'], ['#/clients', 'まだお客様がいません', '工事を登録する'], ['#/sites', 'まだ工事がありません', '工事を登録する'],
-    ['#/finance', 'まだ受注した工事がありません', '工事の一覧を開く'], ['#/new/past', 'まだ過去の見積がありません', '別の作り方を選ぶ'], ['#/settings/items', 'まだ見直せる品目がありません', '工事の一覧を開く']];
+    ['#/finance', 'まだ受注した工事がありません', '工事の一覧を開く'], ['#/new/past', 'まだ過去の見積がありません', '別の作り方を選ぶ'], ['#/settings/actual', 'まだ見直せる品目がありません', '工事の一覧を開く']];
   for (const [h, t, btn] of PARENT) {
     await go(p, h);
     const r = await p.evaluate(t => { const e = [...document.querySelectorAll('#view .empty')].find(x => x.textContent.indexOf(t) >= 0); return e ? [...e.querySelectorAll('.btn')].map(x => x.textContent.trim()) : null; }, t);
