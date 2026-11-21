@@ -182,3 +182,15 @@ body.ee-link .view-inner > .panel:has(+ .editor) { margin-bottom: 12px !importan
   body.ee-link .editor[data-pane="sum"] > aside.summary { flex: 1 1 auto; overflow: auto; }
   body.ee-link .editor[data-pane="sum"] > .ed-left { flex: none; }
 }
+
+/* ===== 色は「意味」だけ（状態の表：下書き灰・確定青・要対応赤・完了緑・注意黄）。飾りは青・水色・紫と無彩色だけ ===== */
+/* オーロラは3色（青・水色・紫）。マゼンタとミントの帯は、紫と青に */
+body.ee-link .aurora .a3 { background: radial-gradient(closest-side, rgba(139, 92, 246, .42), rgba(139, 92, 246, .12) 50%, transparent 74%); }
+body.ee-link .aurora .a4 { background: radial-gradient(closest-side, rgba(59, 130, 246, .34), rgba(59, 130, 246, .1) 55%, transparent 76%); }
+/* ロゴの下の文字・人の丸い印・パネルの差し色・ホームのボタンは、色で分けない（アイコンと文字で分ける） */
+body.ee-link .brand-sub { color: var(--text-2) !important; }
+body.ee-link .avatar { --hue: 217 !important; }
+body.ee-link .widget { --w-accent: #4d8dff !important; }
+body.ee-link .launch-tile { --lt: #4d8dff !important; }
+/* 期限切れの文字は要対応（赤） */
+body.ee-link .cell-sub.warn-text { color: var(--err) !important; }

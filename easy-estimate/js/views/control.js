@@ -173,7 +173,7 @@
       case 'bars': return '<div class="w-bars" data-bars></div>';
       case 'rings': {
         var R = EE.insight.rates();
-        return '<div class="rings w-rings">' + EE.charts.ring(R.paid, '入金率', U.yen(R.paidAmt), '#3987e5') + EE.charts.ring(R.margin, '粗利率', '見積（税抜）', '#199e70') + EE.charts.ring(R.unpaid, '未入金', U.yen(R.unpaidAmt), '#9085e9') + '</div>';
+        return '<div class="rings w-rings">' + EE.charts.ring(R.paid, '入金率', U.yen(R.paidAmt), '#4a7ff0') + EE.charts.ring(R.margin, '粗利率', '見積（税抜）', '#10a0a4') + EE.charts.ring(R.unpaid, '未入金', U.yen(R.unpaidAmt), '#a070f0') + '</div>';
       }
       case 'recent': {
         var docs = S.documents.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); }).slice(0, wd.size === 'l' ? 6 : 4);

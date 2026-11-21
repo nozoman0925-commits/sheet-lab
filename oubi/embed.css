@@ -160,3 +160,16 @@ body[data-obtab="dash"][data-dpart="nums"] main > .cols2 > * { min-height: 0; ov
 .pg-bar button { background: #121a2e; color: #dfe6f3; }
 body.sl-sun .pg-bar button { background: #FFFFFF; color: #0B1324; border-color: #6B7FA6; }
 body.sl-sun .pg-bar button.on { background: #1F5BC6; color: #fff; border-color: transparent; }
+
+/* ===== 色は「意味」だけ（状態の表に合わせる）。飾りは青・水色・紫と無彩色 ===== */
+.pb-t i { background: linear-gradient(90deg, #2563EB, #00B8D9) !important; }             /* 進み具合の棒：黄の縞 → 青 */
+.pipe span.now { background: #00E5FF !important; }                                          /* 今の段階＝選択中（水色） */
+.big4 .c1 b, .big4 .c3 b, .big4 .c4 b { color: var(--ink) !important; }                    /* 要対応（赤）だけ色、ほかは白 */
+.cal .dh:first-child, .cal .dh:nth-child(7) { color: var(--muted) !important; }             /* 日曜・土曜の見出しは色で分けない */
+.live { display: none !important; }                                                         /* 「すぐ届きます」：この版は端末ごとの保存なので出さない */
+.avatar, .av { filter: none; }
+/* 営業の結果ボタン：色で分けず、アイコンと文字で分ける（同じすりガラス） */
+.sl-card.r1, .sl-card.r2, .sl-card.r3, .sl-card.r4 { --gl1: rgba(59, 130, 246, .2) !important; --gll: rgba(125, 211, 252, .3) !important; --glw: rgba(0, 229, 255, .5) !important; }
+.sl-card.r1 .sl-ic, .sl-card.r2 .sl-ic, .sl-card.r3 .sl-ic, .sl-card.r4 .sl-ic { color: #A9C8FF !important; }
+.sl.sun .sl-card.r1, .sl.sun .sl-card.r2, .sl.sun .sl-card.r3, .sl.sun .sl-card.r4 { --g1: #F4F7FC !important; --g2: #E3EAF5 !important; }
+.sl.sun .sl-card .sl-ic { color: #1F5BC6 !important; }
