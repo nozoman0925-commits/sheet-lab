@@ -2995,7 +2995,7 @@
         '<section class="panel" data-st><div class="panel-h"><h2>詳細</h2></div><div class="panel-b" id="flow-detail">' + detailHTML(list) + '</div></section>' +
       '</div>' +
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>工事一覧</h2><span class="sub">' + sites.length + ' 件</span></div>' +
-        '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
+        '<div class="panel-b">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
           sites.map(function (c) {
             var p = c.project, cu = U.findCustomer(p.customerId) || {};
             var due = c.stage === 0 && c.valid ? (c.days < 0 ? U.stBadge('alert', '期限切れ') : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';
@@ -3132,7 +3132,7 @@
           '<div class="panel-b"><div id="bars"></div></div></section>' +
       '</div>' +
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>工事別の粗利</h2><span class="sub">受注した見積で計算（見積上の粗利。実際の原価は第5期の「実績原価」で追加）</span></div>' +
-        '<div class="panel-b" style="padding-top:6px">' + (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th>工事</th><th>段階</th><th class="r">受注額（税込）</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead><tbody>' +
+        '<div class="panel-b">' + (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th>工事</th><th>段階</th><th class="r">受注額（税込）</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead><tbody>' +
           list.map(function (x) {
             var low = x.rate != null && x.rate < minM;
             return '<tr class="clickable" data-href="#/site/' + x.p.id + '"><td>' + esc(x.p.name) + '<span class="cell-sub">受注 ' + U.jdate(x.p.orderedOn) + '</span></td>' +
@@ -3235,7 +3235,7 @@
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>月別 × 工事種別</h2><span class="sub">直近12か月・書類の発行日で集計</span><div class="spacer"></div>' +
         '<div class="seg" id="a-hm">' + [['count', '件数'], ['amount', '金額']].map(function (x) { return '<button class="' + (HM === x[0] ? 'on' : '') + '" data-hm="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
         '<div class="panel-b heat-wrap"><div id="a-heat"></div><div id="a-heat-sum" class="heat-sum"></div></div>' +
-        '<div class="panel-b" style="padding-top:0"><p class="hint" style="margin:8px 0 0">マスにカーソルを合わせると、その月の件数と合計額が出ます。色が濃いほど多い。</p></div></section>' +
+        '<div class="panel-b"><p class="hint" style="margin:0">マスにカーソルを合わせると、その月の件数と合計額が出ます。色が濃いほど多い。</p></div></section>' +
       '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px">' +
         '<section class="panel" data-st><div class="panel-h"><h2>担当者別</h2></div><div class="panel-b table-scroll">' + table(C.byOwner) + '</div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>工事種別</h2></div><div class="panel-b table-scroll">' + table(C.byCat) + '</div></section>' +
@@ -5584,7 +5584,7 @@
       '<button class="btn primary wz-next" type="button" data-wz="next"' + (nextOk ? '' : ' disabled') + '>' + (nextLabel || '次へ') + ' ›</button></div>';
   }
   function page(n, q, body, nextOk, nextLabel) {
-    return '<div class="wz" data-step="' + n + '">' + stepper(n) + '<section class="panel wz-card" data-st><h2 class="wz-q">' + q + '</h2>' + body + '</section>' + foot(n, nextOk, nextLabel) + '</div>';
+    return '<div class="wz" data-step="' + n + '">' + stepper(n) + '<section class="panel wz-card" data-st><h1 class="wz-q">' + q + '</h1>' + body + '</section>' + foot(n, nextOk, nextLabel) + '</div>';
   }
 
   /* ---------- 1 どの工事？ ---------- */
@@ -5650,7 +5650,7 @@
       '<p class="wz-help">見積は下書きとして保存しました。お客様に出すときは、送る前のチェックをしてからPDFにします。</p>' +
       '<div class="wz-actions"><button type="button" class="btn primary" data-wz="pdf">' + I.pdf + '送る前のチェックをしてPDFを出す</button>' +
       '<a class="btn" href="#/edit/' + d.id + '">' + I.edit + 'くわしく編集する</a><a class="btn ghost" href="#/docs">見積の一覧を見る</a><button type="button" class="btn ghost" data-wz="again">' + I.plus + 'もう1つ作る</button></div>';
-    return '<div class="wz" data-step="4">' + stepper(4) + '<section class="panel wz-card" data-st><h2 class="wz-q">できあがりました</h2>' + body + '</section>' +
+    return '<div class="wz" data-step="4">' + stepper(4) + '<section class="panel wz-card" data-st><h1 class="wz-q">できあがりました</h1>' + body + '</section>' +
       '<div class="wz-foot"><a class="btn" href="#/w/3">‹ 前へ戻る</a></div></div>';
   }
 

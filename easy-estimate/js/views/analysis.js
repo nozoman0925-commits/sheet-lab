@@ -71,7 +71,7 @@
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>月別 × 工事種別</h2><span class="sub">直近12か月・書類の発行日で集計</span><div class="spacer"></div>' +
         '<div class="seg" id="a-hm">' + [['count', '件数'], ['amount', '金額']].map(function (x) { return '<button class="' + (HM === x[0] ? 'on' : '') + '" data-hm="' + x[0] + '">' + x[1] + '</button>'; }).join('') + '</div></div>' +
         '<div class="panel-b heat-wrap"><div id="a-heat"></div><div id="a-heat-sum" class="heat-sum"></div></div>' +
-        '<div class="panel-b" style="padding-top:0"><p class="hint" style="margin:8px 0 0">マスにカーソルを合わせると、その月の件数と合計額が出ます。色が濃いほど多い。</p></div></section>' +
+        '<div class="panel-b"><p class="hint" style="margin:0">マスにカーソルを合わせると、その月の件数と合計額が出ます。色が濃いほど多い。</p></div></section>' +
       '<div class="grid" style="grid-template-columns:repeat(2,minmax(0,1fr));margin-top:18px">' +
         '<section class="panel" data-st><div class="panel-h"><h2>担当者別</h2></div><div class="panel-b table-scroll">' + table(C.byOwner) + '</div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>工事種別</h2></div><div class="panel-b table-scroll">' + table(C.byCat) + '</div></section>' +

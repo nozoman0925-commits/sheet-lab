@@ -194,3 +194,18 @@ body.ee-link .widget { --w-accent: #4d8dff !important; }
 body.ee-link .launch-tile { --lt: #4d8dff !important; }
 /* 期限切れの文字は要対応（赤） */
 body.ee-link .cell-sub.warn-text { color: var(--err) !important; }
+
+/* ===== 数値合わせ（桜ミツ側）：角丸は 22px（パネル）と 14px（小さい部品）、パネルの余白は 上16・左右20、
+   見出しは 1＝22px／2＝16px／3＝14px（太さ700）、文章の行間 1.7、ボタンは 36・48・52px ===== */
+body.ee-link .launch-tile, body.ee-link .widget, body.ee-link .modal, body.ee-link .wz-card { border-radius: 22px !important; }
+body.ee-link :is(kbd, code, .w-next, .asset-box, .adj-row, .check, .check-ok, .toast, .sum-total, .folder-stats > div, .wz-ic, .lt-ic, .side-user, .w-item, .picker-pop, .input, input, select, textarea, .seg, .wz-opt, .wz-mode, .wz-steps li, .wz-sum > div, .wz-done, .quick-wz, .launch-tile .lt-ic) { border-radius: 14px !important; }
+body.ee-link :is(.panel.kpi, .panel.notice-warn, .quick-wz) { padding: 16px 20px !important; }
+body.ee-link .launch-tile { padding: 16px 20px !important; }
+body.ee-link .wz-card { padding: 16px 20px !important; }
+body.ee-link .topbar h1 { font-size: 22px; font-weight: 700; }
+body.ee-link .wz-q { font-size: 22px; font-weight: 700; }
+body.ee-link h2, body.ee-link .panel-h h2 { font-size: 16px !important; font-weight: 700 !important; }
+body.ee-link h3, body.ee-link .panel-h h3 { font-size: 14px !important; font-weight: 700 !important; }
+body.ee-link :is(p, .sub, .hint, .wz-help) { line-height: 1.7; }
+body.ee-link .heat-scale i { border-radius: 14px !important; }
+body.ee-link .heat-sum .hs-row i { border-radius: 14px !important; }

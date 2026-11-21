@@ -72,7 +72,7 @@
           '<div class="panel-b"><div id="bars"></div></div></section>' +
       '</div>' +
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>工事別の粗利</h2><span class="sub">受注した見積で計算（見積上の粗利。実際の原価は第5期の「実績原価」で追加）</span></div>' +
-        '<div class="panel-b" style="padding-top:6px">' + (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th>工事</th><th>段階</th><th class="r">受注額（税込）</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead><tbody>' +
+        '<div class="panel-b">' + (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th>工事</th><th>段階</th><th class="r">受注額（税込）</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead><tbody>' +
           list.map(function (x) {
             var low = x.rate != null && x.rate < minM;
             return '<tr class="clickable" data-href="#/site/' + x.p.id + '"><td>' + esc(x.p.name) + '<span class="cell-sub">受注 ' + U.jdate(x.p.orderedOn) + '</span></td>' +

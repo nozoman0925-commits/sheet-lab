@@ -173,3 +173,19 @@ body.sl-sun .pg-bar button.on { background: #1F5BC6; color: #fff; border-color: 
 .sl-card.r1 .sl-ic, .sl-card.r2 .sl-ic, .sl-card.r3 .sl-ic, .sl-card.r4 .sl-ic { color: #A9C8FF !important; }
 .sl.sun .sl-card.r1, .sl.sun .sl-card.r2, .sl.sun .sl-card.r3, .sl.sun .sl-card.r4 { --g1: #F4F7FC !important; --g2: #E3EAF5 !important; }
 .sl.sun .sl-card .sl-ic { color: #1F5BC6 !important; }
+
+/* ===== 数値合わせ（業務管理側）：桜ミツ側と同じ値にそろえる ===== */
+.panel, .case-card, .sec, .sheet-box, .sl-card, .sl-me, .sl-hud, .sl-aw, .staff-card, .launch-btn, .big4 button, .kpi, .appr, .wk, .photo, .file { border-radius: 22px !important; }
+:is(input, select, textarea, .seg, .dn, .ev, .ag-ev, .sn, .wb-b, .sn-arrow, .chk, .alert, .gs-i, .tw, .ctable, .cp-img, .fs-pick, .hl-v, .next, .lock, .log div, .pk-item, .td-item, .prow, .ccard, .wbi) { border-radius: 14px !important; }
+.fld input, .fld select, .fld textarea, input.btn, select.btn, .sl textarea, .sl input, #fq, #wq, #gs-q, textarea, select { border-radius: 14px !important; }
+.panel, .case-card, section.sec { padding: 16px 20px !important; }
+main h1, h1 { font-size: 22px !important; font-weight: 700 !important; }
+h2 { font-size: 16px !important; font-weight: 700 !important; }
+h3 { font-size: 14px !important; font-weight: 700 !important; }
+p, .sub { line-height: 1.7; }
+.sn-arrow { height: 52px !important; }
+.next-big { min-height: 52px !important; }
+.subtabs button { min-height: 48px !important; height: 48px; padding-block: 0 !important; }
+.note, .filt, details.filt { border-radius: 14px !important; }
+.case-card .author, .case-card .author * { line-height: 1.7 !important; }
+.seg button, .sl .seg button { border-radius: 14px !important; }
