@@ -19,7 +19,7 @@
   'use strict';
 
   var T = { in: 450, nameDelay: 150, move: 1000, moveDur: 620, reveal: 1150, revealDur: 420 };
-  var EASE_OUT = 'cubic-bezier(.2,.8,.2,1)', EASE_IN_OUT = 'cubic-bezier(.65,0,.35,1)';
+  var EASE_OUT = 'cubic-bezier(0.2, 0, 0, 1)', EASE_IN_OUT = EASE_OUT;   // 起動の演出も、ほかの動きと同じ曲線（時間だけは例外）
   var current = null;
 
   function rect(el) { var r = el.getBoundingClientRect(); return { x: r.left, y: r.top, w: r.width, h: r.height }; }
@@ -84,14 +84,14 @@
     // 移動：着地点があれば変形を外して着地、無ければ少し縮みながらフェードアウト
     function leave(node, from, lands) {
       if (lands) a(node, [{ transform: from }, { transform: 'none' }], { duration: T.moveDur, delay: T.move, easing: EASE_IN_OUT, fill: 'forwards' });
-      else a(node, [{ transform: from, opacity: 1 }, { transform: from + ' scale(.94)', opacity: 0 }], { duration: 420, delay: T.move, easing: 'ease-in', fill: 'forwards' });
+      else a(node, [{ transform: from, opacity: 1 }, { transform: from + ' scale(.94)', opacity: 0 }], { duration: 420, delay: T.move, easing: EASE_OUT, fill: 'forwards' });
     }
 
     if (k) {
       a(fc, [{ opacity: 0, transform: cT0 }, { opacity: 1, transform: cT }], { duration: T.in, easing: EASE_OUT });
       a(ft, [{ opacity: 0, transform: tT0 }, { opacity: 1, transform: tT }], { duration: T.in, delay: T.nameDelay, easing: EASE_OUT });
       leave(fc, cT, !!landC); leave(ft, tT, !!landT);
-      a(el.firstChild, [{ opacity: 1 }, { opacity: 0 }], { duration: T.revealDur, delay: T.reveal, easing: 'ease-out' });
+      a(el.firstChild, [{ opacity: 1 }, { opacity: 0 }], { duration: T.revealDur, delay: T.reveal, easing: EASE_OUT });
       timers.push(setTimeout(startReveal, T.reveal));
       timers.push(setTimeout(finish, T.move + T.moveDur + 20));
     } else {
