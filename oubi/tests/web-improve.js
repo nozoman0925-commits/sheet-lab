@@ -88,6 +88,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
   await p.waitForTimeout(1500);
   const did = await p.evaluate(cid => EE.S.documents.find(d => d.projectId === cid && d.patternLabel === '松').id, cid);
   await go(p, '#/edit/' + did, 2000);
+  await p.click('.ed-pane [data-pane="header"]'); await p.waitForTimeout(300);   // 比較表は「宛先・日付・条件」のタブの「この工事の見積」の横
   ok(await p.isVisible('[data-act="cmp-sheet"]'), '見積の画面に「お客様向けの比較表」（同じ工事に別案があるとき）');
   await p.click('[data-act="cmp-sheet"]'); await p.waitForTimeout(800);
   ok(await p.evaluate(() => { const t = document.querySelector('.overlay .cmp-sheet'); return !!t && /松/.test(t.textContent) && /竹/.test(t.textContent) && /お支払い総額/.test(t.textContent); }), '比較表に松・竹の案と金額が並ぶ');

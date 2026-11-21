@@ -16,6 +16,7 @@ cp(path.join(EE, 'js'), path.join(OUT, 'js'));
 ['js/auth.js', 'js/login.js', 'css/login.css'].forEach(f => fs.rmSync(path.join(OUT, f), { force: true }));
 if (!ART) { try { fs.symlinkSync(path.join(EE, 'vendor'), path.join(OUT, 'vendor')); } catch (e) {} }
 fs.copyFileSync(path.join(OB, 'link.js'), path.join(OUT, 'js', 'oubi-link.js'));
+fs.copyFileSync(path.join(OB, 'pager.js'), path.join(OUT, 'js', 'oubi-pager.js'));   // スマホ：入りきらない画面をページに分ける
 fs.copyFileSync(path.join(OB, 'mitsu-bridge.js'), path.join(OUT, 'js', 'oubi-bridge.js'));
 fs.copyFileSync(path.join(OB, 'web.css'), path.join(OUT, 'css', 'oubi-frame.css'));   // 業務管理の枠・スマホの下のボタン
 
@@ -27,7 +28,7 @@ sub('<link rel="stylesheet" href="css/control.css">', '<link rel="stylesheet" hr
 sub('<link rel="stylesheet" href="css/login.css">\n', '');
 sub('<script src="js/auth.js"></script>\n', '');
 sub('<script src="js/login.js"></script>\n', '');
-sub('<script src="js/palette.js"></script>', '<script src="js/palette.js"></script>\n<script src="js/oubi-link.js"></script>\n<script src="js/oubi-bridge.js"></script>');
+sub('<script src="js/palette.js"></script>', '<script src="js/palette.js"></script>\n<script src="js/oubi-pager.js"></script>\n<script src="js/oubi-link.js"></script>\n<script src="js/oubi-bridge.js"></script>');
 const bootA = ix.indexOf('  var started = false;'), bootB = ix.indexOf('</script>', bootA);
 ix = ix.slice(0, bootA) + `  // 桜ミツ版：ログインはない。起動の演出のあいだに業務管理と見積の記録をそろえ、演出が終わったらそのままホーム
   var started = false, ready = false, wantIntro = false;
@@ -54,7 +55,7 @@ rm(/<link rel="preconnect" href="https:\/\/[a-z0-9]+\.supabase\.co"[^>]*>\s*/);
 rm(/<link rel="preload" as="script" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase[^>]*>\s*/);
 rm(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase[^>]*><\/script>\s*/);
 rm(/<script src="config\.js"><\/script>\s*/);
-ob = ob.replace('<script src="supa.js"></script>', '<script src="embed.js"></script>\n<script src="local-db.js"></script>');
+ob = ob.replace('<script src="supa.js"></script>', '<script src="pager.js"></script>\n<script src="embed.js"></script>\n<script src="local-db.js"></script>');
 rm(/<link rel="stylesheet" href="mitsu\.css">\s*/); rm(/<link rel="stylesheet" href="mitsu-host\.css">\s*/);
 ob = ob.replace('<link rel="stylesheet" href="theme-oumitsu.css">', '<link rel="stylesheet" href="theme-oumitsu.css">\n<link rel="stylesheet" href="embed.css">');
 rm(/<script src="mitsu\.js" defer><\/script>\s*/); rm(/<script src="mitsu-bridge\.js" defer><\/script>\s*/);
@@ -62,5 +63,5 @@ rm(/<link rel="manifest"[^>]*>\s*/);
 ob = ob.replace("if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});", '');
 ['@supabase', 'src="config.js"', 'src="supa.js"', 'src="mitsu.js"', 'href="mitsu.css"', 'href="mitsu-host.css"', 'serviceWorker.register'].forEach(k => { if (ob.includes(k)) throw new Error('残っている: ' + k); });
 fs.writeFileSync(path.join(OUT, 'oubi.html'), ob);
-['sales.js', 'features.js', 'health.js', 'theme-oumitsu.css', 'local-db.js', 'embed.js', 'embed.css', 'logo-s.jpg', 'logo.jpg', 'icon-192.png', 'icon-180.png'].forEach(f => fs.copyFileSync(path.join(OB, f), path.join(OUT, f)));
+['pager.js', 'sales.js', 'features.js', 'health.js', 'theme-oumitsu.css', 'local-db.js', 'embed.js', 'embed.css', 'logo-s.jpg', 'logo.jpg', 'icon-192.png', 'icon-180.png'].forEach(f => fs.copyFileSync(path.join(OB, f), path.join(OUT, f)));
 console.log('作成:', OUT, ART ? '（Artifact 用）' : '');

@@ -226,6 +226,7 @@
       fresh.scrollTop = 0;
       document.getElementById('actions').onclick = null;
       if (current.mount) current.mount(fresh.firstChild);
+      if (EE.link && root.OUBI_PAGER) setTimeout(function () { if (fresh.isConnected) root.OUBI_PAGER(fresh.firstChild, fresh); }, 420);   // スマホ：入りきらないときはページに分ける
       if (EE.a11y) { EE.a11y.enhance(fresh); EE.a11y.enhance(document.getElementById('actions')); }
       // 画面を切り替えた後にフォーカスが行き場を失ったら、画面の見出しへ（読み上げで移動が分かる）
       if (animate !== false && (!document.activeElement || document.activeElement === document.body)) {

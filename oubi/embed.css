@@ -148,3 +148,15 @@ body[data-obtab="dash"][data-dpart="nums"] main > :not(.grp):not(.cols2) { displ
 body[data-obtab="dash"][data-dpart="nums"] main > .grp { margin: 0 !important; }
 body[data-obtab="dash"][data-dpart="nums"] main > .cols2 { grid-column: 1 / -1; min-height: 0; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 body[data-obtab="dash"][data-dpart="nums"] main > .cols2 > * { min-height: 0; overflow: auto; margin: 0 !important; }
+
+/* スマホ：入りきらない画面のページ分け（pager.js） */
+.pg-off { display: none !important; }
+.pg-own { overflow: auto !important; flex: none !important; }
+.pg-bar { flex: none !important; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; padding: 2px 0 10px; margin: 0; }
+.pg-bar::-webkit-scrollbar { display: none; }
+.pg-bar button { flex: none; height: 36px; padding: 0 14px; border-radius: 999px; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+  color: #c9d3e6; border: 1px solid rgba(186, 230, 253, .16); background: rgba(12, 18, 34, .6); }
+.pg-bar button.on { color: #fff; border-color: transparent; background: linear-gradient(135deg, #2563EB, #0891B2); }
+.pg-bar button { background: #121a2e; color: #dfe6f3; }
+body.sl-sun .pg-bar button { background: #FFFFFF; color: #0B1324; border-color: #6B7FA6; }
+body.sl-sun .pg-bar button.on { background: #1F5BC6; color: #fff; border-color: transparent; }
