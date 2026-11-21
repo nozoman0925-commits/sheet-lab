@@ -46,6 +46,9 @@
     });
   }
 
+  // スマホ：画面の大きさが変わったら、ページ分けをやり直す
+  var rzT = null;
+  root.addEventListener('resize', function () { clearTimeout(rzT); rzT = setTimeout(function () { var v = document.getElementById('view'); if (root.OUBI_PAGER && v && v.firstChild && !document.body.classList.contains('ob-on')) root.OUBI_PAGER(v.firstChild, v); }, 200); });
   root.OUBI_LINK = {
     /** app.js の parse() から：#/o/<画面>/... */
     route: function (parts) {

@@ -107,7 +107,8 @@
     var html = banner + '<div class="editor" data-pane="' + pane + '">' +
       '<div class="grid ed-left" style="gap:18px">' +
         (EE.link ? '<div class="seg ed-pane" role="tablist" aria-label="見積のどこを見るか"><button type="button" role="tab" data-pane="lines" aria-selected="' + (pane === 'lines') + '" class="' + (pane === 'lines' ? 'on' : '') + '">明細（' + d.lines.length + '行）</button>' +
-          '<button type="button" role="tab" data-pane="header" aria-selected="' + (pane === 'header') + '" class="' + (pane === 'header' ? 'on' : '') + '">宛先・日付・条件</button></div>' : '') +
+          '<button type="button" role="tab" data-pane="header" aria-selected="' + (pane === 'header') + '" class="' + (pane === 'header' ? 'on' : '') + '">宛先・日付・条件</button>' +
+          '<button type="button" role="tab" data-pane="sum" aria-selected="' + (pane === 'sum') + '" class="ed-sum' + (pane === 'sum' ? ' on' : '') + '">金額・チェック</button></div>' : '') +
         /* 基本情報 */
         '<section class="panel" data-st id="sec-header"><div class="panel-h"><h2>基本情報</h2><span class="sub">宛先・日付・条件</span><div class="spacer"></div>' +
           (d.importInfo && d.importInfo.importId ? '<a href="#" class="badge blue" data-act="open-original" title="取り込み元の原本を開く">' + I.file + esc(d.importInfo.fileName || '原本') + '</a>' : '') +

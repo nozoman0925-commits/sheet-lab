@@ -38,7 +38,12 @@
     };
     window.toast.undo = null;
   });
+  // スマホ：入りきらない画面は、まとまりごとのページに分ける（pager.js）
+  var pgT = null;
+  function pageIt() { clearTimeout(pgT); pgT = setTimeout(function () { if (window.OUBI_PAGER) window.OUBI_PAGER(document.querySelector('main'), window, document.body.getAttribute('data-obtab') + ':' + (document.body.getAttribute('data-dpart') || '')); }, 120); }
+  window.addEventListener('resize', pageIt);
   window.SUPA_AFTER_RENDER = function (tab) {
+    pageIt();
     document.body.setAttribute('data-obtab', tab);   // 業務管理のホームは描かない（桜ミツのホームに替わる）
     try { if (P && P.OUBI_LINK) P.OUBI_LINK.onTab(tab, window.OUBI && window.OUBI.cur ? window.OUBI.cur() : { tab: tab }); } catch (e) {}
   };
