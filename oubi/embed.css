@@ -197,3 +197,9 @@ button:active:not(:disabled), .btn:active, .chipbtn:active, .sl-mini:active { tr
 .btn.done, button.done { border-color: rgba(95, 208, 176, .55) !important; }
 .done-t { white-space: nowrap; }
 nav button, nav .btn, .tabs button { overflow: visible !important; }
+/* ランキングの下の「営業台帳から記録を引っ越す」：パソコンでは1行に（1画面に収める） */
+@media (min-width: 1100px) {
+  .sl > section.panel:last-child { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; align-items: center; column-gap: 20px; }
+  .sl > section.panel:last-child > h2, .sl > section.panel:last-child > p { margin: 0 !important; }
+  .sl > section.panel:last-child > :is(button, label, .btn) { width: auto !important; margin: 0 !important; }
+}
