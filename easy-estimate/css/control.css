@@ -19,7 +19,7 @@
     rgba(14, 20, 34, var(--w-alpha));
   backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
   box-shadow: 0 1px 0 rgba(255,255,255,.04) inset, 0 18px 36px -24px rgba(0,0,0,.7);
-  transition: transform var(--t) cubic-bezier(0.2, 0, 0, 1), box-shadow var(--t), border-color var(--t); }
+  transition: transform var(--t) cubic-bezier(0.2, 0, 0, 1), box-shadow var(--t) var(--ease), border-color var(--t) var(--ease); }
 .widget.size-s { grid-column: span 3; }
 .widget.size-m { grid-column: span 6; }
 .widget.size-l { grid-column: span 12; }
@@ -66,7 +66,7 @@ a.w-next:hover { background: rgba(255,255,255,.07); }
 
 /* クイック操作 */
 .w-quick { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
-.w-quick a { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: rgba(255,255,255,.04); color: var(--text-2); text-decoration: none; font-size: 12px; transition: background var(--t), transform var(--t) cubic-bezier(0.2, 0, 0, 1), color var(--t); }
+.w-quick a { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 12px 4px; border-radius: 14px; background: rgba(255,255,255,.04); color: var(--text-2); text-decoration: none; font-size: 12px; transition: background var(--t) var(--ease), transform var(--t) cubic-bezier(0.2, 0, 0, 1), color var(--t) var(--ease); }
 .w-quick a .ico { width: 22px; height: 22px; color: var(--w-accent); }
 .w-quick a:hover { background: color-mix(in srgb, var(--w-accent) 16%, transparent); color: var(--text); transform: translateY(-2px); }
 
