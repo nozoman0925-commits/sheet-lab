@@ -76,7 +76,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
   }, [O, itemId, add(-10)]); await p.waitForTimeout(2500);
   await p.evaluate(([o, past]) => { const x = eval(o), c = x.cases().find(k => k.id === window.__c3); c.result = { status: 'won', wonDate: past }; c.schedule = { start: past, end: past, steps: [], prep: {}, changes: [] }; c.actual = { material: Math.round(window.__plan * 1.2) }; x.touch(c); }, [O, add(-10)]);
   await p.waitForTimeout(2500);
-  await go(p, '#/settings/items', 1800);
+  await go(p, '#/settings/actual', 1800);
   ok(/実績から原価を見直す/.test(await p.textContent('#view')) && (await p.$$('[data-act-pick]')).length >= 1, '設定の品目に「実績から原価を見直す」（完工した工事の実際の原価から）');
   await p.click('[data-act-apply]'); await p.waitForTimeout(1200);
   const after = await p.evaluate(id => EE.S.items.find(i => i.id === id), itemId);

@@ -41,6 +41,7 @@
       if (tab === 'case' && parts[1]) o.openCase(parts[1], SEC[parts[2]] || parts[2] || undefined);
       else if (tab === 'new') o.newQuick();
       else if (tab === 'sales') o.go(parts[1] ? 'sales:' + parts[1] : 'sales');
+      else if (tab === 'dash') { try { frame.contentDocument.body.setAttribute('data-dpart', parts[1] || ''); } catch (e) {} o.setTab('dash'); }   // 工事の進み・入金／要対応・数字
       else o.setTab(tab);
     });
   }

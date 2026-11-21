@@ -100,3 +100,56 @@ body.ob-loading .main::before {
 /* 見積の作り方の画面：いちばん上に「次へで進めて作る」 */
 .quick-wz { --lt: #3b82f6; display: flex; align-items: center; gap: 14px; margin-bottom: 16px; padding: 16px 18px; text-decoration: none; color: var(--text); border-color: rgba(0, 229, 255, .45) !important; }
 .quick-wz > span:nth-child(2) { display: grid; gap: 4px; } .quick-wz b { font-size: 17px; } .quick-wz small { color: var(--text-2); font-size: 14px; }
+
+/* ===== 1画面で完結（桜ミツ版・パソコン基準 1920×1080）=====
+   ページ全体は動かさない。画面の高さいっぱいに並べ、最後の一覧（表）だけ枠の中で動かす */
+body.ee-link .view { padding: 16px 28px 16px; }
+body.ee-link .view-inner { max-width: none; height: 100%; display: flex; flex-direction: column; gap: 0; min-height: 0; }
+body.ee-link .view-inner > * { flex: none; }
+body.ee-link .view-inner > .fill, body.ee-link .view-inner > .panel:last-child, body.ee-link .view-inner > section:last-child { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.ee-link .view-inner > .panel:last-child > .panel-b, body.ee-link .view-inner > .panel:last-child > .table-wrap,
+body.ee-link .view-inner > section:last-child > .panel-b, body.ee-link .fill-scroll { flex: 1 1 auto; min-height: 0; overflow: auto; }
+body.ee-link .fill-scroll .table thead th, body.ee-link .view-inner > .panel:last-child .table thead th { position: sticky; top: 0; z-index: 1; background: rgba(10, 15, 28, .96); }
+/* 最後が注意書き（p.hint）のときは、その前のまとまりを伸ばす。注意書きは小さく */
+body.ee-link .view-inner > .panel:has(+ p.hint:last-child), body.ee-link .view-inner > section:has(+ p.hint:last-child) { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.ee-link .view-inner > .panel:has(+ p.hint:last-child) > .panel-b { flex: 1 1 auto; min-height: 0; overflow: auto; }
+body.ee-link .view-inner > p.hint:last-child { margin: 8px 0 0 !important; font-size: 13px; }
+/* 見積の一覧：一覧の部分だけ動く */
+body.ee-link #docs-layout { flex: 1 1 auto; min-height: 0; overflow: auto; }
+/* 設定：中身の部分だけ動く。品目は表だけ動く（検索・ボタンは止まったまま） */
+body.ee-link #set-body { flex: 1 1 auto; min-height: 0; overflow: auto; display: flex; flex-direction: column; }
+body.ee-link #set-body > * { flex: none; }
+body.ee-link #set-body > .toolbar:first-child { position: sticky; top: 0; z-index: 2; padding: 8px 0; background: linear-gradient(rgba(8, 12, 22, .95), rgba(8, 12, 22, .85)); }
+body.ee-link #set-body > section.panel:first-child:has(#m-table) { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.ee-link #set-body > section.panel:first-child:has(#m-table) > .panel-b { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.ee-link #m-table { flex: 1 1 auto; min-height: 0; overflow: auto; }
+body.ee-link #m-table .table thead th { position: sticky; top: 0; z-index: 1; background: rgba(10, 15, 28, .96); }
+body.ee-link #set-body > p.hint { margin: 8px 0 0 !important; font-size: 13px; }
+/* ホーム：ウィジェットは画面の残りの高さに3段で収める（中身が多いものは、そのウィジェットの中だけ動く） */
+body.ee-link .widgets:not(.editing) { flex: 1 1 auto; min-height: 0; grid-auto-rows: minmax(0, 1fr); align-items: stretch; gap: 14px; }
+body.ee-link .widgets:not(.editing) .widget { min-height: 0; overflow: hidden; }
+body.ee-link .widgets:not(.editing) .w-body { min-height: 0; overflow: auto; }
+body.ee-link .widgets:not(.editing) .w-flow { height: 100%; display: flex; align-items: center; }
+body.ee-link .widgets:not(.editing) .w-flow .flow { max-height: 100%; }
+body.ee-link .launch { margin-bottom: 12px; }
+body.ee-link .launch-tile { min-height: 84px; padding: 12px 16px; }
+body.ee-link .control-bar { margin-bottom: 10px !important; }
+body.ee-link .widget[data-type="clock"] .w-time { font-size: clamp(40px, 4.2vw, 64px); }
+/* 見積の編集：左は「明細／宛先・日付・条件」のどちらか1つ、右は金額とチェック（チェックの中だけ動く） */
+body.ee-link .editor { flex: 1 1 auto; min-height: 0; align-items: stretch; grid-template-columns: minmax(0, 1fr) 360px; }
+body.ee-link .editor > .ed-left { min-height: 0; display: flex !important; flex-direction: column; gap: 12px !important; }
+body.ee-link .ed-pane { align-self: flex-start; }
+body.ee-link .ed-pane button { font-size: 14px; padding: 8px 18px; }
+body.ee-link .editor[data-pane="lines"] #sec-header, body.ee-link .editor[data-pane="header"] #sec-lines { display: none; }
+body.ee-link .editor #sec-header { flex: 1 1 auto; min-height: 0; overflow: auto; }
+body.ee-link .editor #sec-lines { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.ee-link .editor #sec-lines > .panel-b { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.ee-link .editor #sec-lines > .panel-b > * { flex: none; }
+body.ee-link .editor #sec-lines .table-scroll { flex: 1 1 auto; min-height: 120px; overflow: auto; }
+body.ee-link .editor #sec-lines .table thead th { position: sticky; top: 0; z-index: 1; background: rgba(10, 15, 28, .96); }
+body.ee-link .editor #adj-list { max-height: 30%; overflow: auto; }
+body.ee-link .editor > aside.summary { position: static; min-height: 0; display: flex !important; flex-direction: column; gap: 12px !important; overflow: hidden; }
+body.ee-link .editor > aside.summary > #sec-summary { flex: none; }
+body.ee-link .editor > aside.summary > #sec-check { flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column; }
+body.ee-link .editor > aside.summary > #sec-check > .panel-b, body.ee-link .editor > aside.summary > #sec-check > :last-child { flex: 1 1 auto; min-height: 0; overflow: auto; }
+body.ee-link .view-inner > .panel:has(+ .editor) { margin-bottom: 12px !important; }

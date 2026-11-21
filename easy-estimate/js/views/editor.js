@@ -102,8 +102,12 @@
         '<div class="hint">「' + esc(ED.recovery.title || '件名なし') + '」' + ED.recovery.lines.length + '行。前回、保存せずに閉じた内容です。</div></div>' +
         '<button class="btn ghost" data-act="discard-recovery">破棄</button><button class="btn primary" data-act="recover">' + I.refresh + '復元する</button></div></div>';
     }
-    var html = banner + '<div class="editor">' +
-      '<div class="grid" style="gap:18px">' +
+    // 桜ミツ版：左は「明細」と「宛先・日付・条件」をタブで切り替え（1画面に収める）。新しい見積は宛先から
+    if (EE.link && paneDoc !== (d.id || 'new')) { pane = d.lines.length ? 'lines' : 'header'; paneDoc = d.id || 'new'; }
+    var html = banner + '<div class="editor" data-pane="' + pane + '">' +
+      '<div class="grid ed-left" style="gap:18px">' +
+        (EE.link ? '<div class="seg ed-pane" role="tablist" aria-label="見積のどこを見るか"><button type="button" role="tab" data-pane="lines" aria-selected="' + (pane === 'lines') + '" class="' + (pane === 'lines' ? 'on' : '') + '">明細（' + d.lines.length + '行）</button>' +
+          '<button type="button" role="tab" data-pane="header" aria-selected="' + (pane === 'header') + '" class="' + (pane === 'header' ? 'on' : '') + '">宛先・日付・条件</button></div>' : '') +
         /* 基本情報 */
         '<section class="panel" data-st id="sec-header"><div class="panel-h"><h2>基本情報</h2><span class="sub">宛先・日付・条件</span><div class="spacer"></div>' +
           (d.importInfo && d.importInfo.importId ? '<a href="#" class="badge blue" data-act="open-original" title="取り込み元の原本を開く">' + I.file + esc(d.importInfo.fileName || '原本') + '</a>' : '') +
@@ -399,8 +403,16 @@
     });
   }
 
+  // 明細／宛先・日付・条件 のタブ
+  var pane = 'lines', paneDoc = null;
+  function showPane(name) {
+    pane = name; var ed = document.querySelector('.editor'); if (!ed) return;
+    ed.setAttribute('data-pane', name);
+    ed.querySelectorAll('.ed-pane [data-pane]').forEach(function (b) { var on = b.dataset.pane === name; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+  }
   function gotoTarget(t) {
     if (!t) return;
+    if (EE.link) showPane(t.field || (!t.lineId && t.area !== 'lines' && t.area !== 'summary') ? 'header' : 'lines');
     var el;
     if (t.field) el = document.querySelector('[data-f="' + t.field + '"]');
     else if (t.lineId) el = document.querySelector('[data-line="' + t.lineId + '"]');
@@ -654,6 +666,7 @@
 
   /* ================= イベント ================= */
   function mount(view) {
+    view.addEventListener('click', function (e) { var b = e.target.closest('.ed-pane [data-pane]'); if (b) showPane(b.dataset.pane); });
     renderLines();
     updateSummary(true);
     renderSiteHint();
