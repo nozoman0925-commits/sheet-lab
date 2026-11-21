@@ -61,7 +61,7 @@ body.ob-loading .main::after {
 }
 body.ob-loading .main::before {
   content: ""; position: absolute; left: 50%; top: 50%; z-index: 6; width: 16px; height: 16px; margin: -8px 0 0 -72px; border-radius: 50%;
-  border: 2px solid rgba(255, 255, 255, .3); border-top-color: #00E5FF; animation: ee-spin .7s linear infinite;
+  border: 2px solid rgba(255, 255, 255, .3); border-top-color: #00E5FF; animation: ee-spin .4s linear infinite;
 }
 
 /* ホームの一番上：よく使う4つの大きなボタン（ウィジェットと同じすりガラス。色は見出しの点だけ） */
@@ -71,7 +71,7 @@ body.ob-loading .main::before {
   color: var(--text); text-decoration: none; border: 1px solid color-mix(in srgb, var(--lt) 34%, transparent);
   background: radial-gradient(120% 90% at 0% 0%, color-mix(in srgb, var(--lt) 20%, transparent), transparent 60%), rgba(14, 20, 34, .7);
   -webkit-backdrop-filter: blur(18px) saturate(150%); backdrop-filter: blur(18px) saturate(150%);
-  transition: transform .12s ease, border-color .2s, box-shadow .2s;
+  transition: transform .15s cubic-bezier(0.2, 0, 0, 1), border-color .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .15s cubic-bezier(0.2, 0, 0, 1);
 }
 .launch-tile:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--lt) 60%, transparent); box-shadow: 0 12px 30px -16px color-mix(in srgb, var(--lt) 80%, transparent); }
 .launch-tile:focus-visible { outline: 2px solid #00E5FF; outline-offset: 2px; }
@@ -182,3 +182,62 @@ body.ee-link .view-inner > .panel:has(+ .editor) { margin-bottom: 12px !importan
   body.ee-link .editor[data-pane="sum"] > aside.summary { flex: 1 1 auto; overflow: auto; }
   body.ee-link .editor[data-pane="sum"] > .ed-left { flex: none; }
 }
+
+/* ===== 色は「意味」だけ（状態の表：下書き灰・確定青・要対応赤・完了緑・注意黄）。飾りは青・水色・紫と無彩色だけ ===== */
+/* オーロラは3色（青・水色・紫）。マゼンタとミントの帯は、紫と青に */
+body.ee-link .aurora .a3 { background: radial-gradient(closest-side, rgba(139, 92, 246, .42), rgba(139, 92, 246, .12) 50%, transparent 74%); }
+body.ee-link .aurora .a4 { background: radial-gradient(closest-side, rgba(59, 130, 246, .34), rgba(59, 130, 246, .1) 55%, transparent 76%); }
+/* ロゴの下の文字・人の丸い印・パネルの差し色・ホームのボタンは、色で分けない（アイコンと文字で分ける） */
+body.ee-link .brand-sub { color: var(--text-2) !important; }
+body.ee-link .avatar { --hue: 217 !important; }
+body.ee-link .widget { --w-accent: #4d8dff !important; }
+body.ee-link .launch-tile { --lt: #4d8dff !important; }
+/* 期限切れの文字は要対応（赤） */
+body.ee-link .cell-sub.warn-text { color: var(--err) !important; }
+
+/* ===== 数値合わせ（桜ミツ側）：角丸は 22px（パネル）と 14px（小さい部品）、パネルの余白は 上16・左右20、
+   見出しは 1＝22px／2＝16px／3＝14px（太さ700）、文章の行間 1.7、ボタンは 36・48・52px ===== */
+body.ee-link .launch-tile, body.ee-link .widget, body.ee-link .modal, body.ee-link .wz-card { border-radius: 22px !important; }
+body.ee-link :is(kbd, code, .w-next, .asset-box, .adj-row, .check, .check-ok, .toast, .sum-total, .folder-stats > div, .wz-ic, .lt-ic, .side-user, .w-item, .picker-pop, .input, input, select, textarea, .seg, .wz-opt, .wz-mode, .wz-steps li, .wz-sum > div, .wz-done, .quick-wz, .launch-tile .lt-ic) { border-radius: 14px !important; }
+body.ee-link :is(.panel.kpi, .panel.notice-warn, .quick-wz) { padding: 16px 20px !important; }
+body.ee-link .launch-tile { padding: 16px 20px !important; }
+body.ee-link .wz-card { padding: 16px 20px !important; }
+body.ee-link .topbar h1 { font-size: 22px; font-weight: 700; }
+body.ee-link .wz-q { font-size: 22px; font-weight: 700; }
+body.ee-link h2, body.ee-link .panel-h h2 { font-size: 16px !important; font-weight: 700 !important; }
+body.ee-link h3, body.ee-link .panel-h h3 { font-size: 14px !important; font-weight: 700 !important; }
+body.ee-link :is(p, .sub, .hint, .wz-help) { line-height: 1.7; }
+body.ee-link .heat-scale i { border-radius: 14px !important; }
+body.ee-link .heat-sum .hs-row i { border-radius: 14px !important; }
+
+/* ===== ホーム：主役は1つ（パソコン＝見積を作る、スマホ＝営業に出る）、残り3つは普通の大きさのボタン ===== */
+body.ee-link .launch { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px; align-items: stretch; }
+body.ee-link .launch-tile.lt-main { min-height: 84px; border-color: rgba(0, 229, 255, .45); box-shadow: 0 0 0 1px rgba(0, 229, 255, .18) inset, 0 14px 32px -20px rgba(0, 229, 255, .7); }
+body.ee-link .launch-tile.lt-main .lt-tx b { font-size: 20px; }
+body.ee-link .launch-sub { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-content: center; }
+body.ee-link .launch-btn2 { height: 52px; justify-content: flex-start; padding: 0 16px; gap: 10px; font-size: 15px; font-weight: 600; }
+body.ee-link .launch-btn2 svg { width: 20px; height: 20px; color: #8ab8ff; }
+/* パネル：はじめは6つ。1段目は数字3つ（中身の高さだけ）、2段目は残りの高さいっぱい */
+@media (min-width: 761px) {
+  body.ee-link .widgets:not(.editing) { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto minmax(0, 1fr); grid-auto-rows: minmax(0, 1fr); overflow: auto; }
+  body.ee-link .widgets:not(.editing) > .widget { grid-column: auto !important; }
+}
+@media (max-width: 760px) {
+  body.ee-link .launch { grid-template-columns: 1fr; gap: 10px; }
+  body.ee-link .launch-sub { gap: 8px; }
+  body.ee-link .launch-btn2 { flex-direction: column; justify-content: center; gap: 2px; height: auto; min-height: 52px; padding: 6px 4px; font-size: 14px; white-space: normal; text-align: center; line-height: 1.3; }
+}
+body.ee-link .launch-btn2 .lb-s { display: none; }
+@media (max-width: 760px) { body.ee-link .launch-btn2 .lb-l { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } body.ee-link .launch-btn2 .lb-s { display: inline; } }
+/* 見積を作る（次へで進む）：上の段階と下の「次へ」はいつも見える。中身だけ枠の中で動く */
+body.ee-link .wz { width: 100%; height: 100%; display: flex; flex-direction: column; min-height: 0; }
+body.ee-link .wz > .wz-steps, body.ee-link .wz > .wz-foot { flex: none; }
+body.ee-link .wz > .wz-card { flex: 1 1 auto; min-height: 0; overflow: auto; }
+body.ee-link .wz > .wz-foot { position: static; margin-top: 12px; }
+/* 知らせは下の中央（右下の「次へ」「保存」などの主役のボタンに重ならない） */
+@media (min-width: 761px) { body.ee-link .toasts { left: 50%; right: auto; transform: translateX(-50%); align-items: center; } }
+/* 並べ替え：掴んだパネルは少し浮く（0.15秒） */
+body.ee-link .widgets.editing .widget { transition: transform .15s cubic-bezier(0.2, 0, 0, 1), box-shadow .15s cubic-bezier(0.2, 0, 0, 1), opacity .15s cubic-bezier(0.2, 0, 0, 1); }
+body.ee-link .widgets.editing .widget.dragging { opacity: .9; transform: scale(1.02); box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .8), 0 0 0 1px rgba(0, 229, 255, .4); }
+/* ホーム：押せるパネル・タイルは、乗せると少し浮いて縁に淡い光、押すと沈む（コントロールセンターのタイル） */
+body.ee-link .launch-tile:active, body.ee-link .w-kpi:active, body.ee-link .w-item:active { transform: scale(.98); }

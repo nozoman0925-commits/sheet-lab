@@ -63,16 +63,16 @@
       '</div>' +
       '<div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1.7fr);margin-top:18px">' +
         '<section class="panel" data-st><div class="panel-h"><h2>入金と粗利</h2><span class="sub">受注した工事の金額から計算</span></div><div class="panel-b"><div class="rings">' +
-          EE.charts.ring(R.paid, '入金率', U.yen(R.paidAmt) + ' / ' + U.yen(R.orderedAmt), '#3987e5') +
-          EE.charts.ring(R.margin, '粗利率', 'すべての見積（税抜）', '#199e70') +
-          EE.charts.ring(R.unpaid, '未入金の割合', '請求済みのうち ' + U.yen(R.unpaidAmt), '#9085e9') +
+          EE.charts.ring(R.paid, '入金率', U.yen(R.paidAmt) + ' / ' + U.yen(R.orderedAmt), '#4a7ff0') +
+          EE.charts.ring(R.margin, '粗利率', 'すべての見積（税抜）', '#10a0a4') +
+          EE.charts.ring(R.unpaid, '未入金の割合', '請求済みのうち ' + U.yen(R.unpaidAmt), '#a070f0') +
         '</div></div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>月別の比較</h2><span class="sub">直近6か月</span><div class="spacer"></div>' +
           '<div class="seg" id="bar-sort">' + [['month', '月順'], ['amount', '金額順'], ['profit', '粗利順'], ['count', '件数順']].map(function (s) { return '<button data-v="' + s[0] + '" class="' + (sortKey === s[0] ? 'on' : '') + '">' + s[1] + '</button>'; }).join('') + '</div></div>' +
           '<div class="panel-b"><div id="bars"></div></div></section>' +
       '</div>' +
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>工事別の粗利</h2><span class="sub">受注した見積で計算（見積上の粗利。実際の原価は第5期の「実績原価」で追加）</span></div>' +
-        '<div class="panel-b" style="padding-top:6px">' + (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th>工事</th><th>段階</th><th class="r">受注額（税込）</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead><tbody>' +
+        '<div class="panel-b">' + (list.length ? '<div class="table-scroll"><table class="table"><thead><tr><th>工事</th><th>段階</th><th class="r">受注額（税込）</th><th class="r">原価</th><th class="r">粗利</th><th class="r">粗利率</th></tr></thead><tbody>' +
           list.map(function (x) {
             var low = x.rate != null && x.rate < minM;
             return '<tr class="clickable" data-href="#/site/' + x.p.id + '"><td>' + esc(x.p.name) + '<span class="cell-sub">受注 ' + U.jdate(x.p.orderedOn) + '</span></td>' +

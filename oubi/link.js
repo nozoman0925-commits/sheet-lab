@@ -210,7 +210,7 @@
   }
   EE.linkBackupBanner = function () {
     var b = backupAge(); if (!b.need) return '';
-    return '<div class="panel" data-st style="margin-bottom:14px;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-color:rgba(242,189,92,.35)">' +
+    return '<div class="panel notice-warn" data-st style="margin-bottom:14px;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-color:rgba(242,189,92,.35)">' +   // 注意（黄）＝状態の印
       '<span style="color:var(--warn)">' + U.I.bell + '</span><span style="color:var(--text-2);flex:1;min-width:200px">' + U.esc(b.text) + '。ときどき保存してください。</span>' +
       '<a class="btn sm primary" href="#/settings/data">' + U.I.download + 'バックアップする</a></div>';
   };

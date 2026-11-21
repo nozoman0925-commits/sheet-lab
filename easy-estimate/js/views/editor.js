@@ -266,7 +266,7 @@
     if (flashId) {
       (Array.isArray(flashId) ? flashId : [flashId]).forEach(function (id, k) {
         var tr = body.querySelector('[data-line="' + id + '"]');
-        if (tr) { tr.classList.add('added'); EE.fx.anim(tr, [{ opacity: 0, transform: 'translateY(-6px)' }, { opacity: 1, transform: 'none' }], { duration: 260, delay: k * 40 }); }
+        if (tr) { tr.classList.add('added'); EE.fx.anim(tr, [{ opacity: 0, transform: 'translateX(' + EE.fx.mv() * 2 + 'px)' }, { opacity: 1, transform: 'none' }], { duration: EE.fx.T.change, delay: k * 40 }); }   // 戻る・増える行は横から滑って入る
       });
     }
     document.getElementById('line-count').textContent = ED.doc.lines.length + '行';
@@ -322,7 +322,7 @@
     var set = function (k, v) {
       var el = document.querySelector('[data-k="' + k + '"]');
       if (!el) return;
-      if (first) EE.fx.countUp(el, v, el.dataset.format, 0, 620); else EE.fx.retarget(el, v);
+      if (first) EE.fx.countUp(el, v, el.dataset.format, 0, 600); else EE.fx.retarget(el, v);   // 開いたとき：カウントアップ（例外）／変えたとき：差分だけ 0.25秒でロール
     };
     set('subtotal', r.subtotal); set('total', r.total); set('costTotal', r.costTotal); set('grossProfit', r.grossProfit);
     set('margin', r.marginRate == null ? 0 : Math.round(r.marginRate * 1000) / 10);
@@ -347,7 +347,10 @@
     var mm = document.getElementById('margin-meter');
     var mr = r.marginRate == null ? 0 : Math.max(0, Math.min(1, r.marginRate / 0.5));
     mm.firstChild.style.width = (mr * 100) + '%';
-    mm.classList.toggle('low', r.marginRate != null && r.marginRate < EE.S.settings.minMargin);
+    var wasLow = mm.classList.contains('low'), nowLow = r.marginRate != null && r.marginRate < EE.S.settings.minMargin;
+    mm.classList.toggle('low', nowLow);
+    // 粗利率が下限を割った瞬間だけ、数字が1回だけ赤くパルスする（くり返さない）
+    if (!first && !wasLow && nowLow) { var me = document.querySelector('[data-k="margin"]'); if (me) EE.fx.anim(me, [{ color: '#ff7a8a', transform: 'scale(1.08)' }, { color: '#ff7a8a', transform: 'scale(1)' }, { color: '', transform: 'none' }], { duration: EE.fx.T.page, fill: 'none' }); }
 
     var CT = Object.assign({}, EE.engine.COST_TYPES, { discount: '値引き' }), b = r.breakdown, tot = Math.max(1, r.subtotal);
     document.getElementById('breakdown').innerHTML = Object.keys(CT).filter(function (k) { return b[k] || k === 'material' || k === 'labor'; }).map(function (k) {
@@ -410,6 +413,8 @@
     pane = name; var ed = document.querySelector('.editor'); if (!ed) return;
     ed.setAttribute('data-pane', name);
     ed.querySelectorAll('.ed-pane [data-pane]').forEach(function (b) { var on = b.dataset.pane === name; b.classList.toggle('on', on); b.setAttribute('aria-selected', on); });
+    var shown = name === 'lines' ? '#sec-lines' : name === 'header' ? '#sec-header' : 'aside.summary';   // 中身が 0.25秒で横に数px滑って入れ替わる
+    EE.fx.anim(ed.querySelector(shown), [{ opacity: 0, transform: 'translateX(' + EE.fx.mv() + 'px)' }, { opacity: 1, transform: 'none' }], { duration: EE.fx.T.change });
   }
   function gotoTarget(t) {
     if (!t) return;
@@ -825,10 +830,10 @@
         if (act === 'del') {
           var removed = L.splice(idx, 1)[0];
           markDirty();
-          var anim = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(12px)' }], { duration: 160, fill: 'forwards' });
-          // 動きの終わりを待ちつつ、描画が重いときも 0.22 秒後には必ず表を描き直す
+          var anim = EE.fx.anim(tr, [{ opacity: 1 }, { opacity: 0, transform: 'translateX(' + EE.fx.mv() * 2 + 'px)' }], { duration: EE.fx.T.change, fill: 'forwards' });
+          // 動きの終わりを待ちつつ、描画が重いときも 0.3 秒後には必ず表を描き直す（次の操作は待たせない）
           var doneDel = false, after = function () { if (doneDel) return; doneDel = true; renderLines(); };
-          if (anim) { anim.onfinish = after; setTimeout(after, 220); } else after();
+          if (anim) { anim.onfinish = after; setTimeout(after, 300); } else after();
           EE.fx.toast('「' + removed.name + '」を削除しました', { action: { label: '元に戻す', run: function () {
             if (!ED || ED.doc.lines !== L) return;
             L.splice(Math.min(idx, L.length), 0, removed); markDirty(); renderLines(removed.lineId);

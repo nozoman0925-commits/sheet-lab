@@ -15,7 +15,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
     const sp = vp.width < 500, tag = sp ? '（スマホ）' : '';
     const p = await openWeb(b, { viewport: vp, wait: 3500 }); watch(p);
     // ホーム
-    ok((await p.$$eval('.launch .launch-tile b', a => a.map(x => x.textContent))).join('|') === '営業に出る|工事を登録する|見積を作る|今日の予定を見る', 'ホームの一番上に大きなボタン4つ' + tag);
+    ok((await p.$eval('.launch .lt-main b', b => b.textContent)) === (sp ? '営業に出る' : '見積を作る') && (await p.$$('.launch .launch-btn2')).length === 3, 'ホームの主役は1つ（' + (sp ? 'スマホ＝営業に出る' : 'パソコン＝見積を作る') + '）、ほかの3つは普通のボタン' + tag);
     if (!sp) {
       ok((await p.$$('.nav-child')).length === 0 && (await p.$$('.nav-item')).length === 7, '左のメニューは7項目だけ（細かい項目は出さない）');
       await p.click('.nav-item[data-nav="settings"]'); await p.waitForTimeout(1500);
@@ -26,7 +26,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
       ok(await p.$eval('#sectabs', e => e.hidden), 'ホームにはタブを出さない');
     }
     // 1 工事
-    await p.click('.launch-tile.lt-est'); await p.waitForTimeout(1200);
+    await p.click('.launch .lt-est'); await p.waitForTimeout(1200);
     ok(/#\/w$/.test(p.url()) && /どの工事の見積ですか/.test(await p.textContent('#view')), '「見積を作る」→ ステップ1「どの工事の見積ですか？」' + tag);
     ok(await p.$eval('[data-wz="next"]', b => b.disabled), '選ぶまでは「次へ」を押せない');
     await p.fill('#wz-cust', '山田 太郎'); await p.fill('#wz-title', '外壁塗装');

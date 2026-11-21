@@ -149,7 +149,7 @@
         '<section class="panel" data-st><div class="panel-h"><h2>詳細</h2></div><div class="panel-b" id="flow-detail">' + detailHTML(list) + '</div></section>' +
       '</div>' +
       '<section class="panel" data-st style="margin-top:18px"><div class="panel-h"><h2>工事一覧</h2><span class="sub">' + sites.length + ' 件</span></div>' +
-        '<div class="panel-b" style="padding-top:6px">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
+        '<div class="panel-b">' + (sites.length ? '<div class="table-scroll"><table class="table site-list"><thead><tr><th>工事名</th><th>担当</th><th>状態</th><th>次の期限・次の行動</th><th class="r">金額（税込）</th></tr></thead><tbody>' +
           sites.map(function (c) {
             var p = c.project, cu = U.findCustomer(p.customerId) || {};
             var due = c.stage === 0 && c.valid ? (c.days < 0 ? U.stBadge('alert', '期限切れ') : '<span class="num">' + U.jdate(c.valid) + '</span>（あと' + c.days + '日）') : '';

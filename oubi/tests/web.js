@@ -18,7 +18,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   let p = await openWeb(b, { wait: 3500 }); watch(p);
   const nav = await p.$$eval('.nav-item', a => a.map(x => x.textContent.trim()));
   ok(nav.join('|') === 'ホーム|営業|工事|見積|予定|経営|設定', '左のメニューは7つ（同じ種類の画面を2つ並べない）');
-  ok((await p.$$eval('#view .widget', w => w.length)) >= 8 && await p.isVisible('[data-clock]'), 'ホームは桜ミツのウィジェット式のまま（時計・数字…）');
+  ok((await p.$$eval('#view .widget', w => w.length)) === 6 && (await p.$$('#view .widget[data-type="kpi"]')).length === 3, 'ホームは桜ミツのウィジェット式（はじめは6つ：数字3つ・今日のボード・今日やること・最近の見積）');
   await p.screenshot({ path: OUT + 'web-home.png' });
 
   // ---- 工事（業務管理）→ 顧客（桜ミツ）に出る ----

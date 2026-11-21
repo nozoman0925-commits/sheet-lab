@@ -77,8 +77,9 @@
     switch (role) {
       // 桜ミツ版の標準：今日のこと → 数字 → やること → 書類・流れ・お金
       // 桜ミツ版：1画面（1920×1080）に収まる3段。1段目 時計・今日・数字2つ／2段目 数字2つ・今日やること／3段目 最近の見積・工事の流れ
-      case 'link': return [w('clock', 's'), w('today', 's', { color: 'teal' }), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
-        w('kpi', 's', { metric: 'unpaid', color: 'amber' }), w('kpi', 's', { metric: 'monthOrder' }), w('todo', 'm'), w('recent', 'm'), w('flow', 'm')];
+      // 桜ミツ版：はじめに出すのは6つだけ（1段目 数字3つ／2段目 今日のボード・今日やること・最近の見積）。ほかは「並べ替え・追加」から
+      case 'link': return [w('kpi', 's', { metric: 'monthOrder' }), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'active' }),
+        w('today', 's'), w('todo', 's'), w('recent', 's')];
       case 'sales': return [w('clock', 'm'), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'waiting', color: 'violet' }), w('todo', 'm'), w('quick', 'm'), w('recent', 'l'), w('kpi', 's', { metric: 'overdue', color: 'amber' }), w('kpi', 's', { metric: 'customers', color: 'teal' }), w('usage', 'm')];
       case 'site': return [w('clock', 'm'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'today' }), w('todo', 'm'), w('quick', 'm'), w('events', 'l'), w('favorites', 'm')];
       case 'office': return [w('clock', 'm'), w('kpi', 's', { metric: 'unpaid', color: 'violet' }), w('kpi', 's', { metric: 'waiting' }), w('attention', 'm'), w('quick', 'm'), w('recent', 'l'), w('members', 'l')];
@@ -103,7 +104,8 @@
       h.active = 'main'; h.auto = false;
       // 前の標準（縦に長い並び）のままなら、1画面に収まる新しい標準へ
       var mainL = h.layouts.filter(function (l) { return l.key === 'main'; })[0];
-      if (mainL && mainL.widgets.map(function (x) { return x.type; }).join(',') === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow,bars') { mainL.widgets = preset('link'); U.commit(); }
+      var was = mainL && mainL.widgets.map(function (x) { return x.type; }).join(',');
+      if (was === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow,bars' || was === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow') { mainL.widgets = preset('link'); U.commit(); }
       return h;
     }
     if (!h) {
@@ -147,7 +149,7 @@
       case 'kpi': {
         var m = METRICS[wd.metric] || METRICS.active, v = metricValue(wd.metric);
         return '<a class="w-kpi' + (m.warn && v ? ' warn' : '') + '" href="' + m.href + '"><div class="w-kpi-label">' + I[m.icon] + esc(m.label) + '</div>' +
-          '<div class="w-kpi-value num" data-count="' + v + '" data-format="' + m.fmt + '">0</div><div class="w-kpi-foot">' + esc(m.foot) + '</div></a>';
+          '<div class="w-kpi-value num" data-count="' + v + '" data-count-key="home-' + wd.metric + '" data-format="' + m.fmt + '">0</div><div class="w-kpi-foot">' + esc(m.foot) + '</div></a>';
       }
       case 'todo': {
         var items = EE.link && EE.linkTodo ? EE.linkTodo() : [];   // 桜ミツ版：期限が近い見積・入金待ち・バックアップ
@@ -173,7 +175,7 @@
       case 'bars': return '<div class="w-bars" data-bars></div>';
       case 'rings': {
         var R = EE.insight.rates();
-        return '<div class="rings w-rings">' + EE.charts.ring(R.paid, '入金率', U.yen(R.paidAmt), '#3987e5') + EE.charts.ring(R.margin, '粗利率', '見積（税抜）', '#199e70') + EE.charts.ring(R.unpaid, '未入金', U.yen(R.unpaidAmt), '#9085e9') + '</div>';
+        return '<div class="rings w-rings">' + EE.charts.ring(R.paid, '入金率', U.yen(R.paidAmt), '#4a7ff0') + EE.charts.ring(R.margin, '粗利率', '見積（税抜）', '#10a0a4') + EE.charts.ring(R.unpaid, '未入金', U.yen(R.unpaidAmt), '#a070f0') + '</div>';
       }
       case 'recent': {
         var docs = S.documents.slice().sort(function (a, b) { return (b.updatedAt || '').localeCompare(a.updatedAt || ''); }).slice(0, wd.size === 'l' ? 6 : 4);
@@ -229,15 +231,19 @@
   /* 桜ミツ版：ホームの一番上に、よく使う4つの大きなボタン（迷ったらここから） */
   function launchHTML() {
     var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : { work: 0, sv: 0, rv: 0 }, nToday = (c.work || 0) + (c.sv || 0) + (c.rv || 0);
-    var L = [
-      ['sales', '#/o/sales', I.walk, '営業に出る', '今日の再訪問 ' + (c.rv || 0) + ' 件'],
-      ['site', '#/o/new', I.site, '工事を登録する', '名前だけでOK'],
-      ['est', '#/w', I.calc, '見積を作る', '「次へ」で進むだけ'],
-      ['cal', '#/o/cal', I.calendar, '今日の予定を見る', '今日 ' + nToday + ' 件']
-    ];
-    return '<nav class="launch" aria-label="よく使うこと" data-st>' + L.map(function (x) {
-      return '<a class="launch-tile lt-' + x[0] + '" href="' + x[1] + '"><span class="lt-ic">' + x[2] + '</span><span class="lt-tx"><b>' + x[3] + '</b><small>' + esc(x[4]) + '</small></span><span class="lt-go" aria-hidden="true">›</span></a>';
-    }).join('') + '</nav>';
+    var A = {
+      sales: ['sales', '#/o/sales', I.walk, '営業に出る', '今日の再訪問 ' + (c.rv || 0) + ' 件', '営業'],
+      site: ['site', '#/o/new', I.site, '工事を登録する', '名前だけでOK', '工事を登録'],
+      est: ['est', '#/w', I.calc, '見積を作る', '「次へ」で進むだけ', '見積を作る'],
+      cal: ['cal', '#/o/cal', I.calendar, '今日の予定を見る', '今日 ' + nToday + ' 件', '今日の予定']
+    };
+    // 主役は1つ：パソコンは「見積を作る」、スマホは「営業に出る」。残りの3つは普通の大きさのボタン
+    var phone = root.innerWidth <= 760, main = phone ? 'sales' : 'est';
+    var rest = ['est', 'sales', 'site', 'cal'].filter(function (k) { return k !== main; });
+    var m = A[main];
+    return '<nav class="launch" aria-label="よく使うこと" data-st>' +
+      '<a class="launch-tile lt-main lt-' + m[0] + '" href="' + m[1] + '"><span class="lt-ic">' + m[2] + '</span><span class="lt-tx"><b>' + m[3] + '</b><small>' + esc(m[4]) + '</small></span><span class="lt-go" aria-hidden="true">›</span></a>' +
+      '<div class="launch-sub">' + rest.map(function (k) { var x = A[k]; return '<a class="btn launch-btn2 lt-' + x[0] + '" href="' + x[1] + '" title="' + esc(x[4]) + '">' + x[2] + '<span class="lb-l">' + x[3] + '</span><span class="lb-s" aria-hidden="true">' + x[5] + '</span></a>'; }).join('') + '</div></nav>';
   }
 
   function setupHTML() {
@@ -271,6 +277,18 @@
   function save() { U.commit(); }
   function find(id) { var L = layout(); for (var i = 0; i < L.widgets.length; i++) if (L.widgets[i].id === id) return { L: L, i: i, w: L.widgets[i] }; return null; }
   function rerender() { EE.app.rerender(); }
+  function flip(movedId) {
+    var before = {};
+    document.querySelectorAll('[data-wid]').forEach(function (el) { before[el.dataset.wid] = el.getBoundingClientRect(); });
+    rerender();
+    document.querySelectorAll('[data-wid]').forEach(function (el) {
+      var b = before[el.dataset.wid]; if (!b) return; var a = el.getBoundingClientRect(), dx = b.left - a.left, dy = b.top - a.top;
+      if (!dx && !dy) return;
+      EE.fx.anim(el, el.dataset.wid === movedId
+        ? [{ transform: 'translate(' + dx + 'px,' + dy + 'px) scale(1.02)' }, { transform: 'scale(1.02)', offset: .8 }, { transform: 'none' }]   // 動かしたパネルは浮いたまま運ばれ、最後にカチッと収まる
+        : [{ transform: 'translate(' + dx + 'px,' + dy + 'px)' }, { transform: 'none' }], { duration: EE.fx.T.change, fill: 'none' });
+    });
+  }
 
   function library() {
     var cats = {};
@@ -384,7 +402,7 @@
           case 'opts': options(f.w.id); return;
           case 'del': f.L.widgets.splice(f.i, 1); EE.fx.toast('削除しました', { action: { label: '元に戻す', run: function () { f.L.widgets.splice(f.i, 0, f.w); save(); rerender(); } } }); break;
         }
-        save(); rerender();
+        save(); if (b.dataset.w === 'left' || b.dataset.w === 'right') flip(f.w.id); else rerender();
         var again = document.querySelector('[data-wid="' + f.w.id + '"] [data-w="' + b.dataset.w + '"]' + (b.dataset.v ? '[data-v="' + b.dataset.v + '"]' : '')); if (again && !again.disabled) again.focus();
         return;
       }
@@ -404,7 +422,7 @@
         e.preventDefault(); var t = e.target.closest('[data-wid]'); if (!dragId || !t || t.dataset.wid === dragId) return;
         var L = layout(), from = find(dragId), to = find(t.dataset.wid);
         var item = L.widgets.splice(from.i, 1)[0]; var ti = L.widgets.indexOf(to.w); L.widgets.splice(ti, 0, item);
-        dragId = null; save(); rerender();
+        var moved = dragId; dragId = null; save(); flip(moved);
       });
     }
   }
