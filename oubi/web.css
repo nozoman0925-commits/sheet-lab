@@ -209,3 +209,30 @@ body.ee-link h3, body.ee-link .panel-h h3 { font-size: 14px !important; font-wei
 body.ee-link :is(p, .sub, .hint, .wz-help) { line-height: 1.7; }
 body.ee-link .heat-scale i { border-radius: 14px !important; }
 body.ee-link .heat-sum .hs-row i { border-radius: 14px !important; }
+
+/* ===== ホーム：主役は1つ（パソコン＝見積を作る、スマホ＝営業に出る）、残り3つは普通の大きさのボタン ===== */
+body.ee-link .launch { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px; align-items: stretch; }
+body.ee-link .launch-tile.lt-main { min-height: 84px; border-color: rgba(0, 229, 255, .45); box-shadow: 0 0 0 1px rgba(0, 229, 255, .18) inset, 0 14px 32px -20px rgba(0, 229, 255, .7); }
+body.ee-link .launch-tile.lt-main .lt-tx b { font-size: 20px; }
+body.ee-link .launch-sub { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-content: center; }
+body.ee-link .launch-btn2 { height: 52px; justify-content: flex-start; padding: 0 16px; gap: 10px; font-size: 15px; font-weight: 600; }
+body.ee-link .launch-btn2 svg { width: 20px; height: 20px; color: #8ab8ff; }
+/* パネル：はじめは6つ。1段目は数字3つ（中身の高さだけ）、2段目は残りの高さいっぱい */
+@media (min-width: 761px) {
+  body.ee-link .widgets:not(.editing) { grid-template-columns: repeat(3, minmax(0, 1fr)); grid-template-rows: auto minmax(0, 1fr); grid-auto-rows: minmax(0, 1fr); overflow: auto; }
+  body.ee-link .widgets:not(.editing) > .widget { grid-column: auto !important; }
+}
+@media (max-width: 760px) {
+  body.ee-link .launch { grid-template-columns: 1fr; gap: 10px; }
+  body.ee-link .launch-sub { gap: 8px; }
+  body.ee-link .launch-btn2 { flex-direction: column; justify-content: center; gap: 2px; height: auto; min-height: 52px; padding: 6px 4px; font-size: 14px; white-space: normal; text-align: center; line-height: 1.3; }
+}
+body.ee-link .launch-btn2 .lb-s { display: none; }
+@media (max-width: 760px) { body.ee-link .launch-btn2 .lb-l { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } body.ee-link .launch-btn2 .lb-s { display: inline; } }
+/* 見積を作る（次へで進む）：上の段階と下の「次へ」はいつも見える。中身だけ枠の中で動く */
+body.ee-link .wz { width: 100%; height: 100%; display: flex; flex-direction: column; min-height: 0; }
+body.ee-link .wz > .wz-steps, body.ee-link .wz > .wz-foot { flex: none; }
+body.ee-link .wz > .wz-card { flex: 1 1 auto; min-height: 0; overflow: auto; }
+body.ee-link .wz > .wz-foot { position: static; margin-top: 12px; }
+/* 知らせは下の中央（右下の「次へ」「保存」などの主役のボタンに重ならない） */
+@media (min-width: 761px) { body.ee-link .toasts { left: 50%; right: auto; transform: translateX(-50%); align-items: center; } }

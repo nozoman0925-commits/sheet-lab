@@ -25,7 +25,7 @@
       '<button class="btn primary wz-next" type="button" data-wz="next"' + (nextOk ? '' : ' disabled') + '>' + (nextLabel || '次へ') + ' ›</button></div>';
   }
   function page(n, q, body, nextOk, nextLabel) {
-    return '<div class="wz" data-step="' + n + '">' + stepper(n) + '<section class="panel wz-card" data-st><h1 class="wz-q">' + q + '</h1>' + body + '</section>' + foot(n, nextOk, nextLabel) + '</div>';
+    return '<div class="wz" data-nopager data-step="' + n + '">' + stepper(n) + '<section class="panel wz-card" data-st><h1 class="wz-q">' + q + '</h1>' + body + '</section>' + foot(n, nextOk, nextLabel) + '</div>';
   }
 
   /* ---------- 1 どの工事？ ---------- */
@@ -91,7 +91,7 @@
       '<p class="wz-help">見積は下書きとして保存しました。お客様に出すときは、送る前のチェックをしてからPDFにします。</p>' +
       '<div class="wz-actions"><button type="button" class="btn primary" data-wz="pdf">' + I.pdf + '送る前のチェックをしてPDFを出す</button>' +
       '<a class="btn" href="#/edit/' + d.id + '">' + I.edit + 'くわしく編集する</a><a class="btn ghost" href="#/docs">見積の一覧を見る</a><button type="button" class="btn ghost" data-wz="again">' + I.plus + 'もう1つ作る</button></div>';
-    return '<div class="wz" data-step="4">' + stepper(4) + '<section class="panel wz-card" data-st><h1 class="wz-q">できあがりました</h1>' + body + '</section>' +
+    return '<div class="wz" data-nopager data-step="4">' + stepper(4) + '<section class="panel wz-card" data-st><h1 class="wz-q">できあがりました</h1>' + body + '</section>' +
       '<div class="wz-foot"><a class="btn" href="#/w/3">‹ 前へ戻る</a></div></div>';
   }
 

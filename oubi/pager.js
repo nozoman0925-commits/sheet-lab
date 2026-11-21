@@ -39,6 +39,7 @@
     var prev = el.querySelectorAll('.pg-on'); [].forEach.call(prev, clear); clear(el);
     if (root.innerWidth > PHONE) return;
     var box = target(el);
+    if (box.hasAttribute('data-nopager') || box.querySelector(':scope > [data-nopager]')) return;   // 自分で1画面に収める画面（見積を作る など）
     var H = scroller === root ? root.innerHeight : scroller.clientHeight;
     var cs = scroller === root ? null : getComputedStyle(scroller);
     var pad = cs ? parseFloat(cs.paddingTop) + parseFloat(cs.paddingBottom) : 0;

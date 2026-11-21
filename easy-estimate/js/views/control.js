@@ -77,8 +77,9 @@
     switch (role) {
       // 桜ミツ版の標準：今日のこと → 数字 → やること → 書類・流れ・お金
       // 桜ミツ版：1画面（1920×1080）に収まる3段。1段目 時計・今日・数字2つ／2段目 数字2つ・今日やること／3段目 最近の見積・工事の流れ
-      case 'link': return [w('clock', 's'), w('today', 's', { color: 'teal' }), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'drafts', color: 'violet' }),
-        w('kpi', 's', { metric: 'unpaid', color: 'amber' }), w('kpi', 's', { metric: 'monthOrder' }), w('todo', 'm'), w('recent', 'm'), w('flow', 'm')];
+      // 桜ミツ版：はじめに出すのは6つだけ（1段目 数字3つ／2段目 今日のボード・今日やること・最近の見積）。ほかは「並べ替え・追加」から
+      case 'link': return [w('kpi', 's', { metric: 'monthOrder' }), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'active' }),
+        w('today', 's'), w('todo', 's'), w('recent', 's')];
       case 'sales': return [w('clock', 'm'), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'waiting', color: 'violet' }), w('todo', 'm'), w('quick', 'm'), w('recent', 'l'), w('kpi', 's', { metric: 'overdue', color: 'amber' }), w('kpi', 's', { metric: 'customers', color: 'teal' }), w('usage', 'm')];
       case 'site': return [w('clock', 'm'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'today' }), w('todo', 'm'), w('quick', 'm'), w('events', 'l'), w('favorites', 'm')];
       case 'office': return [w('clock', 'm'), w('kpi', 's', { metric: 'unpaid', color: 'violet' }), w('kpi', 's', { metric: 'waiting' }), w('attention', 'm'), w('quick', 'm'), w('recent', 'l'), w('members', 'l')];
@@ -103,7 +104,8 @@
       h.active = 'main'; h.auto = false;
       // 前の標準（縦に長い並び）のままなら、1画面に収まる新しい標準へ
       var mainL = h.layouts.filter(function (l) { return l.key === 'main'; })[0];
-      if (mainL && mainL.widgets.map(function (x) { return x.type; }).join(',') === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow,bars') { mainL.widgets = preset('link'); U.commit(); }
+      var was = mainL && mainL.widgets.map(function (x) { return x.type; }).join(',');
+      if (was === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow,bars' || was === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow') { mainL.widgets = preset('link'); U.commit(); }
       return h;
     }
     if (!h) {
@@ -229,15 +231,19 @@
   /* 桜ミツ版：ホームの一番上に、よく使う4つの大きなボタン（迷ったらここから） */
   function launchHTML() {
     var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : { work: 0, sv: 0, rv: 0 }, nToday = (c.work || 0) + (c.sv || 0) + (c.rv || 0);
-    var L = [
-      ['sales', '#/o/sales', I.walk, '営業に出る', '今日の再訪問 ' + (c.rv || 0) + ' 件'],
-      ['site', '#/o/new', I.site, '工事を登録する', '名前だけでOK'],
-      ['est', '#/w', I.calc, '見積を作る', '「次へ」で進むだけ'],
-      ['cal', '#/o/cal', I.calendar, '今日の予定を見る', '今日 ' + nToday + ' 件']
-    ];
-    return '<nav class="launch" aria-label="よく使うこと" data-st>' + L.map(function (x) {
-      return '<a class="launch-tile lt-' + x[0] + '" href="' + x[1] + '"><span class="lt-ic">' + x[2] + '</span><span class="lt-tx"><b>' + x[3] + '</b><small>' + esc(x[4]) + '</small></span><span class="lt-go" aria-hidden="true">›</span></a>';
-    }).join('') + '</nav>';
+    var A = {
+      sales: ['sales', '#/o/sales', I.walk, '営業に出る', '今日の再訪問 ' + (c.rv || 0) + ' 件', '営業'],
+      site: ['site', '#/o/new', I.site, '工事を登録する', '名前だけでOK', '工事を登録'],
+      est: ['est', '#/w', I.calc, '見積を作る', '「次へ」で進むだけ', '見積を作る'],
+      cal: ['cal', '#/o/cal', I.calendar, '今日の予定を見る', '今日 ' + nToday + ' 件', '今日の予定']
+    };
+    // 主役は1つ：パソコンは「見積を作る」、スマホは「営業に出る」。残りの3つは普通の大きさのボタン
+    var phone = root.innerWidth <= 760, main = phone ? 'sales' : 'est';
+    var rest = ['est', 'sales', 'site', 'cal'].filter(function (k) { return k !== main; });
+    var m = A[main];
+    return '<nav class="launch" aria-label="よく使うこと" data-st>' +
+      '<a class="launch-tile lt-main lt-' + m[0] + '" href="' + m[1] + '"><span class="lt-ic">' + m[2] + '</span><span class="lt-tx"><b>' + m[3] + '</b><small>' + esc(m[4]) + '</small></span><span class="lt-go" aria-hidden="true">›</span></a>' +
+      '<div class="launch-sub">' + rest.map(function (k) { var x = A[k]; return '<a class="btn launch-btn2 lt-' + x[0] + '" href="' + x[1] + '" title="' + esc(x[4]) + '">' + x[2] + '<span class="lb-l">' + x[3] + '</span><span class="lb-s" aria-hidden="true">' + x[5] + '</span></a>'; }).join('') + '</div></nav>';
   }
 
   function setupHTML() {
