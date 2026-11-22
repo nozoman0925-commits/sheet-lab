@@ -1,6 +1,6 @@
 /*
  * 桜ミツ版：業務管理の画面を、桜ミツの中の枠（iframe）として動かすための受け渡し
- *   ・見出しの帯・下のメニューは桜ミツのものを使う（業務管理の側は隠す。営業の画面の下のボタンだけ残す）
+ *   ・見出しの帯・下のメニューは桜ミツのものを使う（業務管理の側は隠す）
  *   ・見積（桜ミツ）とのつなぎ（OUBI_HOST）は、親の桜ミツの画面にあるものを使う
  *   ・画面が変わったら、親に知らせて左のメニューと見出しを合わせる
  */
@@ -9,7 +9,6 @@
   var P = window.parent !== window ? window.parent : null;
   window.OUBI_EMBED = true;
   document.documentElement.setAttribute('data-theme', 'dark');   // 桜ミツは暗い画面だけ
-  // 営業の画面は、昼（6〜18時）は外で見やすい明るい画面に自動で切り替わる（「暗い画面に」を押せばその端末では暗いまま）
   function H() { return (P && P.OUBI_HOST) || null; }
   window.OUBI_HOST = {
     start: function () {}, mountHome: function () {},
@@ -59,7 +58,7 @@
   function pageIt() { clearTimeout(pgT); pgT = setTimeout(function () { if (window.OUBI_PAGER) window.OUBI_PAGER(document.querySelector('main'), window, document.body.getAttribute('data-obtab') + ':' + (document.body.getAttribute('data-dpart') || '')); }, 120); }
   window.addEventListener('resize', pageIt);
   // ===== 動き（桜ミツと同じ文法：0.15／0.25／0.4秒、曲線1つ。状態が変わったものだけ動かす） =====
-  var M = { tab: null, bars: {}, nums: {}, lv: null, pipe: {}, msDone: {} };
+  var M = { tab: null, pipe: {} };
   function FX() { return P && P.EE && P.EE.fx; }
   function go(el, frames, ms) { var fx = FX(); if (!fx || fx.reduce || !el || !el.animate) return; el.animate(frames, { duration: ms, easing: fx.EASE }); }
   function motionAfter(tab) {
@@ -69,24 +68,6 @@
     // （左から入る：右へ動かすと、動いている 0.25秒だけ画面の幅をこえて横にはみ出すため）
     if (M.tab && M.tab !== tab) go(document.querySelector('main'), [{ opacity: 0, transform: 'translateX(-' + mv + 'px)' }, { opacity: 1, transform: 'none' }], T.change);
     M.tab = tab;
-    // 営業：目標のバーは 0.25秒で伸びる。届いたときだけ小さく弾む。数字は増えたときだけ弾む（0.15秒）、レベルアップだけ 0.4秒
-    document.querySelectorAll('.sl-bar i, .sl-mb i').forEach(function (i, k) {
-      var w = i.style.width, prev = M.bars[k];
-      if (prev != null && prev !== w) go(i, [{ width: prev }, { width: w }], T.change);
-      M.bars[k] = w;
-    });
-    document.querySelectorAll('.sl-m').forEach(function (m, k) { var d = m.classList.contains('done'); if (d && M.msDone[k] === false) go(m, [{ transform: 'scale(1)' }, { transform: 'scale(1.06)' }, { transform: 'none' }], T.react); M.msDone[k] = d; });
-    document.querySelectorAll('.sl-hud .num, .sl-mes b').forEach(function (b, k) {
-      var v = Number((b.textContent || '').replace(/[^\d.-]/g, '')), prev = M.nums[k];
-      if (prev != null && v > prev) go(b, [{ transform: 'scale(1.18)' }, { transform: 'none' }], T.react);
-      M.nums[k] = v;
-    });
-    var lv = document.querySelector('.sl-lv');
-    if (lv) { var L = lv.textContent; if (M.lv && M.lv !== L) go(lv.closest('.sl-hud-l') || lv, [{ transform: 'scale(1.3)' }, { transform: 'none' }], T.page); M.lv = L; }
-    // 営業：記録できたら、結果のボタンの並びが次の家へ 0.25秒で滑って入れ替わる
-    var nd = document.querySelector('.sl-hud-r .num'), cnt = nd ? Number(nd.textContent) : null;
-    if (cnt != null && M.cnt != null && cnt > M.cnt) go(document.querySelector('.sl-cards'), [{ opacity: 0, transform: 'translateX(-' + mv * 2 + 'px)' }, { opacity: 1, transform: 'none' }], T.change);
-    M.cnt = cnt;
     // 工事の段階が進んだとき：新しく点いた段階の線が 0.4秒で伸びる（戻ったときは逆向き）
     var cur = window.OUBI && window.OUBI.cur ? window.OUBI.cur() : {}, spans = document.querySelectorAll('.stepnav .pipe span');
     if (cur.caseId && spans.length) {

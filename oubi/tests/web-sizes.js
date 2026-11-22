@@ -1,6 +1,6 @@
 // ボタンの大きさ（高さ・角・左右の余白）の種類を数える（node oubi/tests/web-sizes.js）
 const { chromium } = require('playwright'); const openWeb = require('./_web');
-const R=['#/home','#/o/sales','#/o/list','#/clients','#/sites','#/docs','#/new','#/o/cal','#/o/wb','#/finance','#/settings/items','#/settings/data','#/o/settings'];
+const R=['#/home','#/o/list','#/clients','#/sites','#/docs','#/new','#/o/cal','#/o/wb','#/finance','#/settings/items','#/settings/data','#/o/settings'];
 function scan(){const m={};document.querySelectorAll('button,a.btn,.btn').forEach(e=>{const r=e.getBoundingClientRect();if(!r.width||!r.height)return;const cs=getComputedStyle(e);if(cs.display==='none'||cs.visibility==='hidden')return;if(e.closest('nav,.nav,.mnav,.tabs,.seg,.chips,.cal,.mcal,.pal-list,.subtabs,[role=tablist]'))return;const k='h'+Math.round(r.height)+' r'+cs.borderTopLeftRadius+' p'+cs.paddingLeft;const c=(e.className||'').toString().split(' ').slice(0,2).join('.');(m[k]=m[k]||new Set()).add(e.tagName+'.'+c);});return Object.fromEntries(Object.entries(m).map(([k,v])=>[k,[...v].slice(0,4)]));}
 (async()=>{const b=await chromium.launch();const p=await openWeb(b,{wait:3500});const all={};
 for(const r of R){await p.evaluate(h=>location.hash=h,r);await p.waitForTimeout(1500);const inF=await p.evaluate(()=>document.body.classList.contains('ob-on'));const fr=p.frames().find(f=>/oubi\.html/.test(f.url()));const res=await(inF?fr:p).evaluate(scan);for(const[k,v]of Object.entries(res)){const key=(inF?'F ':'P ')+k;all[key]=all[key]||new Set();v.forEach(x=>all[key].add(x+'@'+r));}}

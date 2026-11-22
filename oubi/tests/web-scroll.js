@@ -5,7 +5,7 @@
  */
 const { chromium } = require('playwright'); const openWeb = require('./_web');
 const SIZES = (process.argv.slice(2).length ? process.argv.slice(2) : ['1920x1080', '1366x768']).map(s => { const [w, h] = s.split('x').map(Number); return { width: w, height: h }; });
-const ROUTES = ['#/home', '#/o/sales', '#/o/sales/rv', '#/o/sales/rank', '#/o/list', '#/o/case/C', '#/sites', '#/clients', '#/docs', '#/new', '#/w', '#/edit/D',
+const ROUTES = ['#/home', '#/o/list', '#/o/case/C', '#/sites', '#/clients', '#/docs', '#/new', '#/w', '#/edit/D',
   '#/o/cal', '#/o/wb', '#/o/board', '#/finance', '#/o/dash', '#/o/dash/nums', '#/analysis',
   '#/settings/items', '#/settings/actual', '#/settings/packages', '#/settings/formulas', '#/settings/snippets', '#/settings/company', '#/settings/rules', '#/o/settings', '#/o/staff', '#/settings/data'];
 module.exports = { ROUTES };

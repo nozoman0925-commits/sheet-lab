@@ -1,5 +1,5 @@
 /*
- * 桜ミツ版：桜ミツの中に業務管理（営業・工事・カレンダー・ホワイトボード）を入れる
+ * 桜ミツ版：桜ミツの中に業務管理（工事・カレンダー・ホワイトボード）を入れる（営業の機能は 2026-11-22 になくした）
  *   桜ミツの画面の構成（左のメニュー・上の帯・ウィジェットのホーム）はそのまま。
  *   業務管理の画面は oubi.html を枠（iframe）で読み込み、#/o/<画面> のときだけ見せる。
  *   記録はこの端末の中だけ（oubi.html の local-db.js）。見積とのつなぎは mitsu-bridge.js（link モード）。
@@ -16,9 +16,9 @@
 
   // 業務管理の画面ごとの見出し・メニューの位置
   var PAGES = {
-    sales: ['営業', '訪問の記録・再訪問・ランキング', 'sales'], list: ['工事の一覧', '9工程・進み具合', 'sites'], case: ['工事', '問い合わせから入金・支払いまで', 'sites'],
+    list: ['工事の一覧', '9工程・進み具合', 'sites'], case: ['工事', '問い合わせから入金・支払いまで', 'sites'],
     new: ['新しい工事', '問い合わせを登録', 'sites'], quick: ['新しい工事', '問い合わせを登録', 'sites'], docs: ['工事の書類', '見積書・契約書・請求書', 'sites'],
-    cal: ['カレンダー', '工事・現地調査・再訪問・予定', 'schedule'], wb: ['あしたの予定', 'ホワイトボード', 'schedule'], board: ['タイムライン', '社内の投稿', 'schedule'],
+    cal: ['カレンダー', '工事・現地調査・予定', 'schedule'], wb: ['あしたの予定', 'ホワイトボード', 'schedule'], board: ['タイムライン', '社内の投稿', 'schedule'],
     dash: ['工事の進み・入金', '進行中・要対応・入金待ち', 'finance'], person: ['担当者の数字', '', 'finance'],
     settings: ['目標の粗利率', '工事の利益の判定に使う', 'settings'], staff: ['社員', '名前・電話・写真', 'settings'], profile: ['社員', 'プロフィール', 'settings'],
     setup: ['社員', '登録', 'settings'], help: ['使い方', 'よくある質問', 'settings']
@@ -32,7 +32,7 @@
     if ((tries || 0) > 150) { U && EE.fx.toast('業務管理の画面を読み込めませんでした。再読み込みしてください', { warn: true, ms: 5000 }); return; }
     setTimeout(function () { whenFrame(fn, (tries || 0) + 1); }, 100);
   }
-  var lastSent = '', goAt = 0, arrived = false, rvT = null, ldT = null;
+  var lastSent = '', goAt = 0, arrived = false, ldT = null;
   function loaded() { clearTimeout(ldT); document.body.classList.remove('ob-loading'); }   // 0.3秒をこえて画面が出ないときだけ「読み込んでいます」   // arrived：指定した画面が一度描かれたか
   function go(parts) {
     var tab = parts[0] || 'list'; goAt = Date.now();
@@ -40,7 +40,6 @@
       lastSent = tab; goAt = Date.now();
       if (tab === 'case' && parts[1]) o.openCase(parts[1], SEC[parts[2]] || parts[2] || undefined);
       else if (tab === 'new') o.newQuick();
-      else if (tab === 'sales') o.go(parts[1] ? 'sales:' + parts[1] : 'sales');
       else if (tab === 'dash') { try { frame.contentDocument.body.setAttribute('data-dpart', parts[1] || ''); } catch (e) {} o.setTab('dash'); }   // 工事の進み・入金／要対応・数字
       else o.setTab(tab);
     });
@@ -52,6 +51,8 @@
   root.OUBI_LINK = {
     /** app.js の parse() から：#/o/<画面>/... */
     route: function (parts) {
+      // 営業の画面はなくした：古いリンク（#/o/sales…）はホームへ
+      if (parts[0] === 'sales') { setTimeout(function () { EE.app.replaceRoute('#/home'); }, 0); return { nav: 'home', view: function () { return EE.views.control.render(); } }; }
       goAt = Date.now(); lastSent = parts[0] || 'list'; arrived = false;
       clearTimeout(ldT); ldT = setTimeout(function () { if (!arrived && /^#\/o\//.test(location.hash)) document.body.classList.add('ob-loading'); ldT = setTimeout(loaded, 8000); }, 300);   // 切り替えを始めた時から、業務管理の「ホームを描いた」の知らせは無視する
       var pg = page(parts[0] || 'list');
@@ -83,9 +84,6 @@
         root.OUBI_HOST.start(w.OUBI);
         root.OUBI_HOST.whenReady(function () {
           cb();
-          // 期限が近い見積・入金待ちを、営業の再訪問へ（起動のときと、記録が変わったとき）
-          setTimeout(syncRevisits, 1500);
-          U.onCommit(function () { clearTimeout(rvT); rvT = setTimeout(syncRevisits, 1500); });
         });
       }
       begin();
@@ -113,9 +111,9 @@
   }
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mountFrame); else mountFrame();
 
-  /* ---------- スマホの下のボタン（全画面）：ホーム・営業・工事・見積・予定・その他 ----------
-     スマホ幅では左の列をしまい、親指で届く下にまとめる。営業の画面だけは、営業専用の下のボタン（記録・地図…）を使う */
-  var MNAV = [['home', '#/home', 'home', 'ホーム'], ['sales', '#/o/sales', 'walk', '営業'], ['sites', '#/o/list', 'site', '工事'], ['estimate', '#/docs', 'calc', '見積'], ['schedule', '#/o/cal', 'calendar', '予定']];
+  /* ---------- スマホの下のボタン（全画面）：ホーム・工事・見積・予定・その他 ----------
+     スマホ幅では左の列をしまい、親指で届く下にまとめる */
+  var MNAV = [['home', '#/home', 'home', 'ホーム'], ['sites', '#/o/list', 'site', '工事'], ['estimate', '#/docs', 'calc', '見積'], ['schedule', '#/o/cal', 'calendar', '予定']];
   function mountMnav() {
     if (document.getElementById('mnav')) return;
     document.body.classList.add('ee-link');
@@ -138,7 +136,6 @@
     function sync() {
       var act = document.querySelector('.nav-item.active'), k = act ? act.dataset.nav : 'home';
       nav.querySelectorAll('[data-mnav]').forEach(function (a) { var on = a.dataset.mnav === k || (a.dataset.mnav === 'more' && ['finance', 'settings'].indexOf(k) >= 0); a.classList.toggle('on', on); if (a.tagName === 'A') { if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); } });
-      document.body.classList.toggle('mnav-sales', /^#\/o\/sales/.test(location.hash));
     }
     var navEl = document.getElementById('nav');
     new MutationObserver(sync).observe(document.querySelector('.sidebar') || document.body, { subtree: true, attributes: true, attributeFilter: ['class'] });
@@ -159,7 +156,7 @@
   }
   function daysTo(d) { return Math.round((new Date(d + 'T00:00:00') - new Date(EE.data.today() + 'T00:00:00')) / 864e5); }
 
-  /* ---- 1) 期限が近い見積・入金待ちを「今日やること」と、営業の再訪問に ---- */
+  /* ---- 1) 期限が近い見積・入金待ちを「今日やること」に ---- */
   function dueItems() {
     var out = [], S = EE.S; if (!S) return out;
     S.projects.forEach(function (p) {
@@ -176,27 +173,6 @@
   EE.linkTodo = function () {
     return dueItems().slice(0, 6);   // バックアップの知らせは、ホームの上の1か所だけ（重ねて出さない）
   };
-  // 営業の再訪問の一覧へ（同じものは1回だけ。済んだもの・消したものは作り直さない）
-  var rvBusy = false;
-  function syncRevisits() {
-    var o = O(); if (rvBusy || !o || !o.db || o.mode() !== 'db') return;
-    rvBusy = true;
-    try {
-      var me = root.OUBI_LINK.me(), seen = JSON.parse(localStorage.getItem('oubi.autorv') || '{}'), changed = false;
-      dueItems().forEach(function (x) {
-        var key = x.kind + ':' + x.id; if (seen[key]) return;
-        var c = (o.cases() || []).filter(function (k) { return k.id === x.p.id; })[0] || {}, L = c.lead || {};
-        var day = x.kind === 'quote' ? (x.n > 3 ? EE.data.addDays(x.d.validUntil, -3) : EE.data.today()) : EE.data.today();
-        var v = { id: 'auto_' + x.kind + '_' + x.id, by: me.id, at: new Date().toISOString(), day: '', r: '自動', auto: x.kind, caseId: x.p.id,
-          addr: L.siteAddr || L.addr || '', name: L.company || L.customer || '', tel: L.tel || '', rv: day,
-          memo: x.kind === 'quote' ? '見積の期限が近い：' + (x.d.no || '下書き') + '（' + U.jdate(x.d.validUntil) + 'まで）。返事を聞きに行く' : '入金の確認（' + (x.p.name || '') + '）' };
-        o.db().doc('visits/' + v.id).set(v); seen[key] = new Date().toISOString(); changed = true;
-      });
-      if (changed) localStorage.setItem('oubi.autorv', JSON.stringify(seen));
-    } catch (e) { /* 次の機会に */ }
-    rvBusy = false;
-  }
-  root.OUBI_LINK.syncRevisits = syncRevisits;
 
   /* ---- 2) バックアップの知らせ（7日たったら） ---- */
   var BK_KEY = 'oubi.backup.at';
@@ -358,13 +334,13 @@
     html: function () {
       var me = root.OUBI_LINK.me();
       return '<section class="panel" data-st style="margin-bottom:18px"><div class="panel-h"><h2>自分の名前</h2></div><div class="panel-b">' +
-        '<p style="margin:0 0 12px;color:var(--text-2);line-height:1.7">工事の作成者・担当・営業の記録・投稿の「だれ」に入ります。いつでも変えられます。</p>' +
+        '<p style="margin:0 0 12px;color:var(--text-2);line-height:1.7">工事の作成者・担当・投稿の「だれ」に入ります。いつでも変えられます。</p>' +
         '<div style="display:flex;gap:10px;flex-wrap:wrap;align-items:center"><input class="input" id="my-name" value="' + U.esc(me.name) + '" placeholder="例：青木 誠" style="max-width:320px" aria-label="自分の名前">' +
         '<button class="btn primary" data-myname-save>' + U.I.save + '保存</button></div></div></section>' +
         '<section class="panel" data-st><div class="panel-h"><h2>この端末の記録のバックアップ</h2></div><div class="panel-b">' +
         '<p style="margin:0 0 12px;color:var(--text-2);line-height:1.7">この版は、記録をこの端末（このブラウザ）の中だけに保存します。社員とは共有されません。<br>' +
         'ブラウザの記録を消す・端末を替える・別のブラウザで開くと、記録は見えなくなります。ときどき、ここでバックアップを保存してください。<br>' +
-        '入るもの：工事・営業の記録・ホワイトボード・カレンダーの予定・見積・品目マスタ・自分の名前・工事の写真。</p>' +
+        '入るもの：工事・ホワイトボード・カレンダーの予定・見積・品目マスタ・自分の名前・工事の写真。</p>' +
         '<div style="display:flex;gap:10px;flex-wrap:wrap"><button class="btn primary" data-bk="save">' + U.I.download + 'バックアップを保存</button>' +
         '<label class="btn">' + U.I.upload + 'バックアップから戻す<input type="file" accept=".json,application/json" data-bk="load" hidden></label></div>' +
         '<p class="hint" id="bk-msg" role="status" style="margin-top:12px"></p></div></section>';

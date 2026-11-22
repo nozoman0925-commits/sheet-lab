@@ -9,7 +9,7 @@
  */
 const { chromium } = require('playwright'); const openWeb = require('./_web');
 const WHAT = process.argv[2] || 'all';
-const ROUTES = ['#/home', '#/o/sales', '#/o/sales/rv', '#/o/sales/rank', '#/o/list', '#/o/case/C', '#/clients', '#/sites', '#/docs', '#/new', '#/new/text', '#/new/past', '#/new/template', '#/edit/D',
+const ROUTES = ['#/home', '#/o/list', '#/o/case/C', '#/clients', '#/sites', '#/docs', '#/new', '#/new/text', '#/new/past', '#/new/template', '#/edit/D',
   '#/o/cal', '#/o/wb', '#/o/board', '#/finance', '#/o/dash', '#/analysis', '#/settings/items', '#/settings/packages', '#/settings/formulas', '#/settings/snippets', '#/settings/company', '#/settings/rules', '#/o/settings', '#/o/staff', '#/settings/features', '#/settings/data', '#/o/help'];
 // ページの中で数える（document ごと）
 function scan(what) {

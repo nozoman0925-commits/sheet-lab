@@ -15,9 +15,9 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
     const sp = vp.width < 500, tag = sp ? '（スマホ）' : '';
     const p = await openWeb(b, { viewport: vp, wait: 3500 }); watch(p);
     // ホーム
-    ok((await p.$eval('.launch .lt-main b', b => b.textContent)) === (sp ? '営業に出る' : '見積を作る') && (await p.$$('.launch .launch-btn2')).length === 3, 'ホームの主役は1つ（' + (sp ? 'スマホ＝営業に出る' : 'パソコン＝見積を作る') + '）、ほかの3つは普通のボタン' + tag);
+    ok((await p.$eval('.launch .lt-main b', b => b.textContent)) === '見積を作る' && (await p.$$('.launch .launch-btn2')).length === 2, 'ホームの主役は「見積を作る」1つ' + tag + '、ほかの2つは普通のボタン' + tag);
     if (!sp) {
-      ok((await p.$$('.nav-child')).length === 0 && (await p.$$('.nav-item')).length === 7, '左のメニューは7項目だけ（細かい項目は出さない）');
+      ok((await p.$$('.nav-child')).length === 0 && (await p.$$('.nav-item')).length === 6, '左のメニューは6項目だけ（細かい項目は出さない）');
       await p.click('.nav-item[data-nav="settings"]'); await p.waitForTimeout(1500);
       ok((await p.$$eval('#sectabs a', a => a.map(x => x.textContent))).length >= 8 && !(await p.isVisible('#set-tabs')), '設定を開くと、細かい画面は見出しの下のタブに（中のタブと二重にしない）');
       await p.click('#sectabs a:has-text("計算式")'); await p.waitForTimeout(1200);

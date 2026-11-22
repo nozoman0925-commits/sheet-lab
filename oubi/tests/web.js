@@ -17,7 +17,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   // ---- 構成は桜ミツのまま ----
   let p = await openWeb(b, { wait: 3500 }); watch(p);
   const nav = await p.$$eval('.nav-item', a => a.map(x => x.textContent.trim()));
-  ok(nav.join('|') === 'ホーム|営業|工事|見積|予定|経営|設定', '左のメニューは7つ（同じ種類の画面を2つ並べない）');
+  ok(nav.join('|') === 'ホーム|工事|見積|予定|経営|設定', '左のメニューは6つ（営業はない）');
   ok((await p.$$eval('#view .widget', w => w.length)) === 6 && (await p.$$('#view .widget[data-type="kpi"]')).length === 3, 'ホームは桜ミツのウィジェット式（はじめは6つ：数字3つ・今日のボード・今日やること・最近の見積）');
   await p.screenshot({ path: OUT + 'web-home.png' });
 
@@ -57,13 +57,14 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
   } else console.log('（写真の入力欄が見つからない：省略）');
 
   // ---- メニュー・ウィジェット・検索 ----
-  for (const [h, t] of [['#/o/sales', '営業'], ['#/o/cal', 'カレンダー'], ['#/o/wb', 'あしたの予定']]) { await go(p, h, 1800); ok((await p.textContent('#title')) === t, h + ' で「' + t + '」'); }
+  for (const [h, t] of [['#/o/cal', 'カレンダー'], ['#/o/wb', 'あしたの予定']]) { await go(p, h, 1800); ok((await p.textContent('#title')) === t, h + ' で「' + t + '」'); }
   await p.screenshot({ path: OUT + 'web-wb.png' });
   await go(p, '#/home', 1500);
   await p.click('[data-act="w-edit"]'); await p.waitForTimeout(400); await p.click('[data-act="w-add"]'); await p.waitForTimeout(400);
-  ok(!!(await p.$('.w-lib [data-add="today"]')) && !!(await p.$('.w-lib [data-add="salesgo"]')), 'ウィジェットの一覧に「今日のボード」「営業に出る」');
+  ok(!!(await p.$('.w-lib [data-add="today"]')) && !(await p.$('.w-lib [data-add="salesgo"]')), 'ウィジェットの一覧に「今日のボード」があり、「営業に出る」はない');
   await p.click('.w-lib [data-add="today"]'); await p.waitForTimeout(500); await p.click('[data-act="w-done"]'); await p.waitForTimeout(500);
-  ok(/現地調査/.test(await p.textContent('.widget[data-type="today"]')), '今日のボードのウィジェットに工事・現地調査・再訪問・予定の数');
+  ok(/現地調査/.test(await p.textContent('.widget[data-type="today"]')), '今日のボードのウィジェットに工事・現地調査・予定の数');
+  ok(!/再訪問/.test(await p.textContent('.widget[data-type="today"]')), '今日のボードに再訪問は出ない');
   await p.keyboard.press('Control+k'); await p.waitForTimeout(300); await p.keyboard.type('ホワイトボード'); await p.waitForTimeout(300);
   await p.keyboard.press('Enter'); await p.waitForTimeout(1500);
   ok(/#\/o\/wb/.test(p.url()), '全機能検索（Ctrl+K）で業務管理の機能へ');
@@ -94,11 +95,11 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/'; fs.mkdirSync(OUT, {
 
   // ---- スマホ幅 ----
   p = await openWeb(b, { viewport: { width: 390, height: 844 }, wait: 3500 }); watch(p);
-  for (const h of ['#/home', '#/o/list', '#/o/sales', '#/o/wb']) {
+  for (const h of ['#/home', '#/o/list', '#/o/cal', '#/o/wb']) {
     await go(p, h, 1800);
     ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), 'スマホ幅で横にはみ出さない ' + h);
   }
-  await go(p, '#/o/sales', 1500); await p.screenshot({ path: OUT + 'web-mobile-sales.png' });
+  await go(p, '#/home', 1500); await p.screenshot({ path: OUT + 'web-mobile-home.png' });
 
   console.log(errs.length ? 'ERRORS: ' + errs.join(' / ') : 'web: ok'); await b.close();
   if (errs.length) process.exit(1);
