@@ -1,6 +1,6 @@
 /*
  * 桜ミツ版の改善の確認（node oubi/tests/web-improve.js）
- *   スマホの下のボタン／ホームは標準1型／見積の入口は1つ／期限が近い見積・入金待ち → 今日やること・営業の再訪問
+ *   スマホの下のボタン／ホームは標準1型／見積の入口は1つ／期限が近い見積・入金待ち → 今日やること／営業の機能はない
  *   バックアップの知らせ／実績から原価を見直す／お客様向けの比較表
  */
 const { chromium } = require('playwright'); const assert = require('assert'); const path = require('path'); const fs = require('fs');
@@ -17,7 +17,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
   // ---- スマホの下のボタン ----
   let p = await openWeb(b, { viewport: { width: 390, height: 844 }, wait: 3500 }); watch(p);
   ok(!(await p.isVisible('.sidebar')) && await p.isVisible('#mnav'), 'スマホでは左の列をしまい、下にボタン');
-  ok((await p.$$eval('#mnav > a, #mnav > button', a => a.map(x => x.textContent.trim()))).join('|') === 'ホーム|営業|工事|見積|予定|その他', '下のボタンは ホーム・営業・工事・見積・予定・その他');
+  ok((await p.$$eval('#mnav > a, #mnav > button', a => a.map(x => x.textContent.trim()))).join('|') === 'ホーム|工事|見積|予定|その他', '下のボタンは ホーム・工事・見積・予定・その他（営業はない）');
   await p.click('#mnav [data-mnav="sites"]'); await p.waitForTimeout(1800);
   ok(/#\/o\/list/.test(p.url()) && await p.$eval('#mnav [data-mnav="sites"]', a => a.classList.contains('on')), '「工事」を押すと工事の一覧、下のボタンも「工事」が光る');
   await p.click('#mnav [data-mnav="more"]'); await p.waitForTimeout(300);
@@ -25,7 +25,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
   await p.click('#mnav-more a[href="#/finance"]'); await p.waitForTimeout(1500);
   ok(/#\/finance/.test(p.url()), '「その他 → 経営」で経営へ');
   await go(p, '#/o/sales', 2000);
-  ok(!(await p.isVisible('#mnav')), '営業の画面は、営業専用の下のボタンを使う（桜ミツの下のボタンは隠す）');
+  ok(/#\/home/.test(p.url()) && await p.isVisible('#mnav'), '前の営業の画面のリンク（#/o/sales）はホームへ戻る');
   await go(p, '#/home', 1500); await p.screenshot({ path: OUT + 'web-mobile-home.png' });
   ok(await p.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 2), 'スマホのホームで横にはみ出さない');
   await p.close();
@@ -33,12 +33,12 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
   // ---- ホーム・見積の入口 ----
   p = await openWeb(b, { wait: 3500 }); watch(p);
   ok(!(await p.$('#home-layout')) && await p.isVisible('[data-act="w-edit"]'), 'ホームは標準の1型（型の切り替えは出さない）。並べ替え・追加は控えめなボタン');
-  ok(/見積を作る/.test(await p.textContent('.launch .lt-main')) && (await p.$$('.launch .launch-btn2')).length === 3 && (await p.$$eval('#view .widget', w => w.map(x => x.dataset.type))).join(',') === 'kpi,kpi,kpi,today,todo,recent', '標準のホーム：主役は「見積を作る」1つ＋普通のボタン3つ、パネルは6つ');
+  ok(/見積を作る/.test(await p.textContent('.launch .lt-main')) && (await p.$$('.launch .launch-btn2')).length === 2 && (await p.$$eval('#view .widget', w => w.map(x => x.dataset.type))).join(',') === 'kpi,kpi,kpi,today,todo,recent', '標準のホーム：主役は「見積を作る」1つ＋普通のボタン2つ、パネルは6つ');
   ok((await p.$$eval('.nav-item[data-nav="estimate"] ~ .nav-sub a, .nav-group[data-key="estimate"] .nav-child', a => a.map(x => x.textContent.trim()))).join('|').indexOf('かんたん作成') < 0, '見積の子メニューに作り方を並べない（入口は「＋ 見積を作る」の1つ）');
   await go(p, '#/new', 1500);
   ok((await p.textContent('#title')) === '見積を作る' && (await p.$$('#view .quick-card')).length >= 7, '「見積を作る」の中で作り方を選ぶ');
 
-  // ---- 期限が近い見積・入金待ち → 今日やること・営業の再訪問 ----
+  // ---- 期限が近い見積・入金待ち → 今日やること ----
   await p.evaluate(([o, t3]) => {
     const x = eval(o);
     const c = x.makeCase({ customer: '山田 太郎', tel: '090-1111-2222', addr: '町田市森野1-1-1' }); c.work.title = '山田様邸 外壁'; x.touch(c);
@@ -51,11 +51,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
   const todo = await p.textContent('.widget[data-type="todo"]');
   ok(/見積の期限まで あと 3 日/.test(todo), '期限が近い見積が「今日やること」に出る');
   ok(/入金待ち/.test(todo), '入金待ちの工事も「今日やること」に出る');
-  const rv = await p.evaluate(() => Object.values(JSON.parse(localStorage.getItem('oubi.ldb.visits') || '{}')).filter(v => v.auto));
-  ok(rv.some(v => v.auto === 'quote' && /見積の期限が近い/.test(v.memo)) && rv.some(v => v.auto === 'pay'), '営業の再訪問の一覧にも自動で入る（見積の返事・入金の確認）');
-  await go(p, '#/o/sales/rv', 2000);
-  const f = p.frames().find(x => /oubi\.html/.test(x.url()));
-  ok(/山田/.test(await f.textContent('body')), '営業の「再訪問」の画面に出る');
+  ok(await p.evaluate(() => !localStorage.getItem('oubi.ldb.visits') && !localStorage.getItem('oubi.autorv')), '営業の再訪問には入れない（営業の機能はない）');
 
   // ---- バックアップの知らせ ----
   await go(p, '#/home', 1500);

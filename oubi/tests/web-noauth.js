@@ -2,7 +2,7 @@
  * 桜ミツ版：サインイン・アカウント作成をなくしたことの確認（node oubi/tests/web-noauth.js）
  *   1) 何もない端末で開くと、名前もログインも無しにホームが使える（名前の欄は小さく出るだけ）
  *   2) 工事の作成者に「自分の名前」が入り、名前を変えると次から新しい名前
- *   3) 版8で作った記録（工事・営業・見積）が、変更後も同じ件数・内容で見える
+ *   3) 版8で作った記録（工事・見積）が、変更後も同じ件数・内容で見える（営業の記録は、営業の機能をなくしたので消える）
  *   4) アカウント・パスワードの保存データが残らない
  *   5) 前の桜ミツ（easy-estimate:v1）＋アカウントからの引き継ぎ
  */
@@ -52,7 +52,8 @@ const openWeb = require('./_web');
   p = await openWeb(b, { v8, auth: [{ id: 'usr_v8', name: '青木 誠' }, { id: 'usr_v8b', name: '田中 次郎' }], session: 'usr_v8', wait: 4000 }); watch(p);
   const after = await p.evaluate(o => { const x = eval(o); const ls = k => Object.keys(JSON.parse(localStorage.getItem(k) || '{}')).length; return { cases: x.cases().length, visits: ls('oubi.ldb.visits'), docs: EE.S.documents.length, me: OUBI_LINK.me(), titles: x.cases().map(c => c.work.title).sort().join(','), creator: x.whoName(x.cases()[0].createdBy) }; }, O);
   console.log('   引き継ぎ（変更前 → 変更後）：工事 ' + before.cases + ' → ' + after.cases + '・営業の記録 ' + before.visits + ' → ' + after.visits + '・見積 ' + before.docs + ' → ' + after.docs);
-  ok(after.cases === before.cases && after.visits === before.visits && after.docs === before.docs, '版8の記録（工事・営業・見積）が同じ件数で見える');
+  ok(after.cases === before.cases && after.docs === before.docs, '版8の記録（工事・見積）が同じ件数で見える');
+  ok(after.visits === 0, '版8の営業の記録は、この端末から消えている（営業の機能はない）');
   ok(after.titles === '佐藤様邸,山田様邸,鈴木様邸' && after.creator === '青木 誠', '内容も同じ（工事名・作成者の名前）');
   ok(after.me.id === 'usr_v8' && after.me.name === '青木 誠', 'ログインしていた人（青木 誠）が「自分の名前」になる');
   ok((await authLeft(p)).length === 0, 'アカウント・パスワードの保存データは、引き継いだあと消えている');

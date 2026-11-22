@@ -12,7 +12,7 @@
 const { chromium } = require('playwright'); const path = require('path'); const fs = require('fs');
 const openWeb = require('./_web');
 const TOTAL = Number(process.argv[2]) || 10000, PAR = Number(process.argv[3]) || 3, SEED = Number(process.argv[4]) || 7;
-const TABS = ['#/o/list', '#/o/wb', '#/o/cal', '#/o/dash', '#/o/settings', '#/o/staff', '#/o/board', '#/o/sales', '#/o/sales/rv', '#/o/help', '#/o/docs', '#/o/new', '#/o/case/c1', '#/o/case/c2/quote'];
+const TABS = ['#/o/list', '#/o/wb', '#/o/cal', '#/o/dash', '#/o/settings', '#/o/staff', '#/o/board', '#/o/help', '#/o/docs', '#/o/new', '#/o/case/c1', '#/o/case/c2/quote'];
 const HASHES = ['#/docs', '#/new', '#/new/edit', '#/new/text', '#/new/past', '#/new/template', '#/clients', '#/sites', '#/finance', '#/analysis',
   '#/settings/items', '#/settings/packages', '#/settings/formulas', '#/settings/snippets', '#/settings/rules', '#/settings/company', '#/settings/data', '#/schedule', '#/site/c1', '#/home', '#/home?edit'];
 const TEXTS = ['', '0', '-1', '1.5', '99999999999', 'abc', '外壁塗装 100平米', '<b>x</b>', '\'"', '１２３', 'テスト株式会社', ' ', 'a'.repeat(200), '2026-02-30', '1e5', 'フェンス 10m 撤去', '090-1234-5678'];

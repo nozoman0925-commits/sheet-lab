@@ -37,9 +37,6 @@ body.ob-on #view { display: none; }
     color: #e9eef8; font: inherit; font-size: 16px; text-decoration: none; text-align: left; cursor: pointer; }
   .mnav-more a:hover, .mnav-more button:hover { background: rgba(130, 165, 255, .1); }
   .mnav-more svg { width: 20px; height: 20px; }
-  /* 営業の画面は、営業専用の下のボタン（記録・地図・再訪問・順位・もどる）を使う */
-  body.mnav-sales .mnav { display: none; }
-  body.mnav-sales .main { padding-bottom: 0; }
   /* 知らせは下のボタンの上に出す */
   body.ee-link .toasts { bottom: calc(78px + env(safe-area-inset-bottom, 0px)); right: 12px; left: 12px; align-items: stretch; }
 }
@@ -75,7 +72,7 @@ body.ob-loading .main::before {
 }
 .launch-tile:hover { transform: translateY(-2px); border-color: color-mix(in srgb, var(--lt) 60%, transparent); box-shadow: 0 12px 30px -16px color-mix(in srgb, var(--lt) 80%, transparent); }
 .launch-tile:focus-visible { outline: 2px solid #00E5FF; outline-offset: 2px; }
-.launch-tile.lt-sales { --lt: #00E5FF; } .launch-tile.lt-site { --lt: #22c55e; } .launch-tile.lt-est { --lt: #3b82f6; } .launch-tile.lt-cal { --lt: #a78bfa; }
+.launch-tile.lt-site { --lt: #22c55e; } .launch-tile.lt-est { --lt: #3b82f6; } .launch-tile.lt-cal { --lt: #a78bfa; }
 .lt-ic { flex: none; display: grid; place-items: center; width: 48px; height: 48px; border-radius: 14px; color: var(--lt); background: color-mix(in srgb, var(--lt) 14%, transparent); }
 .lt-ic svg { width: 26px; height: 26px; }
 .lt-tx { display: grid; gap: 4px; min-width: 0; }
@@ -210,11 +207,11 @@ body.ee-link :is(p, .sub, .hint, .wz-help) { line-height: 1.7; }
 body.ee-link .heat-scale i { border-radius: 14px !important; }
 body.ee-link .heat-sum .hs-row i { border-radius: 14px !important; }
 
-/* ===== ホーム：主役は1つ（パソコン＝見積を作る、スマホ＝営業に出る）、残り3つは普通の大きさのボタン ===== */
+/* ===== ホーム：主役は「見積を作る」1つ、残り2つは普通の大きさのボタン ===== */
 body.ee-link .launch { grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 16px; align-items: stretch; }
 body.ee-link .launch-tile.lt-main { min-height: 84px; border-color: rgba(0, 229, 255, .45); box-shadow: 0 0 0 1px rgba(0, 229, 255, .18) inset, 0 14px 32px -20px rgba(0, 229, 255, .7); }
 body.ee-link .launch-tile.lt-main .lt-tx b { font-size: 20px; }
-body.ee-link .launch-sub { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; align-content: center; }
+body.ee-link .launch-sub { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; align-content: center; }
 body.ee-link .launch-btn2 { height: 52px; justify-content: flex-start; padding: 0 16px; gap: 10px; font-size: 15px; font-weight: 600; }
 body.ee-link .launch-btn2 svg { width: 20px; height: 20px; color: #8ab8ff; }
 /* パネル：はじめは6つ。1段目は数字3つ（中身の高さだけ）、2段目は残りの高さいっぱい */

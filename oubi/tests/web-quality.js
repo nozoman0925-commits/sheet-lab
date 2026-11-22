@@ -25,7 +25,7 @@ const openWeb = require('./_web');
   await go(p, '#/home');
   ok((await p.$$eval('#view .widget .empty .btn', a => a.map(x => x.textContent.trim()))).join('|') === '工事の一覧を開く|見積を作る', 'ホーム：今日やること・最近の見積も、空ならボタン1つ');
   const FRAME = [['#/o/list', 'まだ工事がありません', '新しい工事を登録する'], ['#/o/wb', 'まだ何も書かれていません', '予定を書きはじめる'], ['#/o/board', 'まだ投稿はありません', '書きはじめる'],
-    ['#/o/dash', 'まだ担当者が決まっている工事がありません', '工事の一覧を開く'], ['#/o/sales/rv', 'まだ再訪問の予定はありません', '訪問を記録する'], ['#/o/sales/rank', 'まだ訪問の記録がありません', '訪問を記録する']];
+    ['#/o/dash', 'まだ担当者が決まっている工事がありません', '工事の一覧を開く']];
   for (const [h, t, btn] of FRAME) {
     await go(p, h, 2000);
     const r = await fr(p).evaluate(t => { const e = [...document.querySelectorAll('.empty')].find(x => x.offsetParent && x.textContent.indexOf(t) >= 0); return e ? [...e.querySelectorAll('button')].map(x => x.textContent.trim()) : null; }, t);

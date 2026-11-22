@@ -63,8 +63,7 @@
     favorites: { name: 'お気に入りの工事', cat: 'お気に入り', sizes: ['m', 's', 'l'], icon: 'star', href: '#/sites' },
     usage: { name: 'よく使う機能', cat: 'お気に入り', sizes: ['m', 's'], icon: 'spark' },
     // 桜ミツ版（業務管理の機能を入れたもの）だけ
-    today: { name: '今日のボード（工事・現調・再訪問・予定）', cat: '時間', sizes: ['m', 'l', 's'], icon: 'calendar', href: '#/o/cal', link: true },
-    salesgo: { name: '営業に出る', cat: '業務', sizes: ['s', 'm'], icon: 'walk', href: '#/o/sales', link: true }
+    today: { name: '今日のボード（工事・現調・予定）', cat: '時間', sizes: ['m', 'l', 's'], icon: 'calendar', href: '#/o/cal', link: true }
   };
   function linkO() { try { var f = root.OUBI_LINK && root.OUBI_LINK.frame(); return f && f.contentWindow && f.contentWindow.OUBI; } catch (e) { return null; } }
   var PLANNED_WIDGETS = [['天気・雨予報', '天候', '外部の天気サービスとの連携が必要（第9期）'], ['地図・訪問ルート', '工事', '地図サービスとの連携が必要（第9期）'],
@@ -198,12 +197,7 @@
         var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : null;
         if (!c) return '<p class="hint">読み込んでいます…</p>';
         var cell = function (l, v, h) { return '<a class="w-item" href="' + h + '"><span class="w-dot"></span><span><b>' + l + '</b><small>今日</small></span><b class="num" style="margin-left:auto;font-size:22px">' + v + '</b></a>'; };
-        return '<div class="w-list">' + cell('工事', c.work, '#/o/cal') + cell('現地調査', c.sv, '#/o/cal') + cell('再訪問', c.rv, '#/o/sales/rv') + cell('予定（ホワイトボード）', c.wb, '#/o/wb') + '</div>';
-      }
-      case 'salesgo': {
-        var o2 = linkO(), c2 = o2 && o2.todayCounts ? o2.todayCounts() : { rv: 0 };
-        return '<a class="btn primary" href="#/o/sales" style="width:100%;justify-content:center;min-height:52px;font-size:17px">' + I.walk + '営業に出る</a>' +
-          '<p class="hint" style="margin-top:10px">開いたらすぐ記録できます。今日の再訪問 ' + c2.rv + ' 件</p>';
+        return '<div class="w-list">' + cell('工事', c.work, '#/o/cal') + cell('現地調査', c.sv, '#/o/cal') + cell('予定（ホワイトボード）', c.wb, '#/o/wb') + '</div>';
       }
       case 'usage': {
         var top = topUsed(wd.size === 's' ? 3 : 6);
@@ -228,18 +222,16 @@
       (editing ? ' draggable="true"' : '') + ' data-st>' + ctl + title + '<div class="w-body">' + body(wd) + '</div></section>';
   }
 
-  /* 桜ミツ版：ホームの一番上に、よく使う4つの大きなボタン（迷ったらここから） */
+  /* 桜ミツ版：ホームの一番上に、よく使う3つのボタン（主役は見積を作る） */
   function launchHTML() {
-    var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : { work: 0, sv: 0, rv: 0 }, nToday = (c.work || 0) + (c.sv || 0) + (c.rv || 0);
+    var o = linkO(), c = o && o.todayCounts ? o.todayCounts() : { work: 0, sv: 0 }, nToday = (c.work || 0) + (c.sv || 0);
     var A = {
-      sales: ['sales', '#/o/sales', I.walk, '営業に出る', '今日の再訪問 ' + (c.rv || 0) + ' 件', '営業'],
       site: ['site', '#/o/new', I.site, '工事を登録する', '名前だけでOK', '工事を登録'],
       est: ['est', '#/w', I.calc, '見積を作る', '「次へ」で進むだけ', '見積を作る'],
       cal: ['cal', '#/o/cal', I.calendar, '今日の予定を見る', '今日 ' + nToday + ' 件', '今日の予定']
     };
-    // 主役は1つ：パソコンは「見積を作る」、スマホは「営業に出る」。残りの3つは普通の大きさのボタン
-    var phone = root.innerWidth <= 760, main = phone ? 'sales' : 'est';
-    var rest = ['est', 'sales', 'site', 'cal'].filter(function (k) { return k !== main; });
+    // 主役は「見積を作る」1つ（パソコンもスマホも）。残りの2つは普通の大きさのボタン（営業の機能はなくした）
+    var main = 'est', rest = ['site', 'cal'];
     var m = A[main];
     return '<nav class="launch" aria-label="よく使うこと" data-st>' +
       '<a class="launch-tile lt-main lt-' + m[0] + '" href="' + m[1] + '"><span class="lt-ic">' + m[2] + '</span><span class="lt-tx"><b>' + m[3] + '</b><small>' + esc(m[4]) + '</small></span><span class="lt-go" aria-hidden="true">›</span></a>' +
@@ -261,7 +253,7 @@
 
   function render() {
     if (/[?&]edit/.test(location.hash)) editing = true;
-    var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return (editing || !x.hidden) && !(EE.link && x.type === 'salesgo'); });   // 桜ミツ版：「営業に出る」は上の大きなボタンへ
+    var h = home(), L = layout(), ws = L.widgets.filter(function (x) { return (editing || !x.hidden) && TYPES[x.type]; });   // なくした種類（営業に出る など）は出さない
     var bar = '<div class="control-bar" data-st>' +
       '<div class="grow"><div class="hint">' + esc(EE.S.company.name || '桜ミツ') + '　金額はマスタと固定の計算エンジンだけで決まります（AIは使いません）</div></div>' +
       (EE.link ? '' : '<label class="hint" for="home-layout">ホーム</label><select class="input" id="home-layout" style="width:auto">' + h.layouts.map(function (l) { return U.opt(l.key, l.name + (l.time ? '（' + TIMES[l.time].replace(/（.*/, '') + '）' : ''), L.key); }).join('') + '</select>') +

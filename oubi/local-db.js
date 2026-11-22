@@ -12,6 +12,20 @@
   window.OUBI_LOCAL = true;
   var PRE = 'oubi.ldb.';
   var NOKEEP = { usage: 1, vitals: 1, errlog: 1, feedback: 1 };
+  /* 営業の機能は桜ミツ版からなくした（2026-11-22）。営業の記録（訪問・再訪問・下書き・地図の控えなど）は
+     読み込むたびにこの端末から消し、新しくも保存しない（前のバックアップから戻しても、次の読み込みで消える） */
+  var GONE_COL = { visits: 1 };
+  function purgeSales() {
+    try {
+      Object.keys(localStorage).forEach(function (k) {
+        if (k === PRE + 'visits' || /^oubi\.(visits\.v1|slout\.v1|slpostout\.v1|slsun|autorv|muni\.v1)$/.test(k) || /^oubi\.(sldraft|wonSeen)\./.test(k)) localStorage.removeItem(k);
+      });
+      var pd = JSON.parse(localStorage.getItem('oubi.pendel.v1') || 'null');
+      if (Array.isArray(pd) && pd.some(function (x) { return x && x.col === 'visits'; })) localStorage.setItem('oubi.pendel.v1', JSON.stringify(pd.filter(function (x) { return !x || x.col !== 'visits'; })));
+    } catch (e) {}
+  }
+  purgeSales();
+  window.OUBI_PURGE_SALES = purgeSales;
   function read(col) { try { return JSON.parse(localStorage.getItem(PRE + col)) || {}; } catch (e) { return {}; } }
   function write(col, o) {
     try { localStorage.setItem(PRE + col, JSON.stringify(o)); return true; }
@@ -43,7 +57,7 @@
       var i = path.indexOf('/'), col = path.slice(0, i), id = path.slice(i + 1);
       return {
         set: function (data) {
-          if (NOKEEP[col]) return Promise.resolve();   // 使われ方・速さ・不具合の記録は、この端末では残さない（保存場所を使い切らないように）
+          if (NOKEEP[col] || GONE_COL[col]) return Promise.resolve();   // 営業の記録は保存しない   // 使われ方・速さ・不具合の記録は、この端末では残さない（保存場所を使い切らないように）
           var o = read(col); o[id] = JSON.parse(JSON.stringify(data));
           if (!write(col, o)) return Promise.reject({ code: 'quota', message: 'storage full' });
           setTimeout(function () { emit(col); }, 0); return Promise.resolve();
@@ -104,7 +118,7 @@
      自分＝社員の名簿の1人（id は oubi.local.me に覚える）。名前は 設定 → 自分の名前 でいつでも変えられる。
      決め方（最初の1回）：①前の桜ミツのアカウントがあれば、その人（id と名前をそのまま引き継ぐ。ほかのアカウントも社員に入れる）
                           ②社員の名簿があれば、その先頭の1人 ③どちらも無ければ、名前の空いた「自分」を作る
-     ①のあと、アカウントの保存データ（パスワードのハッシュなど）は消す。工事・営業・見積の記録には触らない。 */
+     ①のあと、アカウントの保存データ（パスワードのハッシュなど）は消す。工事・見積の記録には触らない。 */
   var ME_KEY = 'oubi.local.me', AUTH_KEYS = ['oumitsu:auth:v1', 'oumitsu:auth:lock', 'oumitsu:keep', 'oumitsu:lock'];
   function lsJson(k) { try { return JSON.parse(localStorage.getItem(k)); } catch (e) { return null; } }
   function ensureStaff(id, name) {

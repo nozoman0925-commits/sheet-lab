@@ -100,7 +100,6 @@
      顧客・工事の流れ・工事の一覧 → 工事／書類 → 見積／カレンダー・ホワイトボード → 予定／粗利・工事の経営・分析 → 経営 */
   var LINK_SECTIONS = [
     { key: 'home', label: 'ホーム', icon: 'home', href: '#/home', note: '今日のこと・数字' },
-    { key: 'sales', label: '営業', icon: 'walk', href: '#/o/sales', note: '訪問の記録・再訪問・ランキング' },
     { key: 'sites', label: '工事', icon: 'site', href: '#/o/list', note: 'お客様・9工程・写真・契約・請求' },
     { key: 'estimate', label: '見積', icon: 'calc', href: '#/docs', note: '作る・一覧・確定' },
     { key: 'schedule', label: '予定', icon: 'calendar', href: '#/o/cal', note: 'カレンダー・あしたの予定・タイムライン' },
