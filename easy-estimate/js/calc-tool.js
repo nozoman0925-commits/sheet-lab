@@ -93,8 +93,8 @@
     var EE = root.EE, U = EE.ui, esc = U.esc;
     var list = EE.S.formulas || [];
     var pref = list.filter(function (f) { return f.unit && f.unit === opts.unit; });
-    var cur = (pref[0] || list[0] || {}).id;
-    var vals = {}, units = {};
+    var cur = (opts.formulaId && list.some(function (f) { return f.id === opts.formulaId; }) ? opts.formulaId : (pref[0] || list[0] || {}).id);
+    var vals = Object.assign({}, opts.vals || {}), units = Object.assign({}, opts.units || {});   // 前に測った寸法を最初から入れておく
     function formHTML() {
       var f = list.filter(function (x) { return x.id === cur; })[0];
       if (!f) return '<div class="empty">計算式がありません。設定・マスタ →「計算式」で登録できます</div>';
@@ -128,11 +128,16 @@
             ok.disabled = !(r.qty > 0);
           } catch (e) { out.textContent = '—'; det.textContent = e.message; det.style.color = 'var(--err)'; ok.disabled = true; }
         }
-        el.querySelector('#ct-f').onchange = function (e) { cur = e.target.value; vals = {}; units = {}; el.querySelector('#ct-form').innerHTML = formHTML(); calc(); };
+        el.querySelector('#ct-f').onchange = function (e) { cur = e.target.value; vals = Object.assign({}, opts.vals || {}); units = {}; el.querySelector('#ct-form').innerHTML = formHTML(); calc(); };
         el.addEventListener('input', function (e) { if (e.target.dataset.in) { vals[e.target.dataset.in] = e.target.value; calc(); } });
         el.addEventListener('change', function (e) { if (e.target.dataset.unit) { units[e.target.dataset.unit] = e.target.value; calc(); } });
         el.querySelector('[data-c]').onclick = function () { api.close(); };
-        el.querySelector('[data-ok]').onclick = function () { if (result > 0) { opts.onApply(result); api.close(); } };
+        el.querySelector('[data-ok]').onclick = function () {
+          if (!(result > 0)) return;
+          var f = list.filter(function (x) { return x.id === cur; })[0] || { inputs: [] }, used = {}, uu = {};
+          f.inputs.forEach(function (inp) { if (vals[inp.key] !== '' && vals[inp.key] != null) used[inp.key] = Number(vals[inp.key]); if (units[inp.key]) uu[inp.key] = units[inp.key]; });
+          opts.onApply(result, { f: cur, v: used, u: uu }); api.close();
+        };
         calc();
       }
     });

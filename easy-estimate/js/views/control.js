@@ -261,7 +261,7 @@
         : (EE.link ? '<button class="btn ghost sm" data-act="w-edit">' + I.grid + '並べ替え・追加</button>' : '<button class="btn" data-act="w-edit">' + I.grid + 'ホームを編集</button>')) + '</div>';
     var hint = editing ? '<p class="hint control-hint" data-st>ウィジェットをドラッグするか ‹ › で並べ替え、小・中・大で大きさ、目のボタンで表示／非表示、歯車で色・透明度を変えられます。変更はすぐ保存されます。</p>' : '';
     var auto = h.auto ? '<p class="hint" data-st style="margin:-6px 0 12px">時間帯で切り替え中：いまは「' + esc(L.name) + '」</p>' : '';
-    var html = setupHTML() + (EE.link && !editing ? launchHTML() : '') + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
+    var html = setupHTML() + (EE.link && !editing && EE.plus ? EE.plus.nextHTML() : '') + (EE.link && !editing ? launchHTML() : '') + bar + hint + auto + '<div class="widgets' + (editing ? ' editing' : '') + '" id="widgets">' + ws.map(function (x, i) { return widgetHTML(x, i, ws.length); }).join('') + '</div>' +
       (ws.length ? '' : '<div class="empty">' + I.grid + 'ウィジェットがありません。「ホームを編集」→「ウィジェットを追加」で置けます</div>');
     return { title: 'ホーム', crumb: 'OUMITSU CONTROL', html: html, mount: mount };
   }

@@ -7,7 +7,7 @@
 const fs = require('fs'); const path = require('path');
 const ROOT = path.join(__dirname, '..', '..');
 const EE = path.join(ROOT, 'easy-estimate'), OB = path.join(ROOT, 'oubi');
-const OUT = process.argv[2]; const ART = process.argv.includes('--artifact');
+const OUT = process.argv[2]; const ART = process.argv.includes('--artifact'); const DEMO = process.argv.includes('--demo');   // --demo：見せる用（開くたびに見本のデータ・保存されない）
 if (!OUT) { console.error('出力先を指定してください'); process.exit(1); }
 fs.rmSync(OUT, { recursive: true, force: true }); fs.mkdirSync(OUT, { recursive: true });
 const cp = (a, b) => fs.cpSync(a, b, { recursive: true });
@@ -19,6 +19,7 @@ fs.copyFileSync(path.join(OB, 'link.js'), path.join(OUT, 'js', 'oubi-link.js'));
 fs.copyFileSync(path.join(OB, 'pager.js'), path.join(OUT, 'js', 'oubi-pager.js'));   // スマホ：入りきらない画面をページに分ける
 fs.copyFileSync(path.join(OB, 'mitsu-bridge.js'), path.join(OUT, 'js', 'oubi-bridge.js'));
 fs.copyFileSync(path.join(OB, 'web.css'), path.join(OUT, 'css', 'oubi-frame.css'));   // 業務管理の枠・スマホの下のボタン
+if (DEMO) fs.copyFileSync(path.join(OB, 'demo.js'), path.join(OUT, 'js', 'oubi-demo.js'));   // 見せる用：開くたびに見本のデータ
 
 /* ---- 桜ミツの index.html：枠の見た目・つなぎを足し、起動を「業務管理の準備ができてから」に ---- */
 let ix = fs.readFileSync(path.join(EE, 'index.html'), 'utf8');
@@ -29,6 +30,7 @@ sub('<link rel="stylesheet" href="css/login.css">\n', '');
 sub('<script src="js/auth.js"></script>\n', '');
 sub('<script src="js/login.js"></script>\n', '');
 sub('<script src="js/palette.js"></script>', '<script src="js/palette.js"></script>\n<script src="js/oubi-pager.js"></script>\n<script src="js/oubi-link.js"></script>\n<script src="js/oubi-bridge.js"></script>');
+if (DEMO) { sub('<script src="js/oubi-bridge.js"></script>', '<script src="js/oubi-bridge.js"></script>\n<script src="js/oubi-demo.js"></script>'); ix = ix.replace(/<title>[^<]*<\/title>/, '<title>桜ミツ 見せる用</title>'); }
 const bootA = ix.indexOf('  var started = false;'), bootB = ix.indexOf('</script>', bootA);
 ix = ix.slice(0, bootA) + `  // 桜ミツ版：ログインはない。起動の演出のあいだに業務管理と見積の記録をそろえ、演出が終わったらそのままホーム
   var started = false, ready = false, wantIntro = false;

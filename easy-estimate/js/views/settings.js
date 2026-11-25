@@ -39,6 +39,7 @@
           return '<button data-kind="' + k[0] + '" class="' + (mf.kind === k[0] ? 'on' : '') + '">' + k[1] + '</button>'; }).join('') + '</div>' +
         '<button class="btn" data-act="csv-out">' + I.download + 'CSVで書き出す</button>' +
         '<label class="btn">' + I.upload + 'CSV取り込み<input type="file" accept=".csv,text/csv" id="csv-in" hidden></label>' +
+        (EE.plus ? '<button class="btn" data-plus="reprice">' + I.trend + '単価をまとめて改定する</button>' : '') +
         '<button class="btn primary" data-act="new-item">' + I.plus + 'マスタに登録する</button>' +
       '</div><div id="m-table">' + itemRows() + '</div></div></section>' +
       '<p class="hint" data-st style="margin-top:12px">単価を変えても、作成済みの見積の単価は変わりません。送信前チェックで「マスタ単価と違う」と知らせるので、必要な見積だけ「最新単価に更新」してください。<br>使っている品目は削除せず「使用停止」にすると、過去の見積を壊さずに検索候補から外せます。</p>';
@@ -269,6 +270,8 @@
       '<div class="field c6"><label>諸経費（率）の端数</label>' + seg('overheadRounding', s.overheadRounding || 'floor') + '</div>' +
       '<div class="field c6"><label>値引き（率）の端数</label>' + seg('discountRounding', s.discountRounding || 'ceil') + '<span class="hint">計算順序：明細 → 諸経費 → 値引き → 端数調整 → 消費税</span></div>' +
       '<div class="field c4"><label>粗利率の下限（%）</label><input class="input num" type="number" id="r-margin" value="' + Math.round(s.minMargin * 100) + '" min="0" max="100"><span class="hint">下回ると送信前チェックで注意を出します</span></div>' +
+      '<div class="field c12"><label>工事の種類ごとの粗利率の下限（%）— 空欄は上の全体の下限を使います</label><div class="cat-margin">' +
+        (EE.S.categories || []).map(function (c) { var v = (s.minMarginByCat || {})[c.id]; return '<label class="cm-row"><span>' + esc(c.name) + '</span><input class="input num" type="number" min="0" max="100" data-cat-margin="' + esc(c.id) + '" value="' + (typeof v === 'number' ? Math.round(v * 100) : '') + '" placeholder="' + Math.round(s.minMargin * 100) + '"></label>'; }).join('') + '</div></div>' +
       '<div class="field c4"><label>有効期限の既定（日）</label><input class="input num" type="number" id="r-days" value="' + s.validDays + '" min="1"></div>' +
       '<div class="field c4"><label>見積番号の頭文字</label><input class="input num" id="r-prefix" value="' + esc(s.numberPrefix) + '"><span class="hint">例：EST-202611-001</span></div>' +
       '<div class="field c12"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="r-autosave"' + (EE.S.autoSave !== false ? ' checked' : '') + '> 入力途中の見積を自動保存する（保存済みの下書きは1.5秒ごとに上書き、新規は端末に一時保存）</label></div>' +
@@ -354,6 +357,8 @@
           S.autoSave = document.getElementById('r-autosave').checked;
           Object.assign(S.settings, { lineRounding: on('lineRounding'), taxRounding: on('taxRounding'), overheadRounding: on('overheadRounding'), discountRounding: on('discountRounding'), minMargin: m / 100, validDays: Math.round(d),
             numberPrefix: document.getElementById('r-prefix').value.trim() || 'EST' });
+          var byCat = {}; document.querySelectorAll('[data-cat-margin]').forEach(function (inp) { var v = inp.value.trim(); if (v !== '' && isFinite(Number(v))) byCat[inp.dataset.catMargin] = Math.min(100, Math.max(0, Number(v))) / 100; });
+          S.settings.minMarginByCat = byCat;
           U.commit(); EE.fx.success(a, '保存しました'); break;
         case 'replay-splash': EE.splash.play({ replay: true, onReveal: EE.app.intro }); break;
         case 'export':
