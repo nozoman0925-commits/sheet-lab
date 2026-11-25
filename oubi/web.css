@@ -238,3 +238,20 @@ body.ee-link .widgets.editing .widget { transition: transform .15s cubic-bezier(
 body.ee-link .widgets.editing .widget.dragging { opacity: .9; transform: scale(1.02); box-shadow: 0 24px 50px -20px rgba(0, 0, 0, .8), 0 0 0 1px rgba(0, 229, 255, .4); }
 /* ホーム：押せるパネル・タイルは、乗せると少し浮いて縁に淡い光、押すと沈む（コントロールセンターのタイル） */
 body.ee-link .launch-tile:active, body.ee-link .w-kpi:active, body.ee-link .w-item:active { transform: scale(.98); }
+
+/* ===== 落ち着いた紺（2026-11-25：「桜ミツ 見せる用」を参考に） =====
+   ・背景の光は弱くして止める（面がはっきり見え、画面が静かになる）
+   ・線は少し濃く（面の境目が分かる）。主なボタンは青1色（虹色の流れ・光の影はやめる）
+   ・画面の名前は明朝で、下に金の短い線（会社の印。色の飾りはここだけ） */
+body.ee-link .aurora i { opacity: .3 !important; animation: none !important; }
+body.ee-link { --line: rgba(163, 192, 235, .16); --line-hi: rgba(170, 200, 245, .32); }
+body.ee-link .btn.primary, body.ee-link .btn.primary:hover {
+  background: #2a63c9 !important; background-image: none !important; border-color: transparent !important;
+  box-shadow: 0 2px 10px rgba(42, 99, 201, .28) !important; color: #fff !important; }
+body.ee-link .btn.primary:hover { background: #3170dc !important; }
+body.ee-link .btn:hover { box-shadow: none; }
+body.ee-link #title { font-family: "Hiragino Mincho ProN", "Hiragino Mincho Pro", "Yu Mincho", "YuMincho", "Noto Serif JP", "Noto Serif CJK JP", serif; letter-spacing: .04em; }
+body.ee-link #title { position: relative; }
+body.ee-link #crumb { margin-top: 6px; }
+body.ee-link #title::after { content: ""; position: absolute; left: 0; bottom: -4px; width: 32px; height: 2px; border-radius: 2px; background: #bfa06a; }   /* 高さは増やさない（1画面に収める） */
+body.ee-link .launch-tile.lt-main { box-shadow: 0 0 0 1px rgba(77, 141, 255, .28) inset; border-color: rgba(77, 141, 255, .45); }

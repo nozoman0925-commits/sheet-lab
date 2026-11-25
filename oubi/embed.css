@@ -161,3 +161,9 @@ button:active:not(:disabled), .btn:active, .chipbtn:active, .sl-mini:active { tr
 .done-t { white-space: nowrap; }
 nav button, nav .btn, .tabs button { overflow: visible !important; }
 }
+
+/* ===== 落ち着いた紺（2026-11-25：「桜ミツ 見せる用」を参考に）：主なボタンは青1色、押せる物の光の影はやめる ===== */
+.btn.pri, .btn.pri:hover, .launch-btn.new, .gate-go, .chipbtn.on, .subtabs button[aria-current="step"] {
+  background: #2a63c9 !important; background-image: none !important; box-shadow: 0 2px 10px rgba(42, 99, 201, .28) !important; color: #fff !important; }
+.btn.pri:hover { background: #3170dc !important; }
+.btn:hover, .chipbtn:hover { box-shadow: none !important; }
