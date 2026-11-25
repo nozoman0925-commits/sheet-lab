@@ -109,10 +109,22 @@
   /** 計算ルール：発行済みは発行時のルールで固定、下書きは現在の設定 */
   function rulesFor(doc) { return (doc.status === 'issued' && doc.rules) ? doc.rules : EE.S.settings; }
   function calcDoc(doc) { return EE.engine.calc(doc, rulesFor(doc)); }
+  /** 粗利率の下限：工事の種類ごとの下限（設定 → 計算ルール）があればそれ、無ければ全体の下限 */
+  function catOf(doc) {
+    if (doc && doc.category) return doc.category;
+    var p = doc && doc.projectId && EE.S.projects.filter(function (x) { return x.id === doc.projectId; })[0];
+    var c = p && p.category; if (!c) return '';
+    var hit = (EE.S.categories || []).filter(function (k) { return k.id === c || k.name === c || (k.keywords || []).indexOf(c) >= 0 || String(k.name).indexOf(c) >= 0; })[0];
+    return hit ? hit.id : '';
+  }
+  function minMarginOf(doc) {
+    var by = (EE.S.settings || {}).minMarginByCat || {}, k = catOf(doc);
+    return k && typeof by[k] === 'number' ? by[k] : EE.S.settings.minMargin;
+  }
   function checkDoc(doc) {
     return EE.check.run(doc, {
       items: EE.S.items, customers: EE.S.customers, projects: EE.S.projects, documents: EE.S.documents,
-      company: EE.S.company, settings: Object.assign({}, EE.S.settings, rulesFor(doc)), today: EE.data.today()
+      company: EE.S.company, settings: Object.assign({}, EE.S.settings, rulesFor(doc), { minMargin: minMarginOf(doc) }), today: EE.data.today()
     });
   }
 
@@ -256,6 +268,6 @@
 
   EE.ui = { empty: empty, undoable: undoable, esc: esc, yen: yen, num: num, pct: pct, jdate: jdate, norm: norm, daysFromToday: daysFromToday, I: I,
     commit: commit, layer: layer, onCommit: onCommit, members: members, me: me, findMember: findMember, initial: initial, avatar: avatar, memberOptions: memberOptions, findItem: findItem, findCustomer: findCustomer, docCustomer: docCustomer, findProject: findProject, findDoc: findDoc,
-    rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, modal: modal, topModal: topModal, confirmBox: confirmBox,
+    rulesFor: rulesFor, calcDoc: calcDoc, checkDoc: checkDoc, minMarginOf: minMarginOf, catOf: catOf, modal: modal, topModal: topModal, confirmBox: confirmBox,
     readForm: readForm, opt: opt, options: options, download: download, statusBadge: statusBadge, validBadge: validBadge, STATUS: STATUS, stBadge: stBadge, stageKind: stageKind, stageBadge: stageBadge };
 })(this);

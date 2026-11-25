@@ -113,7 +113,7 @@
         '<tr class="g"><th>合計（税込）</th><td class="num">' + yen(r.total) + '</td></tr></table>' +
       '</div>' +
       '<div class="foot sans"><span>' + esc(doc.no) + (doc.status === 'issued' ? '　発行確定 ' + U.jdate((doc.issuedAt || '').slice(0, 10)) : '') + '</span><span>消費税は税率ごとに合計して端数処理しています</span></div>' +
-    '</div>';
+    '</div>' + (EE.plus && EE.plus.photoPage ? EE.plus.photoPage(doc) : '');   // 写真を付けた見積は、最後のページに写真
   }
 
   function printDoc(doc) {
@@ -180,5 +180,11 @@
     setTimeout(function () { root.print(); document.title = oldTitle; pr.innerHTML = ''; }, 50);
   }
 
-  EE.print = { sheetHTML: sheetHTML, printDoc: printDoc, preview: preview, printMany: printMany };
+  /** 決まった HTML（請求書・発注書など）を印刷する */
+  function printHTML(html, title) {
+    var pr = document.getElementById('print-root'); pr.innerHTML = html;
+    var oldTitle = document.title; document.title = title || document.title;
+    setTimeout(function () { root.print(); document.title = oldTitle; pr.innerHTML = ''; }, 50);
+  }
+  EE.print = { sheetHTML: sheetHTML, printDoc: printDoc, preview: preview, printMany: printMany, printHTML: printHTML, logoHTML: logoHTML };
 })(this);

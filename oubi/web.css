@@ -255,3 +255,56 @@ body.ee-link #title { position: relative; }
 body.ee-link #crumb { margin-top: 6px; }
 body.ee-link #title::after { content: ""; position: absolute; left: 0; bottom: -4px; width: 32px; height: 2px; border-radius: 2px; background: #bfa06a; }   /* 高さは増やさない（1画面に収める） */
 body.ee-link .launch-tile.lt-main { box-shadow: 0 0 0 1px rgba(77, 141, 255, .28) inset; border-color: rgba(77, 141, 255, .45); }
+
+/* ===== 12の追加（2026-11-25） ===== */
+/* 1 ホームの「次の一手」：いちばん急ぐ1件と、そのままの一手 */
+body.ee-link .nextup { display: flex; align-items: center; gap: 16px; margin-bottom: 14px; padding: 14px 20px; border-radius: 14px;
+  border: 1px solid var(--line-hi); background: rgba(13, 20, 38, .9); flex: none; }
+body.ee-link .nextup.warn { border-color: rgba(242, 189, 92, .45); }
+body.ee-link .nextup .nx-tag { flex: none; font-size: 12px; font-weight: 700; padding: 4px 10px; border-radius: 999px; color: var(--accent-2); background: rgba(77, 141, 255, .12); border: 1px solid rgba(77, 141, 255, .3); }
+body.ee-link .nextup .nx-tag.is-warn { color: var(--warn); background: rgba(242, 189, 92, .1); border-color: rgba(242, 189, 92, .4); }
+body.ee-link .nextup .nx-b { flex: 1; min-width: 0; display: grid; gap: 2px; }
+body.ee-link .nextup .nx-b b { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.ee-link .nextup .nx-b small { color: var(--text-2); font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+body.ee-link .nextup .nx-more { flex: none; }
+body.ee-link .nextup .btn { flex: none; }
+@media (max-width: 760px) { body.ee-link .nextup { flex-wrap: wrap; gap: 8px 12px; padding: 12px 16px; } body.ee-link .nextup .nx-b { flex-basis: calc(100% - 140px); } body.ee-link .nextup .nx-more { display: none; } body.ee-link .nextup .btn { width: 100%; justify-content: center; } }
+/* 2・3・4・7 確定した見積の帯のボタン */
+.plus-bar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-top: 10px; }
+/* 4 失注の理由の傾向 */
+.lost-trend { display: grid; gap: 6px; }
+.lost-trend .lt-row { display: grid; grid-template-columns: 9em 1fr 3.5em; gap: 10px; align-items: center; font-size: 13px; }
+.lost-trend .lt-bar { height: 8px; border-radius: 14px; background: rgba(130, 165, 255, .1); overflow: hidden; }
+.lost-trend .lt-bar i { display: block; height: 100%; background: #4a7ff0; border-radius: 14px; }
+.lost-trend b { text-align: right; }
+.lost-reasons { display: flex; flex-wrap: wrap; gap: 8px; }
+.lost-reasons .chipbtn { min-height: 36px; padding: 0 14px; border-radius: 999px; border: 1px solid var(--line-hi); background: transparent; color: var(--text); cursor: pointer; }
+.lost-reasons .chipbtn.on { background: #2a63c9; border-color: transparent; color: #fff; }
+/* 5 単価のまとめて改定 */
+.reprice-list { max-height: 42vh; overflow: auto; }
+/* 6 工事の種類ごとの粗利の下限 */
+.cat-margin { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px 16px; }
+.cat-margin .cm-row { display: flex; align-items: center; gap: 10px; justify-content: space-between; }
+.cat-margin .cm-row input { width: 90px; }
+/* 10 写真を選ぶ */
+.ph-pick { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 12px; max-height: 46vh; overflow: auto; }
+.ph-cell { display: grid; gap: 6px; padding: 8px; border-radius: 14px; border: 1px solid var(--line); cursor: pointer; position: relative; }
+.ph-cell.on { border-color: rgba(77, 141, 255, .6); background: rgba(77, 141, 255, .08); }
+.ph-cell > input[type=checkbox] { position: absolute; top: 14px; left: 14px; width: 20px; height: 20px; }
+.ph-img { display: block; aspect-ratio: 4 / 3; border-radius: 14px; background: rgba(130, 165, 255, .08) center / cover no-repeat; }
+/* 件数は数字の印で（ボタンの名前は動詞のまま） */
+[data-plus][data-n]:not([data-n="0"])::after { content: attr(data-n); margin-left: 6px; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 999px; font-size: 12px; line-height: 20px; text-align: center; background: rgba(77, 141, 255, .18); color: var(--accent-2); }
+/* スマホ：確定した見積の帯は短く（説明は隠し、ボタンは横に並べる） */
+@media (max-width: 760px) {
+  body.ee-link .issued-banner .panel-b { flex-wrap: wrap; gap: 10px !important; }
+  body.ee-link .issued-banner .kpi-icon, body.ee-link .issued-banner .panel-b .hint { display: none; }
+  body.ee-link .issued-banner [data-act="revise"] { width: 100%; justify-content: center; }
+  body.ee-link .plus-bar { gap: 6px; margin-top: 6px; }
+  body.ee-link .plus-bar .btn { height: 36px; min-height: 36px; padding: 0 10px; font-size: 13px; }
+  body.ee-link .plus-bar .btn svg { display: none; }
+}
+/* 見せる用の版の印 */
+#demo-mark { position: fixed; left: 16px; bottom: 92px; z-index: 50; width: 220px; display: grid; gap: 2px; padding: 10px 12px; border-radius: 14px;
+  border: 1px solid rgba(191, 160, 106, .55); background: rgba(13, 20, 38, .96); font-size: 12px; line-height: 1.5; color: var(--text-2); pointer-events: none; }
+#demo-mark b { color: #d8c08a; font-size: 13px; white-space: nowrap; }
+@media (max-width: 760px) { #demo-mark { left: 12px; right: 12px; width: auto; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; padding: 6px 12px; } }

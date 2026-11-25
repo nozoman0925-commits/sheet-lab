@@ -44,7 +44,7 @@
     return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>担当</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {
         var d = x.d;
-        var low = x.r.marginRate != null && x.r.marginRate < EE.S.settings.minMargin;
+        var low = x.r.marginRate != null && x.r.marginRate < U.minMarginOf(d);
         return '<tr class="clickable' + (PICK === d.id ? ' picked' : '') + '" data-pick="' + d.id + '" tabindex="0" title="クリックでカード表示・ダブルクリックで開く" data-st>' +
           '<td><input type="checkbox" class="d-sel" data-id="' + d.id + '"' + (SEL[d.id] ? ' checked' : '') + '></td>' +
           '<td class="num">' + esc(d.no) + (d.rev ? ' <span class="badge">第' + d.rev + '版</span>' : '') + '</td>' +

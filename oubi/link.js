@@ -184,11 +184,24 @@
     var d = Math.floor((Date.now() - new Date(at)) / 864e5);
     return { need: d >= 7, days: d, text: '最後のバックアップから ' + d + ' 日たちました' };
   }
+  EE.linkBackupNeed = backupAge;
+  /** 1押しでバックアップを保存（ホームの知らせ・週1の声かけから）。保存できたら true */
+  EE.linkBackupNow = async function (btn) {
+    try {
+      await EE.fx.busy(btn, async function () {
+        var data = JSON.stringify(await make());
+        await saveFile('桜ミツ_バックアップ_' + EE.data.today() + '.json', data);
+        try { localStorage.setItem(BK_KEY, new Date().toISOString()); } catch (e2) {}
+      });
+      EE.fx.toast('バックアップを保存しました', { force: true }); return true;
+    } catch (err) { EE.fx.toast(err && err.code === 'declined' ? '保存をやめました' : 'バックアップを保存できませんでした', { warn: true }); return false; }
+  };
+  document.addEventListener('click', function (e) { var b = e.target.closest && e.target.closest('[data-bk-now]'); if (!b) return; e.preventDefault(); EE.linkBackupNow(b).then(function (ok) { if (ok) EE.app.rerender(); }); });
   EE.linkBackupBanner = function () {
     var b = backupAge(); if (!b.need) return '';
     return '<div class="panel notice-warn" data-st style="margin-bottom:14px;padding:12px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap;border-color:rgba(242,189,92,.35)">' +   // 注意（黄）＝状態の印
       '<span style="color:var(--warn)">' + U.I.bell + '</span><span style="color:var(--text-2);flex:1;min-width:200px">' + U.esc(b.text) + '。ときどき保存してください。</span>' +
-      '<a class="btn sm primary" href="#/settings/data">' + U.I.download + 'バックアップする</a></div>';
+      '<button class="btn sm primary" type="button" data-bk-now>' + U.I.download + '今すぐ保存する</button><a class="btn sm ghost" href="#/settings/data">戻し方を見る</a></div>';
   };
 
   /* ---- 3) 実績原価を単価マスタへ（完工した工事の実際の原価から、品目の原価を見直す） ---- */

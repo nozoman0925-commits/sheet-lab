@@ -90,9 +90,10 @@
     }).join('');
 
     var banner = lk
-      ? '<div class="panel" data-st style="margin-bottom:18px;border-color:rgba(77,141,255,.35)"><div class="panel-b" style="display:flex;gap:14px;align-items:center">' +
+      ? '<div class="panel issued-banner" data-st style="margin-bottom:18px;border-color:rgba(77,141,255,.35)"><div class="panel-b" style="display:flex;gap:14px;align-items:center">' +
         '<span class="kpi-icon">' + I.lock + '</span><div style="flex:1"><b>発行済みの見積書です（' + U.jdate((d.issuedAt || '').slice(0, 10)) + ' 確定）</b>' +
-        '<div class="hint">電子帳簿保存法に合わせ、発行済みの書類は書き換えずに保存します。内容を変えるときは修正見積（新しい版）を作ってください。</div></div>' +
+        '<div class="hint">電子帳簿保存法に合わせ、発行済みの書類は書き換えずに保存します。内容を変えるときは修正見積（新しい版）を作ってください。</div>' +
+        (EE.plus ? EE.plus.issuedBar(d) : '') + '</div>' +
         '<button class="btn primary" data-act="revise">' + I.branch + '修正見積を作成</button></div></div>'
       : '';
 
@@ -149,7 +150,7 @@
                 var ps = S.packages.filter(function (p) { return p.category === c.id; });
                 return ps.length ? '<optgroup label="' + esc(c.name) + '">' + ps.map(function (p) { return U.opt(p.id, p.name + '（' + p.lines.filter(function (l) { return !l.optional; }).length + '行）', ''); }).join('') + '</optgroup>' : '';
               }).join('') + S.packages.filter(function (p) { return !(S.categories || []).some(function (c) { return c.id === p.category; }); }).map(function (p) { return U.opt(p.id, p.name, ''); }).join('') + '</select>' +
-              '<div class="grow"></div>' +
+              '<div class="grow"></div>' + (EE.plus ? EE.plus.draftTools(d) : '') +
               '<button class="btn sm" data-act="add-adj" data-type="overhead">' + I.plus + '諸経費を足す</button>' +
               '<button class="btn sm" data-act="add-adj" data-type="discount">' + I.plus + '値引きを足す</button>' +
               '<button class="btn sm" data-act="add-adj" data-type="roundoff">' + I.plus + '端数を調整する</button>' +
@@ -174,7 +175,7 @@
       crumb: d.no || '新規',
       actions: lk
         ? '<button class="btn" data-act="duplicate">' + I.copy + '複製して新しく作る</button><button class="btn primary" data-act="pdf">' + I.pdf + 'PDFを出す</button>'
-        : '<span id="save-state" class="hint">' + (ED.dirty ? '<span class="dirty-dot"></span>未保存の変更' : (ED.isNew ? '' : '<span class="saved-mark">保存済み</span>')) + '</span>' +
+        : (EE.plus ? EE.plus.draftActions(d) : '') + '<span id="save-state" class="hint">' + (ED.dirty ? '<span class="dirty-dot"></span>未保存の変更' : (ED.isNew ? '' : '<span class="saved-mark">保存済み</span>')) + '</span>' +
           '<button class="btn" data-act="save" id="btn-save">' + I.save + '保存する <kbd>Ctrl S</kbd></button>',
       html: html,
       mount: mount,
@@ -215,7 +216,7 @@
         '<div class="sum-row"><span>粗利</span><span class="yen" data-k="grossProfit" data-format="yen">¥0</span></div>' +
         '<div class="sum-row" style="padding-bottom:0"><span>粗利率</span><span class="yen" data-k="margin" data-format="pct">0.0%</span></div>' +
         '<div class="meter" id="margin-meter"><i style="width:0"></i></div>' +
-        '<div class="hint" style="margin-top:6px">下限 ' + Math.round(EE.S.settings.minMargin * 100) + '%（設定で変更）</div>' +
+        '<div class="hint" style="margin-top:6px" id="min-margin-hint">下限 ' + Math.round(U.minMarginOf(ED.doc) * 100) + '%' + (U.catOf(ED.doc) && typeof ((EE.S.settings.minMarginByCat || {})[U.catOf(ED.doc)]) === 'number' ? '（' + esc(EE.settingsExtra.catName(U.catOf(ED.doc))) + 'の下限）' : '（設定で変更）') + '</div>' +
         '<div class="sep"></div>' +
         '<div class="label" style="margin-bottom:8px">内訳（建設業法第20条：材料費・労務費等）</div>' +
         '<div class="bd" id="breakdown"></div>' +
@@ -347,7 +348,7 @@
     var mm = document.getElementById('margin-meter');
     var mr = r.marginRate == null ? 0 : Math.max(0, Math.min(1, r.marginRate / 0.5));
     mm.firstChild.style.width = (mr * 100) + '%';
-    var wasLow = mm.classList.contains('low'), nowLow = r.marginRate != null && r.marginRate < EE.S.settings.minMargin;
+    var wasLow = mm.classList.contains('low'), nowLow = r.marginRate != null && r.marginRate < U.minMarginOf(ED.doc);
     mm.classList.toggle('low', nowLow);
     // 粗利率が下限を割った瞬間だけ、数字が1回だけ赤くパルスする（くり返さない）
     if (!first && !wasLow && nowLow) { var me = document.querySelector('[data-k="margin"]'); if (me) EE.fx.anim(me, [{ color: '#ff7a8a', transform: 'scale(1.08)' }, { color: '#ff7a8a', transform: 'scale(1)' }, { color: '', transform: 'none' }], { duration: EE.fx.T.page, fill: 'none' }); }
@@ -451,14 +452,20 @@
     return ids;
   }
 
+  /** 検索欄の終わりの数字は数量（例：「GK-06 12」「フェンス 12m」「ブロック×30」） */
+  function pickQuery() {
+    var raw = String(pick.q || ''), m = raw.match(/^(.*\S)[\s×xX＊*]+(\d+(?:\.\d+)?)\s*(m|ｍ|m2|m²|㎡|m3|m³|個|枚|本|台|箇所|式|段|人工|日)?\s*$/);
+    return m ? { q: m[1], qty: Number(m[2]) } : { q: raw, qty: null };
+  }
   function filterItems() {
-    var q = U.norm(pick.q).trim();
+    var pq = pickQuery(); pick.qty = pq.qty;
+    var q = U.norm(pq.q).trim();
     var words = q.split(/\s+/).filter(Boolean);
     return EE.S.items.filter(function (it) {
       if (it.active === false) return false;
       if (pick.kind !== 'all' && it.kind !== pick.kind) return false;
       if (!words.length) return true;
-      var hay = U.norm(it.code + ' ' + it.name + ' ' + it.spec);
+      var hay = U.norm(it.code + ' ' + it.name + ' ' + it.spec + ' ' + (it.synonyms || []).join(' '));
       return words.every(function (w) { return hay.indexOf(w) >= 0; });
     }).slice(0, 40);
   }
@@ -466,7 +473,7 @@
   function hl(text) {
     var t = String(text || '');
     var n = U.norm(t);
-    var words = U.norm(pick.q).trim().split(/\s+/).filter(Boolean);
+    var words = U.norm(pickQuery().q).trim().split(/\s+/).filter(Boolean);
     if (!words.length || n.length !== t.length) return esc(t);
     var on = new Array(t.length).fill(false);
     words.forEach(function (w) {
@@ -493,7 +500,7 @@
         '<span>' + hl(it.name) + (it.spec ? ' <span class="hint">' + hl(it.spec) + '</span>' : '') + '</span>' +
         '<span class="badge">' + K[it.kind] + '</span><span class="num" style="min-width:110px;text-align:right">' + U.yen(it.unitPrice) + ' <span class="hint">/' + esc(it.unit) + '</span></span></div>';
     }).join('') : '<div class="empty" style="padding:20px">一致するマスタがありません。<br><a href="#/settings/items" style="color:var(--accent-2)">設定・マスタで登録</a></div>') +
-      '<div class="picker-foot"><span><kbd>↑</kbd><kbd>↓</kbd> 選択</span><span><kbd>Enter</kbd> 追加</span><span><kbd>Esc</kbd> 閉じる</span></div>';
+      '<div class="picker-foot"><span><kbd>↑</kbd><kbd>↓</kbd> 選択</span><span><kbd>Enter</kbd> ' + (pick.qty ? '数量 ' + U.num(pick.qty) + ' で追加' : '追加') + '</span><span>例：<kbd>GK-06 12</kbd> で数量ごと</span><span><kbd>Esc</kbd> 閉じる</span></div>';
     if (!pick.open) {
       pop.hidden = false; pick.open = true;
       EE.fx.anim(pop, [{ opacity: 0, transform: 'translateY(-4px) scale(.99)' }, { opacity: 1, transform: 'none' }], { duration: 180 });
@@ -509,10 +516,12 @@
   function choosePick(i) {
     var it = pick.list[i];
     if (!it) return;
-    var ids = addItems([{ itemId: it.id, qty: 1 }]);
+    var withQty = pick.qty != null && pick.qty > 0;
+    var ids = addItems([{ itemId: it.id, qty: withQty ? pick.qty : 1 }]);
     var inp = document.getElementById('pick');
-    inp.value = ''; pick.q = ''; closePick();
-    // 追加した行の数量欄へ。数量を打って Enter で検索欄に戻れる
+    inp.value = ''; pick.q = ''; pick.qty = null; closePick();
+    // 数量まで打ったときは検索欄のまま次の品目へ。打たなかったときは追加した行の数量欄へ（数量を打って Enter で検索欄に戻れる）
+    if (withQty) { inp.focus(); return; }
     var tr = ids && document.querySelector('[data-line="' + ids[0] + '"] .qty');
     if (tr) { tr.focus(); tr.select(); }
   }
@@ -844,8 +853,9 @@
           L.splice(idx + 1, 0, L.splice(idx, 1)[0]); markDirty(); renderLines(L[idx + 1].lineId);
         } else if (act === 'calc') {
           var ln = L[idx];
-          EE.calcTool.open({ unit: ln.unit, onApply: function (q) {
-            ln.qty = q; markDirty(); renderLines(ln.lineId);
+          EE.calcTool.open({ unit: ln.unit, formulaId: (ln.calc || {}).f, vals: Object.assign({}, ED.doc.dims || {}, (ln.calc || {}).v || {}), units: (ln.calc || {}).u, onApply: function (q, info) {
+            ln.qty = q; if (info) { ln.calc = info; ED.doc.dims = Object.assign({}, ED.doc.dims || {}, info.v); }   // 測った寸法は見積に覚え、ほかの行の計算にも使う
+            markDirty(); renderLines(ln.lineId);
             EE.fx.toast('「' + ln.name + '」の数量を ' + U.num(q) + ' ' + ln.unit + ' にしました');
           } });
         } else if (act === 'refresh-price') {
@@ -970,5 +980,5 @@
   }
 
   EE.views = EE.views || {};
-  EE.views.editor = { render: render, onKey: onKey, isDirty: function () { return !!(ED && ED.dirty); } };
+  EE.views.editor = { render: render, onKey: onKey, isDirty: function () { return !!(ED && ED.dirty); }, current: function () { return ED && ED.doc; }, isLocked: locked, mark: function () { if (ED) markDirty(); }, lines: function (ids) { if (ED) renderLines(ids); } };
 })(this);

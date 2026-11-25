@@ -163,6 +163,7 @@
   // バックアップ用：写真をまとめて取り出す・戻す（桜ミツの「データ」から使う）
   window.OUBI_LOCAL_FILES = {
     all: function () { return tx('readonly', function (s) { return s.getAll(); }).then(function (vals) { return tx('readonly', function (s) { return s.getAllKeys(); }).then(function (keys) { return keys.map(function (k, i) { return { id: k, rec: vals[i] }; }); }); }); },
-    put: function (id, rec) { return tx('readwrite', function (s) { return s.put(rec, id); }); }
+    put: function (id, rec) { return tx('readwrite', function (s) { return s.put(rec, id); }); },
+    get: function (id) { return tx('readonly', function (s) { return s.get(id); }); }
   };
 })();
