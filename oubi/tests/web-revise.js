@@ -47,14 +47,17 @@ const O = 'OUBI_LINK.frame().contentWindow.OUBI';
   await p.waitForTimeout(1800);
   ok(!(await p.isVisible('.won-card')), '19 請求書で段階がまとめて進んだときは、お祝いを出さない');
   // 19 成約の演出（見積→受注の瞬間）：佐藤様の工事を「受注」に
-  await p.evaluate(([o, cid]) => { const x = eval(o), c = x.cases().find(c => c.id === cid); c.result = { status: 'won', wonDate: EE.data.today() }; x.touch(c); }, [O, ids.c2]);
+  const c3 = await p.evaluate(o => { const x = eval(o), c = x.makeCase({ customer: '受注 一郎' }); x.touch(c); return c.id; }, O);
+  await p.waitForTimeout(2500);
+  await p.evaluate(([o, cid]) => { const x = eval(o), c = x.cases().find(c => c.id === cid); c.result = { status: 'won', wonDate: EE.data.today() }; x.touch(c); }, [O, c3]);
   await p.waitForTimeout(3500);
   ok(await p.isVisible('.won-card'), '19 受注になった瞬間に、金色の縁のお祝い（紙吹雪なし）');
   await p.screenshot({ path: path.join(OUT, 'won.png') });
   await closeModals(p);
   // 3 期限の見出し
-  const ev = await p.evaluate(id => ({ due: EE.views.schedule.upcoming(30).filter(e => e.kind === 'due').some(e => e.href.endsWith(id)), todo: EE.linkTodo().find(x => x.id === id) }), ids.d2);
+  const ev = await p.evaluate(id => ({ due: EE.views.schedule.upcoming(30).filter(e => e.kind === 'due').some(e => e.href.endsWith(id)), todo: EE.linkDue().find(x => x.id === id) }), ids.d2);
   ok(!ev.due, '3 下書きの有効期限は「見積期限」に出さない');
+  if (!ev.todo) console.log(await p.evaluate(id => JSON.stringify({ d: (EE.S.documents.find(x => x.id === id) || {}).updatedAt, st: (EE.S.documents.find(x => x.id === id) || {}).status, due: EE.linkDue().map(x => x.kind + ':' + (x.d && x.d.id === id)) }), ids.d2));
   ok(ev.todo && /下書きのまま 12 日止まっています/.test(ev.todo.s), '3 下書きは「止まっている日数」で出す（' + (ev.todo && ev.todo.s) + '）');
   // 4 原価が空の行
   await go(p, '#/edit/' + ids.d2, 2000);

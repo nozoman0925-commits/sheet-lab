@@ -57,7 +57,7 @@
     return '<section class="case-band" aria-label="この工事の流れと収支"><ol class="cb-steps">' + steps + '</ol>' + money + '</section>';
   }
 
-  var CSS = '.case-band{margin:0 0 12px;padding:12px 16px;border-radius:14px;border:1px solid rgba(186,230,253,.16);background:rgba(13,20,38,.6)}' +
+  var CSS = '.case-band{flex:none;margin:0;padding:10px 16px;border-radius:14px;border:1px solid rgba(186,230,253,.16);background:rgba(13,20,38,.6)}' +
     '.cb-steps{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(10,minmax(0,1fr));gap:4px}' +
     '.cb-step{position:relative;display:grid;justify-items:center;gap:2px;text-align:center;font-size:13px;color:#93a1b8}' +
     '.cb-step::before{content:"";position:absolute;top:7px;left:-50%;right:50%;height:2px;background:rgba(148,163,184,.25)}.cb-step:first-child::before{display:none}' +
@@ -66,21 +66,21 @@
     '.cb-step.done .cb-dot{background:#4d8dff;border-color:#4d8dff}.cb-step.now .cb-dot{border-color:#4d8dff;box-shadow:0 0 0 4px rgba(77,141,255,.22)}' +
     '.cb-step.lost .cb-dot{background:#ff8a96;border-color:#ff8a96}.cb-step.lost b{color:#ffb4bd}' +
     '.cb-step b{font-weight:600;color:#dfe6f3;white-space:nowrap}.cb-step.now b{color:#fff}.cb-step small{font-size:11.5px;min-height:1em;white-space:nowrap}' +
-    '.cb-money{display:flex;flex-wrap:wrap;gap:6px 22px;justify-content:flex-end;margin-top:10px;padding-top:10px;border-top:1px solid rgba(186,230,253,.12)}' +
+    '.cb-money{display:flex;flex-wrap:wrap;gap:6px 22px;justify-content:flex-end;margin-top:6px;padding-top:6px;border-top:1px solid rgba(186,230,253,.12)}' +
     '.cb-money span{display:inline-flex;gap:8px;align-items:baseline}.cb-money small{font-size:12.5px;color:#93a1b8}.cb-money b{font-size:16px;color:#fff;font-variant-numeric:tabular-nums}.cb-money b.neg{color:#ffb4bd}' +
     'body.show-mode .cb-money{display:none}' +
+    '@media (min-width:1100px){body[data-obtab="case"] main:has(> .case-band){grid-template-rows:auto auto minmax(0,1fr)}body[data-obtab="case"] main:has(> .case-band) > .case-card,body[data-obtab="case"] main:has(> .case-band) > section.sec{grid-row:3}}' +
     '@media (max-width:760px){.cb-steps{grid-template-columns:repeat(5,minmax(0,1fr));row-gap:10px}.cb-step:nth-child(6)::before{display:none}.cb-money{justify-content:flex-start;gap:4px 14px}}';
 
   function paint() {
     try {
-      if (typeof view === 'undefined' || view.tab !== 'case' || typeof C === 'undefined' || !C) return;
-      var card = document.querySelector('.case-card'); if (!card) return;
-      var box = card.parentElement, html = bandHTML(C), prev = box.previousElementSibling;   // 工事の画面のまとまりのすぐ上に置く
-      if (prev && prev.classList.contains('case-band')) { var tmp = document.createElement('div'); tmp.innerHTML = html; if (prev.innerHTML !== tmp.firstChild.innerHTML) prev.innerHTML = tmp.firstChild.innerHTML; return; }
-      box.insertAdjacentHTML('beforebegin', html);
-      // 下のまとまりと左右の端をそろえる
-      var cs = getComputedStyle(box), band = box.previousElementSibling, br = box.getBoundingClientRect(), cr = card.getBoundingClientRect();
-      if (band) { band.style.marginLeft = (parseFloat(cs.paddingLeft) || 0) + (parseFloat(cs.marginLeft) || 0) + 'px'; band.style.marginRight = (parseFloat(cs.paddingRight) || 0) + (parseFloat(cs.marginRight) || 0) + 'px'; }
+      var old = document.querySelector('.case-band');
+      if (typeof view === 'undefined' || view.tab !== 'case' || typeof C === 'undefined' || !C) { if (old) old.remove(); return; }   // 工事の画面のときだけ
+      var main = document.querySelector('main'), card = document.querySelector('.case-card'); if (!main || !card) return;
+      var html = bandHTML(C);
+      if (old && old.parentElement === main) { var tmp = document.createElement('div'); tmp.innerHTML = html; if (old.innerHTML !== tmp.firstChild.innerHTML) old.innerHTML = tmp.firstChild.innerHTML; return; }
+      if (old) old.remove();
+      main.insertAdjacentHTML('afterbegin', html);
     } catch (e) {}
   }
   function start() {

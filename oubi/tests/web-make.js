@@ -55,8 +55,9 @@ const O = 'OUBI_LINK.frame().contentWindow.OUBI';
   ok(await p.evaluate(id => EE.views.editor.current().lines[1].lineId === id, first), '2-3 キーボードだけで行を動かす（Alt＋↓）');
 
   /* 3-1 お客様向けの説明 */
-  await p.click('#line-body tr[data-line] [data-act="desc"]'); await p.waitForTimeout(300);
-  await p.fill('#ld-text', 'コンクリートで固めるので、雑草が生えず車も止めやすくなります'); await p.click('.modal [data-ok]'); await p.waitForTimeout(400);
+  await p.click('#line-body tr[data-line] [data-act="open"]'); await p.waitForTimeout(300);   // お客様向けの説明は、行を広げた中で直す
+  await p.fill('[data-detail] .d-desc', 'コンクリートで固めるので、雑草が生えず車も止めやすくなります'); await p.dispatchEvent('[data-detail] .d-desc', 'input');
+  await p.click('#line-body tr[data-line] [data-act="open"]'); await p.waitForTimeout(400);
   ok(/お客様向け：コンクリート/.test(await p.textContent('#line-body')), '3-1 明細にお客様向けの説明（画面）');
 
   /* 2-2 寸法から数量 */

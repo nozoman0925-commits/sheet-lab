@@ -353,7 +353,7 @@
 
   /* ===== 明細のツール（寸法・チェックリスト・マイ型） ===== */
   function toolsHTML(d) {
-    return '<button class="btn sm" type="button" data-mk2="dims">' + I.calc + '寸法から数量</button>' +
+    return '<button class="btn sm" type="button" data-mk2="dims">' + I.calc + '寸法から数量を出す</button>' +
       '<button class="btn sm" type="button" data-mk2="check" data-n="' + checklistOf(d).filter(function (x) { return !x.has && !x.skip; }).length + '">' + I.check + '入れ忘れを確かめる</button>' +
       '<button class="btn sm" type="button" data-mk2="mytype">' + I.star + 'マイ型に保存</button>';
   }

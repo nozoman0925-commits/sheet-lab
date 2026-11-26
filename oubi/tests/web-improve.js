@@ -45,11 +45,11 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
     const c2 = x.makeCase({ customer: '佐藤 花子', addr: '町田市原町田2-2' }); c2.work.title = '佐藤様邸 屋根'; c2.result = { status: 'won', wonDate: t3 }; c2.invoice = { files: [], date: t3 }; x.touch(c2);
     window.__c = c.id; window.__c2 = c2.id;
   }, [O, today]); await p.waitForTimeout(1500);
-  await p.evaluate(([cid, vu]) => { const s = EE.S, d = EE.data.newEstimate(s, { projectId: cid, customerId: 'cus_' + cid, title: '山田様邸 外壁' }); d.validUntil = vu; s.documents.push(d); EE.ui.commit(); }, [await p.evaluate(() => window.__c), add(3)]);
+  await p.evaluate(([cid, vu]) => { const s = EE.S, d = EE.data.newEstimate(s, { projectId: cid, customerId: 'cus_' + cid, title: '山田様邸 外壁' }); d.validUntil = vu; d.lines.push(EE.data.lineFromItem(s.items[0], 1)); d.status = 'issued'; d.issuedAt = new Date().toISOString(); d.snap = EE.data.snapOf(s, d); s.documents.push(d); EE.ui.commit(); }, [await p.evaluate(() => window.__c), add(3)]);
   await p.waitForTimeout(3500);
   await go(p, '#/home', 1500);
   const todo = await p.textContent('.widget[data-type="todo"]');
-  ok(/見積の期限まで あと 3 日/.test(todo), '期限が近い見積が「今日やること」に出る');
+  ok(/有効期限まで 残り 3 日/.test(todo), '期限が近い（確定した）見積が「今日やること」に出る');
   ok(/入金待ち/.test(todo), '入金待ちの工事も「今日やること」に出る');
   ok(await p.evaluate(() => !localStorage.getItem('oubi.ldb.visits') && !localStorage.getItem('oubi.autorv')), '営業の再訪問には入れない（営業の機能はない）');
 
@@ -72,6 +72,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
   }, [O, itemId, add(-10)]); await p.waitForTimeout(2500);
   await p.evaluate(([o, past]) => { const x = eval(o), c = x.cases().find(k => k.id === window.__c3); c.result = { status: 'won', wonDate: past }; c.schedule = { start: past, end: past, steps: [], prep: {}, changes: [] }; c.actual = { material: Math.round(window.__plan * 1.2) }; x.touch(c); }, [O, add(-10)]);
   await p.waitForTimeout(2500);
+  await p.evaluate(() => { let t; while ((t = EE.ui.topModal())) t.close(); });   // 受注にした瞬間のお祝い（2026-11-26）を閉じる
   await go(p, '#/settings/actual', 1800);
   ok(/実績から原価を見直す/.test(await p.textContent('#view')) && (await p.$$('[data-act-pick]')).length >= 1, '設定の品目に「実績から原価を見直す」（完工した工事の実際の原価から）');
   await p.click('[data-act-apply]'); await p.waitForTimeout(1200);
