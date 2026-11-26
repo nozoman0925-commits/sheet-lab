@@ -30,7 +30,7 @@ sub('<link rel="stylesheet" href="css/login.css">\n', '');
 sub('<script src="js/auth.js"></script>\n', '');
 sub('<script src="js/login.js"></script>\n', '');
 sub('<script src="js/palette.js"></script>', '<script src="js/palette.js"></script>\n<script src="js/oubi-pager.js"></script>\n<script src="js/oubi-link.js"></script>\n<script src="js/oubi-bridge.js"></script>');
-if (DEMO) { sub('<script src="js/oubi-bridge.js"></script>', '<script src="js/oubi-bridge.js"></script>\n<script src="js/oubi-demo.js"></script>'); ix = ix.replace(/<title>[^<]*<\/title>/, '<title>桜ミツ 見せる用</title>'); }
+if (DEMO) { sub('<script src="js/oubi-bridge.js"></script>', '<script src="js/oubi-bridge.js"></script>\n<script src="js/oubi-demo.js"></script>'); }
 const bootA = ix.indexOf('  var started = false;'), bootB = ix.indexOf('</script>', bootA);
 ix = ix.slice(0, bootA) + `  // 桜ミツ版：ログインはない。起動の演出のあいだに業務管理と見積の記録をそろえ、演出が終わったらそのままホーム
   var started = false, ready = false, wantIntro = false;

@@ -12,7 +12,7 @@ let fail = 0; const ok = (c, m) => { console.log((c ? '✓ ' : '✗ ') + m); if 
     await p.route(/googleapis|gstatic|cloudflare|jsdelivr|open-meteo/, r => r.abort());
     await p.goto(BASE + '?splash=off#/home'); await p.waitForTimeout(6000);
     const tag = vp.width < 500 ? '（スマホ）' : '';
-    ok(await p.isVisible('#demo-mark') && /再読み込みで元に戻ります/.test(await p.textContent('#demo-mark')), '「見せる用」の印' + tag);
+    ok(!(await p.$('#demo-mark')) && !/見せる用/.test(await p.textContent('body')), '「見せる用」の文字が出ない' + tag);
     ok(/返事待ち 8日/.test(await p.textContent('.nextup')), '次の一手に、見本の返事待ちの見積' + tag);
     const n = await p.evaluate(() => EE.S.documents.length);
     ok(n >= 10, '見本の見積が入っている（' + n + '通）' + tag);

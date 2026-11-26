@@ -303,8 +303,3 @@ body.ee-link .nextup .btn { flex: none; }
   body.ee-link .plus-bar .btn { height: 36px; min-height: 36px; padding: 0 10px; font-size: 13px; }
   body.ee-link .plus-bar .btn svg { display: none; }
 }
-/* 見せる用の版の印 */
-#demo-mark { position: fixed; left: 16px; bottom: 92px; z-index: 50; width: 220px; display: grid; gap: 2px; padding: 10px 12px; border-radius: 14px;
-  border: 1px solid rgba(191, 160, 106, .55); background: rgba(13, 20, 38, .96); font-size: 12px; line-height: 1.5; color: var(--text-2); pointer-events: none; }
-#demo-mark b { color: #d8c08a; font-size: 13px; white-space: nowrap; }
-@media (max-width: 760px) { #demo-mark { left: 12px; right: 12px; width: auto; bottom: calc(80px + env(safe-area-inset-bottom, 0px)); display: flex; gap: 8px; padding: 6px 12px; } }
