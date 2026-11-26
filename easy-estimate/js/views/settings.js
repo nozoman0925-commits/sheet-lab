@@ -272,6 +272,7 @@
       '<div class="field c4"><label>粗利率の下限（%）</label><input class="input num" type="number" id="r-margin" value="' + Math.round(s.minMargin * 100) + '" min="0" max="100"><span class="hint">下回ると送信前チェックで注意を出します</span></div>' +
       '<div class="field c12"><label>工事の種類ごとの粗利率の下限（%）— 空欄は上の全体の下限を使います</label><div class="cat-margin">' +
         (EE.S.categories || []).map(function (c) { var v = (s.minMarginByCat || {})[c.id]; return '<label class="cm-row"><span>' + esc(c.name) + '</span><input class="input num" type="number" min="0" max="100" data-cat-margin="' + esc(c.id) + '" value="' + (typeof v === 'number' ? Math.round(v * 100) : '') + '" placeholder="' + Math.round(s.minMargin * 100) + '"></label>'; }).join('') + '</div></div>' +
+      (EE.plus && EE.plus.mistakesHTML ? EE.plus.mistakesHTML() : '') +
       '<div class="field c4"><label>有効期限の既定（日）</label><input class="input num" type="number" id="r-days" value="' + s.validDays + '" min="1"></div>' +
       '<div class="field c4"><label>見積番号の頭文字</label><input class="input num" id="r-prefix" value="' + esc(s.numberPrefix) + '"><span class="hint">例：EST-202611-001</span></div>' +
       '<div class="field c12"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="r-autosave"' + (EE.S.autoSave !== false ? ' checked' : '') + '> 入力途中の見積を自動保存する（保存済みの下書きは1.5秒ごとに上書き、新規は端末に一時保存）</label></div>' +

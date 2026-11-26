@@ -33,7 +33,13 @@
     var nq = U.norm(W.q || '');
     var list = EE.S.projects.slice().sort(function (a, b) { return String(b.updatedAt || b.createdAt || '').localeCompare(String(a.updatedAt || a.createdAt || '')); })
       .filter(function (p) { var c = U.findCustomer(p.customerId) || {}; return !nq || U.norm((p.name || '') + (c.name || '')).indexOf(nq) >= 0; }).slice(0, 8);
-    var body = '<p class="wz-help">見積を出す工事を選んでください。まだ登録していない工事は、下でお客様の名前を入れるだけで作れます。</p>' +
+    // 最近の見積3件は、いつも一番上に（押すと中身ごと複製して、すぐ直せる＝2タップで下書き）
+    var recent = EE.S.documents.filter(function (d) { return d.lines && d.lines.length; }).sort(function (a, b) { return String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')); }).slice(0, 3);
+    var recentHTML = recent.length ? '<div class="wz-recent"><b>最近の見積から作る（中身ごと複製）</b><div class="wz-recent-row">' + recent.map(function (d) {
+      var c = U.docCustomer(d);
+      return '<button type="button" class="wz-opt wz-dup" data-dup-recent="' + d.id + '">' + I.copy + '<span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc((c.name || '宛先未設定') + '・' + U.yen(U.calcDoc(d).total) + '・' + d.lines.length + '品目') + '</small></span></button>';
+    }).join('') + '</div></div>' : '';
+    var body = recentHTML + '<p class="wz-help">見積を出す工事を選んでください。まだ登録していない工事は、下でお客様の名前を入れるだけで作れます。</p>' +
       (EE.S.projects.length > 4 ? '<input class="input wz-search" id="wz-q" type="search" placeholder="お客様の名前・工事名で探す" value="' + esc(W.q || '') + '" aria-label="工事を探す">' : '') +
       '<div class="wz-list" role="radiogroup" aria-label="工事">' + (list.length ? list.map(function (p) {
         var c = U.findCustomer(p.customerId) || {}, on = p.id === W.projectId;
@@ -138,6 +144,7 @@
   function mount(view) {
     view.addEventListener('click', function (e) {
       var t;
+      if ((t = e.target.closest('[data-dup-recent]'))) { EE.app.duplicate(t.dataset.dupRecent); return; }
       if ((t = e.target.closest('[data-pj]'))) { W.projectId = t.dataset.pj; W.docId = ''; EE.app.rerender(); return; }
       if ((t = e.target.closest('[data-mode]'))) { W.mode = t.dataset.mode; EE.app.rerender(); var x = view.querySelector('#wz-text'); if (x) x.focus(); return; }
       if ((t = e.target.closest('[data-tpl]'))) { W.tpl = t.dataset.tpl; EE.app.rerender(); return; }

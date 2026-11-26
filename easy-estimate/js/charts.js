@@ -95,7 +95,8 @@
     el.innerHTML = '<svg class="viz" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="' + esc(opts.title || '件数の推移') + '">' +
       '<defs><linearGradient id="area-g" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3987e5" stop-opacity=".35"/><stop offset="1" stop-color="#3987e5" stop-opacity="0"/></linearGradient></defs>' +
       '<line x1="0" x2="' + W + '" y1="' + (H - 18) + '" y2="' + (H - 18) + '" class="viz-base"/>' +
-      '<path d="' + fill + '" fill="url(#area-g)"/><path class="viz-line" d="' + line + '" fill="none" stroke="#3987e5" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
+      (opts.fmt === 'yen' ? [0.5, 1].map(function (f) { var yy = y(max * f); return '<line x1="0" x2="' + W + '" y1="' + yy + '" y2="' + yy + '" class="viz-grid"/><text x="2" y="' + (yy - 4) + '" class="viz-axis">' + short(max * f) + '</text>'; }).join('') : '') +
+      '<path class="viz-fill" d="' + fill + '" fill="url(#area-g)"/><path class="viz-line' + (opts.glow ? ' glow' : '') + '" d="' + line + '" pathLength="1" fill="none" stroke="#3987e5" stroke-width="2" stroke-linejoin="round" stroke-linecap="round"/>' +
       points.map(function (p, i) { return (i % Math.ceil(points.length / 6) === 0 || i === points.length - 1) ? '<text x="' + x(i) + '" y="' + (H - 4) + '" class="viz-axis" text-anchor="middle">' + esc(p.label) + '</text>' : ''; }).join('') +
       '<line class="viz-cross" x1="0" x2="0" y1="4" y2="' + (H - 18) + '" hidden/><circle class="viz-dot" r="4.5" hidden/>' +
       '<rect class="viz-hit" x="0" y="0" width="' + W + '" height="' + H + '"/></svg>';
@@ -106,9 +107,14 @@
       cross.hidden = false; dot.hidden = false;
       cross.setAttribute('x1', x(i)); cross.setAttribute('x2', x(i));
       dot.setAttribute('cx', x(i)); dot.setAttribute('cy', y(points[i].value));
-      showTip('<b>' + esc(points[i].label) + '</b><div class="row">' + esc(opts.unit || '件数') + '<span>' + points[i].value.toLocaleString('ja-JP') + '</span></div>', e.clientX, e.clientY);
+      showTip('<b>' + esc(points[i].label) + '</b><div class="row">' + esc(opts.unit || '件数') + '<span>' + (opts.fmt === 'yen' ? EE.ui.yen(points[i].value) : points[i].value.toLocaleString('ja-JP')) + '</span></div>', e.clientX, e.clientY);
     });
     svg.querySelector('.viz-hit').addEventListener('pointerleave', function () { cross.hidden = true; dot.hidden = true; hideTip(); });
+    // 描画の動き：線が左から伸び、塗りはその後ろから淡く出る（期間を変えたときも描き直す）
+    if (opts.draw && EE.fx) {
+      EE.fx.anim(svg.querySelector('.viz-line'), [{ strokeDasharray: '1 1', strokeDashoffset: 1 }, { strokeDasharray: '1 1', strokeDashoffset: 0 }], { duration: EE.fx.T.page, fill: 'none' });
+      EE.fx.anim(svg.querySelector('.viz-fill'), [{ opacity: 0 }, { opacity: 1 }], { duration: EE.fx.T.page, delay: 100, fill: 'backwards' });
+    }
   }
 
   /** 円形ゲージ（0〜1）。数字は中央に大きく、リングの太さ 9px */

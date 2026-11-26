@@ -77,7 +77,7 @@ const base = () => ({
 });
 const ctx = (o = {}) => Object.assign({
   items: [item], customers: [{ id: 'c1', name: 'A社', honorific: '御中', kind: 'corp', address: 'x' }],
-  projects: [], documents: [], company: { name: '自社', invoiceRegNo: 'T1234567890123' }, settings: { minMargin: 0.15 }, today: '2026-11-18',
+  projects: [], documents: [], company: { name: '自社', invoiceRegNo: 'T1234567890123', bank: '〇〇銀行 本店 普通 1234567', rep: '代表 太郎' }, settings: { minMargin: 0.15 }, today: '2026-11-18',
 }, o);
 const codes = (doc, c) => C.run(doc, c || ctx()).map(x => x.code);
 
@@ -163,6 +163,17 @@ t('定額値引き・千円未満切り捨て・原価は変わらない', () =>
   assert.strictEqual(r.costTotal, 800000);
   assert.strictEqual(r.grossProfit, 424000);
   assert.strictEqual(r.tax, 122400);
+});
+
+t('原価が空の行があると粗利率を出さず、設定の空欄を発行前に知らせる', () => {
+  const doc = base();
+  doc.lines.push({ lineId: 'l3', name: '原価なし', qty: 1, unitPrice: 5000, kind: 'construction', costType: 'labor' });
+  doc.totals = E.snapshot(E.calc(doc, {}));
+  assert.strictEqual(E.calc(doc, {}).costMissing, 1);
+  const c = codes(doc, ctx({ company: { name: '自社', invoiceRegNo: 'T1234567890123' }, meName: '' }));
+  ['cost-missing', 'no-bank', 'no-rep', 'no-me'].forEach(code => assert.ok(c.includes(code), code + ' が出ていない: ' + c));
+  assert.ok(!c.includes('low-margin'));
+  assert.ok(!codes(doc, ctx()).includes('no-me'));   // 名前の欄が無い（単体の桜ミツ）ときは出さない
 });
 
 console.log(`\n${n} tests passed`);

@@ -162,9 +162,21 @@
     S.projects.forEach(function (p) {
       if (p.lost) return;
       if (p.stage === 'estimate') docsOf(p.id).forEach(function (d) {
-        if (!d.validUntil || d.status === 'void') return;
+        if (d.status === 'void') return;
+        // 下書き：期限ではなく「止まっている日数」（最後に直してから7日以上）
+        if (d.status !== 'issued') {
+          // 粗利割れ（原価がそろっている下書きだけ）：金額と下限を添えて、赤系のアラートに
+          var rr = U.calcDoc(d), minM = U.minMarginOf(d);
+          if (rr.subtotal > 0 && rr.marginRate != null && rr.marginRate < minM) out.push({ kind: 'margin', id: d.id + ':m', p: p, d: d, n: -50, warn: true, alert: true, t: (p.name || d.title || '見積'),
+            s: '粗利率 ' + U.pct(rr.marginRate) + '（下限 ' + Math.round(minM * 100) + '%）・' + U.yen(rr.total) + (d.validUntil ? '・期限 ' + U.jdate(d.validUntil) : ''), href: '#/edit/' + d.id });
+          var st = d.updatedAt ? Math.floor((new Date(EE.data.today() + 'T00:00:00') - new Date(String(d.updatedAt).slice(0, 10) + 'T00:00:00')) / 864e5) : null;
+          if (st != null && st >= 7) out.push({ kind: 'stall', id: d.id, p: p, d: d, n: 100 + st, warn: false, t: (p.name || d.title || '見積'), s: '下書きのまま ' + st + ' 日止まっています', href: '#/edit/' + d.id });
+          return;
+        }
+        if (!d.validUntil) return;
         var n = daysTo(d.validUntil);
-        if (n <= 7 && n >= -7) out.push({ kind: 'quote', id: d.id, p: p, d: d, n: n, warn: n <= 2, t: (p.name || d.title || '見積'), s: n < 0 ? '見積の期限が ' + (-n) + ' 日過ぎています（' + (d.no || '下書き') + '）' : '見積の期限まで あと ' + n + ' 日（' + (d.no || '下書き') + '）', href: '#/edit/' + d.id });
+        if (n <= 7 && n >= -7) out.push({ kind: 'quote', id: d.id, p: p, d: d, n: n, warn: n <= 2, alert: n < 0, t: (p.name || d.title || '見積'),
+          s: (n < 0 ? '有効期限が ' + (-n) + ' 日過ぎています（' + U.jdate(d.validUntil) + '）' : '有効期限まで 残り ' + n + ' 日（' + U.jdate(d.validUntil) + '）') + '・' + U.yen(U.calcDoc(d).total) + '・' + d.no, href: '#/edit/' + d.id });
       });
       if (p.stage === 'invoice') out.push({ kind: 'pay', id: p.id, p: p, warn: true, t: p.name, s: '入金待ち（請求 ' + (p.invoicedOn ? U.jdate(p.invoicedOn) : '済み') + '）', href: '#/o/case/' + p.id + '/payin' });
     });
@@ -272,7 +284,8 @@
       '<tr><th style="' + cell + ';background:#f3f5f9;text-align:left">見積番号・有効期限</th>' + col.map(function (c) { return '<td style="' + cell + ';text-align:center;font-size:13px">' + U.esc(c.d.no || '（確定前）') + '<br>' + (c.d.validUntil ? U.jdate(c.d.validUntil) + 'まで' : '') + '</td>'; }).join('') + '</tr>' +
       '</tbody></table><p style="font-size:12px;color:#555;margin-top:14px">各プランの詳しい明細は、それぞれの見積書をご覧ください。金額は消費税10%を含みます。</p></div>';
   }
-  function loadH2C() { return root.html2canvas ? Promise.resolve() : new Promise(function (ok, ng) { var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; s.crossOrigin = 'anonymous'; s.onload = ok; s.onerror = ng; document.head.appendChild(s); }); }
+  function loadH2C() { if (!root.html2canvas && root.navigator && root.navigator.onLine === false) { EE.fx.toast('圏外のため画像にできません。「PDFとして保存・印刷」は圏外でも使えます', { warn: true, ms: 5000 }); return Promise.reject(new Error('offline')); }
+    return root.html2canvas ? Promise.resolve() : new Promise(function (ok, ng) { var s = document.createElement('script'); s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js'; s.crossOrigin = 'anonymous'; s.onload = ok; s.onerror = ng; document.head.appendChild(s); }); }
   EE.linkCompare = {
     can: function (pid) { return docsOf(pid).length >= 2; },
     open: function (pid) {
@@ -386,4 +399,17 @@
       });
     }
   };
+
+  /* ---- 圏外のしるし：入力・保存・見積・PDF はこの端末だけで動く。地図・天気・画像の書き出しは、つながってから ---- */
+  function netMark() {
+    var off = root.navigator && root.navigator.onLine === false, m = document.getElementById('net-mark');
+    if (!off) { if (m) m.remove(); return; }
+    if (m) return;
+    m = document.createElement('div'); m.id = 'net-mark'; m.setAttribute('role', 'status');
+    m.innerHTML = '<b>圏外</b><span>見積・保存・PDF はこのまま使えます（この端末に保存）。地図・天気・画像での保存は、つながってから。</span>';
+    document.body.appendChild(m);
+  }
+  root.addEventListener('online', function () { netMark(); EE.fx.toast('つながりました', { force: true }); });
+  root.addEventListener('offline', netMark);
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', netMark); else netMark();
 })(this);

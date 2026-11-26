@@ -162,7 +162,9 @@
 
     // ---- 5. 粗利 ----
     var minMargin = typeof settings.minMargin === 'number' ? settings.minMargin : 0.15;
-    if (result.marginRate !== null && result.marginRate < minMargin && lines.length) {
+    if (result.costMissing > 0) {
+      add('warn', 'cost-missing', '原価が未入力の行があります（' + result.costMissing + '行）', '原価が空の行があると粗利率が実際より高く出るため、粗利率は出していません。品目マスタか明細の原価を入れてください。', { area: 'lines' });
+    } else if (result.marginRate !== null && result.marginRate < minMargin && lines.length) {
       add('warn', 'low-margin', '粗利率が' + (result.marginRate * 100).toFixed(1) + '%です',
         '設定の下限 ' + Math.round(minMargin * 100) + '% を下回っています（粗利 ' + yen(result.grossProfit) + '）。', { area: 'summary' });
     }
@@ -172,6 +174,10 @@
     if (!reg) add('warn', 'no-reg-no', '適格請求書発行事業者の登録番号が未設定です', '設定・マスタ → 自社情報 で登録できます（見積書には必須ではありませんが、請求書では必須です）。', { area: 'company' });
     else if (!/^T\d{13}$/.test(reg)) add('error', 'bad-reg-no', '登録番号の形式が正しくありません', '「T」＋数字13桁です（現在: ' + reg + '）。', { area: 'company' });
     if (!company.name) add('error', 'no-company', '自社名が未設定です', '', { area: 'company' });
+    // 実務で使い始める前に埋めておく設定（空のまま発行すると、書類に空欄が出る）
+    if (!String(company.bank || '').trim()) add('warn', 'no-bank', '振込先が未設定です', '設定 → 自社情報 で入れると、請求書と見積書に載ります。', { area: 'company', field: 'bank' });
+    if (!String(company.rep || '').trim()) add('warn', 'no-rep', '代表者名が未設定です', '設定 → 自社情報 で入れてください。', { area: 'company', field: 'rep' });
+    if (ctx.meName != null && !String(ctx.meName).trim()) add('warn', 'no-me', '自分の名前が未設定です', '担当者として書類に載ります。設定 → 自分の名前・バックアップ で入れてください。', { area: 'company', field: 'me' });
 
     if (hasConstruction) {
       var b = result.breakdown;
@@ -182,6 +188,17 @@
         add('info', 'kensetsu-20-labor', '労務費が0円になっています', '改正建設業法第20条：工事の見積では労務費の明示が求められます。', { area: 'lines' });
       }
     }
+
+    // ---- 6a. ミスの型（設定で育てるチェック）：「A があるのに B がない」 ----
+    var nm = function (x) { return String(x || '').normalize('NFKC').toLowerCase(); };
+    var names = lines.map(function (l) { return nm(l.name) + ' ' + nm(l.spec); });
+    (settings.mistakes || []).forEach(function (mk) {
+      if (!mk || !mk.a || mk.off) return;
+      var a = nm(mk.a), bs = String(mk.b || '').split(/[|｜、,]/).map(nm).filter(Boolean);
+      if (!bs.length || !names.some(function (n) { return n.indexOf(a) >= 0; })) return;
+      if (names.some(function (n) { return bs.some(function (b) { return n.indexOf(b) >= 0; }); })) return;
+      add('warn', 'mistake:' + mk.id, mk.msg || '「' + mk.a + '」があるのに「' + mk.b + '」がありません', 'ミスの型（設定 → 計算ルール）で決めた確認です。いらない場合は外してください。', { area: 'lines' });
+    });
 
     // ---- 6b. 同じ工事のパターン ----
     if (doc.projectId && doc.patternLabel) {

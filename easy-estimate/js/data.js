@@ -53,7 +53,16 @@
         validDays: 30,
         numberPrefix: 'EST',
         overheadRounding: 'floor',
-        discountRounding: 'ceil'
+        discountRounding: 'ceil',
+        // ミスの型（送信前チェック）：「A があるのに B がない」を知らせる。使いながら足していく（設定 → 計算ルール）
+        mistakes: [
+          { id: 'mk1', a: '足場設置', b: '足場撤去|足場解体', msg: '足場の設置があるのに、撤去がありません' },
+          { id: 'mk2', a: '撤去', b: '処分|運搬', msg: '撤去があるのに、処分・運搬がありません' },
+          { id: 'mk3', a: '中塗り', b: '上塗り', msg: '中塗りがあるのに、上塗りがありません' },
+          { id: 'mk4', a: '下塗り', b: '中塗り|上塗り', msg: '下塗りがあるのに、中塗り・上塗りがありません' },
+          { id: 'mk5', a: '防水シート', b: '屋根材|葺き', msg: '防水シートがあるのに、屋根材の施工がありません' }
+        ],
+        mistakeHits: {}
       },
       items: [],
       packages: [],

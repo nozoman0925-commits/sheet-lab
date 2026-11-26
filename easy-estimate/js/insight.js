@@ -46,7 +46,8 @@
     var main = acc || latest;
     var r = main ? U.calcDoc(main) : null;
     var drafts = docs.filter(function (d) { return d.status === 'draft'; });
-    var valid = drafts.map(function (d) { return d.validUntil; }).filter(Boolean).sort()[0] || (main && main.validUntil) || '';
+    var issuedDocs = docs.filter(function (d) { return d.status === 'issued'; });
+    var valid = issuedDocs.map(function (d) { return d.validUntil; }).filter(Boolean).sort().pop() || '';   // 有効期限は確定した見積だけ（下書きの期限は数えない）
     var days = valid ? U.daysFromToday(valid) : null;
     var lastDate = [p.paidOn, p.invoicedOn, p.doneOn, p.startedOn, p.orderedOn].concat(docs.map(function (d) { return d.issueDate; })).filter(Boolean).sort().pop() || '';
     var next = EE.data.STAGES[si].next, warn = false;
