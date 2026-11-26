@@ -35,7 +35,7 @@
       var mark = l.taxCategory === 'red8' ? ' <span class="mark">※</span>' : '';
       var tl = l.taxCategory === 'std10' ? '10%' : l.taxCategory === 'red8' ? '8%' : TC[l.taxCategory] ? TC[l.taxCategory].label : '';
       return '<tr><td class="c num">' + (i + 1) + '</td>' +
-        '<td>' + esc(l.name) + mark + (l.spec ? '<div class="spec">' + esc(l.spec) + '</div>' : '') + '</td>' +
+        '<td>' + esc(l.name) + mark + (l.spec ? '<div class="spec">' + esc(l.spec) + '</div>' : '') + (l.desc ? '<div class="desc">' + esc(l.desc) + '</div>' : '') + '</td>' +
         '<td class="r num">' + U.num(l.qty) + '</td><td class="c">' + esc(l.unit) + '</td>' +
         '<td class="r num">' + yen(l.unitPrice) + '</td><td class="r num">' + yen(amt) + '</td>' +
         '<td class="c num">' + tl + '</td></tr>';
@@ -67,7 +67,7 @@
       // 値引き・端数調整も内訳に入れ、内訳の合計が小計（税抜）と一致するようにする
       (b.discount ? '<tr><td>値引き・端数調整</td><td class="r num">' + yen(b.discount) + '</td></tr>' : '');
 
-    var title = '御見積書' + (doc.patternLabel ? '（' + doc.patternLabel + '）' : '') + (doc.rev ? '（第' + doc.rev + '版）' : '');
+    var title = (doc.rough ? '概算御見積書' : '御見積書') + (doc.patternLabel ? '（' + doc.patternLabel + '）' : '') + (doc.rev ? '（第' + doc.rev + '版）' : '');
     // 2ページ目以降の上に、宛先と件名の小さい見出しを繰り返す（1ページ目は本文にあるので出さない）
     var css = function (t) { return '"' + String(t).replace(/\\/g, '\\\\').replace(/"/g, '\\"').replace(/[\r\n<>]/g, ' ') + '"'; };
     var run = (cust.name || '') + (cust.honorific ? ' ' + cust.honorific : '') + '　／　' + (doc.title || '') + '　／　' + (doc.no ? 'No. ' + doc.no : '');
@@ -108,6 +108,9 @@
         '<div>' +
           '<div class="box"><h4>工事費の内訳（建設業法第20条）</h4><table class="sans">' + bdRows + '</table></div>' +
           (doc.notes ? '<div class="box"><h4>備考</h4><div class="notes">' + esc(doc.notes) + '</div></div>' : '') +
+          (doc.excludes ? '<div class="box"><h4>この見積に含まれないもの</h4><div class="notes">' + esc(doc.excludes) + '</div></div>' : '') +
+          (doc.premises ? '<div class="box"><h4>前提条件</h4><div class="notes">' + esc(doc.premises) + '</div></div>' : '') +
+          (doc.rough ? '<div class="box"><h4>概算について</h4><div class="notes">この見積は現地調査の直後にお出しする概算です。詳しい明細は、内容を決めたうえで正式な見積書でお出しします。</div></div>' : '') +
         '</div>' +
         '<table class="tot sans"><tr><th>小計（税抜）</th><td class="num">' + yen(r.subtotal) + '</td></tr>' + rateRows +
         '<tr class="g"><th>合計（税込）</th><td class="num">' + yen(r.total) + '</td></tr></table>' +

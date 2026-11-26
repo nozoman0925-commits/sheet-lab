@@ -130,7 +130,9 @@
             '<div class="field c4"><label>受渡期日</label><input class="input" data-f="deliveryTerm" value="' + esc(d.deliveryTerm) + '"' + dis + '></div>' +
             '<div class="field c4"><label>受渡場所</label><input class="input" data-f="deliveryPlace" value="' + esc(d.deliveryPlace) + '" placeholder="空欄なら工事の現場住所"' + dis + '></div>' +
             '<div class="field c4"><label style="display:flex;justify-content:space-between">支払条件' + (lk ? '' : '<a href="#" data-act="snip" data-target="paymentTerms" style="color:var(--accent-2)">定型文</a>') + '</label><input class="input" data-f="paymentTerms" value="' + esc(d.paymentTerms) + '"' + dis + '></div>' +
-            '<div class="field c12"><label style="display:flex;justify-content:space-between">備考・条件（PDFに載ります）' + (lk ? '' : '<a href="#" data-act="snip" data-target="notes" style="color:var(--accent-2)">定型文を挿入</a>') + '</label><textarea class="input" data-f="notes" rows="2"' + dis + '>' + esc(d.notes) + '</textarea></div>' +
+            '<div class="field c12"><label style="display:flex;justify-content:space-between">備考・条件（PDFに載ります）' + (lk ? '' : '<span><a href="#" data-act="snip" data-target="notes" style="color:var(--accent-2)">定型文を挿入</a>　<a href="#" data-act="snip-multi" style="color:var(--accent-2)">条件をまとめて選ぶ</a></span>') + '</label><textarea class="input" data-f="notes" rows="2"' + dis + '>' + esc(d.notes) + '</textarea></div>' +
+            '<div class="field c6"><label style="display:flex;justify-content:space-between">この見積に含まれないもの（PDFに載ります）' + (lk ? '' : '<a href="#" data-act="snip" data-target="excludes" style="color:var(--accent-2)">定型文</a>') + '</label><textarea class="input" data-f="excludes" rows="2" placeholder="例：既存の照明器具の処分、植栽の移植"' + dis + '>' + esc(d.excludes || '') + '</textarea></div>' +
+            '<div class="field c6"><label style="display:flex;justify-content:space-between">前提条件（PDFに載ります）' + (lk ? '' : '<a href="#" data-act="snip" data-target="premises" style="color:var(--accent-2)">定型文</a>') + '</label><textarea class="input" data-f="premises" rows="2" placeholder="例：駐車スペース1台分をお借りできること"' + dis + '>' + esc(d.premises || '') + '</textarea></div>' +
           '</div></div></section>' +
         /* 明細 */
         '<section class="panel" data-st id="sec-lines"><div class="panel-h"><h2>明細</h2><span class="sub">マスタから選んで数量を入れるだけ。単価はマスタで管理します</span><div class="spacer"></div>' +
@@ -150,7 +152,7 @@
                 var ps = S.packages.filter(function (p) { return p.category === c.id; });
                 return ps.length ? '<optgroup label="' + esc(c.name) + '">' + ps.map(function (p) { return U.opt(p.id, p.name + '（' + p.lines.filter(function (l) { return !l.optional; }).length + '行）', ''); }).join('') + '</optgroup>' : '';
               }).join('') + S.packages.filter(function (p) { return !(S.categories || []).some(function (c) { return c.id === p.category; }); }).map(function (p) { return U.opt(p.id, p.name, ''); }).join('') + '</select>' +
-              '<div class="grow"></div>' + (EE.plus ? EE.plus.draftTools(d) : '') +
+              '<div class="grow"></div>' + (EE.make ? EE.make.toolsHTML(d) : '') + (EE.plus ? EE.plus.draftTools(d) : '') +
               '<button class="btn sm" data-act="add-adj" data-type="overhead">' + I.plus + '諸経費を足す</button>' +
               '<button class="btn sm" data-act="add-adj" data-type="discount">' + I.plus + '値引きを足す</button>' +
               '<button class="btn sm" data-act="add-adj" data-type="roundoff">' + I.plus + '端数を調整する</button>' +
@@ -206,7 +208,7 @@
 
   function summaryHTML() {
     var lk = locked();
-    return '<section class="panel" data-st id="sec-summary"><div class="panel-h"><h2>金額</h2><span class="sub">固定ルールで自動計算</span></div><div class="panel-b">' +
+    return (EE.make ? EE.make.sideHTML(ED.doc) : '') + '<section class="panel" data-st id="sec-summary"><div class="panel-h"><h2>金額</h2><span class="sub">固定ルールで自動計算</span></div><div class="panel-b">' +
         '<div id="sum-adj"></div>' +
         '<div class="sum-row"><span>小計（税抜）</span><span class="yen" data-k="subtotal" data-format="yen">¥0</span></div>' +
         '<div id="sum-rates"></div>' +
@@ -241,18 +243,24 @@
     var amt = r.lines[i] ? r.lines[i].amount : 0;
     var prof = r.lines[i] ? r.lines[i].profit : 0;
     var tc = l.taxCategory === 'red8' ? '<span class="badge warn">8%</span>' : l.taxCategory === 'std10' ? '<span class="badge">10%</span>' : '<span class="badge">' + esc((EE.engine.TAX_CATEGORIES[l.taxCategory] || {}).label || '') + '</span>';
-    return '<tr data-line="' + l.lineId + '"' + (!it ? ' class="hl-err"' : stale ? ' class="hl"' : '') + '>' +
+    var gone = l.itemId && !it;   // マスタにない行（概算の行など）は「削除された」としない
+    return '<tr data-line="' + l.lineId + '"' + (gone ? ' class="hl-err"' : stale ? ' class="hl"' : '') + '>' +
       '<td>' + (lk ? '' : '<input type="checkbox" class="line-sel"' + (ED.sel && ED.sel[l.lineId] ? ' checked' : '') + '>') + '</td>' +
       '<td class="no num">' + (lk ? '' : '<span class="line-grip" title="ドラッグで並べ替え" aria-hidden="true">' + I.drag + '</span>') + (i + 1) + '</td>' +
       '<td>' + esc(l.name) + '<span class="cell-sub"><span class="code">' + esc(l.code) + '</span>' + (l.spec ? '　' + esc(l.spec) : '') + '</span>' +
         (stale && !lk ? '<span class="cell-sub" style="color:var(--warn)">マスタ単価 ' + U.yen(it.unitPrice) + ' と違います　<a href="#" data-act="refresh-price" style="color:var(--accent-2)">最新単価に更新</a></span>' : '') +
-        (!it ? '<span class="cell-sub" style="color:var(--err)">マスタが削除されています</span>' : '') + '</td>' +
-      '<td class="r"><input class="input qty num" type="number" step="0.01" inputmode="decimal" value="' + esc(l.qty) + '"' + (lk ? ' disabled' : '') + '></td>' +
+        (gone ? '<span class="cell-sub" style="color:var(--err)">マスタが削除されています</span>' : '') +
+        (l.desc ? '<span class="cell-sub line-desc">お客様向け：' + esc(l.desc) + '</span>' : '') +
+        (EE.make ? EE.make.lineNote(l, it) : '') + '</td>' +
+      '<td class="r">' + (lk ? '<input class="input qty num" type="number" value="' + esc(l.qty) + '" disabled>' :
+        '<div class="qty-wrap"><button type="button" class="qty-step" data-act="qty-dec" aria-label="数量を減らす" tabindex="-1">−</button>' +
+        '<input class="input qty num" type="number" step="0.01" inputmode="decimal" value="' + esc(l.qty) + '" list="qp-' + (EE.make ? EE.make.presetKey(l.unit) : 'x') + '" aria-label="' + esc(l.name) + 'の数量">' +
+        '<button type="button" class="qty-step" data-act="qty-inc" aria-label="数量を増やす" tabindex="-1">＋</button></div>') + '</td>' +
       '<td class="muted">' + esc(l.unit) + '</td>' +
       '<td class="r price num" title="単価はマスタで管理（ここでは変更できません）">' + I.lock.replace('<svg', '<svg class="lock"') + U.yen(l.unitPrice) + '</td>' +
       '<td class="r num" data-amt>' + U.yen(amt) + '<span class="profit-chip cell-sub' + (prof < 0 ? ' neg' : '') + '" data-prof>粗利 ' + U.yen(prof) + '</span></td>' +
       '<td>' + tc + '</td>' +
-      '<td>' + (lk ? '' : '<div class="row-actions"><button class="btn ghost icon sm" data-act="calc" title="数量を計算">' + CALC_ICON + '</button><button class="btn ghost icon sm" data-act="up" title="上へ">' + I.up + '</button><button class="btn ghost icon sm" data-act="down" title="下へ">' + I.down + '</button><button class="btn ghost icon sm danger" data-act="del" title="削除">' + I.trash + '</button></div>') + '</td>' +
+      '<td>' + (lk ? '' : '<div class="row-actions"><button class="btn ghost icon sm" data-act="calc" title="数量を計算">' + CALC_ICON + '</button><button class="btn ghost icon sm" data-act="desc" title="お客様向けの説明を書く">' + I.edit + '</button><button class="btn ghost icon sm" data-act="up" title="上へ">' + I.up + '</button><button class="btn ghost icon sm" data-act="down" title="下へ">' + I.down + '</button><button class="btn ghost icon sm danger" data-act="del" title="削除">' + I.trash + '</button></div>') + '</td>' +
     '</tr>';
   }
 
@@ -327,6 +335,7 @@
       if (first) EE.fx.countUp(el, v, el.dataset.format, 0, 600); else EE.fx.retarget(el, v);   // 開いたとき：カウントアップ（例外）／変えたとき：差分だけ 0.25秒でロール
     };
     set('subtotal', r.subtotal); set('total', r.total); set('costTotal', r.costTotal); set('grossProfit', r.grossProfit);
+    var ckB = document.querySelector('[data-mk2="check"]'); if (ckB && EE.make) ckB.dataset.n = EE.make.checklistOf(ED.doc).filter(function (x) { return !x.has && !x.skip; }).length;
     var mEl = document.querySelector('[data-k="margin"]');
     if (r.costMissing > 0) { if (mEl) { if (mEl._eeRaf) cancelAnimationFrame(mEl._eeRaf); mEl.textContent = '—'; mEl._eeVal = null; mEl.title = '原価が未入力の行があります'; } }
     else { if (mEl && mEl._eeVal == null && !first) mEl._eeVal = 0; if (mEl) mEl.title = ''; set('margin', r.marginRate == null ? 0 : Math.round(r.marginRate * 1000) / 10); }
@@ -448,7 +457,9 @@
       var it = U.findItem(x.itemId);
       if (!it) return;
       var ln = EE.data.lineFromItem(it, x.qty);
+      if (!ln.desc && it.description) ln.desc = it.description;   // マスタにお客様向けの説明があれば、はじめから付ける
       ED.doc.lines.push(ln);
+      if (EE.make) EE.make.used(it.id);
       ids.push(ln.lineId);
     });
     if (!ids.length) return;
@@ -459,20 +470,27 @@
 
   /** 検索欄の終わりの数字は数量（例：「GK-06 12」「フェンス 12m」「ブロック×30」） */
   function pickQuery() {
-    var raw = String(pick.q || ''), m = raw.match(/^(.*\S)[\s×xX＊*]+(\d+(?:\.\d+)?)\s*(m|ｍ|m2|m²|㎡|m3|m³|個|枚|本|台|箇所|式|段|人工|日)?\s*$/);
+    var raw = String(pick.q || ''), m = raw.match(/^(.*\S)[\s×xX＊*]+(\d+(?:\.\d+)?)\s*(m|ｍ|m2|m²|㎡|m3|m³|個|枚|本|台|箇所|式|段|人工|日|坪)?\s*$/);
+    // 坪で打ったら㎡にして入れる（1坪＝3.30579㎡。測ったままの単位で入れられる）
+    if (m && m[3] === '坪') return { q: m[1], qty: Math.round(Number(m[2]) * 3.30579 * 100) / 100, tsubo: Number(m[2]) };
     return m ? { q: m[1], qty: Number(m[2]) } : { q: raw, qty: null };
   }
   function filterItems() {
-    var pq = pickQuery(); pick.qty = pq.qty;
-    var q = U.norm(pq.q).trim();
-    var words = q.split(/\s+/).filter(Boolean);
-    return EE.S.items.filter(function (it) {
+    var pq = pickQuery(); pick.qty = pq.qty; pick.tsubo = pq.tsubo || null;
+    var kana = EE.make ? EE.make.kana : function (x) { return x; };
+    var q = kana(U.norm(pq.q).trim());
+    var words = q.split(/\s+/).filter(Boolean), cat = EE.make ? EE.make.pinnedCat() : '', use = EE.make ? EE.make.usage() : {};
+    var list = EE.S.items.filter(function (it) {
       if (it.active === false) return false;
       if (pick.kind !== 'all' && it.kind !== pick.kind) return false;
+      if (cat && it.category !== cat) return false;   // ピン留めしたカテゴリだけ
       if (!words.length) return true;
-      var hay = U.norm(it.code + ' ' + it.name + ' ' + it.spec + ' ' + (it.synonyms || []).join(' '));
+      var hay = kana(U.norm(it.code + ' ' + it.name + ' ' + it.spec + ' ' + (it.synonyms || []).join(' ') + ' ' + (it.kana || '') + ' ' + (EE.make ? EE.make.reading(it.name + ' ' + (it.spec || '')) : '')));
       return words.every(function (w) { return hay.indexOf(w) >= 0; });
-    }).slice(0, 40);
+    });
+    // 最近使った順（使った回数・最後に使った日）。打った言葉が品名の頭に合うものを先に
+    var sc = function (it) { var u = use[it.id] || {}; return (words.length && kana(U.norm(it.name)).indexOf(words[0]) === 0 ? 1e6 : 0) + (u.n || 0) * 10 + (u.at ? Date.parse(u.at) / 1e11 : 0); };
+    return list.map(function (it, i) { return { it: it, s: sc(it), i: i }; }).sort(function (a, b) { return b.s - a.s || a.i - b.i; }).map(function (x) { return x.it; }).slice(0, 40);
   }
 
   function hl(text) {
@@ -500,12 +518,12 @@
     pick.list = filterItems();
     if (pick.idx >= pick.list.length) pick.idx = Math.max(0, pick.list.length - 1);
     var K = EE.engine.ITEM_KINDS;
-    pop.innerHTML = (pick.list.length ? pick.list.map(function (it, i) {
+    pop.innerHTML = (EE.make ? EE.make.catChips() : '') + (pick.list.length ? pick.list.map(function (it, i) {
       return '<div class="picker-opt' + (i === pick.idx ? ' on' : '') + '" data-pi="' + i + '"><span class="code">' + hl(it.code) + '</span>' +
         '<span>' + hl(it.name) + (it.spec ? ' <span class="hint">' + hl(it.spec) + '</span>' : '') + '</span>' +
         '<span class="badge">' + K[it.kind] + '</span><span class="num" style="min-width:110px;text-align:right">' + U.yen(it.unitPrice) + ' <span class="hint">/' + esc(it.unit) + '</span></span></div>';
     }).join('') : '<div class="empty" style="padding:20px">一致するマスタがありません。<br><a href="#/settings/items" style="color:var(--accent-2)">設定・マスタで登録</a></div>') +
-      '<div class="picker-foot"><span><kbd>↑</kbd><kbd>↓</kbd> 選択</span><span><kbd>Enter</kbd> ' + (pick.qty ? '数量 ' + U.num(pick.qty) + ' で追加' : '追加') + '</span><span>例：<kbd>GK-06 12</kbd> で数量ごと</span><span><kbd>Esc</kbd> 閉じる</span></div>';
+      '<div class="picker-foot"><span><kbd>↑</kbd><kbd>↓</kbd> 選択</span><span><kbd>Enter</kbd> ' + (pick.qty ? '数量 ' + U.num(pick.qty) + ' で追加' : '追加') + '</span>' + (pick.tsubo ? '<span>' + U.num(pick.tsubo) + '坪 → ' + U.num(pick.qty) + '㎡</span>' : '<span>例：<kbd>GK-06 12</kbd>・<kbd>土間 30坪</kbd></span>') + '<span><kbd>Esc</kbd> 閉じる</span></div>';
     if (!pick.open) {
       pop.hidden = false; pick.open = true;
       EE.fx.anim(pop, [{ opacity: 0, transform: 'translateY(-4px) scale(.99)' }, { opacity: 1, transform: 'none' }], { duration: 180 });
@@ -825,6 +843,12 @@
       if (!t.classList.contains('qty')) return;
       var rows = Array.prototype.slice.call(view.querySelectorAll('.qty'));
       var i = rows.indexOf(t);
+      if (e.altKey && (e.key === 'ArrowUp' || e.key === 'ArrowDown')) {   // Alt＋↑↓：行ごと上下へ
+        e.preventDefault(); var id0 = t.closest('tr').dataset.line, L0 = ED.doc.lines, k0 = L0.findIndex(function (l) { return l.lineId === id0; }), k1 = k0 + (e.key === 'ArrowUp' ? -1 : 1);
+        if (k1 < 0 || k1 >= L0.length) return;
+        L0.splice(k1, 0, L0.splice(k0, 1)[0]); markDirty(); renderLines(id0);
+        var nq = document.querySelector('[data-line="' + id0 + '"] .qty'); if (nq) { nq.focus(); nq.select(); } return;
+      }
       if (e.key === 'Enter') { e.preventDefault(); var p = document.getElementById('pick'); if (p) p.focus(); }
       else if (e.key === 'ArrowDown' && rows[i + 1]) { e.preventDefault(); rows[i + 1].focus(); rows[i + 1].select(); }
       else if (e.key === 'ArrowUp' && rows[i - 1]) { e.preventDefault(); rows[i - 1].focus(); rows[i - 1].select(); }
@@ -883,6 +907,13 @@
             if (!ED || ED.doc.lines !== L) return;
             L.splice(Math.min(idx, L.length), 0, removed); markDirty(); renderLines(removed.lineId);
           } } });
+        } else if (act === 'qty-inc' || act === 'qty-dec') {
+          var lq = L[idx], step = EE.make ? EE.make.stepOf(lq.unit, lq.qty) : 1;
+          lq.qty = Math.max(0, Math.round(((Number(lq.qty) || 0) + (act === 'qty-inc' ? step : -step)) * 100) / 100);
+          var qi = tr.querySelector('.qty'); if (qi) { qi.value = lq.qty; }
+          markDirty(); updateSummary(); var ad = tr.querySelector('[data-amt]'); if (ad) { var rr = U.calcDoc(ED.doc); ad.firstChild.textContent = U.yen(rr.lines[idx] ? rr.lines[idx].amount : 0); }
+        } else if (act === 'desc') {
+          if (EE.make) EE.make.editDesc(L[idx], function () { markDirty(); renderLines(L[idx].lineId); });
         } else if (act === 'up' && idx > 0) {
           L.splice(idx - 1, 0, L.splice(idx, 1)[0]); markDirty(); renderLines(L[idx - 1].lineId);
         } else if (act === 'down' && idx < L.length - 1) {
@@ -952,6 +983,7 @@
         return;
       }
       if (act === 'snip') { e.preventDefault(); openSnippets(a.dataset.target); return; }
+      if (act === 'snip-multi') { e.preventDefault(); if (EE.make) EE.make.conditions(function (txt) { ED.doc.notes = (ED.doc.notes ? String(ED.doc.notes).replace(/\s+$/, '') + '\n' : '') + txt; var f = document.querySelector('[data-f="notes"]'); if (f) { f.value = ED.doc.notes; EE.fx.pulse(f); } markDirty(); }); return; }
       if (act === 'recover') {
         var rec = readRecovery(); clearRecovery();
         if (rec) { ['id', 'no', 'history', 'createdAt', 'updatedAt', 'status', 'totals'].forEach(function (k) { delete rec[k]; }); rec.sourceLabel = '入力途中のデータを復元'; EE.app.newWith(rec); }
@@ -978,7 +1010,8 @@
   /** 定型文の挿入（備考は追記、支払条件は置き換え） */
   function openSnippets(target) {
     var K = EE.catalog.SNIPPET_KINDS;
-    var list = (EE.S.snippets || []).filter(function (x) { return target === 'paymentTerms' ? x.kind === 'payment' : true; });
+    var only = { paymentTerms: 'payment', excludes: 'exclude', premises: 'premise' }[target];
+    var list = (EE.S.snippets || []).filter(function (x) { return only ? x.kind === only : x.kind !== 'exclude' && x.kind !== 'premise'; });
     U.modal({
       title: target === 'paymentTerms' ? '支払条件の定型文' : '定型文を挿入',
       body: list.length ? Object.keys(K).map(function (k) {
@@ -994,10 +1027,11 @@
           var b = e.target.closest('[data-snip]'); if (!b) return;
           var x = EE.S.snippets.filter(function (y) { return y.id === b.dataset.snip; })[0];
           var f = document.querySelector('[data-f="' + target + '"]');
-          if (target === 'notes') ED.doc.notes = (ED.doc.notes ? ED.doc.notes.replace(/\s+$/, '') + '\n' : '') + x.body;
+          var append = target !== 'paymentTerms';
+          if (append) ED.doc[target] = (ED.doc[target] ? String(ED.doc[target]).replace(/\s+$/, '') + '\n' : '') + x.body;
           else ED.doc[target] = x.body;
           f.value = ED.doc[target]; markDirty(); EE.fx.pulse(f);
-          if (target !== 'notes') api.close(); else EE.fx.toast('「' + x.title + '」を挿入しました');
+          if (!append) api.close(); else EE.fx.toast('「' + x.title + '」を挿入しました');
         });
       }
     });
@@ -1016,5 +1050,6 @@
   }
 
   EE.views = EE.views || {};
-  EE.views.editor = { render: render, onKey: onKey, isDirty: function () { return !!(ED && ED.dirty); }, current: function () { return ED && ED.doc; }, isLocked: locked, mark: function () { if (ED) markDirty(); }, lines: function (ids) { if (ED) renderLines(ids); } };
+  EE.views.editor = { render: render, onKey: onKey, isDirty: function () { return !!(ED && ED.dirty); }, current: function () { return ED && ED.doc; }, isLocked: locked, mark: function () { if (ED) markDirty(); }, lines: function (ids) { if (ED) renderLines(ids); },
+    addItems: function (arr) { return ED ? addItems(arr) : null; }, refreshChecks: function () { if (ED) { updateSummary(); updateChecks(); } } };
 })(this);

@@ -44,8 +44,11 @@ const O = 'OUBI_LINK.frame().contentWindow.OUBI';
   await p.click('.modal [data-ok]'); await p.waitForTimeout(2500);
   const st = await p.evaluate(([o, cid, did]) => { const c = eval(o).cases().find(c => c.id === cid), pj = EE.S.projects.find(x => x.id === cid); return { won: (c.result || {}).status, acc: (c.mitsu || {}).acceptedDocId, stage: pj && pj.stage, pacc: pj && pj.acceptedDocId }; }, [O, ids.c1, ids.d1]);
   ok(st.won === 'won' && st.acc === ids.d1 && st.pacc === ids.d1 && st.stage !== 'estimate', '2 請求書を作ると工事は受注・採用した見積はこの見積（段階 ' + st.stage + '）');
-  // 19 成約の演出（見積→受注の瞬間）
   await p.waitForTimeout(1800);
+  ok(!(await p.isVisible('.won-card')), '19 請求書で段階がまとめて進んだときは、お祝いを出さない');
+  // 19 成約の演出（見積→受注の瞬間）：佐藤様の工事を「受注」に
+  await p.evaluate(([o, cid]) => { const x = eval(o), c = x.cases().find(c => c.id === cid); c.result = { status: 'won', wonDate: EE.data.today() }; x.touch(c); }, [O, ids.c2]);
+  await p.waitForTimeout(3500);
   ok(await p.isVisible('.won-card'), '19 受注になった瞬間に、金色の縁のお祝い（紙吹雪なし）');
   await p.screenshot({ path: path.join(OUT, 'won.png') });
   await closeModals(p);

@@ -449,6 +449,8 @@
       var p = proj(d.projectId) || {}, s = lastSent(d), name = p.name || d.title || d.no;
       var left = d.validUntil ? daysTo(d.validUntil) : null;
       if (s && left != null && left >= 0 && left <= 3) cands.push({ pr: 1, tag: '期限まで あと' + left + '日', t: name, s: '見積 ' + d.no + ' の返事をまだもらっていません', btn: '返事を聞く', href: '#/edit/' + d.id, warn: true });
+      else if (s && left != null && left >= 0 && left <= 7) cands.push({ pr: 2.5, tag: '期限 ' + left + '日前', t: name, s: '有効期限 ' + U.jdate(d.validUntil) + '。期限の前に、もう一度連絡しましょう（' + d.no + '）', btn: '再連絡する', href: '#/edit/' + d.id, warn: true });
+      else if (s && left != null && left < 0) cands.push({ pr: 2.2, tag: '期限切れ ' + (-left) + '日', t: name, s: '返事がないまま期限が過ぎました。出し直すか、失注にするか決めましょう（' + d.no + '）', btn: '見積を開く', href: '#/edit/' + d.id, warn: true });
       else if (s && daysSince(s.date) >= 7) cands.push({ pr: 2, tag: '返事待ち ' + daysSince(s.date) + '日', t: name, s: md(s.date) + 'に' + s.via + 'で提出した見積 ' + d.no, btn: '返事を聞く', href: '#/edit/' + d.id, warn: true });
       else if (!s && daysSince((d.issuedAt || '').slice(0, 10)) >= 1) cands.push({ pr: 4, tag: '提出の記録なし', t: name, s: '確定した見積 ' + d.no + '。お客様に渡したら記録してください', btn: '提出を記録', href: '#/edit/' + d.id, act: 'sent', doc: d });
       else if (s && daysSince(s.date) >= 3) cands.push({ pr: 5, tag: '返事待ち ' + daysSince(s.date) + '日', t: name, s: md(s.date) + 'に' + s.via + 'で提出した見積 ' + d.no, btn: '返事を聞く', href: '#/edit/' + d.id });
@@ -472,7 +474,9 @@
     var out = [];
     waiting().forEach(function (d) {
       var p = proj(d.projectId) || {}, s = lastSent(d), n = s ? daysSince(s.date) : null;
-      if (s && n >= 3) out.push({ kind: 'reply', id: 'r' + d.id, p: p, warn: n >= 7, t: p.name || d.title || d.no, s: '提出から ' + n + ' 日、返事待ち（' + d.no + '）', href: '#/edit/' + d.id });
+      var lf = d.validUntil ? daysTo(d.validUntil) : null;
+      if (s && lf != null && lf >= 0 && lf <= 7 && n < 3) out.push({ kind: 'recall', id: 'c' + d.id, p: p, warn: true, t: p.name || d.title || d.no, s: '期限 ' + lf + '日前：もう一度連絡する（' + d.no + '）', href: '#/edit/' + d.id });
+      else if (s && n >= 3) out.push({ kind: 'reply', id: 'r' + d.id, p: p, warn: n >= 7, t: p.name || d.title || d.no, s: '提出から ' + n + ' 日、返事待ち（' + d.no + '）', href: '#/edit/' + d.id });
       else if (!s && daysSince((d.issuedAt || '').slice(0, 10)) >= 1) out.push({ kind: 'unsent', id: 'u' + d.id, p: p, warn: false, t: p.name || d.title || d.no, s: '確定したまま、提出の記録がありません（' + d.no + '）', href: '#/edit/' + d.id });
     });
     return out;
@@ -516,6 +520,7 @@
     if (!EE.link) return '';
     var s = lastSent(d), inv = invoicesOf(d.id), ords = (EE.S.orders || []).filter(function (o) { return o.docId === d.id; }), p = proj(d.projectId);
     return '<div class="plus-bar">' +
+      (EE.make && EE.make.dueText(d) ? '<span class="due-line num">' + U.esc(EE.make.dueText(d)) + '</span>' : '') +
       (s ? U.stBadge('fixed', '提出 ' + md(s.date) + '・' + s.via) + '<button class="btn ghost sm" type="button" data-plus="sent">もう一度記録する</button>'
          : U.stBadge('draft', '提出の記録なし') + '<button class="btn sm" type="button" data-plus="sent">' + I.check + '提出を記録</button>') +
       '<button class="btn sm" type="button" data-plus="invoice" data-n="' + inv.length + '">' + I.yen + '請求書を作る</button>' +
@@ -656,7 +661,8 @@
     var now = {};
     S.projects.forEach(function (p) { now[p.id] = p.lost ? -1 : EE.data.stageIndex(p.stage || 'estimate'); });
     if (stages) Object.keys(now).forEach(function (id) {
-      if (stages[id] === 0 && now[id] >= 1) celebrate(S.projects.filter(function (p) { return p.id === id; })[0]);
+      // 「受注にした」瞬間だけ（請求書を作って段階がまとめて進んだときは、お祝いしない）
+      if (stages[id] === 0 && now[id] >= 1 && now[id] <= 3) celebrate(S.projects.filter(function (p) { return p.id === id; })[0]);
     });
     stages = now;
   }

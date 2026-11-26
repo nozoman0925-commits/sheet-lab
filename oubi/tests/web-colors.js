@@ -8,7 +8,7 @@ const { chromium } = require('playwright'); const openWeb = require('./_web');
 const { ROUTES } = require('./web-scroll');
 const size = (process.argv[2] || '1920x1080').split('x').map(Number);
 function scan() {
-  const STATUS = '.badge, .chip, .toast, .alert, .alerts, .warn, .bad, .err, .ok, .flag, .flag-err, .check-sum, .check-item, .chk, [data-status], .sl-acc, .w-item.warn, .w-kpi.warn, .lockline, .mtr, .meter, .rate, .r-bad, .r-ok, .r-warn, .cell-warn, .warn-text, .neg, .pos, .money-neg, .ring, .rings, .w-rings, .chart, .bars, [data-bars], .flow, .heat, .spark, .tdb, .viz, svg, canvas, #sec-check, .big4 .c2, .notice-warn, .sl-hud, .sl-badge, .sl-bdg, .sl-pl, .lv, .combo';
+  const STATUS = '.badge, .chip, .toast, .alert, .alerts, .warn, .bad, .err, .ok, .flag, .flag-err, .check-sum, .check-item, .chk, [data-status], .sl-acc, .w-item.warn, .w-kpi.warn, .lockline, .mtr, .meter, .rate, .r-bad, .r-ok, .r-warn, .cell-warn, .warn-text, .neg, .pos, .money-neg, .ring, .rings, .w-rings, .chart, .bars, [data-bars], .flow, .heat, .spark, .tdb, .viz, svg, canvas, #sec-check, .big4 .c2, .notice-warn, .sl-hud, .sl-badge, .sl-bdg, .sl-pl, .lv, .combo, .delta, .soft-warn, .cost-missing, .nav-badge, #net-mark, .beat-flag, .won-card';   // 2026-11-26：前月比のバッジ（増＝ミント・減＝淡い赤）・注意の帯・件数のバッジ・圏外のしるしも状態の印
   const out = {};
   const fam = (r, g, b, a) => {
     if (a < 0.12) return null;

@@ -113,6 +113,12 @@
           else if (v.unitPrice == null || !Number.isInteger(v.unitPrice)) bad = 'unitPrice';
           else if (v.unitCost != null && !Number.isInteger(v.unitCost)) bad = 'unitCost';
           if (bad) { var f = el.querySelector('[name=' + bad + ']'); f.classList.add('flag-err'); EE.fx.shake(f); f.focus(); return; }
+          // 単価の異常値：今の単価の2倍以上・半分以下なら、いったん止めて確かめる（もう一度押すと保存）
+          if (!isNew && it.unitPrice > 0 && (v.unitPrice >= it.unitPrice * 2 || v.unitPrice <= it.unitPrice / 2) && el._oddOk !== v.unitPrice) {
+            el._oddOk = v.unitPrice; var pf = el.querySelector('[name=unitPrice]'); pf.classList.add('flag-err'); EE.fx.shake(pf);
+            EE.fx.toast('単価が ' + U.yen(it.unitPrice) + ' から ' + U.yen(v.unitPrice) + ' に変わります（' + (v.unitPrice > it.unitPrice ? (v.unitPrice / it.unitPrice).toFixed(1) + '倍' : '半分以下') + '）。桁の打ち間違いでなければ、もう一度「保存」を押してください', { warn: true, ms: 6000 });
+            return;
+          }
           v.unitCost = v.unitCost || 0;
           v.synonyms = EE.settingsExtra.splitList(v.synonyms);
           if (v.stdQty == null || !(v.stdQty > 0)) v.stdQty = 1;
@@ -272,7 +278,7 @@
       '<div class="field c4"><label>粗利率の下限（%）</label><input class="input num" type="number" id="r-margin" value="' + Math.round(s.minMargin * 100) + '" min="0" max="100"><span class="hint">下回ると送信前チェックで注意を出します</span></div>' +
       '<div class="field c12"><label>工事の種類ごとの粗利率の下限（%）— 空欄は上の全体の下限を使います</label><div class="cat-margin">' +
         (EE.S.categories || []).map(function (c) { var v = (s.minMarginByCat || {})[c.id]; return '<label class="cm-row"><span>' + esc(c.name) + '</span><input class="input num" type="number" min="0" max="100" data-cat-margin="' + esc(c.id) + '" value="' + (typeof v === 'number' ? Math.round(v * 100) : '') + '" placeholder="' + Math.round(s.minMargin * 100) + '"></label>'; }).join('') + '</div></div>' +
-      (EE.plus && EE.plus.mistakesHTML ? EE.plus.mistakesHTML() : '') +
+      (EE.plus && EE.plus.mistakesHTML ? EE.plus.mistakesHTML() : '') + (EE.make && EE.make.settingsHTML ? EE.make.settingsHTML() : '') +
       '<div class="field c4"><label>有効期限の既定（日）</label><input class="input num" type="number" id="r-days" value="' + s.validDays + '" min="1"></div>' +
       '<div class="field c4"><label>見積番号の頭文字</label><input class="input num" id="r-prefix" value="' + esc(s.numberPrefix) + '"><span class="hint">例：EST-202611-001</span></div>' +
       '<div class="field c12"><label style="display:flex;gap:8px;align-items:center"><input type="checkbox" id="r-autosave"' + (EE.S.autoSave !== false ? ' checked' : '') + '> 入力途中の見積を自動保存する（保存済みの下書きは1.5秒ごとに上書き、新規は端末に一時保存）</label></div>' +

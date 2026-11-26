@@ -267,6 +267,13 @@
     return '';
   }
 
+  /** 失敗の状態：1つのウィジェットが描けなくても、ほかは出す。押すともう一度読み込む */
+  function safeBody(wd) {
+    try { return body(wd); } catch (e) {
+      try { console.warn('widget', wd.type, e); } catch (x) {}
+      return '<div class="w-failed" role="alert"><b>読み込めませんでした</b><small>記録は消えていません。</small><button type="button" class="btn sm" data-act="w-retry">' + I.refresh + 'もう一度読み込む</button></div>';
+    }
+  }
   function widgetHTML(wd, i, n) {
     var T = TYPES[wd.type]; if (!T) return '';
     var col = (COLORS[wd.color] || COLORS.blue)[1];
@@ -279,7 +286,7 @@
       '<button type="button" data-w="hide" aria-label="' + (wd.hidden ? '表示する' : '隠す') + '" aria-pressed="' + (wd.hidden ? 'true' : 'false') + '">' + I.eye + '</button>' +
       '<button type="button" data-w="del" aria-label="削除">' + I.x + '</button></div>' : '';
     return '<section class="widget size-' + wd.size + (wd.hidden ? ' is-hidden' : '') + '" data-wid="' + wd.id + '" data-type="' + wd.type + '"' + (wd.hero ? ' data-hero' : '') + ' style="--w-accent:' + col + ';--w-alpha:' + (wd.alpha / 100) + '"' +
-      (editing ? ' draggable="true"' : '') + ' data-st>' + ctl + title + '<div class="w-body">' + body(wd) + '</div></section>';
+      (editing ? ' draggable="true"' : '') + ' data-st>' + ctl + title + '<div class="w-body">' + safeBody(wd) + '</div></section>';
   }
 
   /* 桜ミツ版：ホームの一番上に、よく使う3つのボタン（主役は見積を作る） */
@@ -451,6 +458,7 @@
       var a = e.target.closest('[data-act]');
       if (a) {
         if (a.dataset.act === 'w-edit') { editing = true; rerender(); return; }
+        if (a.dataset.act === 'w-retry') { rerender(); return; }
         if (a.dataset.act === 'w-done') { editing = false; if (/\?edit/.test(location.hash)) EE.app.replaceRoute('#/home'); rerender(); return; }
         if (a.dataset.act === 'w-add') { library(); return; }
         if (a.dataset.act === 'w-more') { more(); return; }

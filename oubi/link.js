@@ -272,11 +272,21 @@
     var col = list.map(function (d) { var r = U.calcDoc(d); return { d: d, r: r, label: d.patternLabel || d.title || d.no || '案' }; });
     var top = function (d) { return d.lines.slice(0, 7).map(function (ln) { return '<li>' + U.esc(ln.name) + (ln.spec ? ' <small>' + U.esc(ln.spec) + '</small>' : '') + '</li>'; }).join('') + (d.lines.length > 7 ? '<li><small>ほか ' + (d.lines.length - 7) + ' 項目</small></li>' : ''); };
     var cell = 'border:1px solid #c9ced8;padding:10px 12px;vertical-align:top';
+    // 違いの要点：いちばん安い案をもとに、ほかの案で「増える・減る・数量が違う」品目と金額の差を上にまとめる
+    var key = function (ln) { return ln.itemId || ln.name; };
+    var base = col[0], baseMap = {}; base.d.lines.forEach(function (ln) { baseMap[key(ln)] = ln; });
+    var diffs = col.slice(1).map(function (c) {
+      var m = {}, add = [], qty = [], gone = []; c.d.lines.forEach(function (ln) { m[key(ln)] = ln; var b0 = baseMap[key(ln)]; if (!b0) add.push(ln.name); else if (Number(b0.qty) !== Number(ln.qty)) qty.push(ln.name + ' ' + U.num(b0.qty) + '→' + U.num(ln.qty) + (ln.unit || '')); });
+      base.d.lines.forEach(function (ln) { if (!m[key(ln)]) gone.push(ln.name); });
+      var parts = []; if (add.length) parts.push('追加：' + add.slice(0, 4).join('、') + (add.length > 4 ? ' ほか' + (add.length - 4) : '')); if (gone.length) parts.push('なし：' + gone.slice(0, 4).join('、') + (gone.length > 4 ? ' ほか' + (gone.length - 4) : '')); if (qty.length) parts.push('数量：' + qty.slice(0, 3).join('、'));
+      return '<li><b style="color:#1f3f8f">' + U.esc(c.label) + '</b>は「' + U.esc(base.label) + '」より <b>+' + U.yen(c.r.total - base.r.total) + '</b>（税込）' + (parts.length ? '　' + U.esc(parts.join('／')) : '　内容は同じで単価・諸経費の違い') + '</li>';
+    }).join('');
+    var diffBox = '<div style="border:1px solid #c9ced8;border-left:4px solid #1f3f8f;border-radius:8px;padding:10px 14px;margin-bottom:16px;background:#f7f9fc"><div style="font-weight:800;margin-bottom:4px">違いの要点</div><ul style="margin:0;padding-left:18px">' + diffs + '</ul></div>';
     return '<div class="cmp-sheet" style="background:#fff;color:#111;width:1000px;padding:36px 40px;font-family:\'Hiragino Sans\',\'Noto Sans JP\',sans-serif;font-size:14px;line-height:1.6">' +
       '<div style="display:flex;justify-content:space-between;align-items:flex-end;border-bottom:2px solid #1f3f8f;padding-bottom:10px;margin-bottom:18px"><div><div style="font-size:24px;font-weight:800;letter-spacing:.1em">お見積りプランの比較</div>' +
       '<div style="font-size:16px;margin-top:6px">' + U.esc(cu.name || '') + ' ' + U.esc(cu.honorific || '様') + '　' + U.esc(p.name || '') + '</div></div>' +
       '<div style="text-align:right;font-size:13px">' + U.esc(co.name || '') + '<br>' + U.esc(co.tel ? 'TEL ' + co.tel : '') + '<br>' + U.jdate(EE.data.today()) + '</div></div>' +
-      '<table style="width:100%;border-collapse:collapse"><thead><tr><th style="' + cell + ';width:150px;background:#f3f5f9"></th>' + col.map(function (c) { return '<th style="' + cell + ';background:#1f3f8f;color:#fff;font-size:17px">' + U.esc(c.label) + '</th>'; }).join('') + '</tr></thead><tbody>' +
+      diffBox + '<table style="width:100%;border-collapse:collapse"><thead><tr><th style="' + cell + ';width:150px;background:#f3f5f9"></th>' + col.map(function (c) { return '<th style="' + cell + ';background:#1f3f8f;color:#fff;font-size:17px">' + U.esc(c.label) + '</th>'; }).join('') + '</tr></thead><tbody>' +
       '<tr><th style="' + cell + ';background:#f3f5f9;text-align:left">お支払い総額<br><small>（税込）</small></th>' + col.map(function (c) { return '<td style="' + cell + ';text-align:center;font-size:22px;font-weight:800;color:#1f3f8f">' + U.yen(c.r.total) + '</td>'; }).join('') + '</tr>' +
       '<tr><th style="' + cell + ';background:#f3f5f9;text-align:left">工事代金（税抜）</th>' + col.map(function (c) { return '<td style="' + cell + ';text-align:center">' + U.yen(c.r.subtotal) + '</td>'; }).join('') + '</tr>' +
       '<tr><th style="' + cell + ';background:#f3f5f9;text-align:left">消費税</th>' + col.map(function (c) { return '<td style="' + cell + ';text-align:center">' + U.yen(c.r.tax) + '</td>'; }).join('') + '</tr>' +

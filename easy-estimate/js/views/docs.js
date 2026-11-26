@@ -51,7 +51,7 @@
           '<td class="c-title"><span class="c-tt">' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '</span><span class="cell-sub">' + esc(x.c.name || '宛先未設定') + '</span></td>' +
           '<td class="c-owner">' + (function () { var m = U.findMember(d.ownerId); return m ? '<span class="owner-chip">' + U.avatar(m, 22) + esc(m.name.split(/\s+/)[0]) + '</span>' : '<span class="hint">未割り当て</span>'; })() + '</td>' +
           '<td class="num c-issue">' + U.jdate(d.issueDate) + '</td>' +
-          '<td class="num c-valid">' + (d.status === 'issued' ? '<span class="muted">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</td>' +
+          '<td class="num c-valid">' + (d.status === 'issued' ? '<span class="muted">' + U.jdate(d.validUntil) + '</span>' + (function () { var n = U.daysFromToday(d.validUntil); return n == null ? '' : '<span class="cell-sub ' + (n < 0 ? 'due-over' : n <= 7 ? 'due-soon' : '') + '">' + (n < 0 ? (-n) + '日過ぎ' : '残り ' + n + '日') + ((d.sent || []).length ? '・提出 ' + U.jdate(d.sent[d.sent.length - 1].date).slice(5) : '') + '</span>'; })() : U.validBadge(d)) + '</td>' +
           '<td class="r num c-amt">' + U.yen(x.r.total) + '</td>' +
           '<td class="r num c-margin" style="' + (low ? 'color:var(--warn)' : '') + '">' + U.pct(x.r.marginRate) + '</td>' +
           '<td class="c-st">' + U.statusBadge(d) + '</td>' +
