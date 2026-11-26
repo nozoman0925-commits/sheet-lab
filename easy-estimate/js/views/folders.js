@@ -20,7 +20,8 @@
     var ym = EE.data.today().slice(0, 7), month = 0, drafts = 0, soon = 0;
     docs.forEach(function (d) {
       if ((d.issueDate || '').slice(0, 7) === ym) month += U.calcDoc(d).total;
-      if (d.status === 'draft') { drafts++; var x = U.daysFromToday(d.validUntil); if (x != null && x >= 0 && x <= 7) soon++; }
+      if (d.status === 'draft') drafts++;
+      if (d.status === 'issued') { var x = U.daysFromToday(d.validUntil); if (x != null && x >= 0 && x <= 7) soon++; }   // 期限間近は確定した見積だけ
     });
     return { docs: docs, projectIds: Object.keys(pids), month: month, drafts: drafts, soon: soon };
   }

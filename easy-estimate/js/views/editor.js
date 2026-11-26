@@ -211,12 +211,13 @@
         '<div class="sum-row"><span>小計（税抜）</span><span class="yen" data-k="subtotal" data-format="yen">¥0</span></div>' +
         '<div id="sum-rates"></div>' +
         '<div class="sum-total"><div class="label">合計（税込）</div><div class="big yen" data-k="total" data-format="yen">¥0</div></div>' +
-        '<div class="sep"></div>' +
+        '<div class="internal"><div class="sep"></div>' +
         '<div class="sum-row"><span>原価合計</span><span class="yen" data-k="costTotal" data-format="yen">¥0</span></div>' +
         '<div class="sum-row"><span>粗利</span><span class="yen" data-k="grossProfit" data-format="yen">¥0</span></div>' +
         '<div class="sum-row" style="padding-bottom:0"><span>粗利率</span><span class="yen" data-k="margin" data-format="pct">0.0%</span></div>' +
         '<div class="meter" id="margin-meter"><i style="width:0"></i></div>' +
-        '<div class="hint" style="margin-top:6px" id="min-margin-hint">下限 ' + Math.round(U.minMarginOf(ED.doc) * 100) + '%' + (U.catOf(ED.doc) && typeof ((EE.S.settings.minMarginByCat || {})[U.catOf(ED.doc)]) === 'number' ? '（' + esc(EE.settingsExtra.catName(U.catOf(ED.doc))) + 'の下限）' : '（設定で変更）') + '</div>' +
+        '<div class="cost-missing" id="cost-missing" role="status" hidden></div>' +
+        '<div class="hint" style="margin-top:6px" id="min-margin-hint">下限 ' + Math.round(U.minMarginOf(ED.doc) * 100) + '%' + (U.catOf(ED.doc) && typeof ((EE.S.settings.minMarginByCat || {})[U.catOf(ED.doc)]) === 'number' ? '（' + esc(EE.settingsExtra.catName(U.catOf(ED.doc))) + 'の下限）' : '（設定で変更）') + '</div></div>' +
         '<div class="sep"></div>' +
         '<div class="label" style="margin-bottom:8px">内訳（建設業法第20条：材料費・労務費等）</div>' +
         '<div class="bd" id="breakdown"></div>' +
@@ -242,7 +243,7 @@
     var tc = l.taxCategory === 'red8' ? '<span class="badge warn">8%</span>' : l.taxCategory === 'std10' ? '<span class="badge">10%</span>' : '<span class="badge">' + esc((EE.engine.TAX_CATEGORIES[l.taxCategory] || {}).label || '') + '</span>';
     return '<tr data-line="' + l.lineId + '"' + (!it ? ' class="hl-err"' : stale ? ' class="hl"' : '') + '>' +
       '<td>' + (lk ? '' : '<input type="checkbox" class="line-sel"' + (ED.sel && ED.sel[l.lineId] ? ' checked' : '') + '>') + '</td>' +
-      '<td class="no num">' + (i + 1) + '</td>' +
+      '<td class="no num">' + (lk ? '' : '<span class="line-grip" title="ドラッグで並べ替え" aria-hidden="true">' + I.drag + '</span>') + (i + 1) + '</td>' +
       '<td>' + esc(l.name) + '<span class="cell-sub"><span class="code">' + esc(l.code) + '</span>' + (l.spec ? '　' + esc(l.spec) : '') + '</span>' +
         (stale && !lk ? '<span class="cell-sub" style="color:var(--warn)">マスタ単価 ' + U.yen(it.unitPrice) + ' と違います　<a href="#" data-act="refresh-price" style="color:var(--accent-2)">最新単価に更新</a></span>' : '') +
         (!it ? '<span class="cell-sub" style="color:var(--err)">マスタが削除されています</span>' : '') + '</td>' +
@@ -326,7 +327,11 @@
       if (first) EE.fx.countUp(el, v, el.dataset.format, 0, 600); else EE.fx.retarget(el, v);   // 開いたとき：カウントアップ（例外）／変えたとき：差分だけ 0.25秒でロール
     };
     set('subtotal', r.subtotal); set('total', r.total); set('costTotal', r.costTotal); set('grossProfit', r.grossProfit);
-    set('margin', r.marginRate == null ? 0 : Math.round(r.marginRate * 1000) / 10);
+    var mEl = document.querySelector('[data-k="margin"]');
+    if (r.costMissing > 0) { if (mEl) { if (mEl._eeRaf) cancelAnimationFrame(mEl._eeRaf); mEl.textContent = '—'; mEl._eeVal = null; mEl.title = '原価が未入力の行があります'; } }
+    else { if (mEl && mEl._eeVal == null && !first) mEl._eeVal = 0; if (mEl) mEl.title = ''; set('margin', r.marginRate == null ? 0 : Math.round(r.marginRate * 1000) / 10); }
+    var cmEl = document.getElementById('cost-missing');
+    if (cmEl) { cmEl.hidden = !(r.costMissing > 0); cmEl.textContent = '原価が未入力の行があります（' + r.costMissing + '行）。粗利率は出していません'; }
 
     var TC = EE.engine.TAX_CATEGORIES;
     var lineSum = r.lines.reduce(function (s2, x) { return s2 + x.amount; }, 0);
@@ -646,7 +651,7 @@
       return openCheck(false);
     }
     var ok = await U.confirmBox('発行確定すると、この見積書は編集・削除できなくなります（電子帳簿保存法に合わせた保存）。\n' +
-      (s.warn ? '注意が ' + s.warn + ' 件あります。内容を確認済みであれば確定してください。\n' : '') +
+      (s.warn ? '注意が ' + s.warn + ' 件あります。内容を確認済みであれば確定してください。\n' + list.filter(function (x) { return x.level === 'warn'; }).slice(0, 8).map(function (x) { return '・' + x.title; }).join('\n') + '\n' : '') +
       '\n内容を変える場合は、後から「修正見積」で新しい版を作れます。', '発行確定する');
     if (!ok) return;
     var orig = U.findDoc(ED.doc.id);
@@ -654,8 +659,8 @@
     if (!res.ok) { EE.fx.toast('要修正が ' + res.errors + ' 件あるため発行確定できません', { warn: true, ms: 3000 }); return openCheck(false); }
     U.commit();
     ED.dirty = false;
-    EE.fx.toast('発行確定しました（' + orig.no + '）');
     EE.app.rerender();
+    if (EE.plus && EE.plus.afterIssue) EE.plus.afterIssue(orig); else EE.fx.toast('発行確定しました（' + orig.no + '）');
   }
 
   function revise() {
@@ -680,7 +685,38 @@
   }
 
   /* ================= イベント ================= */
+  /** 明細の並べ替え：行番号の印をつかんでドラッグ。置いたら保存して「並べ替えを保存しました」 */
+  function bindLineDrag(view) {
+    var body = view.querySelector('#line-body'); if (!body) return;
+    var dragId = null;
+    body.addEventListener('pointerdown', function (e) { var g = e.target.closest('.line-grip'); var tr = g && g.closest('tr[data-line]'); if (tr && !locked()) tr.setAttribute('draggable', 'true'); }, true);
+    body.addEventListener('dragstart', function (e) {
+      var tr = e.target.closest && e.target.closest('tr[data-line]'); if (!tr || tr.getAttribute('draggable') !== 'true') return;
+      dragId = tr.dataset.line; tr.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', dragId); } catch (x) {}
+    });
+    var clear = function () { body.querySelectorAll('.drop-before,.drop-after,.dragging').forEach(function (x) { x.classList.remove('drop-before', 'drop-after', 'dragging'); }); body.querySelectorAll('tr[draggable]').forEach(function (x) { x.removeAttribute('draggable'); }); };
+    body.addEventListener('dragend', function () { clear(); dragId = null; });
+    body.addEventListener('dragover', function (e) {
+      if (!dragId) return; e.preventDefault();
+      var tr = e.target.closest('tr[data-line]'); body.querySelectorAll('.drop-before,.drop-after').forEach(function (x) { x.classList.remove('drop-before', 'drop-after'); });
+      if (!tr || tr.dataset.line === dragId) return;
+      var r = tr.getBoundingClientRect(); tr.classList.add(e.clientY < r.top + r.height / 2 ? 'drop-before' : 'drop-after');
+    });
+    body.addEventListener('drop', function (e) {
+      if (!dragId || !ED) return; e.preventDefault();
+      var tr = e.target.closest('tr[data-line]'), L = ED.doc.lines;
+      if (!tr || tr.dataset.line === dragId) { clear(); dragId = null; return; }
+      var after = tr.classList.contains('drop-after'), from = L.findIndex(function (x) { return x.lineId === dragId; });
+      var item = L.splice(from, 1)[0], to = L.findIndex(function (x) { return x.lineId === tr.dataset.line; }) + (after ? 1 : 0);
+      L.splice(to, 0, item); var moved = dragId; dragId = null; clear();
+      markDirty(); renderLines(moved);
+      if (U.findDoc(ED.doc.id)) { save(null, { silent: true }); EE.fx.toast('並べ替えを保存しました', { force: true }); }
+      else EE.fx.toast('並べ替えました（保存すると残ります）', { force: true });
+    });
+  }
+
   function mount(view) {
+    bindLineDrag(view);
     view.addEventListener('click', function (e) { var b = e.target.closest('.ed-pane [data-pane]'); if (b) showPane(b.dataset.pane); });
     renderLines();
     updateSummary(true);

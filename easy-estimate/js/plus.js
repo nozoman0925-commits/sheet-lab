@@ -133,13 +133,21 @@
     return out;
   }
   function invoiceModal(doc) {
+    // 状態の連動：下書きからは請求書を作らない／見送りの工事は先に取り消す
+    if (doc.status !== 'issued') { EE.fx.toast('下書きの見積からは請求書を作れません。先に「発行を確定する」をしてください', { warn: true, ms: 4000 }); return; }
+    var pj0 = proj(doc.projectId);
+    if (pj0 && pj0.lost) { EE.fx.toast('この工事は「見送り」になっています。工事の画面で見送りを取り消してから請求書を作ってください', { warn: true, ms: 4500 }); return; }
+    var other = pj0 && pj0.acceptedDocId && pj0.acceptedDocId !== doc.id ? EE.S.documents.filter(function (x) { return x.id === pj0.acceptedDocId; })[0] : null;
+    var stageNote = pj0 && (!pj0.stage || pj0.stage === 'estimate')
+      ? '<p class="soft-warn" style="margin:0 0 12px">この工事はまだ「見積」の段階です。請求書を作ると、工事を「受注」に進め、この見積（' + esc(doc.no || '') + '）を採用した見積にします。</p>'
+      : (other ? '<p class="soft-warn" style="margin:0 0 12px">この工事で採用した見積は ' + esc(other.no || '別の見積') + ' です。請求書を作ると、採用した見積をこの見積（' + esc(doc.no || '') + '）に変えます。</p>' : '');
     var r = U.calcDoc(doc), done = invoicesOf(doc.id);
     var rows = function (parts) { return parts.map(function (p, i) {
       return '<tr data-row="' + i + '"><td><input class="input" data-k="label" value="' + esc(p[0]) + '" style="width:120px"></td><td><input class="input num" type="number" min="1" max="100" data-k="ratio" value="' + p[1] + '" style="width:80px"> %</td>' +
         '<td class="r num" data-amt>—</td><td><input class="input" type="date" data-k="date" value="' + T() + '"></td><td><input class="input" type="date" data-k="due" value="' + EE.data.addDays(T(), 30) + '"></td></tr>'; }).join(''); };
     U.modal({
       title: '請求書を作る — ' + (doc.no || ''), wide: true,
-      body: '<p class="hint" style="margin-top:0">見積の合計 ' + yen(r.total) + '（税込）を分けて請求します。税率ごとの金額も同じ割合で分け、最後の1枚で端数を合わせます（合計は見積と同じ）。作った請求は工事の「入金」にも入ります。</p>' +
+      body: stageNote + '<p class="hint" style="margin-top:0">見積の合計 ' + yen(r.total) + '（税込）を分けて請求します。税率ごとの金額も同じ割合で分け、最後の1枚で端数を合わせます（合計は見積と同じ）。作った請求は工事の「入金」にも入ります。</p>' +
         (done.length ? '<div class="label" style="margin-bottom:6px">作った請求書</div><table class="table"><tbody>' + done.map(function (v) {
           return '<tr><td class="num">' + esc(v.no) + '</td><td>' + esc(v.label) + '（' + v.ratio + '%）</td><td class="r num">' + yen(v.amount) + '</td><td class="num">支払期限 ' + U.jdate(v.due) + '</td><td class="r"><button class="btn sm" data-reprint="' + v.id + '">' + I.pdf + 'もう一度出す</button></td></tr>'; }).join('') + '</tbody></table><div class="sep" style="margin:14px 0"></div>' : '') +
         '<div class="field"><label>分け方</label><div class="seg" id="inv-split">' + SPLITS.map(function (s, i) { return '<button type="button" data-s="' + i + '" class="' + (i === (done.length ? 0 : 1) ? 'on' : '') + '">' + esc(s[0]) + '</button>'; }).join('') + '</div></div>' +
@@ -168,6 +176,7 @@
               amount: a.amount, byRate: a.byRate, issueDate: a.date, due: a.due, createdAt: new Date().toISOString(), customer: snap.customer, company: JSON.parse(JSON.stringify(S.company || {})), site: snap.site || '' };
             S.invoices.push(v); made.push(v);
           });
+          var pj = proj(doc.projectId); if (pj && pj.acceptedDocId !== doc.id) pj.acceptedDocId = doc.id;
           commit();
           // 工事の「入金」に、請求の行を入れる（同じ請求書は2回入れない）
           var c = caseOf(doc.projectId), o = O();
@@ -175,6 +184,9 @@
             c.payments = c.payments || [];
             made.forEach(function (v) { if (!c.payments.some(function (p) { return p.invId === v.id; })) c.payments.push({ kind: v.label, bill: v.amount, billDate: v.issueDate, plan: v.due, invId: v.id, invNo: v.no }); });
             c.invoice = Object.assign({ files: [] }, c.invoice, { date: c.invoice && c.invoice.date ? c.invoice.date : made[0].issueDate });
+            // 請求した見積＝採用した見積。工事がまだ見積の段階なら受注に進める（請求なのに見積のまま、を作らない）
+            if (!c.result || c.result.status !== 'won') { c.result = Object.assign({}, c.result, { status: 'won', wonDate: c.result && c.result.wonDate || made[0].issueDate }); o.addLog(c, '請求書を作ったので受注にした（' + (doc.no || '') + '）'); }
+            c.mitsu = Object.assign({}, c.mitsu, { acceptedDocId: doc.id });
             o.addLog(c, '請求書を作成：' + made.map(function (v) { return v.label + ' ' + yen(v.amount); }).join('、')); o.touch(c);
           }
           api.close(); printInvoices(made); setTimeout(rerender, 300);
@@ -536,4 +548,134 @@
 
   EE.plus = { nextHTML: nextHTML, nextStep: nextStep, issuedBar: issuedBar, draftTools: draftTools, draftActions: draftActions, photoPage: photoPage, preparePhotos: preparePhotos,
     lostStats: lostStats, trendHTML: trendHTML, splitAmounts: splitAmounts, orderGroups: orderGroups, recordSent: recordSent, invoiceSheet: invoiceSheet, orderSheet: orderSheet, extraTodo: extraTodo };
+})(this);
+
+/* ===== 2026-11-26 改訂版の追加（サイドバーのバッジ・発行直後の導線・成約の演出・ミスの型） ===== */
+(function (root) {
+  'use strict';
+  var EE = root.EE; if (!EE || !EE.ui) return;
+  var U = EE.ui;
+
+  /* --- サイドバーの「見積」に件数のバッジ（下書き・期限間近） --- */
+  function badgeCounts() {
+    var S = EE.S; if (!S) return { draft: 0, soon: 0 };
+    var t = EE.data.today(), soonEnd = EE.data.addDays(t, 7), draft = 0, soon = 0;
+    S.documents.forEach(function (d) {
+      if (d.status === 'void') return;
+      if (d.status !== 'issued') { draft++; return; }
+      var p = d.projectId && U.findProject(d.projectId);
+      if (p && (p.lost || EE.data.stageIndex(p.stage || 'estimate') > 0)) return;
+      if (d.validUntil && d.validUntil >= t && d.validUntil <= soonEnd) soon++;
+    });
+    return { draft: draft, soon: soon };
+  }
+  function paintBadges() {
+    if (!EE.link) return;
+    var c = badgeCounts(), n = c.draft + c.soon, label = '下書き ' + c.draft + ' 件・期限まで7日以内 ' + c.soon + ' 件';
+    document.querySelectorAll('.nav-item[data-nav="estimate"], #mnav [data-mnav="estimate"], #mnav a[href="#/docs"]').forEach(function (a) {
+      var b = a.querySelector('.nav-badge');
+      if (!n) { if (b) b.remove(); a.removeAttribute('data-badge-label'); return; }
+      if (!b) { b = document.createElement('span'); b.className = 'nav-badge num'; a.appendChild(b); }
+      var was = b.textContent; b.textContent = n > 99 ? '99+' : String(n); b.classList.toggle('soon', c.soon > 0);
+      b.setAttribute('aria-label', label); b.title = label;
+      if (was && was !== b.textContent && EE.fx) EE.fx.pop(b);   // 件数が変わったときだけ、小さく出し直す
+    });
+  }
+  U.onCommit(function () { setTimeout(paintBadges, 0); });
+  root.addEventListener('hashchange', function () { setTimeout(paintBadges, 50); });
+  setTimeout(function wait() { if (!EE.S || !document.querySelector('.nav-item')) { setTimeout(wait, 500); return; } paintBadges(); }, 800);
+  /* --- 発行直後の導線：番号を大きく見せ、そのまま「お客様へ送る」 --- */
+  function afterIssue(doc) {
+    var r = U.calcDoc(doc), c = U.docCustomer(doc);
+    U.modal({
+      title: '発行しました',
+      body: '<div class="issued-hero"><div class="label">見積番号</div><div class="ih-no num">' + U.esc(doc.no) + '</div>' +
+        '<div class="ih-sub">' + U.esc(doc.title || '（件名なし）') + '　' + U.esc((c.name || '宛先未設定') + (c.honorific ? ' ' + c.honorific : '')) + '</div>' +
+        '<div class="ih-total num">' + U.yen(r.total) + '<small>税込</small></div></div>' +
+        '<p class="hint" style="margin:12px 0 0">この見積はもう書き換えられません（電子帳簿保存法に合わせた保存）。PDFを出して、お客様に渡してください。</p>',
+      foot: '<button class="btn ghost" data-later>あとで送る</button><button class="btn" data-plus="sent" data-doc="' + doc.id + '">' + U.I.check + '渡したことを記録する</button>' +
+        '<button class="btn primary big" data-send>' + U.I.pdf + 'お客様へ送る（PDFを出す）</button>',
+      onMount: function (el, api) {
+        var no = el.querySelector('.ih-no'); if (no && EE.fx) EE.fx.anim(no, [{ opacity: 0, transform: 'scale(.92)' }, { opacity: 1, transform: 'none' }], { duration: EE.fx.T.change });
+        el.querySelector('[data-later]').onclick = function () { api.close(); };
+        el.querySelector('[data-plus="sent"]').addEventListener('click', function () { api.close(); });
+        el.querySelector('[data-send]').onclick = function () { api.close(); EE.print.preview(doc); };
+      }
+    });
+  }
+  EE.plus = EE.plus || {}; EE.plus.badgeCounts = badgeCounts; EE.plus.paintBadges = paintBadges; EE.plus.afterIssue = afterIssue;
+})(this);
+
+/* ===== ミスの型ライブラリ（送信前チェックを使いながら育てる）・成約の演出 ===== */
+(function (root) {
+  'use strict';
+  var EE = root.EE; if (!EE || !EE.ui) return;
+  var U = EE.ui, esc = U.esc;
+  function list() { var s = EE.S.settings; if (!Array.isArray(s.mistakes)) s.mistakes = []; s.mistakeHits = s.mistakeHits || {}; return s.mistakes; }
+  function mistakesHTML() {
+    var L = list(), hits = EE.S.settings.mistakeHits || {};
+    return '<div class="field c12" id="mk-box"><label>ミスの型（送信前チェック）— 「A があるのに B がない」を知らせます。B は「|」で区切ると、どれか1つあれば通ります</label>' +
+      '<div class="mk-list">' + (L.length ? L.map(function (m) {
+        return '<div class="mk-row' + (m.off ? ' off' : '') + '" data-mk-id="' + esc(m.id) + '"><span class="mk-ab"><b>' + esc(m.a) + '</b> があるのに <b>' + esc(m.b) + '</b> がない</span>' +
+          '<span class="mk-msg">' + esc(m.msg || '') + '</span><span class="mk-hits num" title="発行・PDFの前に引っかかった回数">' + (hits[m.id] || 0) + ' 回</span>' +
+          '<button type="button" class="btn ghost sm" data-mk="toggle">' + (m.off ? '使う' : '止める') + '</button><button type="button" class="btn ghost sm danger" data-mk="del" aria-label="この型を消す">消す</button></div>';
+      }).join('') : '<p class="hint">まだありません</p>') + '</div>' +
+      '<div class="mk-add"><input class="input" id="mk-a" placeholder="A（例：足場設置）" aria-label="A の言葉"><input class="input" id="mk-b" placeholder="B（例：足場撤去|足場解体）" aria-label="B の言葉"><input class="input" id="mk-msg" placeholder="知らせる言葉（空欄なら自動）" aria-label="知らせる言葉"><button type="button" class="btn sm" data-mk="add">' + U.I.plus + '型を足す</button></div></div>';
+  }
+  document.addEventListener('click', function (e) {
+    var b = e.target.closest && e.target.closest('[data-mk]'); if (!b) return;
+    var L = list(), act = b.dataset.mk;
+    if (act === 'add') {
+      var a = (document.getElementById('mk-a').value || '').trim(), bb = (document.getElementById('mk-b').value || '').trim(), msg = (document.getElementById('mk-msg').value || '').trim();
+      if (!a || !bb) { EE.fx.toast('A と B を入れてください', { warn: true }); return; }
+      L.push({ id: 'mk' + Date.now().toString(36), a: a, b: bb, msg: msg }); U.commit(); EE.fx.toast('ミスの型を足しました', { force: true });
+    } else {
+      var row = b.closest('[data-mk-id]'), i = L.findIndex(function (m) { return m.id === row.dataset.mkId; }); if (i < 0) return;
+      if (act === 'toggle') { L[i].off = !L[i].off; U.commit(); }
+      if (act === 'del') { var gone = L.splice(i, 1)[0]; U.commit(); EE.fx.toast('「' + gone.a + '」の型を消しました', { action: { label: '元に戻す', run: function () { L.splice(i, 0, gone); U.commit(); var bx = document.getElementById('mk-box'); if (bx) bx.outerHTML = mistakesHTML(); } } }); }
+    }
+    var box = document.getElementById('mk-box'); if (box) box.outerHTML = mistakesHTML();
+  });
+  // 発行・PDF の確定のときに、引っかかったミスの型を数える（よく出る型ほど役に立っている）
+  function countHits(doc) {
+    try {
+      var hits = EE.S.settings.mistakeHits = EE.S.settings.mistakeHits || {};
+      U.checkDoc(doc).forEach(function (x) { var m = /^mistake:(.+)$/.exec(x.code); if (m) hits[m[1]] = (hits[m[1]] || 0) + 1; });
+    } catch (e) {}
+  }
+  setTimeout(function wrap() {
+    if (!EE.app || !EE.app.finalizeDoc) { setTimeout(wrap, 300); return; }
+    var orig = EE.app.finalizeDoc;
+    EE.app.finalizeDoc = function (doc) { countHits(doc); return orig.apply(this, arguments); };
+  }, 0);
+
+  /* --- 成約の演出：工事が「見積」から「受注」に変わった瞬間に、金色に光るひと言 --- */
+  var stages = null;
+  function watchWon() {
+    var S = EE.S; if (!S || !S.projects) return;
+    var now = {};
+    S.projects.forEach(function (p) { now[p.id] = p.lost ? -1 : EE.data.stageIndex(p.stage || 'estimate'); });
+    if (stages) Object.keys(now).forEach(function (id) {
+      if (stages[id] === 0 && now[id] >= 1) celebrate(S.projects.filter(function (p) { return p.id === id; })[0]);
+    });
+    stages = now;
+  }
+  function celebrate(p) {
+    if (!p || document.querySelector('.won-card')) return;
+    var d = p.acceptedDocId && U.findDoc(p.acceptedDocId), amt = d ? U.calcDoc(d).total : 0;
+    U.modal({
+      title: '受注しました',
+      body: '<div class="won-card"><div class="won-crest" aria-hidden="true">' + (EE.crest ? EE.crest.svg({ id: 'won', className: 'won-crest-svg', fieldR: 106 }) : '') + '</div>' +
+        '<div class="won-name">' + esc(p.name || '工事') + '</div>' + (amt ? '<div class="won-amt num">' + U.yen(amt) + '<small>税込</small></div>' : '') +
+        '<p class="won-msg">おめでとうございます。次は契約書と着工日を決めましょう。</p></div>',
+      foot: '<button class="btn ghost" data-c>閉じる</button><a class="btn primary" href="#/o/case/' + esc(p.id) + '" data-open>工事を開く</a>',
+      onMount: function (el, api) {
+        var card = el.querySelector('.won-card'); if (card && EE.fx) EE.fx.anim(card, [{ boxShadow: '0 0 0 0 rgba(191,160,106,0)' }, { boxShadow: '0 0 0 6px rgba(191,160,106,.35)' }, { boxShadow: '0 0 0 1px rgba(191,160,106,.5)' }], { duration: EE.fx.T.page, fill: 'forwards' });
+        el.querySelector('[data-c]').onclick = function () { api.close(); };
+        el.querySelector('[data-open]').addEventListener('click', function () { api.close(); });
+      }
+    });
+  }
+  setInterval(watchWon, 1500);
+  EE.plus = EE.plus || {}; EE.plus.mistakesHTML = mistakesHTML; EE.plus.celebrate = celebrate; EE.plus.watchWon = watchWon;
 })(this);

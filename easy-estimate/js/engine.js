@@ -81,6 +81,7 @@
       costTotal: 0,
       grossProfit: 0,
       marginRate: null, // 0〜1。小計0のときは null
+      costMissing: 0,   // 金額があるのに原価が入っていない行の数（粗利率が実際より高く見えるので、画面では粗利率を出さない）
       breakdown: { material: 0, labor: 0, subcontract: 0, expense: 0, other: 0, discount: 0 },
       adjustments: [],  // 諸経費・値引き・端数調整の結果 [{ id, type, label, amount, byCat }]
       valid: true
@@ -103,6 +104,7 @@
       out.byRate[cat].base += amount;
       out.subtotal += amount;
       out.costTotal += cost;
+      if (amount > 0 && !(Number(ln.unitCost) > 0)) out.costMissing++;
       out.breakdown[ct] += amount;
     });
 

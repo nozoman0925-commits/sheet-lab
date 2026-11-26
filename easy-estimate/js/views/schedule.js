@@ -16,9 +16,9 @@
     S.projects.forEach(function (p) {
       STAGE_DATE.forEach(function (x) { if (p[x[0]]) out.push({ date: p[x[0]], kind: 'stage', label: x[1], title: p.name, href: '#/site/' + p.id }); });
     });
-    // 見積の有効期限（まだ受注していないもの）
+    // 見積の有効期限（確定してお客様に出した見積で、まだ受注していないもの。下書きの期限は「期限」として扱わない）
     S.documents.forEach(function (d) {
-      if (!d.validUntil) return;
+      if (!d.validUntil || d.status !== 'issued') return;
       var p = d.projectId && U.findProject(d.projectId);
       if (p && EE.data.stageIndex(p.stage || 'estimate') > 0) return;
       out.push({ date: d.validUntil, kind: 'due', label: '見積期限', title: (d.title || d.no || '見積') + (d.patternLabel ? '（' + d.patternLabel + '）' : ''), href: '#/edit/' + d.id, warn: d.validUntil < EE.data.today() });

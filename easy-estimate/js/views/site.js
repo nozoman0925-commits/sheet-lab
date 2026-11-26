@@ -82,7 +82,7 @@
     var foot = '<tr class="sum"><td>小計（税抜）</td>' + rs.map(function (r) { return '<td class="r num">' + U.yen(r.subtotal) + '</td>'; }).join('') + '</tr>' +
       '<tr class="sum"><td>消費税</td>' + rs.map(function (r) { return '<td class="r num">' + U.yen(r.tax) + '</td>'; }).join('') + '</tr>' +
       '<tr class="sum big"><td>合計（税込）</td>' + rs.map(function (r) { return '<td class="r num">' + U.yen(r.total) + (r.total !== minTotal ? '<span class="cell-sub">差 +' + U.yen(r.total - minTotal) + '</span>' : '<span class="cell-sub" style="color:var(--ok)">いちばん安い</span>') + '</td>'; }).join('') + '</tr>' +
-      '<tr class="sum"><td>粗利率</td>' + rs.map(function (r) { return '<td class="r num">' + U.pct(r.marginRate) + '</td>'; }).join('') + '</tr>';
+      '<tr class="sum internal"><td>粗利率</td>' + rs.map(function (r) { return '<td class="r num">' + U.pct(r.marginRate) + '</td>'; }).join('') + '</tr>';
     return '<div class="table-scroll"><table class="table compare"><thead>' + head + '</thead><tbody>' + body + adjRows + foot + '</tbody></table></div>' +
       '<p class="hint" style="margin-top:8px">色の付いた行は、パターンによって数量や金額が違う明細です。</p>';
   }
@@ -161,7 +161,7 @@
         '<div style="display:flex;align-items:center;gap:8px;margin-bottom:8px">' + (patternBadge(d) || '<span class="badge">パターン名なし</span>') + U.statusBadge(d) + (acc ? U.stBadge('fixed', '受注') : '') +
           '<label class="hint" style="margin-left:auto;display:flex;gap:6px;align-items:center;cursor:pointer"><input type="checkbox" data-pick="' + d.id + '"' + (sel[d.id] ? ' checked' : '') + '>比較</label></div>' +
         '<div style="font-weight:600">' + esc(d.title || '（件名なし）') + '</div><div class="hint num">' + esc(d.no || '（未保存）') + '　' + U.jdate(d.issueDate) + '　明細 ' + d.lines.length + '行</div>' +
-        '<div class="pattern-total num">' + U.yen(r.total) + '<small>税込　粗利率 ' + U.pct(r.marginRate) + '</small></div>' +
+        '<div class="pattern-total num">' + U.yen(r.total) + '<small>税込<span class="internal">　粗利率 ' + U.pct(r.marginRate) + '</span></small></div>' +
         '<div style="display:flex;gap:6px;justify-content:flex-end;flex-wrap:wrap">' +
           (EE.data.stageIndex(p.stage || 'estimate') >= 1 && !acc ? '<button class="btn sm ghost" data-act="accept" data-id="' + d.id + '">この見積で受注</button>' : '') +
           '<a class="btn sm" href="#/edit/' + d.id + '">' + I.edit + '開く</a><button class="btn sm" data-act="pattern-from" data-id="' + d.id + '">' + I.copy + 'これをもとに別パターン</button></div>' +
@@ -205,7 +205,7 @@
         '<div class="sum-row"><span>小計（税抜）</span><span class="num">' + U.yen(r.subtotal) + '</span></div>' +
         '<div class="sum-row"><span>原価合計</span><span class="num">' + U.yen(r.costTotal) + '</span></div>' +
         '<div class="sum-row"><span>粗利</span><span class="num">' + U.yen(r.grossProfit) + '</span></div>' +
-        '<div class="sum-row"><span>粗利率</span><span class="num">' + U.pct(r.marginRate) + '</span></div>' +
+        '<div class="sum-row internal"><span>粗利率</span><span class="num">' + U.pct(r.marginRate) + '</span></div>' +
         '<p class="hint" style="margin-top:12px">ここは見積上の原価です。実際にかかった原価（発注・外注・人件費）と最終利益は、第5期の「実行予算・実績原価」で追加します。</p></div></section></div>';
   }
 

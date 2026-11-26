@@ -84,7 +84,7 @@
           return '<a class="nav-child" href="' + c[0] + '" style="--k:' + k + '"><i></i><span>' + c[1] + '</span></a>';
         }).join('') + '</div></div>' : '') +
       '</div>';
-    }).join('');
+    }).join('') + '<i class="nav-pill" aria-hidden="true"></i>';   // 選択中の印：項目のあいだを 0.25秒ですべって移る
     nav.addEventListener('click', function (e) {
       var t = e.target.closest('[data-toggle]');
       if (t) { e.preventDefault(); toggleGroup(t.dataset.toggle); return; }
@@ -114,9 +114,40 @@
     var o = readOpen(); o[key] = open; writeOpen(o);
   }
 
+  /** 選択中のピルを、選んだ項目の位置へすべらせる（初めの1回は動かさずに置く） */
+  function movePill() {
+    var nav = document.getElementById('nav'), pill = nav && nav.querySelector('.nav-pill'), a = nav && nav.querySelector('.nav-item.active');
+    if (!pill) return;
+    if (!a || !a.offsetParent) { pill.style.opacity = '0'; return; }
+    var nr = nav.getBoundingClientRect(), ar = a.getBoundingClientRect();
+    pill.style.transform = 'translate(' + (ar.left - nr.left + nav.scrollLeft) + 'px,' + (ar.top - nr.top + nav.scrollTop) + 'px)';
+    pill.style.width = ar.width + 'px'; pill.style.height = ar.height + 'px'; pill.style.opacity = '1';
+    if (!pill.classList.contains('ready')) requestAnimationFrame(function () { pill.classList.add('ready'); });
+    nav.classList.add('has-pill');
+  }
+  root.addEventListener('resize', function () { var p = document.querySelector('.nav-pill'); if (p) { p.classList.remove('ready'); movePill(); } });
+  /* 客先の「見せるモード」：原価・粗利・社内の数字をワンタップで隠す（この画面を閉じるまで続く） */
+  function showModeInit() {
+    var sp = document.getElementById('open-palette'); if (!sp || document.getElementById('show-mode')) return;
+    var b = document.createElement('button'); b.type = 'button'; b.id = 'show-mode'; b.className = 'btn ghost topbar-show';
+    sp.parentNode.insertBefore(b, sp);
+    var on = false; try { on = sessionStorage.getItem('oumitsu:show-mode') === '1'; } catch (e) {}
+    function apply(v, toast) {
+      on = v; document.body.classList.toggle('show-mode', on);
+      b.innerHTML = U.I.eye + '<span>' + (on ? '見せるモードを終える' : 'お客様に見せる') + '</span>';
+      b.setAttribute('aria-pressed', on ? 'true' : 'false');
+      b.title = on ? '原価・粗利をもう一度出します' : '原価・粗利・社内の数字を隠して、そのまま画面をお客様に見せられます';
+      try { sessionStorage.setItem('oumitsu:show-mode', on ? '1' : '0'); } catch (e) {}
+      if (toast) EE.fx.toast(on ? '見せるモードにしました（原価・粗利を隠しています）' : '見せるモードを終えました', { force: true });
+      movePill();
+    }
+    b.addEventListener('click', function () { apply(!on, true); if (on && /^#\/(finance|analysis)/.test(location.hash)) location.hash = '#/docs'; });
+    apply(on, false);
+  }
   function setActive(i) {
     i = EE.features.navKey(i);   // 桜ミツ版：顧客は「工事」、書類は「見積」などに
     document.querySelectorAll('.nav-item').forEach(function (a) { var on = a.dataset.nav === i; a.classList.toggle('active', on); if (on) a.setAttribute('aria-current', 'page'); else a.removeAttribute('aria-current'); });
+    movePill();
     var h = location.hash || '#/home';
     var best = null;
     document.querySelectorAll('.nav-child').forEach(function (c) {
@@ -213,6 +244,8 @@
       view = document.getElementById('view'); // 切り替えの途中で差し替わっていても今の要素を使う
       current = r.view();
       document.body.classList.toggle('ob-on', !!current.oubi);   // 桜ミツ版：業務管理の枠を出す画面
+      // 業務管理の画面へ移るときも、ほかの画面と同じ 0.25秒・同じ曲線で入れる（白紙から描き直したように見せない）
+      if (current.oubi && animate !== false && root.OUBI_LINK && root.OUBI_LINK.frame) { var obf = root.OUBI_LINK.frame(); if (obf) EE.fx.pageIn(obf, dir); }
       currentNav = r.nav;
       setActive(r.nav);
       document.getElementById('title').textContent = current.title;
@@ -397,6 +430,7 @@
     U.members();
     renderUser(); bindUser();
     document.getElementById('open-palette').addEventListener('click', function () { EE.palette.open(); });
+    showModeInit();
     if (EE.a11y && document.querySelector('.sidebar')) EE.a11y.enhance(document.querySelector('.sidebar'));
     // 別のタブで保存されたら、この画面からは保存せず再読み込みを促す（上書きで相手の変更を消さない）
     if (!opts.host) root.addEventListener('storage', function (e) {

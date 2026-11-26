@@ -1,7 +1,9 @@
 /*
  * マイクロインタラクション（Web Animations API。外部ライブラリ不要・オフライン動作）
  * - 動きの文法：時間は 0.15秒（反応）／0.25秒（画面内の変化）／0.4秒（画面の切り替え）の3つだけ。
- *   曲線は cubic-bezier(0.2, 0, 0, 1)（速く出て、すっと止まる）の1つだけ。例外は起動の演出と数字のカウントアップ（0.6秒まで）。
+ *   曲線は cubic-bezier(0.2, 0, 0, 1)（速く出て、すっと止まる）の1つだけ。例外は起動の演出と数字のカウントアップ（0.6〜0.9秒）。
+ * - 2026-11-26 の拡張：カウントアップは 0.6〜0.9秒（止まる瞬間に小さく弾む）、カードの時間差は 60ms 間隔、画面の切り替えは全画面 0.25秒。
+ *   動かすのは「数字」と「画面の移り変わり」に絞る（全部を動かす・光らせると安く見える）。
  * - 動かすのは「状態が変わったもの」だけ。動きの途中でも次の操作を受け付ける（待たせない）。
  * - transform / opacity だけを動かして 60fps を保つ
  * - 連続操作で遅れないよう、同じ要素の古いアニメーションは止めてから新しく動かす
@@ -22,7 +24,7 @@
     if (el._eeAnim) { try { el._eeAnim.cancel(); } catch (e) {} }
     var o = Object.assign({ duration: T.change, easing: EASE, fill: 'backwards' }, opts, { easing: EASE });
     o.duration = snap(o.duration);                                          // 秒数は 0.15／0.25／0.4 のどれかに寄せる
-    if (o.delay) o.delay = Math.min(160, Math.round(o.delay / 40) * 40);   // 時間差は 40ms 刻み、全体で 0.4秒以内
+    if (o.delay) o.delay = Math.min(600, Math.round(o.delay / 10) * 10);   // 時間差は 10ms 刻み、全体で 0.6秒以内（カードの順番出しは 60ms 間隔）
     el._eeAnim = el.animate(frames, o);
     return el._eeAnim;
   }
@@ -31,8 +33,8 @@
   function stagger(scope, opts) {
     opts = opts || {};
     var els = (scope || document).querySelectorAll('[data-st]');
-    // 40ms 刻み。全体で 0.4秒以内（遅れて出るものも 0.15秒で始め、0.25秒で終える）
-    var step = 40, max = 3;
+    // 60ms 間隔（0.05〜0.1秒の間）。上から順に、最大 8 枚目まで（それより下は 8 枚目と同時）
+    var step = opts.step || 60, max = 8;
     els.forEach(function (el, i) {
       anim(el, [
         { opacity: 0, transform: 'translateY(' + mv() + 'px)' },
@@ -46,7 +48,7 @@
     anim(el, [
       { opacity: 0, transform: 'translateX(' + (dir < 0 ? -mv() : mv()) + 'px)' },
       { opacity: 1, transform: 'none' }
-    ], { duration: quick ? T.change : T.page });   // タブの切り替えは 0.25秒、画面の切り替えは 0.4秒
+    ], { duration: T.change });   // 画面・タブの切り替えは、全画面で 0.25秒・同じ曲線（2026-11-26 に統一）
   }
   function pageOut(el, done) {
     if (reduce || !el.animate) return done();
@@ -62,12 +64,12 @@
     if (f === 'pct') return (v).toFixed(1) + '%';
     return Math.round(v).toLocaleString('ja-JP');
   }
-  function countUp(el, to, f, from, dur) {
+  function countUp(el, to, f, from, dur, bounce) {
     f = f || el.dataset.format || 'int';
     from = from == null ? 0 : from;
     if (el._eeRaf) cancelAnimationFrame(el._eeRaf);
     if (reduce || from === to) { el.textContent = fmt(to, f); el._eeVal = to; return; }
-    dur = Math.min(dur || T.change, 600);   // カウントアップは例外（0.6秒まで）
+    dur = Math.min(dur || T.change, 900);   // カウントアップは例外（0.9秒まで）
     var t0 = performance.now();
     function tick(now) {
       var p = Math.min(1, (now - t0) / dur);
@@ -75,7 +77,11 @@
       var v = from + (to - from) * e;
       el.textContent = fmt(v, f);
       if (p < 1) el._eeRaf = requestAnimationFrame(tick);
-      else { el.textContent = fmt(to, f); el._eeVal = to; }
+      else {
+        el.textContent = fmt(to, f); el._eeVal = to;
+        // 止まる瞬間に小さく弾む（0.15秒）
+        if (bounce && el.animate) el.animate([{ transform: 'scale(1)' }, { transform: 'scale(1.045)' }, { transform: 'scale(1)' }], { duration: T.react, easing: EASE });
+      }
     }
     el._eeRaf = requestAnimationFrame(tick);
   }
@@ -86,9 +92,11 @@
       var key = el.dataset.countKey || '', to = Number(el.dataset.count);
       if (key && counted[key] === to) { el.textContent = fmt(to, el.dataset.format); el._eeVal = to; return; }
       if (key) counted[key] = to;
-      countUp(el, to, el.dataset.format, 0, 600);
+      countUp(el, to, el.dataset.format, 0, Number(el.dataset.countMs) || 600, el.dataset.bounce != null);
     });
   }
+  /** 「その画面を開いた」ときにもう一度カウントアップさせる（key の頭で消す） */
+  function countForget(prefix) { Object.keys(counted).forEach(function (k) { if (k.indexOf(prefix) === 0) delete counted[k]; }); }
   /** 値が変わったときだけ、今の値から新しい値へ短く動かす（入力に遅れず付いてくる） */
   function retarget(el, to) {
     if (!el) return;
@@ -238,6 +246,6 @@
   }
 
   root.EE = root.EE || {};
-  root.EE.fx = { bindAmbient: bindAmbient, burst: burst, anim: anim, stagger: stagger, pageIn: pageIn, pageOut: pageOut, countUp: countUp, countAll: countAll,
+  root.EE.fx = { bindAmbient: bindAmbient, burst: burst, anim: anim, stagger: stagger, pageIn: pageIn, pageOut: pageOut, countUp: countUp, countAll: countAll, countForget: countForget,
     retarget: retarget, ripple: ripple, success: success, pop: pop, shake: shake, pulse: pulse, toast: toast, busy: busy, fmt: fmt, reduce: reduce, T: T, EASE: EASE, mv: mv, snap: snap, doneLabel: doneLabel, recentBtn: recentBtn };
 })(this);

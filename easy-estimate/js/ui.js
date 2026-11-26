@@ -54,6 +54,7 @@
     // 業務別メニュー・ウィジェット用
     site: P('<path d="M3.5 20.5h17"/><path d="M5.5 20.5V10l6.5-5 6.5 5v10.5"/><path d="M10 20.5v-5h4v5"/><path d="M15.5 6.4V3.6h2.2v4.5"/>'),
     calendar: P('<rect x="3.8" y="5.2" width="16.4" height="15" rx="3"/><path d="M3.8 9.8h16.4M8.3 3.4v3.4M15.7 3.4v3.4"/><circle cx="8.6" cy="14" r=".6"/><circle cx="12" cy="14" r=".6"/><circle cx="15.4" cy="14" r=".6"/>'),
+    flag: P('<path d="M6 21V4.5"/><path d="M6 5h10.5l-2 3.7 2 3.8H6"/>'),
     trend: P('<path d="M4 19.5h16"/><path d="m5.5 15 4-4.2 3.3 3 5.7-6.3"/><path d="M14.6 7.4h3.9v3.9"/>'),
     camera: P('<path d="M4.5 8.6a2 2 0 0 1 2-2h1.8l1.3-1.9h4.8l1.3 1.9h1.8a2 2 0 0 1 2 2v8.7a2 2 0 0 1-2 2h-11a2 2 0 0 1-2-2z"/><circle cx="12" cy="12.8" r="3.3"/>'),
     grid: P('<rect x="4" y="4" width="7" height="7" rx="2.2"/><rect x="13" y="4" width="7" height="7" rx="2.2"/><rect x="4" y="13" width="7" height="7" rx="2.2"/><rect x="13" y="13" width="7" height="7" rx="2.2"/>'),
@@ -108,7 +109,8 @@
 
   /** 計算ルール：発行済みは発行時のルールで固定、下書きは現在の設定 */
   function rulesFor(doc) { return (doc.status === 'issued' && doc.rules) ? doc.rules : EE.S.settings; }
-  function calcDoc(doc) { return EE.engine.calc(doc, rulesFor(doc)); }
+  // 原価が入っていない行があると、粗利率は実際より高く出る。画面では粗利率を出さない（null）で「原価が未入力の行があります」に切り替える
+  function calcDoc(doc) { var r = EE.engine.calc(doc, rulesFor(doc)); if (r.costMissing > 0) { r.marginRaw = r.marginRate; r.marginRate = null; } return r; }
   /** 粗利率の下限：工事の種類ごとの下限（設定 → 計算ルール）があればそれ、無ければ全体の下限 */
   function catOf(doc) {
     if (doc && doc.category) return doc.category;
@@ -124,7 +126,8 @@
   function checkDoc(doc) {
     return EE.check.run(doc, {
       items: EE.S.items, customers: EE.S.customers, projects: EE.S.projects, documents: EE.S.documents,
-      company: EE.S.company, settings: Object.assign({}, EE.S.settings, rulesFor(doc), { minMargin: minMarginOf(doc) }), today: EE.data.today()
+      company: EE.S.company, settings: Object.assign({}, EE.S.settings, rulesFor(doc), { minMargin: minMarginOf(doc) }), today: EE.data.today(),
+      meName: root.OUBI_LINK && root.OUBI_LINK.me ? (root.OUBI_LINK.me().name || '') : null
     });
   }
 

@@ -41,21 +41,21 @@
     if (!list.length) return EE.S.documents.length ? '<div class="empty">' + I.search + '<p class="empty-t">条件に合う見積がありません</p><button class="btn primary sm" type="button" data-fclear>条件を消す</button></div>'
       : U.empty({ icon: I.docs, text: 'まだ見積がありません', sub: '最初の1枚を作ると、ここに並びます。', btn: '見積を作る', href: EE.link ? '#/w' : '#/new' });
     var total = list.reduce(function (s, x) { return s + x.r.total; }, 0);
-    return '<div class="table-scroll"><table class="table"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>担当</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
+    return '<div class="table-scroll"><table class="table doc-list"><thead><tr><th style="width:28px"><input type="checkbox" id="d-all"></th><th>見積番号</th><th>件名 / 宛先</th><th>担当</th><th>発行日</th><th>有効期限</th><th class="r">金額（税込）</th><th class="r internal">粗利率</th><th>状態</th><th></th></tr></thead><tbody>' +
       list.map(function (x) {
         var d = x.d;
         var low = x.r.marginRate != null && x.r.marginRate < U.minMarginOf(d);
         return '<tr class="clickable' + (PICK === d.id ? ' picked' : '') + '" data-pick="' + d.id + '" tabindex="0" title="クリックでカード表示・ダブルクリックで開く" data-st>' +
-          '<td><input type="checkbox" class="d-sel" data-id="' + d.id + '"' + (SEL[d.id] ? ' checked' : '') + '></td>' +
-          '<td class="num">' + esc(d.no) + (d.rev ? ' <span class="badge">第' + d.rev + '版</span>' : '') + '</td>' +
-          '<td>' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '<span class="cell-sub">' + esc(x.c.name || '宛先未設定') + '</span></td>' +
-          '<td>' + (function () { var m = U.findMember(d.ownerId); return m ? '<span class="owner-chip">' + U.avatar(m, 22) + esc(m.name.split(/\s+/)[0]) + '</span>' : '<span class="hint">未割り当て</span>'; })() + '</td>' +
-          '<td class="num">' + U.jdate(d.issueDate) + '</td>' +
-          '<td class="num">' + (d.status === 'issued' ? '<span class="muted">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</td>' +
-          '<td class="r num">' + U.yen(x.r.total) + '</td>' +
-          '<td class="r num" style="' + (low ? 'color:var(--warn)' : '') + '">' + U.pct(x.r.marginRate) + '</td>' +
-          '<td>' + U.statusBadge(d) + '</td>' +
-          '<td><div class="row-actions">' +
+          '<td class="c-sel"><input type="checkbox" class="d-sel" data-id="' + d.id + '"' + (SEL[d.id] ? ' checked' : '') + '></td>' +
+          '<td class="num c-no">' + esc(d.no) + (d.rev ? ' <span class="badge">第' + d.rev + '版</span>' : '') + '</td>' +
+          '<td class="c-title"><span class="c-tt">' + EE.views.site.patternBadge(d) + ' ' + esc(d.title || '（件名なし）') + '</span><span class="cell-sub">' + esc(x.c.name || '宛先未設定') + '</span></td>' +
+          '<td class="c-owner">' + (function () { var m = U.findMember(d.ownerId); return m ? '<span class="owner-chip">' + U.avatar(m, 22) + esc(m.name.split(/\s+/)[0]) + '</span>' : '<span class="hint">未割り当て</span>'; })() + '</td>' +
+          '<td class="num c-issue">' + U.jdate(d.issueDate) + '</td>' +
+          '<td class="num c-valid">' + (d.status === 'issued' ? '<span class="muted">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</td>' +
+          '<td class="r num c-amt">' + U.yen(x.r.total) + '</td>' +
+          '<td class="r num c-margin" style="' + (low ? 'color:var(--warn)' : '') + '">' + U.pct(x.r.marginRate) + '</td>' +
+          '<td class="c-st">' + U.statusBadge(d) + '</td>' +
+          '<td class="c-act"><div class="row-actions">' +
             '<button class="btn ghost icon sm" data-act="dup" data-id="' + d.id + '" title="複製して新規">' + I.copy + '</button>' +
             (d.status === 'issued' ? '<button class="btn ghost icon sm" data-act="rev" data-id="' + d.id + '" title="修正見積を作成">' + I.branch + '</button>'
               : '<button class="btn ghost icon sm danger" data-act="del" data-id="' + d.id + '" title="削除（下書きのみ）">' + I.trash + '</button>') +
@@ -118,7 +118,7 @@
       '<div class="flip-face panel"><div class="panel-h">' + U.statusBadge(d) + EE.views.site.patternBadge(d) + '<div class="spacer"></div><span class="hint num">' + esc(d.no) + '</span></div>' +
         '<div class="panel-b"><div style="font-size:16px;font-weight:650;line-height:1.45">' + esc(d.title || '（件名なし）') + '</div>' +
           '<div class="hint">' + esc(c.name || '宛先未設定') + ' ' + esc(c.honorific || '') + '</div>' +
-          '<div class="flip-total num" data-count="' + r.total + '" data-format="yen">¥0</div><div class="hint">税込　小計 ' + U.yen(r.subtotal) + '・粗利率 ' + U.pct(r.marginRate) + '</div>' +
+          '<div class="flip-total num" data-count="' + r.total + '" data-format="yen">¥0</div><div class="hint">税込　小計 ' + U.yen(r.subtotal) + '<span class="internal">・粗利率 ' + U.pct(r.marginRate) + '</span></div>' +
           '<div class="sep"></div>' +
           '<div class="sum-row"><span>発行日</span><span class="num">' + U.jdate(d.issueDate) + '</span></div>' +
           '<div class="sum-row"><span>有効期限</span><span>' + (d.status === 'issued' ? '<span class="num">' + U.jdate(d.validUntil) + '</span>' : U.validBadge(d)) + '</span></div>' +

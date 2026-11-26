@@ -25,8 +25,49 @@
     monthPaid: { label: '今月の入金額', icon: 'yen', href: '#/finance', fmt: 'yen', foot: '入金にした工事' },
     margin: { label: '今月の平均粗利率', icon: 'chart', href: '#/finance', fmt: 'pct', foot: '税抜ベース' },
     lowMargin: { label: '粗利の下限割れ', icon: 'bell', href: '#/finance', fmt: 'int', foot: '下書きの見積', warn: true },
-    customers: { label: '顧客', icon: 'users', href: '#/clients', fmt: 'int', foot: '登録している顧客' }
+    customers: { label: '顧客', icon: 'users', href: '#/clients', fmt: 'int', foot: '登録している顧客' },
+    monthBilled: { label: '今月の請求額', icon: 'yen', href: '#/finance', fmt: 'yen', foot: '発行した請求・税込' }
   };
+  /* ---------- 月ごとの数字（前月比・小さな折れ線・月別の折れ線） ---------- */
+  var MONTHLY = { monthBilled: 'billed', monthOrder: 'order', monthEst: 'estimate', monthPaid: 'paid' };
+  function ymAdd(ym, k) { var y = Number(ym.slice(0, 4)), m = Number(ym.slice(5, 7)) - 1 + k; y += Math.floor(m / 12); m = ((m % 12) + 12) % 12; return y + '-' + String(m + 1).padStart(2, '0'); }
+  function thisYm() { return EE.data.today().slice(0, 7); }
+  function monthVal(kind, ym) {
+    var S = EE.S, sum = 0;
+    if (kind === 'billed') {
+      // 請求額：工事の「入金」に入っている請求（請求日がその月）。業務管理が無いときは桜ミツで作った請求書
+      var o = linkO(), cs = o && o.cases ? o.cases() : null;
+      if (cs) cs.forEach(function (c) { if (c.archived) return; (c.payments || []).forEach(function (p) { if (String(p.billDate || '').slice(0, 7) === ym) sum += Number(p.bill) || 0; }); });
+      else (S.invoices || []).forEach(function (v) { if (String(v.issueDate || '').slice(0, 7) === ym) sum += v.amount || 0; });
+      return sum;
+    }
+    if (kind === 'estimate' || kind === 'issued') {
+      S.documents.forEach(function (d) { if (kind === 'issued' && d.status !== 'issued') return; if ((d.issueDate || '').slice(0, 7) === ym) sum += U.calcDoc(d).total; });
+      return sum;
+    }
+    S.projects.forEach(function (p) {
+      var d = p.acceptedDocId && U.findDoc(p.acceptedDocId); if (!d) return;
+      if (((kind === 'order' ? p.orderedOn : p.paidOn) || '').slice(0, 7) === ym) sum += U.calcDoc(d).total;
+    });
+    return sum;
+  }
+  function series(kind, n) { var ym = thisYm(), out = []; for (var i = n - 1; i >= 0; i--) { var k = ymAdd(ym, -i); out.push({ ym: k, label: Number(k.slice(5)) + '月', value: monthVal(kind, k) }); } return out; }
+  /** 前月比のバッジ：良い変化＝ミント緑、悪い変化＝淡い赤のピル（原色は使わない） */
+  function deltaHTML(v, prev, fmt) {
+    if (!prev && !v) return '<span class="delta flat">先月も ' + EE.fx.fmt(0, fmt) + '</span>';
+    if (!prev) return '<span class="delta up">先月 ' + EE.fx.fmt(0, fmt) + ' から</span>';
+    var pc = Math.round((v - prev) / Math.abs(prev) * 100);
+    if (pc === 0) return '<span class="delta flat">先月と同じ</span>';
+    return '<span class="delta ' + (pc > 0 ? 'up' : 'down') + '" title="先月 ' + EE.fx.fmt(prev, fmt) + '">' + (pc > 0 ? '↑ ' : '↓ ') + Math.abs(pc) + '%<small>先月比</small></span>';
+  }
+  /** 小さな折れ線（直近6か月）。線だけ、ほのかに光らせる */
+  function sparkHTML(pts) {
+    var W = 320, H = 96, max = Math.max(1, Math.max.apply(null, pts.map(function (p) { return p.value; })));
+    var x = function (i) { return 2 + i * (W - 4) / Math.max(1, pts.length - 1); }, y = function (v) { return H - 4 - v / max * (H - 10); };
+    var d = pts.map(function (p, i) { return (i ? 'L' : 'M') + x(i).toFixed(1) + ',' + y(p.value).toFixed(1); }).join('');
+    return '<svg class="kpi-spark" viewBox="0 0 ' + W + ' ' + H + '" role="img" aria-label="直近' + pts.length + 'か月の推移：' + pts.map(function (p) { return p.label + ' ' + EE.fx.fmt(p.value, 'yen'); }).join('、') + '">' +
+      '<path class="spark-line" d="' + d + '" pathLength="1"/><circle class="spark-dot" cx="' + x(pts.length - 1).toFixed(1) + '" cy="' + y(pts[pts.length - 1].value).toFixed(1) + '" r="3"/></svg>';
+  }
   function metricValue(key) {
     var S = EE.S, cs = EE.insight.cases(), M = EE.views.finance.monthStats(), minM = S.settings.minMargin || 0;
     switch (key) {
@@ -42,6 +83,7 @@
       case 'margin': return Math.round(M.margin * 1000) / 10;
       case 'lowMargin': return S.documents.filter(function (d) { if (d.status === 'issued') return false; var r = U.calcDoc(d); return r.subtotal > 0 && r.marginRate < minM; }).length;
       case 'customers': return S.customers.length;
+      case 'monthBilled': return monthVal('billed', thisYm());
     }
     return 0;
   }
@@ -62,6 +104,7 @@
     members: { name: '担当者のファイル', cat: '人員', sizes: ['l', 'm'], icon: 'users' },
     favorites: { name: 'お気に入りの工事', cat: 'お気に入り', sizes: ['m', 's', 'l'], icon: 'star', href: '#/sites' },
     usage: { name: 'よく使う機能', cat: 'お気に入り', sizes: ['m', 's'], icon: 'spark' },
+    trend: { name: '月別の見積の発行額', cat: 'お金', sizes: ['s', 'm', 'l'], icon: 'trend', href: '#/docs/issued' },
     // 桜ミツ版（業務管理の機能を入れたもの）だけ
     today: { name: '今日のボード（工事・現調・予定）', cat: '時間', sizes: ['m', 'l', 's'], icon: 'calendar', href: '#/o/cal', link: true }
   };
@@ -77,8 +120,9 @@
       // 桜ミツ版の標準：今日のこと → 数字 → やること → 書類・流れ・お金
       // 桜ミツ版：1画面（1920×1080）に収まる3段。1段目 時計・今日・数字2つ／2段目 数字2つ・今日やること／3段目 最近の見積・工事の流れ
       // 桜ミツ版：はじめに出すのは6つだけ（1段目 数字3つ／2段目 今日のボード・今日やること・最近の見積）。ほかは「並べ替え・追加」から
-      case 'link': return [w('kpi', 's', { metric: 'monthOrder' }), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'active' }),
-        w('today', 's'), w('todo', 's'), w('recent', 's')];
+      // 2026-11-26：主役は「今月の請求額」1つ（大きく・前月比・直近6か月の小さな折れ線）。残りの数字は小さく＋前月比。下段に月別の折れ線
+      case 'link': return [w('kpi', 'm', { metric: 'monthBilled', hero: true }), w('kpi', 's', { metric: 'monthOrder' }), w('kpi', 's', { metric: 'monthEst' }),
+        w('trend', 's', { range: 6 }), w('todo', 's'), w('recent', 's')];
       case 'sales': return [w('clock', 'm'), w('kpi', 's', { metric: 'drafts' }), w('kpi', 's', { metric: 'waiting', color: 'violet' }), w('todo', 'm'), w('quick', 'm'), w('recent', 'l'), w('kpi', 's', { metric: 'overdue', color: 'amber' }), w('kpi', 's', { metric: 'customers', color: 'teal' }), w('usage', 'm')];
       case 'site': return [w('clock', 'm'), w('kpi', 's', { metric: 'active', color: 'teal' }), w('kpi', 's', { metric: 'today' }), w('todo', 'm'), w('quick', 'm'), w('events', 'l'), w('favorites', 'm')];
       case 'office': return [w('clock', 'm'), w('kpi', 's', { metric: 'unpaid', color: 'violet' }), w('kpi', 's', { metric: 'waiting' }), w('attention', 'm'), w('quick', 'm'), w('recent', 'l'), w('members', 'l')];
@@ -104,7 +148,9 @@
       // 前の標準（縦に長い並び）のままなら、1画面に収まる新しい標準へ
       var mainL = h.layouts.filter(function (l) { return l.key === 'main'; })[0];
       var was = mainL && mainL.widgets.map(function (x) { return x.type; }).join(',');
-      if (was === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow,bars' || was === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow') { mainL.widgets = preset('link'); U.commit(); }
+      var wasM = mainL && mainL.widgets.map(function (x) { return x.type + (x.metric ? ':' + x.metric : ''); }).join(',');
+      if (was === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow,bars' || was === 'clock,today,kpi,kpi,kpi,kpi,todo,recent,flow' ||
+          wasM === 'kpi:monthOrder,kpi:drafts,kpi:active,today,todo,recent') { mainL.widgets = preset('link'); U.commit(); }   // 前の標準のままなら、新しい標準へ
       return h;
     }
     if (!h) {
@@ -146,20 +192,34 @@
           (next ? '<a class="w-next" href="' + next.href + '"><span class="label">次の予定</span><span>' + U.jdate(next.date) + '　' + esc(next.label) + '・' + esc(next.title) + '</span></a>' : '<a class="w-next" href="' + (EE.link ? '#/o/cal' : '#/schedule') + '"><span class="label">次の予定</span><span>まだありません　予定を開く ›</span></a>') + '</div>';
       }
       case 'kpi': {
-        var m = METRICS[wd.metric] || METRICS.active, v = metricValue(wd.metric);
-        return '<a class="w-kpi' + (m.warn && v ? ' warn' : '') + '" href="' + m.href + '"><div class="w-kpi-label">' + I[m.icon] + esc(m.label) + '</div>' +
-          '<div class="w-kpi-value num" data-count="' + v + '" data-count-key="home-' + wd.metric + '" data-format="' + m.fmt + '">0</div><div class="w-kpi-foot">' + esc(m.foot) + '</div></a>';
+        var m = METRICS[wd.metric] || METRICS.active, v = metricValue(wd.metric), mk = MONTHLY[wd.metric];
+        var prev = mk ? monthVal(mk, ymAdd(thisYm(), -1)) : 0, hero = wd.hero && mk;
+        // 今月の数字：開いた瞬間に 0 → 実数へ 0.8秒（止まる瞬間に小さく弾む）。今月の数字以外は今までどおり
+        var cnt = mk ? ' data-count-ms="' + (hero ? 900 : 700) + '" data-bounce' : '';
+        var flag = hero && v > prev && prev > 0 ? '<span class="beat-flag" title="先月 ' + EE.fx.fmt(prev, m.fmt) + '">' + I.flag + '先月超え</span>' : '';
+        return '<a class="w-kpi' + (m.warn && v ? ' warn' : '') + (hero ? ' hero' : '') + '" href="' + m.href + '"><div class="w-kpi-label">' + I[m.icon] + esc(m.label) + flag + '</div>' +
+          '<div class="w-kpi-row"><div class="w-kpi-value num" data-count="' + v + '" data-count-key="home-' + wd.metric + '" data-format="' + m.fmt + '"' + cnt + '>' + EE.fx.fmt(0, m.fmt) + '</div>' + (hero ? sparkHTML(series(mk, 6)) : '') + '</div>' +
+          '<div class="w-kpi-foot">' + (mk ? deltaHTML(v, prev, m.fmt) : '') + '<span>' + esc(m.foot) + '</span></div></a>';
+      }
+      case 'trend': {
+        var rg = wd.range === 12 ? 12 : 6;
+        return '<div class="w-trend"><div class="seg sm trend-seg" role="group" aria-label="期間">' + [6, 12].map(function (k) { return '<button type="button" data-trend-range="' + k + '" class="' + (rg === k ? 'on' : '') + '" aria-pressed="' + (rg === k) + '">' + k + 'か月</button>'; }).join('') + '</div>' +
+          '<div class="trend-chart" data-trend="' + rg + '"></div></div>';
       }
       case 'todo': {
         var items = EE.link && EE.linkTodo ? EE.linkTodo() : [];   // 桜ミツ版：期限が近い見積・入金待ち・バックアップ
-        EE.views.schedule.overdue().slice(0, 3).forEach(function (e) { items.push({ warn: true, t: e.title, s: '期限切れ（' + U.jdate(e.date) + '）', href: e.href }); });
+        EE.views.schedule.overdue().slice(0, 3).forEach(function (e) {
+          if (items.some(function (x) { return x.href === e.href; })) return;   // 同じ見積を2回出さない
+          var dd = U.findDoc((e.href.match(/#\/edit\/(.+)$/) || [])[1]);
+          items.push({ warn: true, alert: true, t: e.title, s: '有効期限切れ（' + U.jdate(e.date) + '）' + (dd ? '・' + U.yen(U.calcDoc(dd).total) : ''), href: e.href });
+        });
         EE.views.schedule.upcoming(0).forEach(function (e) { items.push({ t: e.title, s: '今日・' + e.label, href: e.href }); });
         EE.insight.cases().filter(function (c) { return c.project.id && c.stage < 5; }).sort(function (a, b) { return (b.warn ? 1 : 0) - (a.warn ? 1 : 0); }).slice(0, 6).forEach(function (c) {
           items.push({ warn: c.warn, t: c.project.name, s: c.next, href: '#/site/' + c.project.id });
         });
         items = items.slice(0, wd.size === 'l' ? 8 : 5);
         return '<div class="w-list">' + (items.length ? items.map(function (x) {
-          return '<a class="w-item' + (x.warn ? ' warn' : '') + '" href="' + x.href + '"><span class="w-dot"></span><span><b>' + esc(x.t) + '</b><small>' + esc(x.s) + '</small></span></a>';
+          return '<a class="w-item' + (x.alert ? ' alert' : x.warn ? ' warn' : '') + '" href="' + x.href + '"><span class="w-dot"></span><span><b>' + esc(x.t) + '</b><small>' + esc(x.s) + '</small></span></a>';
         }).join('') : U.empty({ small: 1, text: '今日やることはありません', btn: '工事の一覧を開く', href: EE.link ? '#/o/list' : '#/sites' })) + '</div>';
       }
       case 'quick': {
@@ -218,7 +278,7 @@
       '<button type="button" data-w="opts" aria-label="色・透明度' + (T.metric ? '・数字の種類' : '') + '">' + I.gear + '</button>' +
       '<button type="button" data-w="hide" aria-label="' + (wd.hidden ? '表示する' : '隠す') + '" aria-pressed="' + (wd.hidden ? 'true' : 'false') + '">' + I.eye + '</button>' +
       '<button type="button" data-w="del" aria-label="削除">' + I.x + '</button></div>' : '';
-    return '<section class="widget size-' + wd.size + (wd.hidden ? ' is-hidden' : '') + '" data-wid="' + wd.id + '" data-type="' + wd.type + '" style="--w-accent:' + col + ';--w-alpha:' + (wd.alpha / 100) + '"' +
+    return '<section class="widget size-' + wd.size + (wd.hidden ? ' is-hidden' : '') + '" data-wid="' + wd.id + '" data-type="' + wd.type + '"' + (wd.hero ? ' data-hero' : '') + ' style="--w-accent:' + col + ';--w-alpha:' + (wd.alpha / 100) + '"' +
       (editing ? ' draggable="true"' : '') + ' data-st>' + ctl + title + '<div class="w-body">' + body(wd) + '</div></section>';
   }
 
@@ -359,8 +419,21 @@
     });
   }
 
+  function drawTrend(el, animate) {
+    var rg = Number(el.dataset.trend) || 6, pts = series('issued', rg);
+    EE.charts.area(el, pts, { title: '月別の見積の発行額（確定した見積・税込）', unit: '発行額', fmt: 'yen', height: Math.max(120, Math.min(260, (el.clientHeight || 160) - 4)), draw: animate !== false, glow: true });
+  }
   function mount(view) {
     EE.fx.countAll(view);
+    view.querySelectorAll('[data-trend]').forEach(function (el) { drawTrend(el); });
+    view.querySelectorAll('.spark-line').forEach(function (l) { EE.fx.anim(l, [{ strokeDashoffset: 1 }, { strokeDashoffset: 0 }], { duration: EE.fx.T.page, delay: 200, fill: 'both' }); });
+    view.addEventListener('click', function (e) {
+      var b = e.target.closest('[data-trend-range]'); if (!b || editing) return;
+      var sec = b.closest('[data-wid]'), f = sec && find(sec.dataset.wid); if (!f) return;
+      f.w.range = Number(b.dataset.trendRange); save();
+      sec.querySelectorAll('[data-trend-range]').forEach(function (x) { var on = x === b; x.classList.toggle('on', on); x.setAttribute('aria-pressed', on); });
+      var ch = sec.querySelector('[data-trend]'); ch.dataset.trend = f.w.range; drawTrend(ch);   // 期間を変えたら描き直す（線が左から伸びる）
+    });
     var bars = view.querySelector('[data-bars]'); if (bars) EE.views.finance.drawBars(bars);
     view.querySelectorAll('.w-rings .ring').forEach(function (r, i) { var v = r.querySelector('.ring-val'); EE.fx.anim(v, [{ strokeDashoffset: r.style.getPropertyValue('--len') }, { strokeDashoffset: r.style.getPropertyValue('--off') }], { duration: 900, delay: 150 + i * 80, fill: 'both' }); });
     // 時計は1秒ごと（画面を離れたら止める）
@@ -419,6 +492,8 @@
     }
   }
 
+  // ホームを開くたびに、今月の数字はもう一度 0 から数え上げる（ホームの中で描き直すときは動かさない）
+  root.addEventListener('hashchange', function () { if (/^#\/(home)?$/.test(location.hash || '#/')) EE.fx.countForget('home-month'); });
   EE.views = EE.views || {};
   EE.views.control = { render: render, track: track, TYPES: TYPES, METRICS: METRICS, metricValue: metricValue, preset: preset };
 })(this);
