@@ -21,12 +21,4 @@
     localStorage.setItem('oubi.ldb.staff', JSON.stringify({ usr_demo: { name: '見本 太郎', createdAt: '2026-01-01T00:00:00Z' } }));
     localStorage.setItem('oubi.backup.at', new Date().toISOString());   // 見せる用ではバックアップの知らせを出さない
   } catch (e) {}
-  // 「見せる用」の印：左の列の下（スマホは下のボタンの上）
-  function mark() {
-    if (document.getElementById('demo-mark')) return;
-    var m = document.createElement('div'); m.id = 'demo-mark'; m.setAttribute('role', 'note');
-    m.innerHTML = '<b>見せる用</b><span>ここでの入力・変更は保存されず、再読み込みで元に戻ります</span>';
-    document.body.appendChild(m);
-  }
-  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', mark); else mark();
 })(this);
