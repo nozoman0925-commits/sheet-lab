@@ -33,7 +33,7 @@ const OUT = path.join(__dirname, '..', 'screenshots') + '/';
   // ---- ホーム・見積の入口 ----
   p = await openWeb(b, { wait: 3500 }); watch(p);
   ok(!(await p.$('#home-layout')) && await p.isVisible('[data-act="w-edit"]'), 'ホームは標準の1型（型の切り替えは出さない）。並べ替え・追加は控えめなボタン');
-  ok(/見積を作る/.test(await p.textContent('.launch .lt-main')) && (await p.$$('.launch .launch-btn2')).length === 2 && (await p.$$eval('#view .widget', w => w.map(x => x.dataset.type))).join(',') === 'kpi,kpi,kpi,today,todo,recent', '標準のホーム：主役は「見積を作る」1つ＋普通のボタン2つ、パネルは6つ');
+  ok(/見積を作る/.test(await p.textContent('.launch .lt-main')) && (await p.$$('.launch .launch-btn2')).length === 2 && (await p.$$eval('#view .widget', w => w.map(x => x.dataset.type))).join(',') === 'kpi,kpi,kpi,trend,todo,recent', '標準のホーム：主役は「見積を作る」1つ＋普通のボタン2つ、パネルは6つ（数字3つ・月別の折れ線・今日やること・最近の書類）');
   ok((await p.$$eval('.nav-item[data-nav="estimate"] ~ .nav-sub a, .nav-group[data-key="estimate"] .nav-child', a => a.map(x => x.textContent.trim()))).join('|').indexOf('かんたん作成') < 0, '見積の子メニューに作り方を並べない（入口は「＋ 見積を作る」の1つ）');
   await go(p, '#/new', 1500);
   ok((await p.textContent('#title')) === '見積を作る' && (await p.$$('#view .quick-card')).length >= 7, '「見積を作る」の中で作り方を選ぶ');

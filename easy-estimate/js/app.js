@@ -242,7 +242,13 @@
       if (token !== navSeq) return;          // 続けて切り替えたときは最後の画面だけ表示する
       if (EE.views.control) EE.views.control.track(location.hash);   // よく使う機能（ホームのウィジェット）
       view = document.getElementById('view'); // 切り替えの途中で差し替わっていても今の要素を使う
-      current = r.view();
+      try { current = r.view(); }
+      catch (err) {
+        // 失敗の状態：画面を描けなかったときも白紙にしない（記録は消えていない・もう一度・ホームへ）
+        try { console.error(err); } catch (x) {}
+        current = { title: '表示できませんでした', crumb: '', html: '<div class="page-failed" role="alert"><b>この画面を表示できませんでした</b><p>記録は消えていません。もう一度読み込むか、ホームへ戻ってください。</p>' +
+          '<div style="display:flex;gap:10px;justify-content:center"><button type="button" class="btn primary" onclick="location.reload()">もう一度読み込む</button><a class="btn" href="#/home">ホームへ戻る</a></div></div>' };
+      }
       document.body.classList.toggle('ob-on', !!current.oubi);   // 桜ミツ版：業務管理の枠を出す画面
       // 業務管理の画面へ移るときも、ほかの画面と同じ 0.25秒・同じ曲線で入れる（白紙から描き直したように見せない）
       if (current.oubi && animate !== false && root.OUBI_LINK && root.OUBI_LINK.frame) { var obf = root.OUBI_LINK.frame(); if (obf) EE.fx.pageIn(obf, dir); }
@@ -431,6 +437,7 @@
     renderUser(); bindUser();
     document.getElementById('open-palette').addEventListener('click', function () { EE.palette.open(); });
     showModeInit();
+    try { if (/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) { var kb = document.querySelector('#open-palette kbd'); if (kb) kb.textContent = '⌘K'; } } catch (e) {}
     if (EE.a11y && document.querySelector('.sidebar')) EE.a11y.enhance(document.querySelector('.sidebar'));
     // 別のタブで保存されたら、この画面からは保存せず再読み込みを促す（上書きで相手の変更を消さない）
     if (!opts.host) root.addEventListener('storage', function (e) {

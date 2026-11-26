@@ -124,11 +124,20 @@
     return k && typeof by[k] === 'number' ? by[k] : EE.S.settings.minMargin;
   }
   function checkDoc(doc) {
-    return EE.check.run(doc, {
+    var out = EE.check.run(doc, {
       items: EE.S.items, customers: EE.S.customers, projects: EE.S.projects, documents: EE.S.documents,
       company: EE.S.company, settings: Object.assign({}, EE.S.settings, rulesFor(doc), { minMargin: minMarginOf(doc) }), today: EE.data.today(),
       meName: root.OUBI_LINK && root.OUBI_LINK.me ? (root.OUBI_LINK.me().name || '') : null
     });
+    if (EE.make) {
+      // 入れ忘れやすいもの（工事の種類ごとのチェックリスト）と、単価の異常値
+      var miss = (doc.lines || []).length && !doc.rough ? EE.make.checklistOf(doc).filter(function (x) { return !x.has && !x.skip; }) : [];
+      if (miss.length) out.push({ level: 'warn', code: 'checklist-miss', title: '入れ忘れやすいものが ' + miss.length + ' つ入っていません：' + miss.map(function (x) { return x.label; }).join('・'), detail: '「入れ忘れを確かめる」から足すか、「今回は不要」にしてください。抜け漏れは利益の漏れです。', target: { area: 'lines' } });
+      (doc.lines || []).forEach(function (l, i) { var a = EE.make.anomaly(l, findItem(l.itemId)); if (a) out.push({ level: 'warn', code: 'price-odd', title: (i + 1) + '行目「' + l.name + '」の単価は' + a.msg, detail: '品目マスタの単価の打ち間違いがないか確かめてください。', target: { area: 'lines', lineId: l.lineId } }); });
+      if (doc.rough) out.push({ level: 'info', code: 'rough', title: '概算の見積です（PDF は「概算御見積書」）', detail: '内容が決まったら「明細にする」で正式な見積にしてください。', target: { area: 'lines' } });
+      var order = { error: 0, warn: 1, info: 2 }; out.sort(function (a, b) { return order[a.level] - order[b.level]; });
+    }
+    return out;
   }
 
   /* ---- モーダル ---- */
@@ -251,7 +260,8 @@
   function empty(o) {
     var b = !o.btn ? '' : o.href ? '<a class="btn primary sm" href="' + o.href + '">' + esc(o.btn) + '</a>'
       : '<button class="btn primary sm" type="button" data-act="' + o.act + '">' + esc(o.btn) + '</button>';
-    return '<div class="empty' + (o.small ? ' sm' : '') + '">' + (o.icon || '') + '<p class="empty-t">' + esc(o.text) + '</p>' + (o.sub ? '<p class="empty-s">' + esc(o.sub) + '</p>' : '') + b + '</div>';
+    // 空の状態：うっすらとした行の影（ゴースト）で「ここに何が並ぶか」を見せる。読み込み中（sk）・空・失敗・通常の4つの状態の1つ
+    return '<div class="empty ghosted' + (o.small ? ' sm' : '') + '"><div class="ghost-rows" aria-hidden="true"><i></i><i></i><i></i></div>' + (o.icon || '') + '<p class="empty-t">' + esc(o.text) + '</p>' + (o.sub ? '<p class="empty-s">' + esc(o.sub) + '</p>' : '') + b + '</div>';
   }
 
   /** 消す・まとめて変えるなどの前に呼ぶ：S の keys を控えておき、終わったら返り値を呼ぶと「元に戻す」付きの知らせを出す */

@@ -53,7 +53,8 @@
   /* ---------- 2 中身 ---------- */
   function step2() {
     if (!proj()) { location.replace('#/w/1'); return page(1, '', '', false); }
-    var M = [['tpl', I.box || I.calc, 'テンプレートから', 'よくある工事のひな形から選ぶ'], ['text', I.spark || I.edit, '文章で書く', '「外壁塗装 30坪 足場あり」のように書くと明細になります'], ['blank', I.plus, '白紙から', '品目をあとで自分で入れる']];
+    var M = [['tpl', I.box || I.calc, 'テンプレートから', 'よくある工事のひな形から選ぶ'], ['mine', I.star || I.copy, 'マイ型から', '自分で保存した見積の型（' + ((EE.S.myTypes || []).length) + '）'],
+      ['rough', I.yen, '概算で作る', '「だいたいいくら？」に数分で。明細はあとで'], ['text', I.spark || I.edit, '文章で書く', '「外壁塗装 30坪 足場あり」のように書くと明細になります'], ['blank', I.plus, '白紙から', '品目をあとで自分で入れる']];
     var body = '<p class="wz-help">「' + esc(proj().name || '') + '」の見積の中身を、どうやって入れますか？</p>' +
       '<div class="wz-modes" role="radiogroup" aria-label="入れ方">' + M.map(function (m) {
         var on = W.mode === m[0];
@@ -64,11 +65,19 @@
         var on = W.tpl === p.id;
         return '<button type="button" class="wz-opt' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" data-tpl="' + p.id + '"><span class="wz-dot"></span><span><b>' + esc(p.name) + '</b><small>' + esc(p.category || '') + '・' + p.lines.length + '品目</small></span></button>';
       }).join('') + '</div></div>';
+    } else if (W.mode === 'mine') {
+      var my = EE.S.myTypes || [];
+      body += '<div class="wz-sub"><b>マイ型を選んでください</b>' + (my.length ? '<div class="wz-tpls">' + my.map(function (t) {
+        var on = W.mine === t.id;
+        return '<button type="button" class="wz-opt' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" data-mine="' + t.id + '"><span class="wz-dot"></span><span><b>' + esc(t.name) + '</b><small>' + t.lines.length + '品目・' + esc(U.jdate((t.at || '').slice(0, 10))) + ' に保存</small></span></button>';
+      }).join('') + '</div>' : '<p class="hint">まだマイ型がありません。見積の編集画面の「マイ型に保存」で、作った見積を型にできます。</p>') + '</div>';
+    } else if (W.mode === 'rough') {
+      body += EE.make ? EE.make.roughFormHTML(W, proj()) : '';
     } else if (W.mode === 'text') {
       body += '<div class="wz-sub"><label for="wz-text"><b>工事の内容を書いてください</b></label><textarea class="input" id="wz-text" rows="4" placeholder="例：外壁塗装 延床30坪。足場、高圧洗浄、シリコン上塗り、付帯部">' + esc(W.text || '') + '</textarea></div>';
     }
-    var ok = W.mode === 'blank' || (W.mode === 'tpl' && !!W.tpl) || (W.mode === 'text' && !!(W.text || '').trim());
-    return page(2, '見積の中身はどうやって入れますか？', body, ok, '明細を作る');
+    var ok = W.mode === 'blank' || (W.mode === 'tpl' && !!W.tpl) || (W.mode === 'mine' && !!W.mine) || (W.mode === 'rough' && EE.make && EE.make.roughAmount(W) > 0) || (W.mode === 'text' && !!(W.text || '').trim());
+    return page(2, '見積の中身はどうやって入れますか？', body, ok, W.mode === 'rough' ? '概算を作る' : '明細を作る');
   }
 
   /* ---------- 3 金額 ---------- */
@@ -108,6 +117,9 @@
     if (W.mode === 'tpl') {
       var t = EE.S.packages.filter(function (x) { return x.id === W.tpl; })[0];
       if (t) { rows = t.lines.filter(function (l) { return !l.optional; }).map(function (l) { return { itemId: l.itemId, qty: l.qty }; }); adj = t.adjustments || []; sourceLabel = 'テンプレート「' + t.name + '」から作成'; }
+    } else if (W.mode === 'mine') {
+      var mt = (EE.S.myTypes || []).filter(function (x) { return x.id === W.mine; })[0];
+      if (mt) { rows = mt.lines.map(function (l) { return { itemId: l.itemId, qty: l.qty, desc: l.desc }; }); adj = mt.adjustments || []; sourceLabel = 'マイ型「' + mt.name + '」から作成'; }
     } else if (W.mode === 'text') {
       var res = EE.parse.parse(W.text, { items: EE.S.items, templates: EE.S.packages, categories: EE.S.categories, customers: EE.S.customers });
       rows = (res.rows || []).filter(function (r) { return r.include !== false; }); adj = (res.adjustments || []).filter(function (a) { return a.include !== false; }); sourceLabel = '文章から作成';
@@ -115,7 +127,10 @@
     var d = doc();
     if (!d || d.status === 'issued') { d = EE.data.newEstimate(EE.S, { projectId: p.id, customerId: p.customerId, title: p.name, ownerId: U.me().id }); EE.S.documents.push(d); W.docId = d.id; }
     d.lines = [];
-    rows.forEach(function (r) { var it = U.findItem(r.itemId); if (!it) return; var q = Number(r.qty); if (!isFinite(q) || q <= 0) q = it.stdQty || 1; var ln = EE.data.lineFromItem(it, q); if (r.source) ln.inputSource = r.source; d.lines.push(ln); });
+    rows.forEach(function (r) { var it = U.findItem(r.itemId); if (!it) return; var q = Number(r.qty); if (!isFinite(q) || q <= 0) q = it.stdQty || 1; var ln = EE.data.lineFromItem(it, q); if (r.source) ln.inputSource = r.source; if (r.desc || it.description) ln.desc = r.desc || it.description; d.lines.push(ln); });
+    d.rough = false;
+    if (W.mode === 'mine' && mt) ['notes', 'excludes', 'premises', 'paymentTerms', 'category'].forEach(function (k) { if (mt[k]) d[k] = mt[k]; });
+    if (W.mode === 'rough' && EE.make) EE.make.applyRough(d, W, p);
     d.adjustments = adj.map(function (a) { return { id: EE.data.uid('adj'), type: a.type, label: a.label || (a.type === 'overhead' ? '諸経費' : '値引き'), mode: a.mode || 'rate', rateBp: a.rateBp || 0, amount: a.amount || 0, taxCategory: a.taxCategory || 'std10', scope: 'all', unit: a.unit }; });
     if (sourceLabel) d.sourceLabel = sourceLabel;
     d.updatedAt = new Date().toISOString();
@@ -148,6 +163,7 @@
       if ((t = e.target.closest('[data-pj]'))) { W.projectId = t.dataset.pj; W.docId = ''; EE.app.rerender(); return; }
       if ((t = e.target.closest('[data-mode]'))) { W.mode = t.dataset.mode; EE.app.rerender(); var x = view.querySelector('#wz-text'); if (x) x.focus(); return; }
       if ((t = e.target.closest('[data-tpl]'))) { W.tpl = t.dataset.tpl; EE.app.rerender(); return; }
+      if ((t = e.target.closest('[data-mine]'))) { W.mine = t.dataset.mine; EE.app.rerender(); return; }
       if ((t = e.target.closest('[data-q]'))) {
         var tr = t.closest('tr'), d = doc(), l = d && d.lines.filter(function (x) { return x.lineId === tr.dataset.line; })[0]; if (!l) return;
         l.qty = Math.max(0, Math.round((Number(l.qty) + Number(t.dataset.q)) * 100) / 100); d.updatedAt = new Date().toISOString(); U.commit(); EE.app.rerender(); return;
@@ -166,6 +182,7 @@
     view.addEventListener('input', function (e) {
       if (e.target.id === 'wz-q') { W.q = e.target.value; var pos = e.target.selectionStart; EE.app.rerender(); var q = document.getElementById('wz-q'); if (q) { q.focus(); try { q.setSelectionRange(pos, pos); } catch (er) {} } return; }
       if (e.target.id === 'wz-text') { W.text = e.target.value; var nx = view.querySelector('[data-wz="next"]'); if (nx) nx.disabled = !W.text.trim(); return; }
+      if (e.target.dataset && e.target.dataset.rough != null && EE.make) { EE.make.roughInput(W, e.target, view); return; }
       if (e.target.id === 'wz-cust') { var n2 = view.querySelector('[data-wz="next"]'); if (n2) n2.disabled = !(W.projectId || e.target.value.trim()); }
     });
     view.addEventListener('change', function (e) {
