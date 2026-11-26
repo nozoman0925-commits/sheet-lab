@@ -182,6 +182,7 @@
     });
     return out.sort(function (a, b) { return (b.warn ? 1 : 0) - (a.warn ? 1 : 0) || (a.n || 0) - (b.n || 0); });
   }
+  EE.linkDue = function () { return dueItems(); };
   EE.linkTodo = function () {
     return dueItems().slice(0, 6);   // バックアップの知らせは、ホームの上の1か所だけ（重ねて出さない）
   };

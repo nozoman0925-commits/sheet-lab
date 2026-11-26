@@ -102,7 +102,8 @@ const O = 'OUBI_LINK.frame().contentWindow.OUBI';
   ok(last.n === n0 + 1 && last.q === 12 && last.focus === 'pick', '9 Enter で数量12の行が入り、検索欄のまま次を打てる');
 
   // ---- 8 寸法 ----
-  await p.click('[data-line] [data-act="calc"]'); await p.waitForTimeout(400);
+  await p.click('[data-line] [data-act="open"]'); await p.waitForTimeout(300);   // 数量の計算は、行を広げた中
+  await p.click('[data-detail] [data-act="calc"]'); await p.waitForTimeout(400);
   await p.selectOption('#ct-f', 'f_fence'); await p.waitForTimeout(200);
   for (const [k, v] of [['a', '5'], ['b', '3'], ['c', '0'], ['d', '0']]) await p.fill('[data-in="' + k + '"]', v);
   await p.waitForTimeout(200); await p.click('.modal [data-ok]'); await p.waitForTimeout(500);

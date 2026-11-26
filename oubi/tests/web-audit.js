@@ -37,7 +37,7 @@ function scan(what) {
   });
   if (what === 'icons' || what === 'all') document.querySelectorAll('svg').forEach(s => {
     if (!vis(s.parentElement || s)) return; const vb = s.getAttribute('viewBox') || ''; const sw = s.getAttribute('stroke-width') || getComputedStyle(s).strokeWidth;
-    if (s.closest('.crest, .brand-crest, .sheet-crest, .mon, .donut, .ring, .chart, .viz, .flow, [data-bars], .w-rings, .heat, .sparkline, .tdb, .spark') || /mon/.test(s.innerHTML.slice(0, 40))) return;
+    if (s.closest('.crest, .brand-crest, .sheet-crest, .mon, .donut, .ring, .chart, .viz, .flow, [data-bars], .w-rings, .heat, .sparkline, .tdb, .spark, .kpi-spark, .won-crest, .case-band') || /mon/.test(s.innerHTML.slice(0, 40))) return;
     if (vb && vb !== '0 0 24 24') return out.icons.push('格子が24でない: ' + vb);
     if (sw && parseFloat(sw) !== 1.5) out.icons.push('線の太さ ' + sw);
   });

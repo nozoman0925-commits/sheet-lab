@@ -958,7 +958,9 @@
       var a = e.target.closest('[data-act]');
       if (!a) return;
       var act = a.dataset.act;
-      var tr = a.closest('tr[data-line]');
+      // 行を広げた中のボタン（数量を計算する・上へ・下へ・マスタに入れる）も、その行の操作として扱う
+      var dt = a.closest('tr[data-detail]');
+      var tr = a.closest('tr[data-line]') || (dt && document.querySelector('tr[data-line="' + dt.dataset.detail + '"]'));
       if (tr) {
         e.preventDefault();
         var idx = ED.doc.lines.findIndex(function (l) { return l.lineId === tr.dataset.line; });
