@@ -20,7 +20,7 @@
     }).join('') + '</ol>';
   }
   function foot(n, nextOk, nextLabel) {
-    return '<div class="wz-foot">' + (n > 1 ? '<a class="btn" href="#/w/' + (n - 1) + '">‹ 前へ戻る</a>' : '<a class="btn ghost" href="#/new">ほかの作り方（PDF・写真など）</a>') +
+    return '<div class="wz-foot">' + (n > 1 ? '<a class="btn" href="#/w/' + (n - 1) + '">‹ 前へ戻る</a>' : '<a class="btn ghost" href="#/new">Excel・CSV・PDF から取り込む</a>') +
       '<div class="spacer"></div>' +
       '<button class="btn primary wz-next" type="button" data-wz="next"' + (nextOk ? '' : ' disabled') + '>' + (nextLabel || '次へ') + ' ›</button></div>';
   }
@@ -53,8 +53,9 @@
   /* ---------- 2 中身 ---------- */
   function step2() {
     if (!proj()) { location.replace('#/w/1'); return page(1, '', '', false); }
-    var M = [['tpl', I.box || I.calc, 'テンプレートから', 'よくある工事のひな形から選ぶ'], ['mine', I.star || I.copy, 'マイ型から', '自分で保存した見積の型（' + ((EE.S.myTypes || []).length) + '）'],
-      ['rough', I.yen, '概算で作る', '「だいたいいくら？」に数分で。明細はあとで'], ['text', I.spark || I.edit, '文章で書く', '「外壁塗装 30坪 足場あり」のように書くと明細になります'], ['blank', I.plus, '白紙から', '品目をあとで自分で入れる']];
+    // 作り方の入口（プロワン式の並び）：テンプレート・過去の見積・マイ型・概算・文章・手動。Excel・PDF の取り込みは下のリンクから
+    var M = [['tpl', I.box || I.calc, 'テンプレートから', 'よくある工事のひな形から選ぶ'], ['past', I.copy, '過去の見積から', '前に作った見積の明細を写して直す'], ['mine', I.star || I.copy, 'マイ型から', '自分で保存した見積の型（' + ((EE.S.myTypes || []).length) + '）'],
+      ['rough', I.yen, '概算で作る', '「だいたいいくら？」に数分で。明細はあとで'], ['text', I.spark || I.edit, '文章で書く', '「外壁塗装 30坪 足場あり」のように書くと明細になります'], ['blank', I.plus, '手動で入れる', '白紙の表に、品目を自分で入れる']];
     var body = '<p class="wz-help">「' + esc(proj().name || '') + '」の見積の中身を、どうやって入れますか？</p>' +
       '<div class="wz-modes" role="radiogroup" aria-label="入れ方">' + M.map(function (m) {
         var on = W.mode === m[0];
@@ -65,6 +66,13 @@
         var on = W.tpl === p.id;
         return '<button type="button" class="wz-opt' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" data-tpl="' + p.id + '"><span class="wz-dot"></span><span><b>' + esc(p.name) + '</b><small>' + esc(p.category || '') + '・' + p.lines.length + '品目</small></span></button>';
       }).join('') + '</div></div>';
+    } else if (W.mode === 'past') {
+      var pj = proj(), past = EE.S.documents.filter(function (d) { return d.lines && d.lines.length && d.id !== W.docId; })
+        .sort(function (a, b) { var sa = (pj && a.customerId === pj.customerId ? 2 : 0) + (pj && U.catOf(a) === pj.category ? 1 : 0), sb = (pj && b.customerId === pj.customerId ? 2 : 0) + (pj && U.catOf(b) === pj.category ? 1 : 0); return sb - sa || String(b.updatedAt || '').localeCompare(String(a.updatedAt || '')); }).slice(0, 12);
+      body += '<div class="wz-sub"><b>どの見積を写しますか？（同じお客様・同じ種類を先に）</b><div class="wz-tpls">' + past.map(function (d) {
+        var on = W.past === d.id, c = U.docCustomer(d);
+        return '<button type="button" class="wz-opt' + (on ? ' on' : '') + '" role="radio" aria-checked="' + on + '" data-past="' + d.id + '"><span class="wz-dot"></span><span><b>' + esc(d.title || '（件名なし）') + '</b><small>' + esc((c.name || '宛先未設定') + '・' + U.yen(U.calcDoc(d).total) + '・' + d.lines.length + '品目') + '</small></span></button>';
+      }).join('') + '</div><p class="hint">単価は今のマスタの単価で計算し直します。</p></div>';
     } else if (W.mode === 'mine') {
       var my = EE.S.myTypes || [];
       body += '<div class="wz-sub"><b>マイ型を選んでください</b>' + (my.length ? '<div class="wz-tpls">' + my.map(function (t) {
@@ -76,7 +84,7 @@
     } else if (W.mode === 'text') {
       body += '<div class="wz-sub"><label for="wz-text"><b>工事の内容を書いてください</b></label><textarea class="input" id="wz-text" rows="4" placeholder="例：外壁塗装 延床30坪。足場、高圧洗浄、シリコン上塗り、付帯部">' + esc(W.text || '') + '</textarea></div>';
     }
-    var ok = W.mode === 'blank' || (W.mode === 'tpl' && !!W.tpl) || (W.mode === 'mine' && !!W.mine) || (W.mode === 'rough' && EE.make && EE.make.roughAmount(W) > 0) || (W.mode === 'text' && !!(W.text || '').trim());
+    var ok = W.mode === 'blank' || (W.mode === 'tpl' && !!W.tpl) || (W.mode === 'mine' && !!W.mine) || (W.mode === 'past' && !!W.past) || (W.mode === 'rough' && EE.make && EE.make.roughAmount(W) > 0) || (W.mode === 'text' && !!(W.text || '').trim());
     return page(2, '見積の中身はどうやって入れますか？', body, ok, W.mode === 'rough' ? '概算を作る' : '明細を作る');
   }
 
@@ -117,6 +125,9 @@
     if (W.mode === 'tpl') {
       var t = EE.S.packages.filter(function (x) { return x.id === W.tpl; })[0];
       if (t) { rows = t.lines.filter(function (l) { return !l.optional; }).map(function (l) { return { itemId: l.itemId, qty: l.qty }; }); adj = t.adjustments || []; sourceLabel = 'テンプレート「' + t.name + '」から作成'; }
+    } else if (W.mode === 'past') {
+      var pd = U.findDoc(W.past);
+      if (pd) { rows = pd.lines.filter(function (l) { return l.itemId; }).map(function (l) { return { itemId: l.itemId, qty: l.qty, desc: l.desc }; }); adj = pd.adjustments || []; sourceLabel = '過去の見積「' + (pd.title || pd.no) + '」から作成'; }
     } else if (W.mode === 'mine') {
       var mt = (EE.S.myTypes || []).filter(function (x) { return x.id === W.mine; })[0];
       if (mt) { rows = mt.lines.map(function (l) { return { itemId: l.itemId, qty: l.qty, desc: l.desc }; }); adj = mt.adjustments || []; sourceLabel = 'マイ型「' + mt.name + '」から作成'; }
@@ -125,7 +136,7 @@
       rows = (res.rows || []).filter(function (r) { return r.include !== false; }); adj = (res.adjustments || []).filter(function (a) { return a.include !== false; }); sourceLabel = '文章から作成';
     }
     var d = doc();
-    if (!d || d.status === 'issued') { d = EE.data.newEstimate(EE.S, { projectId: p.id, customerId: p.customerId, title: p.name, ownerId: U.me().id }); EE.S.documents.push(d); W.docId = d.id; }
+    if (!d || d.status === 'issued') { d = EE.data.newEstimate(EE.S, { projectId: p.id, customerId: p.customerId, title: p.name || (EE.make ? EE.make.autoTitle({ customerId: p.customerId, category: p.category }) : ''), ownerId: U.me().id }); EE.S.documents.push(d); W.docId = d.id; }
     d.lines = [];
     rows.forEach(function (r) { var it = U.findItem(r.itemId); if (!it) return; var q = Number(r.qty); if (!isFinite(q) || q <= 0) q = it.stdQty || 1; var ln = EE.data.lineFromItem(it, q); if (r.source) ln.inputSource = r.source; if (r.desc || it.description) ln.desc = r.desc || it.description; d.lines.push(ln); });
     d.rough = false;
@@ -163,6 +174,7 @@
       if ((t = e.target.closest('[data-pj]'))) { W.projectId = t.dataset.pj; W.docId = ''; EE.app.rerender(); return; }
       if ((t = e.target.closest('[data-mode]'))) { W.mode = t.dataset.mode; EE.app.rerender(); var x = view.querySelector('#wz-text'); if (x) x.focus(); return; }
       if ((t = e.target.closest('[data-tpl]'))) { W.tpl = t.dataset.tpl; EE.app.rerender(); return; }
+      if ((t = e.target.closest('[data-past]'))) { W.past = t.dataset.past; EE.app.rerender(); return; }
       if ((t = e.target.closest('[data-mine]'))) { W.mine = t.dataset.mine; EE.app.rerender(); return; }
       if ((t = e.target.closest('[data-q]'))) {
         var tr = t.closest('tr'), d = doc(), l = d && d.lines.filter(function (x) { return x.lineId === tr.dataset.line; })[0]; if (!l) return;

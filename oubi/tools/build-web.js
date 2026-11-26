@@ -57,7 +57,7 @@ rm(/<link rel="preconnect" href="https:\/\/[a-z0-9]+\.supabase\.co"[^>]*>\s*/);
 rm(/<link rel="preload" as="script" href="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase[^>]*>\s*/);
 rm(/<script src="https:\/\/cdn\.jsdelivr\.net\/npm\/@supabase[^>]*><\/script>\s*/);
 rm(/<script src="config\.js"><\/script>\s*/);
-ob = ob.replace('<script src="sales.js"></script>', '<script src="sales.js"></script>\n<script src="nosales.js"></script>');   // 桜ミツ版は営業の機能なし
+ob = ob.replace('<script src="sales.js"></script>', '<script src="sales.js"></script>\n<script src="nosales.js"></script>\n<script src="caseband.js"></script>');   // 桜ミツ版は営業の機能なし。工事の上に工程の帯と収支
 if (!ob.includes('nosales.js')) throw new Error('nosales.js を入れられません');
 ob = ob.replace('<script src="supa.js"></script>', '<script src="pager.js"></script>\n<script src="embed.js"></script>\n<script src="local-db.js"></script>');
 rm(/<link rel="stylesheet" href="mitsu\.css">\s*/); rm(/<link rel="stylesheet" href="mitsu-host\.css">\s*/);
@@ -67,5 +67,5 @@ rm(/<link rel="manifest"[^>]*>\s*/);
 ob = ob.replace("if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});", '');
 ['@supabase', 'src="config.js"', 'src="supa.js"', 'src="mitsu.js"', 'href="mitsu.css"', 'href="mitsu-host.css"', 'serviceWorker.register'].forEach(k => { if (ob.includes(k)) throw new Error('残っている: ' + k); });
 fs.writeFileSync(path.join(OUT, 'oubi.html'), ob);
-['pager.js', 'sales.js', 'nosales.js', 'features.js', 'health.js', 'theme-oumitsu.css', 'local-db.js', 'embed.js', 'embed.css', 'logo-s.jpg', 'logo.jpg', 'icon-192.png', 'icon-180.png'].forEach(f => fs.copyFileSync(path.join(OB, f), path.join(OUT, f)));
+['pager.js', 'sales.js', 'nosales.js', 'caseband.js', 'features.js', 'health.js', 'theme-oumitsu.css', 'local-db.js', 'embed.js', 'embed.css', 'logo-s.jpg', 'logo.jpg', 'icon-192.png', 'icon-180.png'].forEach(f => fs.copyFileSync(path.join(OB, f), path.join(OUT, f)));
 console.log('作成:', OUT, ART ? '（Artifact 用）' : '');

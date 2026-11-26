@@ -101,7 +101,7 @@
           '<div class="stamps"><div>承認</div><div>担当</div></div>' +
         '</div>' +
       '</div>' +
-      '<table class="items"><thead><tr><th style="width:8mm">No</th><th>品名・規格</th><th style="width:16mm">数量</th><th style="width:12mm">単位</th><th style="width:22mm">単価</th><th style="width:26mm">金額</th><th style="width:12mm">税率</th></tr></thead>' +
+      '<table class="items"><thead><tr><th style="width:8mm">No</th><th>品名・規格</th><th style="width:16mm">数量</th><th style="width:12mm">単位</th><th style="width:22mm">単価' + (doc.taxMode === 'incl' ? '（税込）' : '') + '</th><th style="width:26mm">金額</th><th style="width:12mm">税率</th></tr></thead>' +
       '<tbody>' + rows + '</tbody></table>' +
       (hasReduced ? '<div style="font-size:8pt;margin-top:1mm">※印は軽減税率（8%）対象品目です。</div>' : '') +
       '<div class="bottom">' +
@@ -115,6 +115,7 @@
         '<table class="tot sans"><tr><th>小計（税抜）</th><td class="num">' + yen(r.subtotal) + '</td></tr>' + rateRows +
         '<tr class="g"><th>合計（税込）</th><td class="num">' + yen(r.total) + '</td></tr></table>' +
       '</div>' +
+      (doc.taxMode === 'none' ? '<div style="font-size:8pt;margin-top:1mm">この見積の金額に消費税はかかりません。</div>' : doc.taxMode === 'incl' ? '<div style="font-size:8pt;margin-top:1mm">単価・金額は消費税込みです（税率ごとの消費税は内税として表示しています）。</div>' : '') +
       '<div class="foot sans"><span>' + esc(doc.no) + (doc.status === 'issued' ? '　発行確定 ' + U.jdate((doc.issuedAt || '').slice(0, 10)) : '') + '</span><span>消費税は税率ごとに合計して端数処理しています</span></div>' +
     '</div>' + (EE.plus && EE.plus.photoPage ? EE.plus.photoPage(doc) : '');   // 写真を付けた見積は、最後のページに写真
   }

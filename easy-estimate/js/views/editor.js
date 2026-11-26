@@ -119,7 +119,7 @@
               (lk ? '' : '<button class="btn icon" data-act="quick-customer" title="顧客を新規登録">' + I.plus + '</button>') + '</div></div>' +
             '<div class="field c6"><label>工事</label><select class="input" data-f="projectId"' + dis + '>' + projectOptions() + '</select></div>' +
             '<div class="field c4"><label>担当者</label><select class="input" data-f="ownerId"' + dis + '>' + U.memberOptions(d.ownerId || '', '（未割り当て）') + '</select></div>' +
-            '<div class="field c8"><label class="req">件名</label><input class="input" data-f="title" value="' + esc(d.title) + '" placeholder="例：〇〇様邸 浴室改修工事"' + dis + '></div>' +
+            '<div class="field c8"><label class="req" style="display:flex;justify-content:space-between">件名' + (lk ? '' : '<a href="#" data-act="auto-title" style="color:var(--accent-2)">お客様と種類から作る</a>') + '</label><input class="input" data-f="title" value="' + esc(d.title) + '" placeholder="例：〇〇様邸 浴室改修工事"' + dis + '></div>' +
             '<div class="field c4"><label>パターン名（同じ工事の別案）</label><input class="input" data-f="patternLabel" list="pattern-list" value="' + esc(d.patternLabel || '') + '" placeholder="例：A案、グレードアップ案"' + dis + '>' +
               '<datalist id="pattern-list"><option>A案</option><option>B案</option><option>C案</option><option>標準プラン</option><option>グレードアップ案</option><option>お値打ち案</option></datalist></div>' +
             '<div class="field c8"><label>この工事の見積</label><div id="site-hint" class="site-hint"></div></div>' +
@@ -127,6 +127,7 @@
             '<div class="field c3"><label class="req">有効期限</label><input class="input" type="date" data-f="validUntil" value="' + esc(d.validUntil) + '"' + dis + '></div>' +
             '<div class="field c6"><label>有効期限（発行日から）</label><div class="seg" id="valid-quick">' +
               [14, 30, 60, 90].map(function (n) { return '<button data-days="' + n + '"' + dis + '>+' + n + '日</button>'; }).join('') + '</div></div>' +
+            '<div class="field c6"><label>消費税</label><div class="seg" id="tax-mode" role="radiogroup" aria-label="消費税の扱い">' + [['excl', '税抜で入れる（外税）'], ['incl', '税込で入れる（内税）'], ['none', '消費税なし']].map(function (m) { var on = (d.taxMode || 'excl') === m[0]; return '<button type="button" role="radio" aria-checked="' + on + '" data-taxmode="' + m[0] + '" class="' + (on ? 'on' : '') + '"' + dis + '>' + m[1] + '</button>'; }).join('') + '</div></div>' +
             '<div class="field c4"><label>受渡期日</label><input class="input" data-f="deliveryTerm" value="' + esc(d.deliveryTerm) + '"' + dis + '></div>' +
             '<div class="field c4"><label>受渡場所</label><input class="input" data-f="deliveryPlace" value="' + esc(d.deliveryPlace) + '" placeholder="空欄なら工事の現場住所"' + dis + '></div>' +
             '<div class="field c4"><label style="display:flex;justify-content:space-between">支払条件' + (lk ? '' : '<a href="#" data-act="snip" data-target="paymentTerms" style="color:var(--accent-2)">定型文</a>') + '</label><input class="input" data-f="paymentTerms" value="' + esc(d.paymentTerms) + '"' + dis + '></div>' +
@@ -135,8 +136,8 @@
             '<div class="field c6"><label style="display:flex;justify-content:space-between">前提条件（PDFに載ります）' + (lk ? '' : '<a href="#" data-act="snip" data-target="premises" style="color:var(--accent-2)">定型文</a>') + '</label><textarea class="input" data-f="premises" rows="2" placeholder="例：駐車スペース1台分をお借りできること"' + dis + '>' + esc(d.premises || '') + '</textarea></div>' +
           '</div></div></section>' +
         /* 明細 */
-        '<section class="panel" data-st id="sec-lines"><div class="panel-h"><h2>明細</h2><span class="sub">マスタから選んで数量を入れるだけ。単価はマスタで管理します</span><div class="spacer"></div>' +
-          '<span class="badge num" id="line-count">' + d.lines.length + '行</span></div>' +
+        '<section class="panel" data-st id="sec-lines"><div class="panel-h"><h2>明細</h2><span class="sub">表のまま直せます。単価をマスタと変えた行は印が付きます</span><div class="spacer"></div>' +
+          '<span class="badge num" id="line-count">' + d.lines.length + '行</span><button type="button" class="btn ghost sm" data-act="full" aria-pressed="false" title="明細を画面いっぱいに広げる（Esc で戻る）">' + I.grid + '<span class="fl">全画面で編集</span></button></div>' +
           '<div class="panel-b">' +
             (lk ? '' :
             '<div class="toolbar" style="margin-bottom:12px">' +
@@ -146,7 +147,7 @@
               '<div class="seg" id="pick-kind">' + [['all', 'すべて']].concat(Object.keys(EE.engine.ITEM_KINDS).map(function (k) { return [k, EE.engine.ITEM_KINDS[k]]; }))
                 .map(function (k) { return '<button data-kind="' + k[0] + '" class="' + (pick.kind === k[0] ? 'on' : '') + '">' + k[1] + '</button>'; }).join('') + '</div>' +
             '</div>' +
-            '<div class="toolbar" style="margin-bottom:12px">' +
+            '<div class="toolbar tools-row" style="margin-bottom:12px">' +
               '<select class="input" id="tpl-add" style="max-width:360px"><option value="">工事テンプレートから追加…</option>' +
               (S.categories || []).map(function (c) {
                 var ps = S.packages.filter(function (p) { return p.category === c.id; });
@@ -163,8 +164,14 @@
               '<button class="btn sm" data-act="bulk-refresh">' + I.refresh + '最新単価に更新</button>' +
               '<button class="btn sm" data-act="bulk-discount">選んだ行に値引き</button>' +
               '<button class="btn sm danger" data-act="bulk-del">' + I.trash + '削除</button></div>') +
-            '<div class="table-scroll"><table class="table lines"><thead><tr><th style="width:28px">' + (lk ? '' : '<input type="checkbox" id="sel-all" title="すべて選択">') + '</th><th class="no">#</th><th>品名・規格</th><th class="r">数量</th><th>単位</th><th class="r">単価</th><th class="r">金額</th><th>税</th><th></th></tr></thead>' +
-            '<tbody id="line-body"></tbody></table></div>' +
+            '<div class="table-scroll"><table class="table lines sheet-lines"><thead><tr><th style="width:28px">' + (lk ? '' : '<input type="checkbox" id="sel-all" title="すべて選択" aria-label="すべての行を選ぶ">') + '</th><th class="no">#</th><th>項目</th><th class="r">数量</th><th>単位</th><th class="r">単価</th><th class="r">金額</th><th class="r internal">原価</th><th class="r internal">粗利</th><th></th></tr></thead>' +
+            '<tbody id="line-body"></tbody>' +
+            (lk ? '' : '<tfoot><tr class="add-row"><td></td><td colspan="9"><button type="button" class="btn ghost sm" data-act="add-find">' + I.plus + '品目を探して行を足す</button><button type="button" class="btn ghost sm" data-act="add-manual">' + I.plus + '手入力の行を足す</button><span class="hint">表のまま直せます：項目・数量・単位・単価・原価。Enter で次の行、Alt＋↑↓ で行ごと動かす</span></td></tr></tfoot>') +
+            '</table></div>' +
+            '<div class="ed-sumbar" role="status" aria-label="この見積の合計">' +
+              '<span><small>小計（税抜）</small><b class="num" data-sb="subtotal">¥0</b></span><span><small>消費税</small><b class="num" data-sb="tax">¥0</b></span>' +
+              '<span><small>値引き</small><b class="num" data-sb="discount">¥0</b></span><span class="sb-total"><small>合計（<em data-sb="mode">税込</em>）</small><b class="num" data-sb="total">¥0</b></span>' +
+              '<span class="internal"><small>原価</small><b class="num" data-sb="cost">¥0</b></span><span class="internal"><small>粗利</small><b class="num" data-sb="profit">¥0</b></span></div>' +
             '<div id="adj-list"></div>' +
           '</div></section>' +
       '</div>' +
@@ -236,32 +243,67 @@
 
   var CALC_ICON = '<svg class="ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="3.2" width="14" height="17.6" rx="3.4"/><rect x="8.2" y="6.4" width="7.6" height="3.4" rx="1.4"/><path d="M8.6 13.4h.1M12 13.4h.1M15.4 13.4h.1M8.6 16.8h.1M12 16.8h.1M15.4 16.8h.1"/></svg>';
 
+  /* 明細は表計算のように：項目・数量・単位・単価・金額・原価・粗利をその場で直す。細かいもの（規格・税・説明・社内メモ・発注先）は行を広げて出す */
   function lineRowHTML(l, i, r) {
-    var lk = locked();
+    var lk = locked(), dis = lk ? ' disabled' : '';
     var it = U.findItem(l.itemId);
     var stale = it && it.unitPrice !== l.unitPrice;
     var amt = r.lines[i] ? r.lines[i].amount : 0;
     var prof = r.lines[i] ? r.lines[i].profit : 0;
-    var tc = l.taxCategory === 'red8' ? '<span class="badge warn">8%</span>' : l.taxCategory === 'std10' ? '<span class="badge">10%</span>' : '<span class="badge">' + esc((EE.engine.TAX_CATEGORIES[l.taxCategory] || {}).label || '') + '</span>';
-    var gone = l.itemId && !it;   // マスタにない行（概算の行など）は「削除された」としない
-    return '<tr data-line="' + l.lineId + '"' + (gone ? ' class="hl-err"' : stale ? ' class="hl"' : '') + '>' +
-      '<td>' + (lk ? '' : '<input type="checkbox" class="line-sel"' + (ED.sel && ED.sel[l.lineId] ? ' checked' : '') + '>') + '</td>' +
+    var gone = l.itemId && !it;   // マスタにない行（手入力・概算の行）は「削除された」としない
+    var open = ED.open && ED.open[l.lineId];
+    var pr = amt ? Math.round(prof / amt * 1000) / 10 : null;
+    var row = '<tr data-line="' + l.lineId + '" class="ln' + (gone ? ' hl-err' : stale ? ' hl' : '') + (open ? ' is-open' : '') + '">' +
+      '<td>' + (lk ? '' : '<input type="checkbox" class="line-sel"' + (ED.sel && ED.sel[l.lineId] ? ' checked' : '') + ' aria-label="' + (i + 1) + '行目を選ぶ">') + '</td>' +
       '<td class="no num">' + (lk ? '' : '<span class="line-grip" title="ドラッグで並べ替え" aria-hidden="true">' + I.drag + '</span>') + (i + 1) + '</td>' +
-      '<td>' + esc(l.name) + '<span class="cell-sub"><span class="code">' + esc(l.code) + '</span>' + (l.spec ? '　' + esc(l.spec) : '') + '</span>' +
-        (stale && !lk ? '<span class="cell-sub" style="color:var(--warn)">マスタ単価 ' + U.yen(it.unitPrice) + ' と違います　<a href="#" data-act="refresh-price" style="color:var(--accent-2)">最新単価に更新</a></span>' : '') +
+      '<td class="c-item"><input class="cell c-name" value="' + esc(l.name) + '"' + dis + ' aria-label="' + (i + 1) + '行目の項目">' +
+        '<span class="cell-sub"><span class="code">' + esc(l.code || (l.manual ? '手入力' : '')) + '</span>' + (l.spec ? '　' + esc(l.spec) : '') + '</span>' +
+        (stale && !lk ? staleNote(it) : '') +
         (gone ? '<span class="cell-sub" style="color:var(--err)">マスタが削除されています</span>' : '') +
         (l.desc ? '<span class="cell-sub line-desc">お客様向け：' + esc(l.desc) + '</span>' : '') +
         (EE.make ? EE.make.lineNote(l, it) : '') + '</td>' +
-      '<td class="r">' + (lk ? '<input class="input qty num" type="number" value="' + esc(l.qty) + '" disabled>' :
+      '<td class="r">' + (lk ? '<input class="cell qty num" type="number" value="' + esc(l.qty) + '" disabled>' :
         '<div class="qty-wrap"><button type="button" class="qty-step" data-act="qty-dec" aria-label="数量を減らす" tabindex="-1">−</button>' +
-        '<input class="input qty num" type="number" step="0.01" inputmode="decimal" value="' + esc(l.qty) + '" list="qp-' + (EE.make ? EE.make.presetKey(l.unit) : 'x') + '" aria-label="' + esc(l.name) + 'の数量">' +
+        '<input class="cell qty num" type="number" step="0.01" inputmode="decimal" value="' + esc(l.qty) + '" list="qp-' + (EE.make ? EE.make.presetKey(l.unit) : 'x') + '" aria-label="' + esc(l.name) + 'の数量">' +
         '<button type="button" class="qty-step" data-act="qty-inc" aria-label="数量を増やす" tabindex="-1">＋</button></div>') + '</td>' +
-      '<td class="muted">' + esc(l.unit) + '</td>' +
-      '<td class="r price num" title="単価はマスタで管理（ここでは変更できません）">' + I.lock.replace('<svg', '<svg class="lock"') + U.yen(l.unitPrice) + '</td>' +
-      '<td class="r num" data-amt>' + U.yen(amt) + '<span class="profit-chip cell-sub' + (prof < 0 ? ' neg' : '') + '" data-prof>粗利 ' + U.yen(prof) + '</span></td>' +
-      '<td>' + tc + '</td>' +
-      '<td>' + (lk ? '' : '<div class="row-actions"><button class="btn ghost icon sm" data-act="calc" title="数量を計算">' + CALC_ICON + '</button><button class="btn ghost icon sm" data-act="desc" title="お客様向けの説明を書く">' + I.edit + '</button><button class="btn ghost icon sm" data-act="up" title="上へ">' + I.up + '</button><button class="btn ghost icon sm" data-act="down" title="下へ">' + I.down + '</button><button class="btn ghost icon sm danger" data-act="del" title="削除">' + I.trash + '</button></div>') + '</td>' +
+      '<td><input class="cell c-unit" value="' + esc(l.unit) + '"' + dis + ' aria-label="' + (i + 1) + '行目の単位"></td>' +
+      '<td class="r"><input class="cell c-price num" type="text" inputmode="numeric" value="' + U.num(l.unitPrice) + '"' + dis + ' aria-label="' + (i + 1) + '行目の単価"></td>' +
+      '<td class="r num" data-amt>' + U.yen(amt) + '</td>' +
+      '<td class="r internal"><input class="cell c-cost num" type="text" inputmode="numeric" value="' + U.num(l.unitCost || 0) + '"' + dis + ' aria-label="' + (i + 1) + '行目の原価（単価）"></td>' +
+      '<td class="r num internal" data-prof><span class="' + (prof < 0 ? 'neg' : '') + '">' + U.yen(prof) + '</span><span class="cell-sub">' + (pr == null ? '' : pr + '%') + '</span></td>' +
+      '<td class="c-act">' + (lk ? '<button class="btn ghost icon sm" data-act="open" title="くわしく見る" aria-expanded="' + !!open + '">' + I.down + '</button>' :
+        '<div class="row-actions"><button class="btn ghost icon sm" data-act="open" title="くわしく（規格・税・説明・社内メモ・発注先）" aria-expanded="' + !!open + '">' + (open ? I.up : I.down) + '</button><button class="btn ghost icon sm danger" data-act="del" title="削除">' + I.trash + '</button></div>') + '</td>' +
     '</tr>';
+    if (open) {
+      var TC = EE.engine.TAX_CATEGORIES;
+      row += '<tr class="ln-detail" data-detail="' + l.lineId + '"><td></td><td colspan="9"><div class="ln-grid">' +
+        '<label class="m-only">単位<input class="cell c-unit" value="' + esc(l.unit) + '"' + dis + '></label>' +
+        '<label class="m-only">単価<input class="cell c-price num" type="text" inputmode="numeric" value="' + U.num(l.unitPrice) + '"' + dis + '></label>' +
+        '<label class="m-only internal">原価（単価）<input class="cell c-cost num" type="text" inputmode="numeric" value="' + U.num(l.unitCost || 0) + '"' + dis + '></label>' +
+        '<label>規格<input class="cell d-spec" value="' + esc(l.spec || '') + '"' + dis + '></label>' +
+        '<label>税<select class="cell d-tax"' + dis + '>' + Object.keys(TC).map(function (k) { return U.opt(k, TC[k].label, l.taxCategory || 'std10'); }).join('') + '</select></label>' +
+        '<label>発注先<input class="cell d-supplier" value="' + esc(l.supplier || (it && (it.supplier || it.contractor)) || '') + '"' + dis + ' placeholder="仕入先・協力業者"></label>' +
+        '<label class="w2">お客様向けの説明（PDFに載る）<input class="cell d-desc" value="' + esc(l.desc || '') + '"' + dis + ' placeholder="平たい言葉で一言"></label>' +
+        '<label class="w2">社内メモ（PDFに載らない）<input class="cell d-memo" value="' + esc(l.memo || '') + '"' + dis + '></label>' +
+        (lk ? '' : '<div class="ln-acts w2"><button class="btn sm" data-act="calc">' + CALC_ICON + '数量を計算する</button><button class="btn sm" data-act="up">' + I.up + '上へ動かす</button><button class="btn sm" data-act="down">' + I.down + '下へ動かす</button>' +
+          (it ? '<button class="btn sm" data-act="to-master" title="この行の単価・原価を品目マスタにも入れる">' + I.save + 'マスタに入れる</button>' : '') + '</div>') +
+        '</div></td></tr>';
+    }
+    return row;
+  }
+
+  function staleNote(it) { return '<span class="cell-sub stale-note" style="color:var(--warn)">マスタ単価 ' + U.yen(it.unitPrice) + ' と違います　<a href="#" data-act="refresh-price" style="color:var(--accent-2)">マスタの単価に戻す</a></span>'; }
+  /** 1行の金額・粗利だけを描き直す（入力中の欄からフォーカスを外さない） */
+  function updateRow(id) {
+    var tr = document.querySelector('tr[data-line="' + id + '"]'); if (!tr) return;
+    var i = ED.doc.lines.findIndex(function (l) { return l.lineId === id; }), r = U.calcDoc(ED.doc), x = r.lines[i] || { amount: 0, profit: 0 };
+    // マスタと違う単価の印だけ、その場で付け外し
+    var ln0 = ED.doc.lines[i], it0 = ln0 && U.findItem(ln0.itemId), st0 = !!(it0 && it0.unitPrice !== ln0.unitPrice && !locked()), note0 = tr.querySelector('.stale-note');
+    tr.classList.toggle('hl', st0);
+    if (st0 && !note0) { var nm0 = tr.querySelector('.c-item > .cell-sub'); if (nm0) nm0.insertAdjacentHTML('afterend', staleNote(it0)); }
+    else if (!st0 && note0) note0.remove();
+    var a = tr.querySelector('[data-amt]'); if (a) a.textContent = U.yen(x.amount);
+    var p = tr.querySelector('[data-prof]'); if (p) p.innerHTML = '<span class="' + (x.profit < 0 ? 'neg' : '') + '">' + U.yen(x.profit) + '</span><span class="cell-sub">' + (x.amount ? Math.round(x.profit / x.amount * 1000) / 10 + '%' : '') + '</span>';
   }
 
   function renderLines(flashId) {
@@ -335,6 +377,10 @@
       if (first) EE.fx.countUp(el, v, el.dataset.format, 0, 600); else EE.fx.retarget(el, v);   // 開いたとき：カウントアップ（例外）／変えたとき：差分だけ 0.25秒でロール
     };
     set('subtotal', r.subtotal); set('total', r.total); set('costTotal', r.costTotal); set('grossProfit', r.grossProfit);
+    var sb = function (k, v) { var el = document.querySelector('[data-sb="' + k + '"]'); if (el) el.textContent = v; };
+    sb('subtotal', U.yen(r.subtotal)); sb('tax', U.yen(r.tax)); sb('discount', r.breakdown.discount ? '−' + U.yen(Math.abs(r.breakdown.discount)) : '¥0'); sb('total', U.yen(r.total));
+    sb('cost', U.yen(r.costTotal)); sb('profit', r.marginRate == null ? U.yen(r.grossProfit) + '（—）' : U.yen(r.grossProfit) + '（' + U.pct(r.marginRate) + '）');
+    sb('mode', { incl: '税込・内税', none: '消費税なし' }[ED.doc.taxMode] || '税込');
     var ckB = document.querySelector('[data-mk2="check"]'); if (ckB && EE.make) ckB.dataset.n = EE.make.checklistOf(ED.doc).filter(function (x) { return !x.has && !x.skip; }).length;
     var mEl = document.querySelector('[data-k="margin"]');
     if (r.costMissing > 0) { if (mEl) { if (mEl._eeRaf) cancelAnimationFrame(mEl._eeRaf); mEl.textContent = '—'; mEl._eeVal = null; mEl.title = '原価が未入力の行があります'; } }
@@ -373,15 +419,7 @@
     }).join('');
 
     // 行ごとの金額も更新（数量入力中に表全体を描き直さない）
-    ED.doc.lines.forEach(function (l, i) {
-      var tr = document.querySelector('[data-line="' + l.lineId + '"]');
-      if (!tr || !r.lines[i]) return;
-      var a = tr.querySelector('[data-amt]');
-      a.firstChild.nodeValue = U.yen(r.lines[i].amount);
-      var p = tr.querySelector('[data-prof]');
-      p.textContent = '粗利 ' + U.yen(r.lines[i].profit);
-      p.classList.toggle('neg', r.lines[i].profit < 0);
-    });
+    ED.doc.lines.forEach(function (l) { updateRow(l.lineId); });
     updateChecks();
   }
 
@@ -735,6 +773,8 @@
 
   function mount(view) {
     bindLineDrag(view);
+    // 単価・原価の欄：離れたら 3桁区切りで見せる
+    view.addEventListener('focusout', function (e) { var t = e.target; if (t.classList && (t.classList.contains('c-price') || t.classList.contains('c-cost'))) { var v = Number(String(t.value).replace(/[^\d.\-]/g, '')) || 0; t.value = U.num(v); } });
     view.addEventListener('click', function (e) { var b = e.target.closest('.ed-pane [data-pane]'); if (b) showPane(b.dataset.pane); });
     renderLines();
     updateSummary(true);
@@ -762,11 +802,22 @@
           document.querySelector('#sec-header .panel-h .badge').textContent = EE.data.peekNumber(EE.S, t.value) + '（保存時に採番）';
         }
         updateChecks();
+      } else if (t.classList.contains('cell') && !t.classList.contains('qty')) {
+        var tr2 = t.closest('tr'), id2 = tr2.dataset.line || tr2.dataset.detail;
+        var l2 = ED.doc.lines.filter(function (l) { return l.lineId === id2; })[0]; if (!l2) return;
+        var map = { 'c-name': 'name', 'c-unit': 'unit', 'd-spec': 'spec', 'd-desc': 'desc', 'd-memo': 'memo', 'd-supplier': 'supplier' };
+        var k2 = Object.keys(map).filter(function (c) { return t.classList.contains(c); })[0];
+        if (k2) l2[map[k2]] = t.value;
+        else if (t.classList.contains('c-price')) { l2.unitPrice = Math.round(Number(String(t.value).replace(/[^\d.\-]/g, '')) || 0); l2.priceSource = { type: 'manual' }; }
+        else if (t.classList.contains('c-cost')) l2.unitCost = Math.round(Number(String(t.value).replace(/[^\d.\-]/g, '')) || 0);
+        else if (t.classList.contains('d-tax')) l2.taxCategory = t.value;
+        markDirty(); updateRow(id2); updateSummary();
       } else if (t.classList.contains('qty')) {
         var id = t.closest('tr').dataset.line;
         var ln = ED.doc.lines.filter(function (l) { return l.lineId === id; })[0];
         ln.qty = t.value === '' ? 0 : Number(t.value);
         markDirty();
+        updateRow(id);
         updateSummary();
       } else if (t.id === 'pick') {
         pick.q = t.value; pick.idx = 0; renderPick();
@@ -840,6 +891,14 @@
     view.addEventListener('keydown', function (e) {
       var t = e.target;
       if (!ED) return;   // 破棄して移動した直後（画面が消える前）の操作は無視する
+      if (e.key === 'Escape' && document.body.classList.contains('ed-full')) { var fb = view.querySelector('[data-act="full"]'); if (fb) fb.click(); return; }
+      if (t.classList.contains('cell') && !t.classList.contains('qty') && t.closest('tr.ln') && (e.key === 'Enter' || e.key === 'ArrowDown' || e.key === 'ArrowUp') && t.tagName === 'INPUT' && !e.altKey) {
+        // 表計算のように：Enter・↓で下の行の同じ列、↑で上の行
+        var cls = ['c-name', 'c-unit', 'c-price', 'c-cost'].filter(function (c) { return t.classList.contains(c); })[0];
+        if (cls) { e.preventDefault(); var col = Array.prototype.slice.call(view.querySelectorAll('tr.ln .' + cls)), k = col.indexOf(t) + (e.key === 'ArrowUp' ? -1 : 1);
+          if (col[k]) { col[k].focus(); col[k].select && col[k].select(); } else if (e.key !== 'ArrowUp') { var p2 = document.getElementById('pick'); if (p2) p2.focus(); } }
+        return;
+      }
       if (!t.classList.contains('qty')) return;
       var rows = Array.prototype.slice.call(view.querySelectorAll('.qty'));
       var i = rows.indexOf(t);
@@ -861,6 +920,14 @@
         pick.kind = kb.dataset.kind;
         view.querySelectorAll('#pick-kind button').forEach(function (b) { b.classList.toggle('on', b === kb); });
         pick.idx = 0; document.getElementById('pick').focus(); renderPick();
+        return;
+      }
+      var tmb = e.target.closest('#tax-mode [data-taxmode]');
+      if (tmb && !locked()) {
+        ED.doc.taxMode = tmb.dataset.taxmode;
+        view.querySelectorAll('#tax-mode [data-taxmode]').forEach(function (x) { var on = x === tmb; x.classList.toggle('on', on); x.setAttribute('aria-checked', on); });
+        markDirty(); renderLines(); updateChecks();
+        EE.fx.toast({ excl: '税抜の単価に消費税を足します', incl: '単価は税込として、消費税を内税で割り出します', none: '消費税なしで計算します' }[ED.doc.taxMode], { force: true });
         return;
       }
       var vq = e.target.closest('#valid-quick [data-days]');
@@ -907,11 +974,17 @@
             if (!ED || ED.doc.lines !== L) return;
             L.splice(Math.min(idx, L.length), 0, removed); markDirty(); renderLines(removed.lineId);
           } } });
+        } else if (act === 'open') {
+          ED.open = ED.open || {}; ED.open[L[idx].lineId] = !ED.open[L[idx].lineId]; renderLines();
+          var f0 = document.querySelector('[data-detail="' + L[idx].lineId + '"] .cell'); if (f0) f0.focus();
+        } else if (act === 'to-master') {
+          var itm = U.findItem(L[idx].itemId);
+          if (itm) { itm.unitPrice = L[idx].unitPrice; itm.unitCost = L[idx].unitCost || 0; itm.updatedAt = EE.data.today(); itm.priceHistory = (itm.priceHistory || []).filter(function (h) { return h.from !== EE.data.today(); }).concat([{ from: EE.data.today(), unitPrice: itm.unitPrice, unitCost: itm.unitCost }]); U.commit(); renderLines(L[idx].lineId); EE.fx.toast('「' + itm.name + '」のマスタの単価を ' + U.yen(itm.unitPrice) + ' にしました', { force: true }); }
         } else if (act === 'qty-inc' || act === 'qty-dec') {
           var lq = L[idx], step = EE.make ? EE.make.stepOf(lq.unit, lq.qty) : 1;
           lq.qty = Math.max(0, Math.round(((Number(lq.qty) || 0) + (act === 'qty-inc' ? step : -step)) * 100) / 100);
           var qi = tr.querySelector('.qty'); if (qi) { qi.value = lq.qty; }
-          markDirty(); updateSummary(); var ad = tr.querySelector('[data-amt]'); if (ad) { var rr = U.calcDoc(ED.doc); ad.firstChild.textContent = U.yen(rr.lines[idx] ? rr.lines[idx].amount : 0); }
+          markDirty(); updateSummary();
         } else if (act === 'desc') {
           if (EE.make) EE.make.editDesc(L[idx], function () { markDirty(); renderLines(L[idx].lineId); });
         } else if (act === 'up' && idx > 0) {
@@ -983,6 +1056,15 @@
         return;
       }
       if (act === 'snip') { e.preventDefault(); openSnippets(a.dataset.target); return; }
+      if (act === 'auto-title') { e.preventDefault(); if (EE.make) { ED.doc.title = EE.make.autoTitle(ED.doc); var ti2 = document.querySelector('[data-f="title"]'); if (ti2) { ti2.value = ED.doc.title; ti2.focus(); EE.fx.pulse(ti2); } markDirty(); updateChecks(); } return; }
+      if (act === 'add-find') { var pk0 = document.getElementById('pick'); if (pk0) { pk0.scrollIntoView({ block: 'nearest' }); pk0.focus(); } return; }
+      if (act === 'add-manual') {
+        var nl = { lineId: EE.data.uid('ln'), itemId: '', code: '', name: '', spec: '', qty: 1, unit: '式', unitPrice: 0, unitCost: 0, kind: 'construction', costType: 'other', taxCategory: 'std10', manual: true };
+        ED.doc.lines.push(nl); markDirty(); renderLines(nl.lineId);
+        var ni = document.querySelector('[data-line="' + nl.lineId + '"] .c-name'); if (ni) ni.focus();
+        return;
+      }
+      if (act === 'full') { var on = !document.body.classList.contains('ed-full'); document.body.classList.toggle('ed-full', on); a.setAttribute('aria-pressed', on); a.querySelector('.fl').textContent = on ? '全画面を戻す' : '全画面で編集'; return; }
       if (act === 'snip-multi') { e.preventDefault(); if (EE.make) EE.make.conditions(function (txt) { ED.doc.notes = (ED.doc.notes ? String(ED.doc.notes).replace(/\s+$/, '') + '\n' : '') + txt; var f = document.querySelector('[data-f="notes"]'); if (f) { f.value = ED.doc.notes; EE.fx.pulse(f); } markDirty(); }); return; }
       if (act === 'recover') {
         var rec = readRecovery(); clearRecovery();
