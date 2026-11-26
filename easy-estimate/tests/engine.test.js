@@ -176,4 +176,18 @@ t('原価が空の行があると粗利率を出さず、設定の空欄を発�
   assert.ok(!codes(doc, ctx()).includes('no-me'));   // 名前の欄が無い（単体の桜ミツ）ときは出さない
 });
 
+t('消費税の扱い：税込（内税）・消費税なし', () => {
+  const d = { lines: [{ qty: 1, unitPrice: 11000, unitCost: 5000, taxCategory: 'std10' }, { qty: 1, unitPrice: 1080, unitCost: 500, taxCategory: 'red8' }] };
+  const inc = E.calc(Object.assign({ taxMode: 'incl' }, d), {});
+  assert.strictEqual(inc.total, 12080);
+  assert.strictEqual(inc.tax, 1000 + 80);
+  assert.strictEqual(inc.subtotal, 11000);
+  assert.strictEqual(inc.grossProfit, 11000 - 5500);
+  const none = E.calc(Object.assign({ taxMode: 'none' }, d), {});
+  assert.strictEqual(none.tax, 0);
+  assert.strictEqual(none.total, 12080);
+  const ex = E.calc(d, {});
+  assert.strictEqual(ex.total, 12080 + 1100 + 86);
+});
+
 console.log(`\n${n} tests passed`);

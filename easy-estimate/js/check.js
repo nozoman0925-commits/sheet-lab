@@ -119,7 +119,7 @@
       var no = (i + 1) + '行目「' + (ln.name || '?') + '」';
       var it = itemsById[ln.itemId];
       var target = { area: 'lines', lineId: ln.lineId };
-      if (!ln.itemId) add('error', 'line-no-item', no + 'がマスタに紐づいていません', '', target);
+      if (!ln.itemId) { if (!ln.manual && ln.inputSource !== 'rough') add('error', 'line-no-item', no + 'がマスタに紐づいていません', '', target); else if (!String(ln.name || '').trim()) add('error', 'line-no-name', no + 'の項目が空です', '', target); }
       else if (!it) add('error', 'line-item-deleted', no + 'のマスタが削除されています', '別の品目に差し替えてください。', target);
       else {
         if (it.active === false) add('warn', 'line-item-inactive', no + 'は使用停止中のマスタです', '', target);

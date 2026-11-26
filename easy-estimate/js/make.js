@@ -213,7 +213,7 @@
     d.rough = true; d.roughAmount = amt; d.category = R.cat || d.category;
     d.title = d.title || p.name;
     d.lines = [{ lineId: EE.data.uid('ln'), itemId: '', code: '概算', name: cname + '工事 一式（概算）', spec: area ? (U.num(area) + R.unit + (R.direct ? '' : '・1㎡あたり ' + U.yen(Number(R.rate) || 0))) : '', qty: 1, unit: '式',
-      unitPrice: amt, unitCost: 0, kind: 'construction', costType: 'other', taxCategory: 'std10', inputSource: 'rough' }];
+      unitPrice: amt, unitCost: 0, kind: 'construction', costType: 'other', taxCategory: 'std10', inputSource: 'rough', manual: true }];
     d.adjustments = [];
     d.sourceLabel = '概算で作成';
   }
@@ -385,7 +385,13 @@
     st.checklists = by; st.roughRates = rr; commit(); EE.fx.success(b, '保存しました');
   });
 
-  EE.make = { settingsHTML: settingsHTML, kana: kana, reading: reading, used: used, usage: usage, pinnedCat: pinnedCat, catChips: catChips, presetKey: presetKey, stepOf: stepOf, lineNote: lineNote, anomaly: anomaly,
+  /** 件名の自動作成（プロワン式）：「顧客名 様／工事の種類／」 */
+  function autoTitle(doc) {
+    var c = U.findCustomer(doc.customerId) || {}, cat = U.catOf(doc) || doc.category, cn = (S().categories.filter(function (x) { return x.id === cat; })[0] || {}).name || '';
+    return [(c.name ? c.name + ' ' + (c.honorific || '様') : ''), cn].filter(Boolean).join('／') + '／';
+  }
+
+  EE.make = { autoTitle: autoTitle, settingsHTML: settingsHTML, kana: kana, reading: reading, used: used, usage: usage, pinnedCat: pinnedCat, catChips: catChips, presetKey: presetKey, stepOf: stepOf, lineNote: lineNote, anomaly: anomaly,
     editDesc: editDesc, checklistOf: checklistOf, checkWords: checkWords, DEF_CHECK: DEF_CHECK, saveMyType: saveMyType, roughFormHTML: roughFormHTML, roughInput: roughInput, roughAmount: roughAmount,
     applyRough: applyRough, detailize: detailize, dimsCalc: dimsCalc, conditions: conditions, sideHTML: sideHTML, similar: similar, dueText: dueText, toolsHTML: toolsHTML, TSUBO: TSUBO };
 })(this);

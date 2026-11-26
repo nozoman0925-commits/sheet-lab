@@ -78,6 +78,7 @@
       subtotal: 0,
       tax: 0,
       total: 0,
+      taxMode: 'excl',
       costTotal: 0,
       grossProfit: 0,
       marginRate: null, // 0〜1。小計0のときは null
@@ -110,13 +111,28 @@
 
     applyAdjustments(doc, rules, out);
 
-    Object.keys(out.byRate).forEach(function (cat) {
-      var r = out.byRate[cat];
-      r.tax = TAX_CATEGORIES[cat].taxable ? roundDiv(r.base * r.rate, 100, taxMode) : 0;
-      out.tax += r.tax;
-    });
-
-    out.total = out.subtotal + out.tax;
+    // 消費税の扱い（書類ごと）：excl＝税抜の単価に税を足す（標準）／incl＝単価は税込（税率区分ごとに内税を割り出す）／none＝消費税なし（免税事業者など）
+    var tm = (doc && doc.taxMode) || 'excl';
+    out.taxMode = tm;
+    if (tm === 'incl') {
+      var inclSum = 0;
+      Object.keys(out.byRate).forEach(function (cat) {
+        var r = out.byRate[cat], incl = r.base;
+        r.incl = incl;
+        r.tax = TAX_CATEGORIES[cat].taxable ? roundDiv(incl * r.rate, 100 + r.rate, taxMode) : 0;
+        r.base = incl - r.tax;
+        out.tax += r.tax; inclSum += incl;
+      });
+      out.subtotal = inclSum - out.tax;   // 税抜の小計（粗利はこれと原価で出す）
+      out.total = inclSum;
+    } else {
+      Object.keys(out.byRate).forEach(function (cat) {
+        var r = out.byRate[cat];
+        r.tax = tm !== 'none' && TAX_CATEGORIES[cat].taxable ? roundDiv(r.base * r.rate, 100, taxMode) : 0;
+        out.tax += r.tax;
+      });
+      out.total = out.subtotal + out.tax;
+    }
     out.grossProfit = out.subtotal - out.costTotal;
     out.marginRate = out.subtotal !== 0 ? out.grossProfit / out.subtotal : null;
     return out;
