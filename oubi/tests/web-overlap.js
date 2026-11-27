@@ -63,6 +63,30 @@ function scan() {
     if (!/(hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY)) return;
     if (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 3) out.push(['切れている', label(el) + '（' + el.scrollWidth + '×' + el.scrollHeight + ' > ' + el.clientWidth + '×' + el.clientHeight + '）']);
   });
+  // 5 外側の枠で横に切られている文字（横に動かせる枠・「…」で省くもの・読み上げ用の隠し文字は除く）
+  items.forEach(({ el }) => {
+    const r = el.getBoundingClientRect(); if (r.width <= 2) return;
+    const cs0 = getComputedStyle(el); if (cs0.textOverflow === 'ellipsis' || (cs0.webkitLineClamp && cs0.webkitLineClamp !== 'none')) return;
+    for (let e = el.parentElement; e && e !== document.body; e = e.parentElement) {
+      const cs = getComputedStyle(e);
+      if (/(auto|scroll)/.test(cs.overflowX)) break;   // 横に動かせる枠（タブの列など）は、見えていなくても切れていない
+      if (cs.textOverflow === 'ellipsis' || (cs.webkitLineClamp && cs.webkitLineClamp !== 'none')) break;
+      if (/(hidden|clip)/.test(cs.overflowX)) { const b = e.getBoundingClientRect(); if (r.right > b.right + 2 || r.left < b.left - 2) out.push(['枠で切れている', label(el) + '（文字の右端 ' + Math.round(r.right) + ' > 枠の右端 ' + Math.round(b.right) + '）']); break; }
+    }
+  });
+  // 6 細すぎて1〜2文字ずつ折り返している文字（縦に潰れている）
+  items.forEach(({ el, rs }) => {
+    const t = (el.textContent || '').trim(), fs = parseFloat(getComputedStyle(el).fontSize) || 14;
+    if (t.length < 4 || rs.length < 3) return;
+    const lines = new Set(rs.map(r => Math.round(r.top))).size;
+    if (lines >= 3 && Math.max(...rs.map(r => r.width)) < fs * 2.6) out.push(['潰れている', label(el) + '（' + lines + '行・幅 ' + Math.round(Math.max(...rs.map(r => r.width))) + 'px）']);
+  });
+  // 7 見出し・ボタンの短い言葉が途中で折り返している（「月／順」「入金と粗／利」）
+  items.forEach(({ el, rs }) => {
+    if (!el.closest('button, .btn, h1, h2, h3, .panel-h, .seg, .ring-label, .w-title')) return;
+    const t = (el.textContent || '').trim(); if (t.length > 12 || t.length < 2) return;
+    if (new Set(rs.map(r => Math.round(r.top))).size >= 2) out.push(['短い言葉の折り返し', label(el)]);
+  });
   // 4 画面の外へはみ出す文字
   items.forEach(({ el, rs }) => { if (rs.some(r => r.right > innerWidth + 2 || r.left < -2)) out.push(['画面の外', label(el)]); });
   const uniq = {}; out.forEach(x => { uniq[x[0] + x[1]] = x; });

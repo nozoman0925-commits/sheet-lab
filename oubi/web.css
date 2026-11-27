@@ -574,3 +574,30 @@ body.ed-full [data-act="full"] { color: #fff; background: #2a63c9; border-color:
 .ring { container-type: inline-size; }
 .ring-num { width: min(100%, 130px); right: auto; left: 50%; transform: translateX(-50%); margin: 0; }
 .ring-num b { font-size: clamp(13px, calc(min(100cqi, 130px) * .16), 22px); letter-spacing: -.01em; white-space: nowrap; }
+/* ===== 重なり・はみ出しの直し（2026-11-27） ===== */
+/* 輪のグラフ：幅が足りないときは2段に折り返す（輪を小さくしすぎない） */
+.rings { grid-template-columns: repeat(auto-fit, minmax(108px, 1fr)) !important; row-gap: 14px; }
+.ring-label { white-space: nowrap; }
+/* 見出し・切り替えボタンの短い言葉は途中で折り返さない（説明の小さい文字は「…」で省く） */
+.panel-h h2, .seg button, .w-title { white-space: nowrap; }
+.panel-h { min-width: 0; }
+.panel-h .sub { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+@media (max-width: 760px) {
+  /* スマホのホーム：ウィジェットは全部 横いっぱい（細い列に入れると金額が切れる） */
+  body.ee-link .widgets:not(.editing) { grid-template-columns: minmax(0, 1fr) !important; }
+  body.ee-link .widgets:not(.editing) > .widget { grid-column: 1 / -1 !important; }
+  body.ee-link .w-kpi .w-kpi-value { font-size: 28px; }
+  body.ee-link .widget[data-type="trend"] .trend-chart { min-height: 150px; }
+  /* 見積を作る：下のボタンは2行まで折り返す（切らない） */
+  .wz-foot .btn { white-space: normal; height: auto; min-height: 40px; line-height: 1.35; text-align: center; }
+}
+.panel-h > .btn, .panel-h > a.btn { flex: none; }
+.panel-h h2 { min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 760px) {
+  /* スマホのホーム：ウィジェットは中身の高さのまま（押しつぶさない）。入りきらない分は、その中で上下に動く */
+  body.ee-link .widgets:not(.editing) { grid-auto-rows: max-content !important; grid-template-rows: none !important; align-content: start; }
+  body.ee-link .widgets:not(.editing) > .widget { min-height: max-content; }
+}
+/* 見出しは省かない。省くのは横の小さい説明だけ */
+.panel-h h2 { flex: none; max-width: 100%; }
+.panel-h .sub { flex: 1 1 auto; }
