@@ -570,3 +570,7 @@ body.ed-full [data-act="full"] { color: #fff; background: #2a63c9; border-color:
   .sheet-lines tr.ln .line-grip { display: none; }
   .sheet-lines .qty-wrap .qty { width: 72px; }
 }
+/* 輪のグラフ（入金率・粗利率など）：数字は輪の大きさに合わせて縮める（輪が小さいときに数字が線にかからないように） */
+.ring { container-type: inline-size; }
+.ring-num { width: min(100%, 130px); right: auto; left: 50%; transform: translateX(-50%); margin: 0; }
+.ring-num b { font-size: clamp(13px, calc(min(100cqi, 130px) * .16), 22px); letter-spacing: -.01em; white-space: nowrap; }
