@@ -61,6 +61,7 @@ function scan() {
     const cs = getComputedStyle(el);
     if (cs.textOverflow === 'ellipsis' || (cs.webkitLineClamp && cs.webkitLineClamp !== 'none')) return;
     if (!/(hidden|clip)/.test(cs.overflow + cs.overflowX + cs.overflowY)) return;
+    if (el.clientWidth <= 2 || el.clientHeight <= 2) return;   // 読み上げ用の隠し文字（1×1）
     if (el.scrollWidth > el.clientWidth + 2 || el.scrollHeight > el.clientHeight + 3) out.push(['切れている', label(el) + '（' + el.scrollWidth + '×' + el.scrollHeight + ' > ' + el.clientWidth + '×' + el.clientHeight + '）']);
   });
   // 5 外側の枠で横に切られている文字（横に動かせる枠・「…」で省くもの・読み上げ用の隠し文字は除く）
@@ -85,7 +86,10 @@ function scan() {
   items.forEach(({ el, rs }) => {
     if (!el.closest('button, .btn, h1, h2, h3, .panel-h, .seg, .ring-label, .w-title')) return;
     const t = (el.textContent || '').trim(); if (t.length > 12 || t.length < 2) return;
-    if (new Set(rs.map(r => Math.round(r.top))).size >= 2) out.push(['短い言葉の折り返し', label(el)]);
+    // 自分の直下の文字だけで行を数える（アイコンの高さの違いを行と数えない）
+    const tops = []; el.childNodes.forEach(c => { if (c.nodeType !== 3 || !c.textContent.trim()) return; const rg = document.createRange(); rg.selectNodeContents(c); [...rg.getClientRects()].forEach(r => { if (r.width > 1) tops.push(r.top); }); });
+    tops.sort((x, y) => x - y); let lines = tops.length ? 1 : 0; for (let i = 1; i < tops.length; i++) if (tops[i] - tops[i - 1] > 6) lines++;
+    if (lines >= 2) out.push(['短い言葉の折り返し', label(el)]);
   });
   // 4 画面の外へはみ出す文字
   items.forEach(({ el, rs }) => { if (rs.some(r => r.right > innerWidth + 2 || r.left < -2)) out.push(['画面の外', label(el)]); });
