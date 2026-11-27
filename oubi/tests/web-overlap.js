@@ -84,7 +84,7 @@ function scan() {
   });
   // 7 見出し・ボタンの短い言葉が途中で折り返している（「月／順」「入金と粗／利」）
   items.forEach(({ el, rs }) => {
-    if (!el.closest('button, .btn, h1, h2, h3, .panel-h, .seg, .ring-label, .w-title')) return;
+    if (!el.closest('button, .btn, h1, h2, h3, .panel-h, .seg, .ring-label, .w-title') || el.getBoundingClientRect().width <= 2) return;
     const t = (el.textContent || '').trim(); if (t.length > 12 || t.length < 2) return;
     // 自分の直下の文字だけで行を数える（アイコンの高さの違いを行と数えない）
     const tops = []; el.childNodes.forEach(c => { if (c.nodeType !== 3 || !c.textContent.trim()) return; const rg = document.createRange(); rg.selectNodeContents(c); [...rg.getClientRects()].forEach(r => { if (r.width > 1) tops.push(r.top); }); });
