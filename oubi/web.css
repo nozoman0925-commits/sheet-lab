@@ -601,3 +601,5 @@ body.ed-full [data-act="full"] { color: #fff; background: #2a63c9; border-color:
 /* 見出しは省かない。省くのは横の小さい説明だけ */
 .panel-h h2 { flex: none; max-width: 100%; }
 .panel-h .sub { flex: 1 1 auto; }
+/* 切り替えボタンがある見出し：幅が足りないときは横の説明を出さない（1文字だけ残って重なって見えるため） */
+@media (max-width: 1500px) { .panel-h:has(.seg) .sub { display: none; } }

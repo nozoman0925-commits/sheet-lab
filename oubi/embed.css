@@ -167,3 +167,8 @@ nav button, nav .btn, .tabs button { overflow: visible !important; }
   background: #2a63c9 !important; background-image: none !important; box-shadow: 0 2px 10px rgba(42, 99, 201, .28) !important; color: #fff !important; }
 .btn.pri:hover { background: #3170dc !important; }
 .btn:hover, .chipbtn:hover { box-shadow: none !important; }
+/* スマホ：2列の並びは1列に（細い列で文字が切れないように）。要対応の見出しは折り返す（2026-11-27） */
+@media (max-width: 760px) {
+  .cols2 { display: grid !important; grid-template-columns: minmax(0, 1fr) !important; }
+  .alerts .alert b, .alerts .alert { white-space: normal !important; }
+}
